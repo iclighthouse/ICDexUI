@@ -1,0 +1,8 @@
+.DS_Store
+
+# Various IDEs and Editors
+.vscode/
+.idea/
+.history
+**/*~
+

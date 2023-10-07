@@ -1,0 +1,136 @@
+{
+  "name": "ICLightHouse",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "ant-design-vue": "^1.7.8",
+    "axios": "^0.21.1",
+    "bignumber.js": "^9.0.1",
+    "core-js": "^3.6.5",
+    "crypto-js": "^4.1.1",
+    "dayjs": "^1.11.7",
+    "echarts": "^5.2.2",
+    "element-ui": "^2.15.6",
+    "elliptic": "^6.5.4",
+    "identicon.js": "^2.3.3",
+    "json-bigint": "^1.0.0",
+    "key-encoder": "^2.1.0-beta.0",
+    "klinecharts": "^8.6.1",
+    "mavon-editor": "^2.10.4",
+    "node-forge": "^0.10.0",
+    "node-inspect-extracted": "^1.0.8",
+    "qrcode": "^1.4.4",
+    "sjcl": "^1.0.8",
+    "starkbank-ecdsa": "^1.1.2",
+    "vue": "^2.6.11",
+    "vue-class-component": "^7.2.3",
+    "vue-clipboard2": "^0.3.3",
+    "vue-cookies": "^1.8.2",
+    "vue-infinite-scroll": "^2.0.2",
+    "vue-json-viewer": "^2.2.22",
+    "vue-markdown": "^2.2.4",
+    "vue-property-decorator": "^9.1.2",
+    "vue-router": "^3.0.7",
+    "vue-virtual-scroller": "^1.1.2",
+    "vuex": "^3.6.2",
+    "vuex-class": "^0.3.2",
+    "web3": "^1.9.0"
+  },
+  "devDependencies": {
+    "@astrox/sdk-core": "^0.1.29",
+    "@astrox/sdk-webview": "^0.1.29",
+    "@connect2ic/core": "^0.2.0-beta.5",
+    "@dfinity/agent": "^0.19.2",
+    "@dfinity/auth-client": "^0.19.2",
+    "@dfinity/candid": "^0.19.2",
+    "@dfinity/identity": "^0.19.2",
+    "@dfinity/principal": "^0.19.2",
+    "@dfinity/identity-secp256k1": "^0.19.2",
+    "@dfinity/utils": "^0.0.12",
+    "@dfinity/rosetta-client": "^0.6.0",
+    "@metamask/eth-sig-util": "^4.0.0",
+    "@metamask/onboarding": "^1.0.1",
+    "@noble/hashes": "^1.3.1",
+    "@types/crc": "^3.4.0",
+    "@types/identicon.js": "^2.3.1",
+    "@types/json-bigint": "^1.0.1",
+    "@types/node": "^16.11.0",
+    "@types/qrcode": "^1.4.1",
+    "@types/randombytes": "^2.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-typescript": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/eslint-config-prettier": "^6.0.0",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "crc": "^3.8.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-vue": "^6.2.2",
+    "ethers": "^5.4.7",
+    "node-fetch": "2.6.1",
+    "node-sass": "^4.11.0",
+    "prettier": "^2.2.1",
+    "randombytes": "^2.0.1",
+    "sass-loader": "^10.1.0",
+    "sass-resources-loader": "^2.0.0",
+    "style-resources-loader": "^1.4.1",
+    "text-encoding": "^0.7.0",
+    "typescript": "~4.1.5",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended",
+      "@vue/typescript/recommended",
+      "@vue/prettier",
+      "@vue/prettier/@typescript-eslint"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2020
+    },
+    "rules": {
+      "@typescript-eslint/no-var-requires": 0,
+      "@typescript-eslint/no-explicit-any": [
+        "off"
+      ],
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/ban-types": [
+        "error",
+        {
+          "extendDefaults": true,
+          "types": {
+            "{}": false
+          }
+        }
+      ],
+      "no-debugger": "off"
+    }
+  },
+  "browserslist": {
+    "production": [
+      "last 2 chrome version",
+      "last 2 firefox version",
+      "last 2 safari version",
+      "last 2 edge version"
+    ],
+    "development": [
+      "last 2 chrome version",
+      "last 2 firefox version",
+      "last 2 safari version",
+      "last 2 edge version"
+    ]
+  }
+}

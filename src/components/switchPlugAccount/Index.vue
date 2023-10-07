@@ -1,0 +1,78 @@
+<template>
+  <a-modal
+    v-model="plugVisible"
+    centered
+    width="500px"
+    :footer="null"
+    :keyboard="false"
+    :maskClosable="false"
+    :closable="false"
+    class="delete-modal plug-modal"
+  >
+    <p>
+      Your {{ accountType }} account (<a-tooltip placement="top">
+        <template slot="title">
+          <span>{{ plugAccount }}</span> </template
+        >{{ plugAccount | ellipsisAccount }}</a-tooltip
+      >) does not match your local account (<a-tooltip placement="top">
+        <template slot="title">
+          <span>{{ localAccount }}</span> </template
+        >{{ localAccount | ellipsisAccount }}</a-tooltip
+      >) and connection failed.Please switch {{ accountType }} account, or
+      connect a new account.
+    </p>
+    <div class="delete-button">
+      <button type="button" @click="plugVisible = false">Confirm</button>
+      <button type="button" @click="login" style="width: 150px" class="default">
+        Connect new account
+      </button>
+    </div>
+  </a-modal>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue } from 'vue-property-decorator';
+import AuthClientAPi from '@/ic/AuthClientApi';
+import { namespace } from 'vuex-class';
+const commonModule = namespace('common');
+
+@Component({
+  name: 'Index',
+  components: {}
+})
+export default class extends Vue {
+  @commonModule.Mutation('SET_PRINCIPAL_ID') setPrincipalId?: any;
+  @commonModule.Mutation('SET_SHOW_CHECK_AUTH') setCheckAuth?: any;
+  @Prop({ type: String, default: '' })
+  private plugAccount!: string;
+  @Prop({ type: String, default: '' })
+  private localAccount!: string;
+  @Prop({ type: String, default: 'Plug' })
+  private accountType!: string;
+  public plugVisible = false;
+  private async login(): Promise<void> {
+    const authClientAPi = await AuthClientAPi.create();
+    const identity = authClientAPi.tryGetIdentity();
+    if (identity) {
+      await authClientAPi.logout();
+    }
+    const principal = localStorage.getItem('principal');
+    const priList = JSON.parse(localStorage.getItem('priList')) || {};
+    if (priList[principal] === 'Plug') {
+      (window as any).ic.plug.disconnect();
+    }
+    if (priList[principal] === 'Infinity') {
+      (window as any).ic.infinityWallet.disconnect();
+    }
+    localStorage.removeItem('principal');
+    this.setPrincipalId(null);
+    this.setCheckAuth(false);
+    this.$router.replace({
+      path: '/login',
+      query: { redirect: this.$route.fullPath }
+    });
+  }
+}
+</script>
+
+<style scoped lang="scss"></style>

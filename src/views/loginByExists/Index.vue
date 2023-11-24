@@ -244,7 +244,13 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     const encryptSeedPhrase = phraseList[this.selectedAccount];
     let mnemonic;
     try {
-      mnemonic = await decrypt(encryptSeedPhrase, this.password);
+      let salt = 'ICLightHouse';
+      let data = encryptSeedPhrase;
+      if (encryptSeedPhrase.salt) {
+        salt = encryptSeedPhrase.salt;
+        data = encryptSeedPhrase.encryptSeedPhrase;
+      }
+      mnemonic = await decrypt(data, this.password, salt);
     } catch (e) {
       this.spinning = false;
       console.log(e);
@@ -407,11 +413,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.spinning = true;
     setTimeout(async () => {
       try {
-        const encryptIdentity = this.priList[this.selectedAccount];
-        const identityJson = await decrypt(
-          JSON.parse(encryptIdentity),
-          this.password
-        );
+        const encryptIdentity = JSON.parse(this.priList[this.selectedAccount]);
+        let salt = 'ICLightHouse';
+        let data = encryptIdentity;
+        if (encryptIdentity.salt) {
+          salt = encryptIdentity.salt;
+          data = encryptIdentity.encryptIdentity;
+        }
+        const identityJson = await decrypt(data, this.password, salt);
         let identity;
         if (JSON.parse(identityJson)[1].length > 64) {
           identity = Ed25519KeyIdentity.fromJSON(identityJson as string);

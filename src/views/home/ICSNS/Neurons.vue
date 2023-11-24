@@ -335,9 +335,32 @@
               </button>
             </a-tooltip>
             <a-tooltip placement="top">
-              <template slot="title"> Start Dissolving </template>
-              <button
-                @click="dissolve(currentNeuronInfoIndex, index)"
+              <template slot="title">
+                <span
+                  v-if="
+                    neuron.vesting_period_seconds &&
+                    neuron.vesting_period_seconds[0] &&
+                    isVesting(
+                      neuron.created_timestamp_seconds,
+                      neuron.vesting_period_seconds[0]
+                    )
+                  "
+                >
+                  Vesting Period:
+                  <a-statistic-countdown
+                    class="adopted-countdown"
+                    :value="
+                      getVesting(
+                        neuron.created_timestamp_seconds,
+                        neuron.vesting_period_seconds[0]
+                      )
+                    "
+                    format="DD:HH:mm:ss"
+                  />
+                </span>
+                <span v-else>Start Dissolving</span>
+              </template>
+              <div
                 v-show="
                   getNeuronStatus(neuron) === 'Locked' &&
                   showOperation(
@@ -346,14 +369,22 @@
                     neuronPermissionEnum['ConfigureDissolveState']
                   )
                 "
-                :disabled="
-                  neuron.vesting_period_seconds &&
-                  neuron.vesting_period_seconds[0]
-                "
-                type="button"
               >
-                <span>Dissolve</span>
-              </button>
+                <button
+                  @click="dissolve(currentNeuronInfoIndex, index)"
+                  :disabled="
+                    neuron.vesting_period_seconds &&
+                    neuron.vesting_period_seconds[0] &&
+                    isVesting(
+                      neuron.created_timestamp_seconds,
+                      neuron.vesting_period_seconds[0]
+                    )
+                  "
+                  type="button"
+                >
+                  <span>Dissolve</span>
+                </button>
+              </div>
             </a-tooltip>
             <a-tooltip placement="top">
               <template slot="title"> Stop Dissolving </template>
@@ -1635,6 +1666,19 @@ export default class extends Vue {
     );
     return new BigNumber(balance).gte(minStakeSplittable);
   }
+  private getVesting(created: bigint, num: bigint): number {
+    return new BigNumber(created.toString(10))
+      .plus(num.toString(10))
+      .times(1000)
+      .toNumber();
+  }
+  private isVesting(created: bigint, num: bigint): boolean {
+    const now = new Date().getTime();
+    return new BigNumber(created.toString(10))
+      .plus(num.toString(10))
+      .times(1000)
+      .gt(now);
+  }
   private showOperation(
     SNSIndex: number,
     index: number,
@@ -2779,6 +2823,14 @@ i.pc-show {
   font-size: 16px;
   .back-icon {
     font-size: 20px;
+  }
+}
+.adopted-countdown {
+  line-height: 1;
+  ::v-deep .ant-statistic-content {
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
   }
 }
 @media screen and (max-width: 1000px) {

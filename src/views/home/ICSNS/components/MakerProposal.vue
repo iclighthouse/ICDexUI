@@ -68,7 +68,8 @@
           language="en"
           :html="false"
           :xssOptions="false"
-          :externalLink="externalLink"
+          :externalLink="false"
+          :toolbars="toolbars"
         ></mavon-editor>
       </div>
     </div>
@@ -143,6 +144,37 @@ export default class extends Vue {
     katex_js: function () {
       return '/katex/katex.min.js';
     }
+  };
+  private toolbars = {
+    bold: true,
+    italic: true,
+    header: true,
+    underline: true,
+    strikethrough: true,
+    mark: true,
+    superscript: true,
+    subscript: true,
+    quote: true,
+    ol: true,
+    ul: true,
+    link: true,
+    imagelink: false,
+    code: true,
+    table: true,
+    undo: true,
+    redo: true,
+    trash: true,
+    save: true,
+    alignleft: true,
+    aligncenter: true,
+    alignright: true,
+    navigation: true,
+    subfield: true,
+    fullscreen: true,
+    readmodel: true,
+    htmlcode: true,
+    help: true,
+    preview: true
   };
   private async submit(): Promise<void> {
     if (!this.neuronId) {

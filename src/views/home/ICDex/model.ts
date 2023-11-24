@@ -3,8 +3,9 @@ import { Stats } from '@/ic/ICDex/model';
 import { KLineData } from 'klinecharts';
 
 export interface KLData extends KLineData {
-  token0volume: number,
-  token1volume: number
+  change?: number;
+  token0volume: number;
+  token1volume: number;
 }
 
 export type DePairs = [...TrieListData, Stats?];
@@ -34,17 +35,6 @@ export interface MarketMenu {
   value: string;
   name: string;
 }
-export enum GridModeEnum {
-  Arithmetic = 'Arithmetic',
-  Geometric = 'Geometric'
-}
-export type GridModeMenu = keyof typeof GridModeEnum;
-export enum GridAmountEnum {
-  Percent = 'Percent',
-  Token1 = 'Token1',
-  Token0 = 'Token0'
-}
-export type GridAmountMenu = keyof typeof GridAmountEnum;
 
 export type Token0Balance = string;
 export type Token1Balance = string;

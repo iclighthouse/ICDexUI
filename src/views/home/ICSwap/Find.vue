@@ -336,7 +336,7 @@ export default class extends Mixins(PairsMixin) {
     if (this.tokenSwapFrom && this.tokenSwapTo) {
       this.routerLoading = true;
       try {
-        const res = await this.ICSwapRouterService.route(
+        const res = await this.ICSwapRouterFiduciaryService.route(
           this.tokenSwapFrom[0],
           this.tokenSwapTo[0]
         );

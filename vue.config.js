@@ -1,5 +1,5 @@
 const path = require('path');
-
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const publicPath = process.env.NODE_ENV === 'production' ? '/' : '/';
 const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
@@ -29,13 +29,13 @@ module.exports = {
   chainWebpack: (config) => {
     config.plugins.delete('prefetch');
   },
-  // CSS 相关选项
+  // CSS
   css: {
     sourceMap: true,
 
     loaderOptions: {}
   },
-
+  lintOnSave: false,
   parallel: require('os').cpus().length > 1,
 
   // PWA。
@@ -69,8 +69,28 @@ module.exports = {
       alias: {
         '@': path.resolve(__dirname, 'src')
       }
+    },
+    target: ['web', 'es5'],
+    plugins: [new NodePolyfillPlugin()],
+    module: {
+      rules: [
+        {
+          test: /\.vue$/,
+          exclude: /node_modules/,
+          loader: path.resolve(__dirname, './clearConsole.js')
+        },
+        {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          loader: path.resolve(__dirname, './clearConsole.js')
+        },
+        {
+          test: /\.ts$/,
+          exclude: /node_modules/,
+          loader: path.resolve(__dirname, './clearConsole.js')
+        }
+      ]
     }
   }
-  //
   // pluginOptions: {}
 };

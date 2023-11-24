@@ -82,7 +82,7 @@ export class Token {
 }
 
 export default interface Service {
-  create(request: InitArgs): Promise<[Principal]>;
+  create(request: InitArgs, subaccount: Array<Array<number>>): Promise<[Principal]>;
   getTokenList(size: number, page: number): Promise<Array<TokenItem>>;
   getTokens(tokenId: Principal): Promise<Array<Principal>>;
   tokenStatus(tokenId: Principal): Promise<TokenStatus>;
@@ -90,9 +90,10 @@ export default interface Service {
     token: Principal,
     controllers: Array<Principal>
   ): Promise<boolean>;
-  getStarTokens(user: Principal): Promise<Array<Array<Principal>>>;
-  cancelStar(tokenId: Principal): Promise<boolean>;
+  getStarTokens(user: Principal, subaccount: Array<Array<number>>): Promise<Array<Array<Principal>>>;
+  cancelStar(tokenId: Principal, subaccount: Array<Array<number>>): Promise<boolean>;
   modifyOwner(tokenId: Principal, newOwner: Principal): Promise<boolean>;
   deleteToken(tokenId: Principal, delFromList: boolean): Promise<boolean>;
   update(tokenId: Principal, initArgs: InitArgs): Promise<void>;
+  starIt(tokenId: Principal, subaccount: Array<Array<number>>): Promise<void>;
 }

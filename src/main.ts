@@ -33,10 +33,13 @@ import { CanvasRenderer } from 'echarts/renderers';
 import VueCookies from 'vue-cookies';
 import infiniteScroll from 'vue-infinite-scroll';
 import { RecycleScroller } from 'vue-virtual-scroller';
-import VueMarkdown from 'vue-markdown';
+import VueMarkdown from 'vue-markdown-v1';
 import mavonEditor from 'mavon-editor';
 import JsonViewer from 'vue-json-viewer';
+import VueTour from 'vue-tour';
+import 'vue-tour/dist/vue-tour.css';
 
+Vue.use(VueTour);
 Vue.use(JsonViewer);
 Vue.use(infiniteScroll);
 Vue.use(VueCookies, { expires: '30d', sameSite: 'Strict' });
@@ -191,13 +194,6 @@ router.afterEach((to) => {
   window.scrollTo(0, 0);
   if (to.meta.title) {
     document.title = to.meta.title;
-  }
-  if (to.meta.measurementId) {
-    (window as any).gtag('config', to.meta.measurementId, {
-      page_title: to.name,
-      page_path: to.path,
-      page_location: location
-    });
   }
 });
 new Vue({

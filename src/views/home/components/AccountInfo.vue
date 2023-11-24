@@ -96,6 +96,7 @@
     <div v-if="isIcx && getPrincipalId" class="current-account-h5 h5-show">
       <img :src="accountImg" alt="account" />
       <copy-account
+        :front="4"
         :account="getPrincipalId"
         :show-copy="false"
         copy-text="Principal ID"
@@ -419,6 +420,7 @@ export default class extends Vue {
   private menuList!: Menu[];
   @commonModule.Mutation('SET_SHOW_CHECK_AUTH') setCheckAuth?: any;
   @commonModule.Mutation('SET_PRINCIPAL_ID') setPrincipalId?: any;
+  @commonModule.Mutation('SET_IDENTITY') setIdentity?: any;
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
   @commonModule.Getter('getIdentity') getIdentity?:
     | Secp256k1KeyIdentity
@@ -555,6 +557,7 @@ export default class extends Vue {
     }
     localStorage.setItem('principal', principal);
     this.setPrincipalId(principal);
+    this.setIdentity(null);
     if (this.priList[principal]) {
       if (this.priList[principal] === 'AuthClient') {
         await this.$router.replace({
@@ -593,12 +596,15 @@ export default class extends Vue {
     setTimeout(async () => {
       try {
         const encryptSeedPhrase = JSON.parse(
-          localStorage.getItem('phraseList')
-        )[this.getPrincipalId];
-        const seedPhrase = await decrypt(
-          JSON.parse(encryptSeedPhrase),
-          this.password
+          JSON.parse(localStorage.getItem('phraseList'))[this.getPrincipalId]
         );
+        let salt = 'ICLightHouse';
+        let data = encryptSeedPhrase;
+        if (encryptSeedPhrase.salt) {
+          salt = encryptSeedPhrase.salt;
+          data = encryptSeedPhrase.encryptSeedPhrase;
+        }
+        const seedPhrase = await decrypt(data, this.password, salt);
         this.phraseStep = 2;
         this.mnemonicList = seedPhrase.split(' ');
         loading.close();
@@ -619,13 +625,17 @@ export default class extends Vue {
       let identityJson;
       let keyEncoder;
       try {
-        const encryptIdentity = JSON.parse(localStorage.getItem('priList'))[
-          this.getPrincipalId
-        ];
-        identityJson = await decrypt(
-          JSON.parse(encryptIdentity),
-          this.password
+        const encryptIdentity = JSON.parse(
+          JSON.parse(localStorage.getItem('priList'))[this.getPrincipalId]
         );
+        console.log(encryptIdentity);
+        let salt = 'ICLightHouse';
+        let data = encryptIdentity;
+        if (encryptIdentity.salt) {
+          salt = encryptIdentity.salt;
+          data = encryptIdentity.encryptIdentity;
+        }
+        identityJson = await decrypt(data, this.password, salt);
         loading.close();
       } catch (e) {
         loading.close();
@@ -637,9 +647,7 @@ export default class extends Vue {
       const privateKey = JSON.parse(identityJson)[1];
       keyEncoder = new KeyEncoder('secp256k1');
       const res = keyEncoder.encodePrivate(privateKey, 'raw', 'pem');
-      // 组装a标签
       const eLink = document.createElement('a');
-      // 设置下载文件名
       eLink.download = 'identity.pem';
       eLink.style.display = 'none';
       const blob = new Blob([res], {
@@ -676,6 +684,7 @@ export default class extends Vue {
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
+    this.setIdentity(null);
     this.setCheckAuth(false);
     await this.$router.replace('/loginByExists');
   }

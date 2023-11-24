@@ -8,7 +8,7 @@ import store from '@/store';
 import { createPlugActor } from '@/ic/createPlugActor';
 import { createIcxActor } from '@/ic/createIcxActor';
 import { createInfinityActor } from '@/ic/createInfinityActor';
-import { SerializableIC } from '@/ic/converter';
+import { fromSubAccountId } from '@/ic/converter';
 
 export class ICTokenService {
   private service: Service;
@@ -47,9 +47,16 @@ export class ICTokenService {
       );
     }
   };
-  public create = async (request: InitArgs): Promise<Principal> => {
+  public create = async (
+    request: InitArgs,
+    subaccountId = 0
+  ): Promise<Principal> => {
     await this.check();
-    const res = await this.service.create(request);
+    let subAccount = [[]];
+    if (subaccountId) {
+      subAccount = [fromSubAccountId(subaccountId)];
+    }
+    const res = await this.service.create(request, subAccount);
     if (res && res.length) {
       return res[0];
     }
@@ -59,8 +66,7 @@ export class ICTokenService {
     page: number
   ): Promise<Array<TokenItem>> => {
     await this.check(false, false);
-    const res = await this.service.getTokenList(size, page);
-    return SerializableIC(res);
+    return await this.service.getTokenList(size, page);
   };
   public getTokens = async (tokenId: Principal): Promise<Array<Principal>> => {
     await this.check(false, false);
@@ -68,8 +74,7 @@ export class ICTokenService {
   };
   public tokenStatus = async (tokenId: Principal): Promise<TokenStatus> => {
     await this.check(false, false);
-    const res = await this.service.tokenStatus(tokenId);
-    return SerializableIC(res);
+    return await this.service.tokenStatus(tokenId);
   };
   public modifyControllers = async (
     token: Principal,
@@ -79,14 +84,26 @@ export class ICTokenService {
     return await this.service.modifyControllers(token, controllers);
   };
   public getStarTokens = async (
-    user: Principal
+    user: Principal,
+    subaccountId = 0
   ): Promise<Array<Array<Principal>>> => {
     await this.check(false, false);
-    return await this.service.getStarTokens(user);
+    let subAccount = [[]];
+    if (subaccountId) {
+      subAccount = [fromSubAccountId(subaccountId)];
+    }
+    return await this.service.getStarTokens(user, subAccount);
   };
-  public cancelStar = async (tokenId: Principal): Promise<boolean> => {
+  public cancelStar = async (
+    tokenId: Principal,
+    subaccountId = 0
+  ): Promise<boolean> => {
     await this.check();
-    return await this.service.cancelStar(tokenId);
+    let subAccount = [[]];
+    if (subaccountId) {
+      subAccount = [fromSubAccountId(subaccountId)];
+    }
+    return await this.service.cancelStar(tokenId, subAccount);
   };
   public modifyOwner = async (
     tokenId: Principal,
@@ -108,5 +125,16 @@ export class ICTokenService {
   ): Promise<void> => {
     await this.check();
     return await this.service.update(tokenId, initArgs);
+  };
+  public starIt = async (
+    tokenId: Principal,
+    subaccountId = 0
+  ): Promise<void> => {
+    await this.check();
+    let subAccount = [[]];
+    if (subaccountId) {
+      subAccount = [fromSubAccountId(subaccountId)];
+    }
+    return await this.service.starIt(tokenId, subAccount);
   };
 }

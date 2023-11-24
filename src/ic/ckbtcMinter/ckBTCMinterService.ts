@@ -13,7 +13,11 @@ import { createPlugActor } from '@/ic/createPlugActor';
 import IDL from './ckBTCMinter.did.js';
 import icIDL from './icBTCMinter.did.js';
 import store from '@/store';
-import { fromSubAccountId, SerializableIC } from '@/ic/converter';
+import {
+  fromSubAccountId,
+  hexToBytes,
+  principalToAccountIdentifier
+} from '@/ic/converter';
 import { Icrc1Account } from '@/ic/common/icType';
 import {
   CK_BTC_MINTER_CANISTER_ID,
@@ -98,13 +102,17 @@ export class ckBTCMinterService {
         owner: Principal.from(principal),
         subaccount: []
       };
-      const res = await service.get_withdrawal_account(address);
+      // const res = await service.get_withdrawal_account(address);
+      const subaccount = Array.from(
+        hexToBytes(principalToAccountIdentifier(Principal.fromText(principal)))
+      );
+      const res: Icrc1Account = {
+        owner: Principal.fromText(IC_BTC_MINTER_CANISTER_ID),
+        subaccount: [subaccount]
+      };
       const principal1 = localStorage.getItem('principal');
       if (principal === principal1) {
-        return {
-          owner: res.owner,
-          subaccount: Array.from(res.subaccount)
-        };
+        return res;
       } else {
         return null;
       }
@@ -112,10 +120,7 @@ export class ckBTCMinterService {
       const res = await service.get_withdrawal_account();
       const principal1 = localStorage.getItem('principal');
       if (principal === principal1) {
-        return {
-          owner: res.owner,
-          subaccount: Array.from(res.subaccount)
-        };
+        return res;
       } else {
         return null;
       }
@@ -127,11 +132,9 @@ export class ckBTCMinterService {
   ): Promise<RetrieveBtcRes> => {
     const service = await this.check(type);
     if (type === 'icBTC') {
-      const res = await service.retrieve_btc(retrieveBtcArgs, []);
-      return SerializableIC(res);
+      return await service.retrieve_btc(retrieveBtcArgs, []);
     } else {
-      const res = await service.retrieve_btc(retrieveBtcArgs);
-      return SerializableIC(res);
+      return await service.retrieve_btc(retrieveBtcArgs);
     }
   };
   public retrieveBtcStatus = async (
@@ -139,8 +142,7 @@ export class ckBTCMinterService {
     blockIndex: bigint
   ): Promise<RetrieveBtcStatus> => {
     const service = await this.check(type, false, true);
-    const res = await service.retrieve_btc_status({ block_index: blockIndex });
-    return SerializableIC(res);
+    return await service.retrieve_btc_status({ block_index: blockIndex });
   };
   public updateBalance = async (
     type: string,
@@ -153,17 +155,15 @@ export class ckBTCMinterService {
     }
     if (type === 'icBTC') {
       const principal1 = localStorage.getItem('principal');
-      const res = await service.update_balance({
+      return await service.update_balance({
         owner: Principal.from(principal1),
         subaccount: subAccount
       });
-      return SerializableIC(res);
     } else {
-      const res = await service.update_balance({
+      return await service.update_balance({
         owner: [],
         subaccount: subAccount
       });
-      return SerializableIC(res);
     }
   };
   public batchSend = async (
@@ -182,8 +182,7 @@ export class ckBTCMinterService {
     blockIndex: Array<number>
   ): Promise<Array<RetrieveStatus>> => {
     const service = await this.check(type);
-    const res = await service.retrieveLog(blockIndex);
-    return SerializableIC(res);
+    return await service.retrieveLog(blockIndex);
   };
   public estimate_fee = async (
     type: string,

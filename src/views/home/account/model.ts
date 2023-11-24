@@ -42,7 +42,8 @@ export class AddTokenItemClass {
 export enum TokenStandard {
   'DRC20' = 'DRC20',
   'DIP20' = 'DIP20',
-  'ICRC-1' = 'ICRC-1'
+  'ICRC-1' = 'ICRC-1',
+  'ICRC-2' = 'ICRC-2'
 }
 export enum BTCTypeEnum {
   'icBTC' = 'icBTC',
@@ -57,7 +58,8 @@ export const networkIds = {
   '-1': 'IC Network',
   '0': 'Bitcoin',
   '1': 'Ethereum',
-  '2': 'Goerli'
+  '2': 'Goerli',
+  '3': 'Sepolia'
 };
 export const networkList = [
   {
@@ -79,6 +81,11 @@ export const networkList = [
     id: '2',
     name: 'Goerli Testnet',
     logo: require('@/assets/img/goerlieth.svg')
+  },
+  {
+    id: '3',
+    name: 'Sepolia Testnet',
+    logo: require('@/assets/img/subway.svg')
   }
 ];
 export interface ICNetworkTokensInterface {
@@ -130,7 +137,9 @@ export type ActiveType =
   | 'retrieve'
   | 'retrieve2'
   | 'dexMint'
-  | 'dexRetrieve';
+  | 'dexRetrieve'
+  | 'mintCKETH'
+  | 'retrieveCKETH';
 export interface Active {
   claim?: Array<ClaimActive>; // method2 claim step1
   claim2?: Array<ClaimActive>; // method2 claim step2
@@ -138,6 +147,8 @@ export interface Active {
   deposit?: [Wei, Array<TxIndex>, Array<TxStatus>]; // method1 mint step2
   retrieve?: Array<RetrieveActive>; // retrieve step1
   retrieve2?: [TxIndex, TxStatus, Time]; // retrieve step2
+  mintCKETH?: Array<ClaimActive>; // ckETH mint
+  retrieveCKETH?: Array<RetrieveActive>; // ckETH retrieve
 }
 export interface RetrieveActive {
   tokenId: string;
@@ -150,4 +161,9 @@ export interface MintActive {
 export interface ClaimActive {
   tokenId: string;
   txHash: string;
+}
+export interface ClaimCKETHActive {
+  amount: string;
+  txHash: string;
+  tokenId: string;
 }

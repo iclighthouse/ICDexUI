@@ -109,6 +109,7 @@ import { encrypt } from '@/ic/utils';
 import { Identity } from '@dfinity/agent';
 import { namespace } from 'vuex-class';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
+import { toHexString } from '@/ic/converter';
 
 const commonModule = namespace('common');
 
@@ -173,18 +174,27 @@ export default class extends Vue {
       localStorage.setItem('priList', JSON.stringify(principalList));
       this.setIdentity(this.currentIdentity);
       localStorage.setItem('identity', localStorage.getItem('principal'));
+      const arr = new Uint8Array(64);
+      const salt = toHexString(window.crypto.getRandomValues(arr));
       const encryptSeedPhrase = await encrypt(
         this.mnemonicList.join(' '),
-        this.password
+        this.password,
+        salt
       );
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
-      phraseList[principal] = encryptSeedPhrase;
+      phraseList[principal] = {
+        salt: salt,
+        encryptSeedPhrase: encryptSeedPhrase
+      };
       localStorage.setItem('phraseList', JSON.stringify(phraseList));
       if (this.isNewAccount) {
         const iCLighthouseService = new ICLighthouseService();
         await iCLighthouseService.addMetaMask(
           this.ethAccount,
-          encryptSeedPhrase
+          JSON.stringify({
+            salt: salt,
+            encryptSeedPhrase: encryptSeedPhrase
+          })
         );
       }
       if (this.$route.query.redirect) {

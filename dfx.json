@@ -1,11 +1,12 @@
 {
   "canisters": {
-    "ICLight": {
+    "ICLightHouse_test": {
       "frontend": {
         "entrypoint": "dist/index.html"
       },
       "source": ["dist/", "src/ICAssets"],
-      "type": "assets"
+      "type": "assets",
+      "gzip": true
     }
   },
   "defaults": {

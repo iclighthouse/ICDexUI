@@ -1318,6 +1318,7 @@ export default class extends Mixins(PairsMixin) {
               const maxTrade = new BigNumber(liquidity.icpE8s.toString(10))
                 .times(feeRate)
                 .minus(getFee(this.tokenSwapTo[3]).toString(10));
+              console.log(swapToAmount.toString(), maxTrade.toString());
               if (swapToAmount.gt(maxTrade)) {
                 this.buttonName = 'Insufficient liquidity for this trade';
                 flag = true;
@@ -1335,6 +1336,7 @@ export default class extends Mixins(PairsMixin) {
               const maxTrade = new BigNumber(liquidity.cycles.toString(10))
                 .times(feeRate)
                 .minus(getFee(this.tokenSwapFrom[3]).toString(10));
+              console.log(swapToAmount.toString(), maxTrade.toString());
               if (swapToAmount.gt(maxTrade)) {
                 this.buttonName = 'Insufficient liquidity for this trade';
                 flag = true;
@@ -1557,6 +1559,7 @@ export default class extends Mixins(PairsMixin) {
     ]);
   }
   private async cyclesToIcp(): Promise<void> {
+    console.time();
     try {
       const principal = localStorage.getItem('principal');
       const nonce = await this.getCount(
@@ -1579,9 +1582,11 @@ export default class extends Mixins(PairsMixin) {
       this.walletService
         .walletCall(walletCallRequest, this.cyclesCanister.trim())
         .then((res) => {
+          console.log(res);
           this.step = 1;
           if ((res as { Ok: { return: Array<number> } }).Ok) {
             setTimeout(async () => {
+              console.timeEnd();
               this.swapVisible = false;
               this.$message.success('Cycles to icp Success');
               this.step = 2;
@@ -1597,6 +1602,7 @@ export default class extends Mixins(PairsMixin) {
                   this.tokenSwapTo[0].toString()
                 );
                 this.getPairBalance();
+                console.log(this.swapId);
                 this.liquidity = await this.getLiquidity(this.swapId);
               } catch (e) {
                 //
@@ -1621,6 +1627,7 @@ export default class extends Mixins(PairsMixin) {
     }
   }
   private async icpToCycles(): Promise<void> {
+    console.time();
     const principal = localStorage.getItem('principal');
     try {
       const flag = await this.checkCycles(this.cyclesCanister.trim());
@@ -1632,6 +1639,7 @@ export default class extends Mixins(PairsMixin) {
       const deptTotal = this.getTokenDepositingAndPairBalance(
         this.tokenSwapFrom
       );
+      console.log(deptTotal.toString(10));
       if (
         deptTotal
           .div(10 ** this.tokenSwapFrom[3].decimals)
@@ -1662,12 +1670,14 @@ export default class extends Mixins(PairsMixin) {
           swapFromAmount,
           this.depositAccountId
         );
+        console.log(blockHeight);
       }
       const icp = BigInt(
         new BigNumber(this.swapFromAmount)
           .times(10 ** this.tokenSwapFrom[3].decimals)
           .toString(10)
       );
+      console.log(icp);
       this.step = 1;
       const nonce = await this.getCount(Principal.fromText(principal));
       this.cyclesFinanceService
@@ -1675,6 +1685,7 @@ export default class extends Mixins(PairsMixin) {
           nonce
         ])
         .then(async (res) => {
+          console.log(res);
           this.step = 2;
           try {
             this.swapSuccess();
@@ -1687,6 +1698,7 @@ export default class extends Mixins(PairsMixin) {
           this.swapVisible = false;
         })
         .finally(() => {
+          console.timeEnd();
           this.swapVisible = false;
           // this.swapLoading.close();
           // this.isLoading = false;
@@ -1697,6 +1709,7 @@ export default class extends Mixins(PairsMixin) {
     }
   }
   private async onSwap(): Promise<void> {
+    console.time();
     await checkAuth();
     const currentSwapService = new ICSwapService();
     const tokenFromStd = Object.keys(this.tokenSwapFrom[2])[0];
@@ -1712,6 +1725,7 @@ export default class extends Mixins(PairsMixin) {
     }
     await Promise.all([this.getPairBalance(), this.getCurrentDepositing()]);
     const deptTotal = this.getTokenDepositingAndPairBalance(this.tokenSwapFrom);
+    console.log(deptTotal.toString(10));
     let canSwap = false;
     if (
       tokenFromStd === PairTokenStdMenu.dip20 ||
@@ -1731,6 +1745,7 @@ export default class extends Mixins(PairsMixin) {
             .minus(deptTotal.toString(10))
             .toString(10)
         );
+        console.log(amount);
         canSwap = await this.approve(this.tokenSwapFrom, amount);
       }
     } else {
@@ -1763,6 +1778,7 @@ export default class extends Mixins(PairsMixin) {
             .div(10 ** this.tokenSwapFrom[3].decimals)
             .toString(10);
         }
+        console.log(swapFromAmount);
         if (tokenFromStd === PairTokenStdMenu.icp) {
           const block = await this.ledgerService.sendIcp(
             swapFromAmount,
@@ -1811,6 +1827,7 @@ export default class extends Mixins(PairsMixin) {
             }
           ).ok
         ) {
+          console.log(res);
           this.step = 2;
           if (this.autoWithdraw) {
             setTimeout(() => {
@@ -1824,7 +1841,9 @@ export default class extends Mixins(PairsMixin) {
             this.$message.success('Swap Success');
             this.swapSuccess();
           }
+          console.timeEnd();
         } else {
+          console.log(res);
           this.$message.error((res as { err: SwapTxnResultErr }).err.message);
           this.swapSuccess();
           this.swapVisible = false;
@@ -1851,6 +1870,7 @@ export default class extends Mixins(PairsMixin) {
       this.getTokenBalance(this.tokenSwapTo[2], this.tokenSwapTo[0].toString());
       this.getPairBalance();
       this.getCurrentDepositing();
+      console.log(this.swapId);
       this.liquidity = await this.getLiquidity(this.swapId);
     } catch (e) {
       console.log(e);
@@ -1979,6 +1999,7 @@ export default class extends Mixins(PairsMixin) {
       this.createPairForm.token0Id,
       this.createPairForm.token1Id
     ]);
+    console.log(flag);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const connectInfinity = await needConnectInfinity([
@@ -2058,11 +2079,13 @@ export default class extends Mixins(PairsMixin) {
               _that.createPairToken1Err = true;
               console.log(e);
             }
+            console.log(token0Symbol, token1Symbol);
             if (token0Symbol && token1Symbol) {
               const iclAllowance = await _that.getAllowance(
                 IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
                 IC_SWAP_ROUTER_CANISTER_ID
               );
+              console.log(iclAllowance);
               const iclDecimals = 8;
               if (
                 new BigNumber(iclAllowance.toString(10)).lt(10 ** iclDecimals)
@@ -2150,11 +2173,13 @@ export default class extends Mixins(PairsMixin) {
                   token1Std
                 ]
               };
+              console.log(pairRequest);
               try {
                 (checkLoading as any).setText(
                   'Creating swapping pair canister, it takes 20-60 seconds.'
                 );
-                const res = await _that.ICSwapRouterService.create(pairRequest);
+                const res = await _that.ICSwapRouterFiduciaryService.create(pairRequest);
+                console.log(res);
                 _that.createPairVisible = false;
                 // todo
                 // this.getTokens();
@@ -2246,11 +2271,13 @@ export default class extends Mixins(PairsMixin) {
               _that.createPairToken1Err = true;
               console.log(e);
             }
+            console.log(token0Symbol, token1Symbol);
             if (token0Symbol && token1Symbol) {
               const iclAllowance = await _that.getAllowance(
                 IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
                 IC_SWAP_ROUTER_CANISTER_ID
               );
+              console.log(iclAllowance);
               const iclDecimals = 8;
               if (
                 new BigNumber(iclAllowance.toString(10)).lt(10 ** iclDecimals)
@@ -2338,11 +2365,13 @@ export default class extends Mixins(PairsMixin) {
                   token1Std
                 ]
               };
+              console.log(pairRequest);
               try {
                 (checkLoading as any).setText(
                   'Creating swapping pair canister, it takes 20-60 seconds.'
                 );
-                const res = await _that.ICSwapRouterService.create(pairRequest);
+                const res = await _that.ICSwapRouterFiduciaryService.create(pairRequest);
+                console.log(res);
                 _that.createPairVisible = false;
                 // todo
                 // this.getTokens();
@@ -2418,11 +2447,13 @@ export default class extends Mixins(PairsMixin) {
         this.createPairToken1Err = true;
         console.log(e);
       }
+      console.log(token0Symbol, token1Symbol);
       if (token0Symbol && token1Symbol) {
         const iclAllowance = await this.getAllowance(
           IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
           IC_SWAP_ROUTER_CANISTER_ID
         );
+        console.log(iclAllowance);
         const iclDecimals = 8;
         if (new BigNumber(iclAllowance.toString(10)).lt(10 ** iclDecimals)) {
           this.allowanceVisible = true;
@@ -2504,11 +2535,13 @@ export default class extends Mixins(PairsMixin) {
             token1Std
           ]
         };
+        console.log(pairRequest);
         try {
           (checkLoading as any).setText(
             'Creating swapping pair canister, it takes 20-60 seconds.'
           );
-          const res = await this.ICSwapRouterService.create(pairRequest);
+          const res = await this.ICSwapRouterFiduciaryService.create(pairRequest);
+          console.log(res);
           this.createPairVisible = false;
           // todo
           // this.getTokens();
@@ -2584,8 +2617,13 @@ export default class extends Mixins(PairsMixin) {
             )
           );
         }
+        console.log(
+          tokenSwapFromCreditRecord.toString(),
+          tokenSwapToDebitRecord.toString()
+        );
         let tokenSwapToAmount: string;
         // if (this.autoWithdraw) {
+        //   console.log(tokenSwapToFee);
         //   tokenSwapToAmount = tokenSwapToDebitRecord
         //     .times(feeRate)
         //     .minus(tokenSwapToFee.toString(10))
@@ -2631,6 +2669,7 @@ export default class extends Mixins(PairsMixin) {
         } else {
           this.initToAmount();
         }
+        console.log(this.dexInfo, this.tokenSwapFrom);
       } catch (e) {
         console.log(e);
         this.initToAmount();
@@ -2839,6 +2878,7 @@ export default class extends Mixins(PairsMixin) {
         .div(100)
         .toString(10)
     );
+    console.log(rate.toString(), newRate.toString(), this.slippage);
   }
   private async onselect(token: SwapTokenInfo): Promise<void> {
     this.visible = false;

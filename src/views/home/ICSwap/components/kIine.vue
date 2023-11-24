@@ -31,7 +31,7 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
-import { Chart, dispose, init, KLineData } from 'klinecharts';
+import { Chart, dispose, init } from 'klinecharts';
 import { KBar, TokenType } from '@/ic/ICDex/model';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { CYCLES_FINANCE_CANISTER_ID } from '@/ic/utils';
@@ -39,6 +39,7 @@ import { TokenInfo } from '@/ic/common/icType';
 import { DexInfo, TokenStd } from '@/ic/ICSwap/model';
 import { Principal } from '@dfinity/principal';
 import { getTokenInfo } from '@/ic/getTokenInfo';
+import { KLData } from '@/views/home/ICDex/model';
 
 @Component({
   name: 'kLine',
@@ -432,9 +433,9 @@ export default class extends Vue {
     unitSize: bigint,
     buyUnit: number,
     tokenMinUnit: number
-  ): KLineData[] {
+  ): KLData[] {
     if (this.swapId && this.dexInfo) {
-      let data: KLineData[] = [];
+      let data: KLData[] = [];
       for (let i = 0; i < rawData.length; i++) {
         const open = this.filterLevelPrice(
           rawData[i].open,

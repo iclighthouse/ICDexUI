@@ -37,6 +37,12 @@
           >Create new account</span
         >
       </div>
+      <div v-show="passwordForm.password && suggestions.length">
+        <div class="base-font-title">Suggestions:</div>
+        <div v-for="(item, index) in suggestions" :key="index">
+          {{ index + 1 }}. {{ item }}
+        </div>
+      </div>
     </a-form-model>
     <div class="mnemonic-phrase-bottom">
       <button @click="confirmPasswordBack">Back</button
@@ -51,16 +57,29 @@ import {
   ValidationRule,
   WrappedFormUtils
 } from 'ant-design-vue/types/form/form';
-import { FormModel } from 'ant-design-vue/types/form-model/form';
 import { decrypt, encrypt } from '@/ic/utils';
-import { generateMeatMaskSeed, hexToBytes } from '@/ic/converter';
+import { generateMeatMaskSeed, hexToBytes, toHexString } from '@/ic/converter';
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
 import { namespace } from 'vuex-class';
 import { Identity } from '@dfinity/agent';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
+import { MetaMaskInfo } from '@/ic/ICLighthouse/model';
+import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
+import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
+import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
 
 const ethers = require('ethers');
 const commonModule = namespace('common');
+const options = {
+  translations: zxcvbnEnPackage.translations,
+  graphs: zxcvbnCommonPackage.adjacencyGraphs,
+  dictionary: {
+    ...zxcvbnCommonPackage.dictionary,
+    ...zxcvbnEnPackage.dictionary
+  }
+};
+
+zxcvbnOptions.setOptions(options);
 
 @Component({
   name: 'ConfirmPassword',
@@ -83,6 +102,7 @@ export default class extends Vue {
     password: '',
     checkPassword: ''
   };
+  private suggestions: Array<string> = [];
   public passwordRules = {
     password: [
       { required: true, validator: this.validatePass, trigger: 'change' }
@@ -98,23 +118,47 @@ export default class extends Vue {
   ): void {
     if (value === '') {
       callback(new Error('Please enter the password'));
-    } else if (!/^(?=.*[A-Za-z])(?=.*\d)[^]{8,}$/.test(value)) {
-      callback(
-        new Error(
-          'Password must be at least 8 characters with 1 letter and 1 number.'
-        )
-      );
     } else {
-      if (this.passwordForm.checkPassword !== '') {
-        (this.$refs.passwordForm as FormModel).validateField(
-          'checkPassword',
-          (errorMessage) => {
-            console.log(errorMessage);
-          }
-        );
+      console.log(zxcvbn(value));
+      const res = zxcvbn(value);
+      if (res.score <= 2) {
+        this.suggestions = res.feedback.suggestions;
+        if (res.feedback.warning) {
+          callback(new Error(res.feedback.warning));
+        } else {
+          callback(new Error('Risky password'));
+        }
+      } else {
+        this.suggestions = [];
+        if (this.passwordForm.checkPassword !== '') {
+          (this.$refs.passwordForm as any).validateField(
+            'checkPassword',
+            (errorMessage) => {
+              console.log(errorMessage);
+            }
+          );
+        }
+        callback();
       }
       callback();
     }
+    // else if (!/^(?=.*[A-Za-z])(?=.*\d)[^]{8,}$/.test(value)) {
+    //   callback(
+    //     new Error(
+    //       'Password must be at least 8 characters with 1 letter and 1 number.'
+    //     )
+    //   );
+    // } else {
+    //   if (this.passwordForm.checkPassword !== '') {
+    //     (this.$refs.passwordForm as FormModel).validateField(
+    //       'checkPassword',
+    //       (errorMessage) => {
+    //         console.log(errorMessage);
+    //       }
+    //     );
+    //   }
+    //   callback();
+    // }
   }
   public validatePass2(
     rule: ValidationRule,
@@ -128,6 +172,9 @@ export default class extends Vue {
     } else {
       callback();
     }
+  }
+  created(): void {
+    this.suggestions = [];
   }
   public onSubmit(): void {
     (this.$refs.passwordForm as any).validate(async (valid: any) => {
@@ -148,7 +195,7 @@ export default class extends Vue {
       if (!this.mnemonic && this.signature) {
         let seed;
         let mnemonicString;
-        let metaMaskInfo;
+        let metaMaskInfo: Array<MetaMaskInfo>;
         if (!newAccount) {
           const iCLighthouseService = new ICLighthouseService();
           metaMaskInfo = await iCLighthouseService.getMetaMask(this.ethAccount);
@@ -157,7 +204,14 @@ export default class extends Vue {
         if (!newAccount && metaMaskInfo && metaMaskInfo.length) {
           for (let i = 0; i < metaMaskInfo[0].mnemonic.length; i++) {
             try {
-              mnemonic = await decrypt(metaMaskInfo[0].mnemonic[i], password);
+              let info = metaMaskInfo[0].mnemonic[i];
+              let salt = 'ICLightHouse';
+              let data = info;
+              if (info.includes('salt')) {
+                salt = JSON.parse(info).salt;
+                data = JSON.parse(info).encryptSeedPhrase;
+              }
+              mnemonic = await decrypt(data, password, salt);
               if (mnemonic) {
                 break;
               }
@@ -206,23 +260,32 @@ export default class extends Vue {
       } else if (this.identity) {
         currentIdentity = this.identity;
       }
+      const arr = new Uint8Array(64);
+      const salt = toHexString(window.crypto.getRandomValues(arr));
       const encryptIdentity = await encrypt(
         JSON.stringify(currentIdentity),
-        password
+        password,
+        salt
       );
       const principal = currentIdentity.getPrincipal().toString();
       // localStorage.setItem(principal, JSON.stringify(encryptIdentity));
       localStorage.setItem('principal', principal);
       this.setPrincipalId(principal);
       const principalList = JSON.parse(localStorage.getItem('priList')) || {};
-      principalList[principal] = JSON.stringify(encryptIdentity);
+      principalList[principal] = JSON.stringify({
+        salt: salt,
+        encryptIdentity: encryptIdentity
+      });
       localStorage.setItem('priList', JSON.stringify(principalList));
       this.setIdentity(currentIdentity);
       localStorage.setItem('identity', localStorage.getItem('principal'));
       if (this.mnemonic) {
-        const encryptSeedPhrase = await encrypt(mnemonic, password);
+        const encryptSeedPhrase = await encrypt(mnemonic, password, salt);
         const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
-        phraseList[principal] = JSON.stringify(encryptSeedPhrase);
+        phraseList[principal] = JSON.stringify({
+          salt: salt,
+          encryptSeedPhrase: encryptSeedPhrase
+        });
         localStorage.setItem('phraseList', JSON.stringify(phraseList));
       }
       // sessionStorage.setItem('identity', JSON.stringify(currentIdentity));

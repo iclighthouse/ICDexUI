@@ -495,6 +495,107 @@ export interface TokenTxn {
   value: Wei;
   from: EthAddress;
 }
+export interface ETHEvent {
+  timestamp: bigint;
+  payload: EventPayload;
+}
+export type EventPayload =
+  | {
+      SentTransaction: { transaction_hash: string; withdrawal_id: bigint };
+    }
+  | {
+      Upgrade: UpgradeArg;
+    }
+  | { Init: InitArg }
+  | {
+      SyncedToBlock: { block_number: bigint };
+    }
+  | {
+      AcceptedDeposit: {
+        principal: Principal;
+        transaction_hash: string;
+        value: string;
+        log_index: bigint;
+        block_number: bigint;
+        from_address: string;
+      };
+    }
+  | {
+      SignedTx: { withdrawal_id: bigint; raw_tx: string };
+    }
+  | {
+      MintedCkEth: { event_source: EventSource; mint_block_index: bigint };
+    }
+  | {
+      InvalidDeposit: {
+        event_source: EventSource;
+        reason: string;
+      };
+    }
+  | {
+      AcceptedEthWithdrawalRequest: {
+        ledger_burn_index: bigint;
+        destination: string;
+        withdrawal_amount: bigint;
+      };
+    }
+  | {
+      FinalizedTransaction: {
+        transaction_hash: string;
+        withdrawal_id: bigint;
+      };
+    };
+
+export interface EventSource {
+  transaction_hash: string;
+  log_index: bigint;
+}
+export interface InitArg {
+  ethereum_network: EthereumNetwork;
+}
+export type EthereumNetwork =
+  | {
+      Mainnet: null;
+    }
+  | { Sepolia: null };
+export interface UpgradeArg {
+  next_transaction_nonce: Array<bigint>;
+  ethereum_contract_address: Array<string>;
+  minimum_withdrawal_amount: Array<string>;
+  ethereum_block_height: Array<BlockTag>;
+}
+export type BlockTag =
+  | {
+      Safe: null;
+    }
+  | { Finalized: null }
+  | { Latest: null };
+export interface WithdrawalArg {
+  recipient: string;
+  amount: bigint;
+}
+export type WithdrawalResponse =
+  | {
+      Ok: RetrieveEthRequest;
+    }
+  | { Err: WithdrawalError };
+export interface RetrieveEthRequest {
+  block_index: bigint;
+}
+export type WithdrawalError =
+  | { TemporarilyUnavailable: string }
+  | { InsufficientAllowance: { allowance: bigint } }
+  | { AmountTooLow: { min_withdrawal_amount: bigint } }
+  | { InsufficientFunds: { balance: bigint } };
+export type RetrieveEthStatus =
+  | {
+      TxSigned: { transaction_hash: string };
+    }
+  | { NotFound: null }
+  | { TxConfirmed: { transaction_hash: string } }
+  | { TxSent: { transaction_hash: string } }
+  | { TxCreated: null }
+  | { Pending: null };
 
 export default interface Service {
   get_deposit_address(request: Icrc1Account): Promise<string>;
@@ -548,4 +649,11 @@ export default interface Service {
     token: RetrievingToken,
     account: Array<Icrc1Account>
   ): Promise<Array<[DepositTxn, Time, boolean]>>;
+  smart_contract_address(): Promise<string>;
+  get_events(request: {
+    start: bigint;
+    length: bigint;
+  }): Promise<{ total_event_count: bigint; events: Array<ETHEvent> }>;
+  withdraw_eth(withdrawalArg: WithdrawalArg): Promise<WithdrawalResponse>;
+  retrieve_eth_status(blockIndex: bigint): Promise<RetrieveEthStatus>;
 }

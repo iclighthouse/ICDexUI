@@ -1,12 +1,20 @@
 import { getSubAccountArray, LEDGER_CANISTER_ID } from '../utils';
 import Service, {
   AccountBalanceArgsT,
+  Allowance,
+  AllowanceArgs,
   GetBalancesRequest,
   ICP,
   NotifyCanisterRequest,
+  Result_1,
   SendICPTsRequest
 } from './model';
-import { AccountIdentifier, BlockHeight, E8s } from '../common/icType';
+import {
+  AccountIdentifier,
+  BlockHeight,
+  E8s,
+  Icrc1Account
+} from '../common/icType';
 import BigNumber from 'bignumber.js';
 // @ts-ignore
 import ledgerIDL from './ledger.did.js';
@@ -18,6 +26,8 @@ import { createPlugActor } from '@/ic/createPlugActor';
 import { createIcxActor } from '@/ic/createIcxActor';
 import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isInfinity } from '@/ic/isInfinity';
+import { ApproveArgs } from '@/ic/DRC20Token/model';
+import { Amount } from '@/ic/ICLighthouseToken/model';
 const decimals = 8;
 export class LedgerService {
   private service: Service;
@@ -133,5 +143,60 @@ export class LedgerService {
   ): Promise<ICP> => {
     await this.check(false, false);
     return await this.service.account_balance(request);
+  };
+  public icrc2_approve = async (
+    spender: Icrc1Account,
+    amount: Amount
+  ): Promise<Result_1> => {
+    await this.check();
+    const approveArgs: ApproveArgs = {
+      fee: [],
+      memo: [],
+      from_subaccount: [],
+      created_at_time: [],
+      amount: amount,
+      expected_allowance: [],
+      expires_at: [],
+      spender: spender
+    };
+    try {
+      return await this.service.icrc2_approve(approveArgs);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public icrc2_allowance = async (
+    allowanceArgs: AllowanceArgs
+  ): Promise<Allowance> => {
+    await this.check(false, false);
+    try {
+      return await this.service.icrc2_allowance(allowanceArgs);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public TransferFrom = async (
+    from: Icrc1Account,
+    to: Icrc1Account,
+    amount: Amount
+  ): Promise<any> => {
+    await this.check();
+    const approveArgs = {
+      to: to,
+      from: from,
+      fee: [],
+      spender_subaccount: [],
+      memo: [],
+      created_at_time: [],
+      amount: amount
+    };
+    try {
+      return await this.service.icrc2_transfer_from(approveArgs);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   };
 }

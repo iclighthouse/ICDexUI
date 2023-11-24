@@ -9,7 +9,8 @@ import {
   AccountId,
   Time,
   TokenInfo,
-  Icrc1Account, BlockHeight
+  Icrc1Account,
+  BlockHeight
 } from '@/ic/common/icType';
 import { _data, Amount, Nonce, TxnResult } from '@/ic/ICLighthouseToken/model';
 import { SendICPTsRequest } from '@/ic/ledger/model';
@@ -205,6 +206,44 @@ export type IcrcValue =
   | {
       Text: string;
     };
+export interface ApproveArgs {
+  fee: Array<bigint>;
+  memo: Array<Array<number>>;
+  from_subaccount: Array<Array<number>>;
+  created_at_time: Array<bigint>;
+  amount: bigint;
+  expected_allowance: Array<bigint>;
+  expires_at: Array<bigint>;
+  spender: Icrc1Account;
+}
+export type ApproveResponse =
+  | {
+      Ok: bigint;
+    }
+  | { Err: ApproveError };
+export type ApproveError =
+  | {
+      GenericError: {
+        message: string;
+        error_code: bigint;
+      };
+    }
+  | {
+      TemporarilyUnavailable: null;
+    }
+  | {
+      Duplicate: { duplicate_of: bigint };
+    }
+  | {
+      BadFee: { expected_fee: bigint };
+    }
+  | {
+      AllowanceChanged: { current_allowance: bigint };
+    }
+  | { CreatedInFuture: { ledger_time: bigint } }
+  | { TooOld: null }
+  | { Expired: { ledger_time: bigint } }
+  | { InsufficientFunds: { balance: bigint } };
 
 export default interface Service {
   drc20_decimals(): Promise<Decimals>;
@@ -256,4 +295,5 @@ export default interface Service {
   icrc1_balance_of(to: Icrc1Account): Promise<bigint>;
   ictokens_maxSupply(): Promise<bigint>;
   send_dfx(request: SendICPTsRequest): Promise<BlockHeight>;
+  icrc2_approve(approveArgs: ApproveArgs): Promise<ApproveResponse>;
 }

@@ -509,7 +509,6 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { MarketMenu } from '@/views/home/ICDex/model';
-import { ICSwapRouterService } from '@/ic/ICSwapRouter/ICSwapRouterService';
 import { PairTrie, SwapPair, SwapTokenInfo } from '@/ic/ICSwapRouter/model';
 import { Principal } from '@dfinity/principal';
 import { TokenExt, TokensExt } from '@/ic/nft/model';
@@ -521,6 +520,7 @@ import { TokenInfo } from '@/ic/common/icType';
 import BigNumber from 'bignumber.js';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { TokenLiquidity } from '@/ic/ICSwap/model';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 
 const commonModule = namespace('common');
 
@@ -546,7 +546,7 @@ const commonModule = namespace('common');
 })
 export default class extends Vue {
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
-  private ICSwapRouterService: ICSwapRouterService;
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   private NftService: NftService = null;
   private marketMenu: Array<MarketMenu> = [];
   private marketType = 'pairs';
@@ -597,7 +597,7 @@ export default class extends Vue {
       //   value: 'referrers'
       // }
     ];
-    this.ICSwapRouterService = new ICSwapRouterService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.NftService = new NftService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     this.getPairs();
@@ -611,7 +611,7 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
-      await this.ICSwapRouterService.setListingReferrerByNft(
+      await this.ICSwapRouterFiduciaryService.setListingReferrerByNft(
         Principal.fromText(this.getPrincipalId),
         'icdex',
         this.nft[0].toString(10)
@@ -633,12 +633,14 @@ export default class extends Vue {
   private async getTokensExt(): Promise<void> {
     try {
       const res = await this.NftService.tokens_ext();
+      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
         }
       ).ok;
       if (tokensExt && tokensExt.length) {
+        console.log(tokensExt);
         for (let i = 0; i < tokensExt.length; i++) {
           const info = this.getExtInfo(tokensExt[i][2]);
           if (info.attributes && info.attributes.length) {
@@ -671,9 +673,10 @@ export default class extends Vue {
   private async getListingReferrer(): Promise<void> {
     const principal = localStorage.getItem('principal');
     if (principal) {
-      this.listingReferrer = await this.ICSwapRouterService.listingReferrer(
+      this.listingReferrer = await this.ICSwapRouterFiduciaryService.listingReferrer(
         Principal.fromText(principal)
       );
+      console.log(this.listingReferrer);
       if (!this.listingReferrer[0]) {
         await this.getTokensExt();
         if (!this.nft) {
@@ -691,10 +694,11 @@ export default class extends Vue {
     }
   }
   private async getPairsOwner(): Promise<void> {
-    const res = await this.ICSwapRouterService.getPairs2(
+    const res = await this.ICSwapRouterFiduciaryService.getPairs2(
       ['icdex'],
       [Principal.fromText(this.getPrincipalId)]
     );
+    console.log(res);
     if (res && res.data && res.data.length) {
       this.pairsOwner = res.data.sort((a, b) => {
         return Number(a[1].score) - Number(b[1].score);
@@ -706,7 +710,8 @@ export default class extends Vue {
   private async getPairs(): Promise<void> {
     this.busy = true;
     this.spinning = true;
-    const res = await this.ICSwapRouterService.getPairs2(['icdex']);
+    const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
+    console.log(res);
     if (res && res.data && res.data.length) {
       this.pairs = res.data.sort((a, b) => {
         return Number(b[1].score) - Number(a[1].score);
@@ -798,6 +803,7 @@ export default class extends Vue {
       return;
     }
     if (!this.busy) {
+      console.log('handleInfiniteOnLoad');
       this.busy = true;
       if (this.page * 10 < this.pairs.length) {
         setTimeout(() => {

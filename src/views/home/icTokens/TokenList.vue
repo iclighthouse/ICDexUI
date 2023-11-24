@@ -7,9 +7,9 @@
             <tr>
               <th class="name">Token</th>
               <th class="token-id">Token ID</th>
-              <th class="total-supply">TotalSupply</th>
-              <th class="total-supply">MaxSupply</th>
-              <th class="gas">Gas</th>
+              <th>TotalSupply</th>
+              <th>MaxSupply</th>
+              <th class="gas">Fee</th>
               <th class="metadata">Metadata</th>
               <th class="score">Score</th>
               <th class="star">Star</th>
@@ -48,6 +48,7 @@
                       Number(token[1].decimals),
                       Number(token[1].decimals)
                     )
+                    | formatNum
                 }}
               </td>
               <td class="total-supply">
@@ -57,6 +58,7 @@
                       Number(token[1].decimals),
                       Number(token[1].decimals)
                     )
+                    | formatNum
                 }}
               </td>
               <td class="gas">{{ token[6] | filterGas(token) }}</td>
@@ -188,14 +190,16 @@
           </tbody>
         </table>
       </div>
-      <a-pagination
-        v-if="total > size"
-        class="pagination"
-        :default-page-size="size"
-        :current="page + 1"
-        :total="total"
-        @change="pageChange"
-      />
+      <div class="flex-center">
+        <a-pagination
+          v-if="total > size"
+          class="pagination margin-left-auto"
+          :default-page-size="size"
+          :current="page + 1"
+          :total="total"
+          @change="pageChange"
+        />
+      </div>
     </a-spin>
   </div>
 </template>
@@ -689,6 +693,9 @@ p {
   span {
     padding: 0 3px;
   }
+}
+.total-supply {
+  font-size: 12px;
 }
 /*.more-tokens {
   color: #1890ff;

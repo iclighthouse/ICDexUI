@@ -35,6 +35,9 @@
               <button type="button" @click="showTransfer">
                 <span>Transfer</span>
               </button>
+              <button type="button" @click="showApprove">
+                <span>Approve</span>
+              </button>
               <button type="button" @click="showTopUp">
                 <span>Top-up</span>
               </button>
@@ -189,7 +192,9 @@
                         (networkTokensFrom[networkTokenIdMint].networkId ===
                           '1' ||
                           networkTokensFrom[networkTokenIdMint].networkId ===
-                            '2')
+                            '2' ||
+                          networkTokensFrom[networkTokenIdMint].networkId ===
+                            '3')
                       "
                       src="@/assets/img/empty-token.png"
                       alt=""
@@ -264,7 +269,8 @@
                             v-if="
                               !token.logo &&
                               (token.networkId === '1' ||
-                                token.networkId === '2')
+                                token.networkId === '2' ||
+                                token.networkId === '3')
                             "
                             src="@/assets/img/empty-token.png"
                             alt=""
@@ -496,7 +502,9 @@
                         (networkTokensTo[networkTokenIdMintTo].networkId ===
                           '1' ||
                           networkTokensTo[networkTokenIdMintTo].networkId ===
-                            '2')
+                            '2' ||
+                          networkTokensTo[networkTokenIdMintTo].networkId ===
+                            '3')
                       "
                       src="@/assets/img/empty-token.png"
                       alt=""
@@ -571,7 +579,8 @@
                             v-if="
                               !token.logo &&
                               (token.networkId === '1' ||
-                                token.networkId === '2')
+                                token.networkId === '2' ||
+                                token.networkId === '3')
                             "
                             src="@/assets/img/empty-token.png"
                             alt=""
@@ -742,7 +751,9 @@
                   activePending.mint ||
                   activePending.deposit ||
                   activePending.retrieve ||
-                  activePending.retrieve2
+                  activePending.retrieve2 ||
+                  activePending.mintCKETH ||
+                  activePending.retrieveCKETH
                 "
                 class="pointer main-color"
                 @click="onActive"
@@ -774,6 +785,470 @@
       @topUpSuccess="topUpSuccess"
     ></top-up>
     <receive-modal ref="receiveModal"></receive-modal>
+    <a-modal
+      v-model="retrieveModalCKETH"
+      centered
+      width="650px"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      :after-close="afterRetrieveCloseCKETH"
+      class="transfer-modal forge-modal dissolve-modal forge-modal-eth"
+    >
+      <div class="modal-title-info" slot="title">
+        <div class="modal-title-main">{{ retrieveTitleETH }}</div>
+      </div>
+      <div
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
+        class="step-list"
+      >
+        <span
+          @click="previousRetrieveStepCK()"
+          :class="{ active: retrieveStep > 1 }"
+          class="step-previous pc-show"
+        >
+          <a-tooltip placement="top">
+            <template slot="title">Previous</template>
+            <a-icon type="double-left" />
+          </a-tooltip>
+        </span>
+        <div
+          @click="changeRetrieveStepCK(1)"
+          class="pointer"
+          :class="{ active: retrieveStep === 1 }"
+        >
+          <span class="step-list-num">1</span><span>Retrieve</span>
+        </div>
+        <div
+          @click="changeRetrieveStepCK(2)"
+          class="pointer step-list-center"
+          :class="{ active: retrieveStep === 2 }"
+        >
+          <span class="step-list-line"></span>
+          <span class="step-list-center-t"
+            ><span class="step-list-num">2</span>Records</span
+          >
+        </div>
+        <span
+          @click="nextRetrieveStepCK(2)"
+          :class="{ active: retrieveStep < 2 }"
+          class="step-next pc-show"
+          ><a-tooltip placement="top">
+            <template slot="title">Next</template>
+            <a-icon type="double-right" /> </a-tooltip
+        ></span>
+      </div>
+      <div
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
+        class="forge-main"
+      >
+        <div class="w100" v-show="retrieveStep === 1">
+          <a-form-model
+            ref="ethDissolveFormCK"
+            :model="ethDissolveFormCK"
+            :rules="ethDissolveFormCKRules"
+          >
+            <a-form-model-item :colon="false" prop="retrieveAmount">
+              <template slot="label"
+                >Amount:&nbsp;<span class="label-tip"
+                  >(includes network fees)</span
+                >
+              </template>
+              <a-input
+                v-model="ethDissolveFormCK.retrieveAmount"
+                autocomplete="off"
+                type="text"
+                v-only-float="icNetworkTokens.icTokenInfo.decimals"
+                min="0"
+                placeholder="0.00"
+              />
+            </a-form-model-item>
+            <a-form-model-item
+              :label="`Destination ${icNetworkTokens.icTokenInfo.symbol} (${
+                networkIds[otherNetworkTokens.networkId]
+              }) address`"
+              prop="address"
+            >
+              <a-input
+                v-model="ethDissolveFormCK.address"
+                autocomplete="off"
+                type="text"
+                :placeholder="`${icNetworkTokens.icTokenInfo.symbol} (${
+                  networkIds[otherNetworkTokens.networkId]
+                }) address`"
+              />
+            </a-form-model-item>
+          </a-form-model>
+          <div>
+            <div class="base-red" style="line-height: 1.2; margin-bottom: 10px">
+              Please fill in the address of non-custodian wallet, not the
+              deposit address of CEX (such as Binance, Coinbase, etc.),
+              otherwise you may lose
+              {{ icNetworkTokens.icTokenInfo.symbol }} ({{
+                networkIds[otherNetworkTokens.networkId]
+              }}) in case of exception.
+            </div>
+          </div>
+          <div class="retrieving-fee">
+            <div class="forge-left-balance">
+              <div>
+                Balance:
+                <div class="balance base-font-normal">
+                  <span>
+                    {{
+                      ERC20Balance[icNetworkTokens.tokenId]
+                        | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                        | formatAmount(8)
+                    }}
+                  </span>
+                </div>
+                {{ icNetworkTokens.symbol }} ({{
+                  networkIds[icNetworkTokens.networkId]
+                }})&nbsp;
+                <a-icon
+                  @click="refreshCkETHBalance(true, 'ICRC-2')"
+                  v-show="!refreshCkETHBalanceLoading"
+                  type="reload"
+                  class="reload-icon"
+                />
+                <a-icon
+                  v-show="refreshCkETHBalanceLoading"
+                  type="loading"
+                  class="reload-icon"
+                />
+                <span
+                  class="transfer-balance-max pc-show"
+                  @click="setMaxETHRetrieve('ck')"
+                >
+                  Max
+                </span>
+              </div>
+              <div>
+                Fee:&nbsp;
+                <span>
+                  {{
+                    tokens[icNetworkTokens.tokenId].fee
+                      | bigintToFloat(
+                        icNetworkTokens.icTokenInfo.decimals,
+                        icNetworkTokens.icTokenInfo.decimals
+                      )
+                  }}
+                </span>
+                &nbsp;{{ icNetworkTokens.symbol }} ({{
+                  networkIds[icNetworkTokens.networkId]
+                }})&nbsp;
+              </div>
+            </div>
+            <router-link
+              class="transfer-balance-right pc-show"
+              :to="`/ICDex/${icNetworkTokens.symbol}/USDT`"
+            >
+              Trade
+            </router-link>
+          </div>
+          <button
+            type="button"
+            class="primary retrieve-button w100 mt20"
+            @click="retrieveCkETH"
+          >
+            Retrieve
+          </button>
+        </div>
+        <div
+          v-show="retrieveStep === 2"
+          class="forge-right retrieve-btc-status"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>recipient</th>
+                <th>Amount</th>
+                <th>Block Index</th>
+                <th>Status</th>
+                <th>Txid</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in ckETHRetrieve.slice(
+                  (ckETHMintPage - 1) * 5,
+                  ckETHMintPage * 5
+                )"
+                :key="index"
+              >
+                <td>
+                  <a
+                    :href="`${ckEthLink}/address/${item.recipient}`"
+                    rel="nofollow noreferrer noopener"
+                    target="_blank"
+                    class="link"
+                  >
+                    {{ item.recipient | ellipsisAccount() }}
+                  </a>
+                </td>
+                <td>
+                  <span>
+                    {{
+                      item.amount
+                        | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                        | formatAmount(8)
+                    }}
+                  </span>
+                </td>
+                <td>
+                  <span>{{ item.blockIndex }}</span>
+                </td>
+                <td>
+                  <span class="flex-center">
+                    <span>
+                      {{ Object.keys(item.status)[0] }}
+                    </span>
+                    <span
+                      v-show="
+                        item.status &&
+                        ['Pending', 'TxCreated', 'TxSent', 'TxSigned'].includes(
+                          Object.keys(item.status)[0]
+                        )
+                      "
+                      class="loading-spinner"
+                    ></span>
+                  </span>
+                </td>
+                <td>
+                  <a
+                    v-if="getCKETHRetrieveTxid(item.status)"
+                    :href="`${ckEthLink}/tx/${getCKETHRetrieveTxid(
+                      item.status
+                    )}`"
+                    rel="nofollow noreferrer noopener"
+                    target="_blank"
+                    class="link"
+                  >
+                    {{ getCKETHRetrieveTxid(item.status) | ellipsisAccount() }}
+                  </a>
+                  <span v-else>-</span>
+                </td>
+              </tr>
+              <tr v-show="!ckETHRetrieve.length">
+                <td colspan="5">No records</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination-transaction-main">
+            <a-pagination
+              v-if="ckETHRetrieve.length > 5"
+              class="pagination-transaction"
+              :default-page-size="5"
+              :current="ckETHMintPage"
+              :total="ckETHRetrieve.length"
+              @change="pageChangeCKETHMint"
+            />
+          </div>
+        </div>
+      </div>
+    </a-modal>
+    <a-modal
+      v-model="forgeModalCKETH"
+      width="680px"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="transfer-modal forge-modal forge-modal-eth"
+      :after-close="afterForgeCloseCKETH"
+    >
+      <div class="modal-title-info" slot="title">
+        <div class="modal-title-main">{{ forgeTitleETH }}</div>
+      </div>
+      <div class="step-list">
+        <span
+          @click="previousMintStepCK()"
+          :class="{ active: mintStep > 1 }"
+          class="step-previous pc-show"
+        >
+          <a-tooltip placement="top">
+            <template slot="title">Previous</template>
+            <a-icon type="double-left" />
+          </a-tooltip>
+        </span>
+        <div
+          @click="changeMintStepCK(1)"
+          class="pointer"
+          :class="{ active: mintStep === 1 }"
+        >
+          <span class="step-list-num">1</span><span>Send</span>
+        </div>
+        <div
+          @click="changeMintStepCK(2)"
+          class="pointer step-list-center"
+          :class="{ active: mintStep === 2 }"
+        >
+          <span class="step-list-line"></span>
+          <span class="step-list-center-t">
+            <span class="step-list-num">2</span><span>Records</span></span
+          >
+        </div>
+        <span
+          @click="nextMintStepCK(2)"
+          :class="{ active: mintStep < 2 }"
+          class="step-next pc-show"
+        >
+          <a-tooltip placement="top">
+            <template slot="title">Next</template>
+            <a-icon type="double-right" />
+          </a-tooltip>
+        </span>
+      </div>
+      <div
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo && mintStep === 2"
+        class="ckEth-mint-top"
+      >
+        <div class="base-color-w">
+          Balance:
+          <span>
+            {{
+              ERC20Balance[icNetworkTokens.tokenId]
+                | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                | formatAmount(8)
+            }}
+          </span>
+          &nbsp;{{ icNetworkTokens.symbol }} ({{
+            networkIds[icNetworkTokens.networkId]
+          }})&nbsp;
+          <a-icon
+            @click="refreshCkETHBalance(true, 'ICRC-2')"
+            v-show="!refreshCkETHBalanceLoading"
+            type="reload"
+            class="reload-icon"
+          />
+          <a-icon
+            v-show="refreshCkETHBalanceLoading"
+            type="loading"
+            class="reload-icon"
+          />
+        </div>
+        <div class="base-font-title" style="margin: 5px 0 10px">
+          Last Accepted Deposit Block Number: {{ lastScrapedBlockNumber }}
+        </div>
+      </div>
+      <div
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
+        class="forge-main"
+      >
+        <div v-show="mintStep === 1" class="forge-left">
+          <a-form-model
+            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
+            :model="erc20Form"
+            ref="erc20Form"
+            :rules="erc20FormRules"
+          >
+            <a-form-model-item
+              :label="`Transfer ${icNetworkTokens.icTokenInfo.symbol} (${
+                networkIds[otherNetworkTokens.networkId]
+              }) amount`"
+              prop="amount"
+            >
+              <a-input
+                v-model="erc20Form.amount"
+                autocomplete="off"
+                type="text"
+                v-only-float="Number(icNetworkTokens.icTokenInfo.decimals)"
+                placeholder="0.00"
+                :suffix="`${icNetworkTokens.icTokenInfo.symbol} (${
+                  networkIds[otherNetworkTokens.networkId]
+                })`"
+              />
+            </a-form-model-item>
+          </a-form-model>
+          <div class="mint-button">
+            <button
+              class="primary w100"
+              type="button"
+              @click="transferFromMetaMaskCK"
+            >
+              <img src="@/assets/img/MetaMask.png" alt="" /> Send with MetaMask
+            </button>
+          </div>
+        </div>
+        <div v-show="mintStep === 2" class="forge-right retrieve-btc-status">
+          <table>
+            <thead>
+              <tr>
+                <th>TxHash</th>
+                <th>Amount</th>
+                <th>Block Num</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="item in ckETHMint.slice(
+                  (ckETHMintPage - 1) * 5,
+                  ckETHMintPage * 5
+                )"
+                :key="item.txHash"
+              >
+                <td>
+                  <a
+                    :href="`${ckEthLink}/tx/${item.txHash}`"
+                    rel="nofollow noreferrer noopener"
+                    target="_blank"
+                    class="link"
+                  >
+                    {{ item.txHash | ellipsisAccount() }}
+                  </a>
+                </td>
+                <td>
+                  <span>
+                    {{
+                      item.amount
+                        | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                        | formatAmount(8)
+                    }}
+                  </span>
+                </td>
+                <td>
+                  <span v-if="item.blockNum">{{ item.blockNum }}</span>
+                  <span v-else>-</span>
+                </td>
+                <td style="width: 92px">
+                  <span v-show="lastScrapedBlockNumber">
+                    <span v-if="item.blockNum">
+                      <span
+                        v-if="lastScrapedBlockNumber >= Number(item.blockNum)"
+                        >Confirmed</span
+                      >
+                      <span v-else class="flex-center"
+                        >Submitted <span class="loading-spinner"></span
+                      ></span>
+                    </span>
+                    <span v-else class="flex-center"
+                      >Pending <span class="loading-spinner"></span
+                    ></span>
+                  </span>
+                </td>
+              </tr>
+              <tr v-show="!ckETHMint.length">
+                <td colspan="4">No records</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination-transaction-main">
+            <a-pagination
+              v-if="ckETHMint.length > 5"
+              class="pagination-transaction"
+              :default-page-size="5"
+              :current="ckETHMintPage"
+              :total="ckETHMint.length"
+              @change="pageChangeCKETHMint"
+            />
+          </div>
+        </div>
+        <!--<div v-show="mintStep === 2" class="step-footer-confirmation">
+          Wait for 64 confirmations, then will deposit.
+        </div>-->
+      </div>
+    </a-modal>
     <a-modal
       v-model="forgeModalETH"
       width="680px"
@@ -2622,7 +3097,7 @@
                   />
                   <span
                     class="transfer-balance-max pc-show"
-                    @click="setMaxETHRetrieve"
+                    @click="setMaxETHRetrieve(null)"
                   >
                     Max
                   </span>
@@ -3362,6 +3837,62 @@
             </button>
           </div>
         </div>
+        <div v-if="activePending.mintCKETH && activePending.mintCKETH.length">
+          <div
+            class="active-pending-item"
+            v-for="(item, index) in activePending.mintCKETH"
+            :key="index"
+          >
+            <span v-if="ckTokenInfo[item.tokenId]">
+              {{ ckTokenInfo[item.tokenId].symbol }}
+            </span>
+            &nbsp;->&nbsp;
+            <span v-if="ckTokenInfo[item.tokenId]">
+              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+            </span>
+            <span class="margin-left-auto">
+              {{ item.txHash | ellipsisAccount }}
+            </span>
+            <button
+              class="primary"
+              @click="toActive('mintCKETH', item.tokenId)"
+            >
+              View
+            </button>
+          </div>
+        </div>
+        <div
+          v-if="
+            activePending.retrieveCKETH && activePending.retrieveCKETH.length
+          "
+        >
+          <div
+            class="active-pending-item"
+            v-for="(item, index) in activePending.retrieveCKETH"
+            :key="index"
+          >
+            <span v-if="ckTokenInfo[item.tokenId]">
+              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+            </span>
+            &nbsp;->&nbsp;
+            <span v-if="ckTokenInfo[item.tokenId]">
+              {{ ckTokenInfo[item.tokenId].symbol }}
+            </span>
+            <span v-if="ckTokenInfo[item.tokenId]" class="margin-left-auto">
+              {{
+                item.amount
+                  | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
+                  | formatAmount(8)
+              }}
+            </span>
+            <button
+              class="primary"
+              @click="toActive('retrieveCKETH', item.tokenId)"
+            >
+              View
+            </button>
+          </div>
+        </div>
       </div>
       <div
         v-show="
@@ -3370,12 +3901,15 @@
           !activePending.mint &&
           !activePending.deposit &&
           !activePending.retrieve &&
-          !activePending.retrieve2
+          !activePending.retrieve2 &&
+          !activePending.mintCKETH &&
+          !activePending.retrieveCKETH
         "
       >
         No data
       </div>
     </a-modal>
+    <approve-icrc2 ref="approveIcrc2" :balance="balance"></approve-icrc2>
   </div>
 </template>
 
@@ -3385,10 +3919,12 @@ import TransferIcp from '@/components/transferIcp/Index.vue';
 import TopUp from '@/components/topUp/Index.vue';
 import { BalanceMixin } from '@/mixins';
 import {
+  Gas,
   Icrc1Account,
   PrincipalString,
   Time,
-  TokenInfo
+  TokenInfo,
+  TokenStd
 } from '@/ic/common/icType';
 import ReceiveModal from '@/components/receiveModal/Index.vue';
 import { getDepositing, getTokenBalance } from '@/ic/getTokenBalance';
@@ -3399,6 +3935,7 @@ import {
   AddTokenItemClass,
   BTCTypeEnum,
   ClaimActive,
+  ClaimCKETHActive,
   ICNetworkTokensInterface,
   MintActive,
   networkIds,
@@ -3415,6 +3952,7 @@ import {
   fromSubAccountId,
   hexToBytes,
   principalToAccountIdentifier,
+  principalToSubAccount,
   toHexString
 } from '@/ic/converter';
 import BigNumber from 'bignumber.js';
@@ -3431,12 +3969,16 @@ import { questsService } from '@/ic/quests/questsService';
 import {
   CK_BTC_CANISTER_ID,
   CK_BTC_MINTER_CANISTER_ID,
+  CK_ETH_LEDGER_CANISTER_ID,
+  CK_ETH_MINTER_CANISTER_ID,
   etherScanKey,
   ETHHttps,
+  ETHHttpsSepolia,
   ETHWebsocketProvider,
   IC_BTC_CANISTER_ID,
   IC_BTC_MINTER_CANISTER_ID,
-  IC_ETH_MINTER_CANISTER_ID
+  IC_ETH_MINTER_CANISTER_ID,
+  LEDGER_CANISTER_ID
 } from '@/ic/utils';
 import { checkAuth } from '@/ic/CheckAuth';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
@@ -3449,18 +3991,26 @@ import {
   MinterInfo,
   PendingDepositTxn,
   ResultError,
+  RetrieveEthRequest,
+  RetrieveEthStatus,
   TxIndex,
-  TxStatus
+  TxStatus,
+  WithdrawalError
 } from '@/ic/ckETHMinter/model';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import abi from '@/ic/abi/erc20';
+import ethAbi from '@/ic/abi/eth';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { getTokenLogo } from '@/ic/getTokenLogo';
+import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
+import { principalToBytes32 } from '@/ic/principal_to_bytes';
+import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
+
+const { Web3 } = require('web3');
 
 const ethereum = (window as any).ethereum;
-const Web3 = require('web3');
 let ETHUpdateTime = null;
 let ETHDepositTime = null;
 const ethVersion = '0.1';
@@ -3472,7 +4022,8 @@ let timer: number;
     ReceiveModal,
     TransferIcp,
     TopUp,
-    TransferToken
+    TransferToken,
+    ApproveIcrc2
   },
   filters: {
     filterTime(val: number): string {
@@ -3488,11 +4039,13 @@ export default class extends Mixins(BalanceMixin) {
     receiveModal;
     transferIcp: HTMLFormElement;
     topUp: HTMLFormElement;
+    approveIcrc2: HTMLFormElement;
   };
   @Prop()
   public principal!: string;
   @Prop()
   public type!: string;
+  private ckETHMinterDfiService: ckETHMinterDfiService;
   private DRC20TokenService: DRC20TokenService;
   private BTCTypeEnum = BTCTypeEnum;
   private BTCType: BTCTypeEnum = null;
@@ -3554,6 +4107,23 @@ export default class extends Mixins(BalanceMixin) {
   private ERC20EthereumBalance: { [key: string]: string } = {};
   private forgeTitleETH = 'Mint';
   private dissolveTitleETH = 'Retrieve';
+  private retrieveTitleETH = 'Retrieve';
+  private retrieveModalCKETH = false;
+  private forgeModalCKETH = false;
+  private ckETHRetrieve: Array<{
+    recipient: string;
+    amount: string;
+    blockIndex: string;
+    status: RetrieveEthStatus;
+  }> = [];
+  private ckETHMint: Array<{
+    txHash: string;
+    blockNum: string;
+    amount: string;
+  }> = [];
+  private ckETHMintPage = 1;
+  private lastScrapedBlockNumber: number = null;
+  private ckETHTimer = null;
   private forgeModalETH = false;
   private dissolveModalETH = false;
   private forgeModalTransactions = false;
@@ -3621,6 +4191,7 @@ export default class extends Mixins(BalanceMixin) {
   private otherNetworkTokens: ICNetworkTokensInterface = null;
   private ethLink = 'https://etherscan.io';
   private etherscanLink = 'https://api.etherscan.io';
+  private ckEthLink = 'https://sepolia.etherscan.io';
   private signatureForm = {
     txHash: ''
   };
@@ -3673,6 +4244,27 @@ export default class extends Mixins(BalanceMixin) {
       { validator: this.validateAmount, trigger: 'change' }
     ]
   };
+  private ethDissolveFormCK = {
+    retrieveAmount: '',
+    address: ''
+  };
+  private ethDissolveFormCKRules = {
+    retrieveAmount: [
+      {
+        required: true,
+        message: 'Please enter Amount',
+        trigger: 'change'
+      },
+      { validator: this.validateAmountCKETH, trigger: 'change' }
+    ],
+    address: [
+      {
+        required: true,
+        message: 'Please enter address',
+        trigger: 'change'
+      }
+    ]
+  };
   private ethDissolveForm = {
     retrieveAmount: ''
   };
@@ -3719,19 +4311,23 @@ export default class extends Mixins(BalanceMixin) {
       const minAmount = new BigNumber(erc20TokenInfo.minAmount.toString(10))
         .div(10 ** erc20TokenInfo.decimals)
         .toString(10);
-      const std = Object.keys(erc20TokenInfo.std)[0];
-      if (std === 'ERC20') {
-        const fee = new BigNumber(erc20TokenInfo.fee.gasLimit.toString(10))
-          .plus(this.ethTokenInfo.fee.gasLimit.toString(10))
-          .times(this.minterInfo.gasPrice.toString(10))
-          .plus(erc20TokenInfo.fee.fixedFee.toString(10))
-          .times(erc20TokenInfo.fee.ethRatio.toString(10))
-          .div(1000000000)
-          .div(10 ** erc20TokenInfo.decimals)
-          .decimalPlaces(erc20TokenInfo.decimals)
-          .toString(10);
-        console.log(minAmount, fee, this.ckETHDepositBalance);
-        return new BigNumber(minAmount).plus(fee).gt(this.ckETHDepositBalance);
+      if (erc20TokenInfo.fee) {
+        const std = Object.keys(erc20TokenInfo.std)[0];
+        if (std === 'ERC20') {
+          const fee = new BigNumber(erc20TokenInfo.fee.gasLimit.toString(10))
+            .plus(this.ethTokenInfo.fee.gasLimit.toString(10))
+            .times(this.minterInfo.gasPrice.toString(10))
+            .plus(erc20TokenInfo.fee.fixedFee.toString(10))
+            .times(erc20TokenInfo.fee.ethRatio.toString(10))
+            .div(1000000000)
+            .div(10 ** erc20TokenInfo.decimals)
+            .decimalPlaces(erc20TokenInfo.decimals)
+            .toString(10);
+          console.log(minAmount, fee, this.ckETHDepositBalance);
+          return new BigNumber(minAmount)
+            .plus(fee)
+            .gt(this.ckETHDepositBalance);
+        }
       } else {
         return new BigNumber(minAmount).gt(this.ckETHDepositBalance);
       }
@@ -3779,7 +4375,7 @@ export default class extends Mixins(BalanceMixin) {
       typeof this.networkTokenIdMintTo === 'number'
     ) {
       // todo networkToIcId
-      const networkToIcId = ['1', '2'];
+      const networkToIcId = ['1', '2', '3'];
       if (
         this.networkTokensTo[this.networkTokenIdMintTo].networkId === '-1' &&
         networkToIcId.includes(
@@ -3818,6 +4414,8 @@ export default class extends Mixins(BalanceMixin) {
     this.btcTxTimer = null;
     window.clearInterval(this.updateDepositETHStatusTimer);
     this.updateDepositETHStatusTimer = null;
+    window.clearInterval(this.ckETHTimer);
+    this.ckETHTimer = null;
   }
   created(): void {
     this.DRC20TokenService = new DRC20TokenService();
@@ -3826,8 +4424,9 @@ export default class extends Mixins(BalanceMixin) {
     this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.questsService = new questsService();
     this.ckETHMinterService = new ckETHMinterService();
+    this.ckETHMinterDfiService = new ckETHMinterDfiService();
+    this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     if (this.type === 'cross') {
-      this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
       this.getMinterInfo().then(() => {
         this.getCkTokens();
         if (this.minterInfo.depositMethod === 1) {
@@ -4059,21 +4658,58 @@ export default class extends Mixins(BalanceMixin) {
           tokenId: item[1].ckLedgerId.toString(),
           icTokenInfo: item[1]
         });
-        // axios
-        //   .post(ETHHttps[1], {
-        //     id: 1,
-        //     jsonrpc: '2.0',
-        //     params: [item[0]],
-        //     method: 'alchemy_getTokenMetadata'
-        //   })
-        //   .then((res) => {
-        //     console.log(res);
-        //   });
       });
     }
+    const smartContractAddress = await this.getMinterAddress();
+    if (!this.tokens[CK_ETH_LEDGER_CANISTER_ID]) {
+      getTokenInfo(Principal.fromText(CK_ETH_LEDGER_CANISTER_ID), {
+        icrc1: null
+      }).then((res) => {
+        this.$set(this.tokens, CK_ETH_LEDGER_CANISTER_ID, res);
+      });
+    }
+    // ckETH
+    const icTokenInfo = {
+      ckLedgerId: Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
+      ckSymbol: 'ckSepoliaETH',
+      decimals: 18,
+      dexPair: null,
+      dexPrice: null,
+      fee: null,
+      minAmount: BigInt('10000000000000000'),
+      std: { ETH: null },
+      symbol: 'SepoliaETH',
+      tokenId: smartContractAddress,
+      totalSupply: null
+    };
+    this.networkTokens.unshift({
+      id: smartContractAddress,
+      networkId: '-1',
+      networkToIcId: '3',
+      symbol: 'ckSepoliaETH',
+      tokenId: CK_ETH_LEDGER_CANISTER_ID,
+      icTokenInfo: icTokenInfo
+    });
+    this.networkTokens.unshift({
+      id: smartContractAddress,
+      networkId: '3',
+      networkToIcId: '-1',
+      symbol: 'SepoliaETH',
+      tokenId: CK_ETH_LEDGER_CANISTER_ID
+    });
+    this.ethersTokenIdToCkTokenId[smartContractAddress] =
+      CK_ETH_LEDGER_CANISTER_ID;
+    this.ckTokenInfo[CK_ETH_LEDGER_CANISTER_ID] = Object.assign(
+      {},
+      icTokenInfo,
+      { symbol: 'ckSepoliaETH' }
+    );
     this.getActive();
     this.initICRouter();
     console.log(this.networkTokens);
+  }
+  private async getMinterAddress(): Promise<string> {
+    return await this.ckETHMinterDfiService.smart_contract_address();
   }
   private initICRouter(): void {
     const type = this.$route.query.type;
@@ -4087,20 +4723,25 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private toActive(type: ActiveType, tokenId: string, txHash?: string): void {
-    console.log(this.networkTokens);
     if (
       type === 'claim' ||
       type === 'claim2' ||
       type === 'mint' ||
       type === 'deposit' ||
-      type === 'dexMint'
+      type === 'dexMint' ||
+      type === 'mintCKETH'
     ) {
       let network;
-      if (Number(this.minterInfo.chainId) === 5) {
+      if (type === 'mintCKETH') {
+        this.networkIdMint = 3;
+      } else if (Number(this.minterInfo.chainId) === 5) {
+        this.networkIdMint = 2;
+      } else if (Number(this.minterInfo.chainId) === 1) {
         this.networkIdMint = 2;
       } else {
         //
       }
+      console.log(this.networkIdMint);
       network = this.networkListFrom[this.networkIdMint as number];
       this.changeNetworkIdMint(this.networkIdMint as number);
       console.log(this.networkTokensFrom);
@@ -4136,9 +4777,15 @@ export default class extends Mixins(BalanceMixin) {
         this.signatureForm.txHash = txHash;
         this.txHashChange();
       }
-    } else if (type === 'retrieve' || type === 'dexRetrieve') {
+    } else if (
+      type === 'retrieve' ||
+      type === 'dexRetrieve' ||
+      type === 'retrieveCKETH'
+    ) {
       let network;
-      if (Number(this.minterInfo.chainId) === 5) {
+      if (type === 'retrieveCKETH') {
+        this.networkIdMint = 0;
+      } else if (Number(this.minterInfo.chainId) === 5) {
         this.networkIdMint = 0;
       } else {
         //
@@ -4229,19 +4876,105 @@ export default class extends Mixins(BalanceMixin) {
     });
   }
   private async getActive(): Promise<void> {
-    // method2 claim step1
-    this.onGetClaimPending();
-    // method2 claim step2
-    this.onGetClaim2Pending();
-    // method1 mint step1
-    this.onGetMintPending();
-    // method1 mint step2
-    this.onGetDepositing();
-    // retrieve step1
-    this.onGetRetrievePending();
-    // retrieve step2
-    this.onGetRetrieving();
-    console.log(this.activePending);
+    if (this.getPrincipalId) {
+      // method2 claim step1
+      this.onGetClaimPending();
+      // method2 claim step2
+      this.onGetClaim2Pending();
+      // method1 mint step1
+      this.onGetMintPending();
+      // method1 mint step2
+      this.onGetDepositing();
+      // retrieve step1
+      this.onGetRetrievePending();
+      // retrieve step2
+      this.onGetRetrieving();
+      // ckETH mint
+      this.onGetMintCKETHPending();
+      // ckETH retrieve
+      this.onGetRetrieveCKETHPending();
+      console.log(this.activePending);
+    }
+  }
+  private onGetRetrieveCKETHPending(): void {
+    this.getRetrieveCKETHPending().then((retrieveActive) => {
+      if (retrieveActive && retrieveActive.length) {
+        console.log(retrieveActive);
+        this.$set(this.activePending, 'retrieveCKETH', retrieveActive);
+      } else {
+        this.$set(this.activePending, 'retrieveCKETH', null);
+      }
+    });
+  }
+  private async getRetrieveCKETHPending(): Promise<Array<RetrieveActive>> {
+    let retrievePending: Array<RetrieveActive> = [];
+    const currentInfo =
+      JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+    const smartContractAddress = await this.getMinterAddress();
+    const key = 'ckETHRetrieve-' + smartContractAddress;
+    const retrieveCKETH = currentInfo[key] || {};
+    console.log(retrieveCKETH);
+    for (let key in retrieveCKETH) {
+      if (retrieveCKETH[key]) {
+        for (let i = 0; i < retrieveCKETH[key].length; i++) {
+          const type = Object.keys(retrieveCKETH[key][i].status)[0];
+          if (type !== 'TxConfirmed') {
+            retrievePending.push({
+              amount: retrieveCKETH[key][i].amount,
+              tokenId: key
+            });
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    return retrievePending;
+  }
+  private onGetMintCKETHPending(): void {
+    this.getMintCKETHPending().then((mintPending) => {
+      if (mintPending && mintPending.length) {
+        console.log(mintPending);
+        this.$set(this.activePending, 'mintCKETH', mintPending);
+      } else {
+        this.$set(this.activePending, 'mintCKETH', null);
+      }
+    });
+  }
+  private async getMintCKETHPending(): Promise<Array<ClaimCKETHActive>> {
+    let mintPending: Array<ClaimCKETHActive> = [];
+    const currentInfo =
+      JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+    const smartContractAddress = await this.getMinterAddress();
+    const key = 'ckETHMint-' + smartContractAddress;
+    const mintCKETH = currentInfo[key] || {};
+    console.log(mintCKETH);
+    if (mintCKETH) {
+      await this.getLastScrapedBlockNumber();
+      if (this.lastScrapedBlockNumber) {
+        for (let key in mintCKETH) {
+          if (mintCKETH[key]) {
+            for (let i = 0; i < mintCKETH[key].length; i++) {
+              if (
+                !mintCKETH[key][i].blockNum ||
+                new BigNumber(this.lastScrapedBlockNumber).lt(
+                  mintCKETH[key][i].blockNum
+                )
+              ) {
+                mintPending.push({
+                  txHash: mintCKETH[key][i].txHash,
+                  amount: mintCKETH[key][i].amount,
+                  tokenId: key
+                });
+              } else {
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    return mintPending;
   }
   private async getRetrievePending(): Promise<Array<RetrieveActive>> {
     let retrievePending: Array<RetrieveActive> = [];
@@ -4388,6 +5121,9 @@ export default class extends Mixins(BalanceMixin) {
     erc20TokenInfo: IcTokenInfo,
     minterInfo: MinterInfo
   ): string {
+    if (!erc20TokenInfo.fee) {
+      return '';
+    }
     const std = Object.keys(erc20TokenInfo.std)[0];
     if (std === 'ETH') {
       return new BigNumber(erc20TokenInfo.fee.gasLimit.toString(10))
@@ -4408,6 +5144,9 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private filterEstimatedFeeMode2(erc20TokenInfo: IcTokenInfo): string {
+    if (!erc20TokenInfo.fee) {
+      return '';
+    }
     const std = Object.keys(erc20TokenInfo.std)[0];
     if (std === 'ETH') {
       return new BigNumber(erc20TokenInfo.fee.fixedFee.toString(10))
@@ -4428,6 +5167,9 @@ export default class extends Mixins(BalanceMixin) {
     ethTokenInfo: IcTokenInfo,
     minterInfo: MinterInfo
   ): string {
+    if (!erc20TokenInfo.fee) {
+      return '';
+    }
     const std = Object.keys(erc20TokenInfo.std)[0];
     if (std === 'ETH') {
       return new BigNumber(erc20TokenInfo.fee.gasLimit.toString(10))
@@ -4523,7 +5265,7 @@ export default class extends Mixins(BalanceMixin) {
       this.dissolveForm.amount = max.toString(10);
     }
   }
-  private setMaxETHRetrieve(): void {
+  private setMaxETHRetrieve(type: string): void {
     if (
       typeof this.networkIdMint === 'number' &&
       typeof this.networkIdMintTo === 'number' &&
@@ -4543,12 +5285,112 @@ export default class extends Mixins(BalanceMixin) {
           .div(10 ** decimals)
           .toString(10);
         const max = new BigNumber(total).div(10 ** 18).minus(fee);
-        console.log(total, max);
+        console.log(total, max.toString(10));
         if (max.gt(0)) {
-          this.ethDissolveForm.retrieveAmount = max.toString(10);
+          console.log(type);
+          if (type) {
+            this.ethDissolveFormCK.retrieveAmount = max.toString(10);
+            (this.$refs as any).ethDissolveFormCK.validateField(
+              'retrieveAmount'
+            );
+          } else {
+            this.ethDissolveForm.retrieveAmount = max.toString(10);
+            (this.$refs as any).ethForm.validateField('retrieveAmount');
+          }
         }
       }
     }
+  }
+  private async retrieveCkETH(): Promise<void> {
+    (this.$refs as any).ethDissolveFormCK.validate(async (valid: any) => {
+      if (valid) {
+        await checkAuth();
+        const loading = this.$loading({
+          lock: true,
+          background: 'rgba(0, 0, 0, 0.5)'
+        });
+        const canisterId = this.icNetworkTokens.tokenId;
+        const amount = new BigNumber(this.ethDissolveFormCK.retrieveAmount)
+          .times(10 ** this.tokens[canisterId].decimals)
+          .toString(10);
+        const spender: Icrc1Account = {
+          owner: Principal.fromText(CK_ETH_MINTER_CANISTER_ID),
+          subaccount: []
+        };
+        const approveRes = await this.icrc2Approve(
+          canisterId,
+          BigInt(amount),
+          spender
+        );
+        if (approveRes) {
+          const withdraw = await this.ckETHMinterDfiService.withdraw_eth({
+            recipient: this.ethDissolveFormCK.address.trim(),
+            amount: BigInt(amount)
+          });
+          console.log(withdraw);
+          if (withdraw) {
+            const type = Object.keys(withdraw)[0];
+            if (type === 'Ok') {
+              this.$message.success('Success');
+              this.ckETHRetrieve.unshift({
+                recipient: this.ethDissolveFormCK.address.trim(),
+                amount: amount,
+                blockIndex: (
+                  withdraw as {
+                    Ok: RetrieveEthRequest;
+                  }
+                ).Ok.block_index.toString(10),
+                status: { Pending: null }
+              });
+              const currentInfo =
+                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+              if (!currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id]) {
+                currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id] = {};
+              }
+              currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id][
+                canisterId
+              ] = this.ckETHRetrieve;
+              localStorage.setItem(
+                this.getPrincipalId,
+                JSON.stringify(currentInfo)
+              );
+              this.retrieveStep = 2;
+              (this.$refs as any).ethDissolveFormCK.resetFields();
+            } else {
+              const err = (withdraw as { Err: WithdrawalError }).Err;
+              this.$message.error(
+                JSON.stringify(err, (key, value) =>
+                  typeof value === 'bigint' ? value.toString(10) : value
+                )
+              );
+            }
+          }
+        }
+        loading.close();
+      }
+    });
+  }
+  private async icrc2Approve(
+    canisterId: string,
+    amount: bigint,
+    spender: Icrc1Account
+  ): Promise<boolean> {
+    const res = await this.DRC20TokenService.icrc2_approve(
+      canisterId,
+      spender,
+      amount
+    );
+    if (res) {
+      const type = Object.keys(res)[0];
+      if (type === 'Ok') {
+        return true;
+      } else {
+        console.log(res);
+        this.$message.error('Approve Error');
+        return false;
+      }
+    }
+    return false;
   }
   private async transferCkETH(): Promise<void> {
     (this.$refs as any).ethForm.validate(async (valid: any) => {
@@ -4913,20 +5755,21 @@ export default class extends Mixins(BalanceMixin) {
   private async getEthTransactionReceipt(
     txHash: string,
     ETHHttpsNum?: number,
-    retry = 0
+    retry = 0,
+    ETHHttpsKeys: Array<string> = ETHHttps
   ): Promise<any> {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
-        ETHHttpsNum = Math.floor(Math.random() * ETHHttps.length);
+        ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
         console.log(ETHHttpsNum);
       } else {
-        if (ETHHttpsNum + 1 >= ETHHttps.length) {
+        if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
         } else {
           ETHHttpsNum += 1;
         }
       }
-      return await axios.post(ETHHttps[ETHHttpsNum], {
+      return await axios.post(ETHHttpsKeys[ETHHttpsNum], {
         id: 1,
         jsonrpc: '2.0',
         params: [txHash],
@@ -4934,8 +5777,13 @@ export default class extends Mixins(BalanceMixin) {
       });
     } catch (e) {
       console.error(e);
-      if (retry < ETHHttps.length) {
-        await this.getEthTransactionReceipt(txHash, ETHHttpsNum, ++retry);
+      if (retry < ETHHttpsKeys.length) {
+        await this.getEthTransactionReceipt(
+          txHash,
+          ETHHttpsNum,
+          ++retry,
+          ETHHttpsKeys
+        );
       }
     }
   }
@@ -5660,8 +6508,199 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
-  private async showForgeETH(): Promise<void> {
+  private showForgeETH(): void {
     this.hasShowWarningETH('forge');
+  }
+  private showRetrieveCKETH(): void {
+    console.log(this.icNetworkTokens);
+    this.retrieveTitleETH = `Retrieve: ${this.icNetworkTokens.symbol} (${
+      networkIds[this.icNetworkTokens.networkId]
+    }) -> ${this.icNetworkTokens.icTokenInfo.symbol} (${
+      networkIds[this.otherNetworkTokens.networkId]
+    })`;
+    this.retrieveModalCKETH = true;
+    this.initCKETHRetrieve();
+  }
+  private initCKETHRetrieve(): void {
+    if (this.getPrincipalId && this.icNetworkTokens) {
+      const id = this.icNetworkTokens.id;
+      const tokenId = this.icNetworkTokens.tokenId;
+      const currentInfo =
+        JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+      const ckETHRetrieve = currentInfo['ckETHRetrieve-' + id] || {};
+      this.ckETHRetrieve = ckETHRetrieve[tokenId] || [];
+      this.getCkETHRetrieveStatus(id, tokenId);
+      this.getCKETHBalance(this.icNetworkTokens);
+      this.getCKETHRetrieveInterval(this.icNetworkTokens);
+    }
+  }
+  private async getCkETHRetrieveStatus(
+    id: string,
+    tokenId: string
+  ): Promise<void> {
+    for (let i = 0; i < this.ckETHRetrieve.length; i++) {
+      const retrieve = this.ckETHRetrieve[i];
+      const status = Object.keys(retrieve.status)[0];
+      if (status !== 'TxConfirmed' && status !== 'NotFound') {
+        const res = await this.ckETHMinterDfiService.retrieve_eth_status(
+          BigInt(retrieve.blockIndex)
+        );
+        const currentStatus = Object.keys(res)[0];
+        if (status !== currentStatus) {
+          this.$set(retrieve, 'status', res);
+          const currentInfo =
+            JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+          const ckETHRetrieve = currentInfo['ckETHRetrieve-' + id] || {};
+          currentInfo['ckETHRetrieve-' + id][tokenId] = this.ckETHRetrieve;
+          localStorage.setItem(
+            this.getPrincipalId,
+            JSON.stringify(currentInfo)
+          );
+        }
+      }
+    }
+  }
+  private getCKETHRetrieveInterval(
+    icNetworkTokens: ICNetworkTokensInterface
+  ): void {
+    if (this.ckETHTimer) {
+      window.clearInterval(this.ckETHTimer);
+      this.ckETHTimer = null;
+    }
+    this.ckETHTimer = window.setInterval(() => {
+      this.getCKETHBalance(icNetworkTokens);
+      this.getCkETHRetrieveStatus(icNetworkTokens.id, icNetworkTokens.tokenId);
+    }, 30 * 1000);
+  }
+  private showForgeCKETH(): void {
+    console.log(this.icNetworkTokens);
+    this.forgeTitleETH = `Mint: ${this.icNetworkTokens.icTokenInfo.symbol} (${
+      networkIds[this.otherNetworkTokens.networkId]
+    }) -> ${this.icNetworkTokens.symbol} (${
+      networkIds[this.icNetworkTokens.networkId]
+    })`;
+    this.forgeModalCKETH = true;
+    this.initCKETHMint();
+  }
+  private initCKETHMint(): void {
+    if (this.getPrincipalId && this.icNetworkTokens) {
+      const id = this.icNetworkTokens.id;
+      const tokenId = this.icNetworkTokens.tokenId;
+      const currentInfo =
+        JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+      const ckETHMint = currentInfo['ckETHMint-' + id] || {};
+      this.ckETHMint = ckETHMint[tokenId] || [];
+      this.getCkETHMintBlockNum(id, tokenId);
+      this.getLastScrapedBlockNumber();
+      this.getCKETHBalance(this.icNetworkTokens);
+      this.getCKETHMinterInterval(this.icNetworkTokens);
+    }
+  }
+  private async getCKETHBalance(
+    icNetworkTokens: ICNetworkTokensInterface
+  ): Promise<void> {
+    const tokenId = icNetworkTokens.tokenId;
+    const balance = await getTokenBalance({ icrc1: null }, tokenId);
+    this.$set(this.ERC20Balance, tokenId, balance);
+    this.toAddToken('ICRC-2');
+  }
+  private getCKETHMinterInterval(
+    icNetworkTokens: ICNetworkTokensInterface
+  ): void {
+    if (this.ckETHTimer) {
+      window.clearInterval(this.ckETHTimer);
+      this.ckETHTimer = null;
+    }
+    this.ckETHTimer = window.setInterval(() => {
+      this.getCkETHMintBlockNum(icNetworkTokens.id, icNetworkTokens.tokenId);
+      this.getLastScrapedBlockNumber();
+      this.getCKETHBalance(icNetworkTokens);
+    }, 30 * 1000);
+  }
+  private async getCkETHMintBlockNum(
+    id: string,
+    tokenId: string
+  ): Promise<void> {
+    for (let i = 0; i < this.ckETHMint.length; i++) {
+      const mint = this.ckETHMint[i];
+      if (!mint.blockNum) {
+        const res = await this.getEthTransactionReceipt(
+          mint.txHash,
+          0,
+          0,
+          ETHHttpsSepolia
+        );
+        if (res) {
+          const receipt = res.data.result;
+          if (receipt) {
+            console.log(receipt);
+            this.$set(
+              mint,
+              'blockNum',
+              Number(receipt.blockNumber).toString(10)
+            );
+            const currentInfo =
+              JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+            if (!currentInfo['ckETHMint-' + id]) {
+              currentInfo['ckETHMint-' + id] = {};
+            }
+            currentInfo['ckETHMint-' + id][tokenId] = this.ckETHMint;
+            localStorage.setItem(
+              this.getPrincipalId,
+              JSON.stringify(currentInfo)
+            );
+          }
+        }
+      } else {
+        break;
+      }
+    }
+  }
+  private async getLastScrapedBlockNumber(): Promise<void> {
+    const events = await this.ckETHMinterDfiService.get_events({
+      start: BigInt(0),
+      length: BigInt(1)
+    });
+    if (events) {
+      const length = 100;
+      const total = events.total_event_count;
+      let start = new BigNumber(total.toString(10)).minus(length).toString(10);
+      if (new BigNumber(start).lt(0)) {
+        start = '0';
+      }
+      this.getEvents(BigInt(start), BigInt(length));
+    }
+  }
+  private async getEvents(start: bigint, length: bigint): Promise<void> {
+    const events = await this.ckETHMinterDfiService.get_events({
+      start: start,
+      length: length
+    });
+    if (events) {
+      for (let i = events.events.length - 1; i >= 0; i--) {
+        const event = events.events[i];
+        const type = Object.keys(event.payload)[0];
+        if (type === 'AcceptedDeposit') {
+          this.lastScrapedBlockNumber = Number(
+            event.payload['AcceptedDeposit'].block_number
+          );
+          break;
+        }
+      }
+      if (
+        this.lastScrapedBlockNumber === null &&
+        new BigNumber(start.toString(10)).gt(0)
+      ) {
+        let newStart = new BigNumber(start.toString(10))
+          .minus(length.toString(10))
+          .toString(10);
+        if (new BigNumber(newStart).lt(0)) {
+          newStart = '0';
+        }
+        await this.getEvents(BigInt(newStart), length);
+      }
+    }
+    console.log(this.lastScrapedBlockNumber);
   }
   private initETHDeposit(): void {
     if (this.forgeModalETH) {
@@ -5797,30 +6836,45 @@ export default class extends Mixins(BalanceMixin) {
       ) {
         this.showForge(BTCTypeEnum.icBTC);
       } else {
-        let ethId = '1';
-        if (Number(this.minterInfo.chainId) === 5) {
-          ethId = '2';
-        }
-        this.getMinterInfo();
+        const ckETHId = '3';
         if (
           this.networkTokensTo[this.networkTokenIdMintTo].networkToIcId ===
-          ethId
+          ckETHId
         ) {
           this.BTCType = null;
-          if (this.icNetworkTokens.icTokenInfo.std) {
-            const std = Object.keys(this.icNetworkTokens.icTokenInfo.std)[0];
-            if (std === 'ETH' || std === 'ERC20') {
-              this.showForgeETH();
-            }
-          }
+          this.showForgeCKETH();
         } else if (
           this.networkTokensFrom[this.networkTokenIdMint].networkToIcId ===
-          ethId
+          ckETHId
         ) {
           this.BTCType = null;
-          this.showDissolveETH();
+          this.showRetrieveCKETH();
+        } else {
+          let ethId = '1';
+          if (Number(this.minterInfo.chainId) === 5) {
+            ethId = '2';
+          }
+          this.getMinterInfo();
+          if (
+            this.networkTokensTo[this.networkTokenIdMintTo].networkToIcId ===
+            ethId
+          ) {
+            this.BTCType = null;
+            if (this.icNetworkTokens.icTokenInfo.std) {
+              const std = Object.keys(this.icNetworkTokens.icTokenInfo.std)[0];
+              if (std === 'ETH' || std === 'ERC20') {
+                this.showForgeETH();
+              }
+            }
+          } else if (
+            this.networkTokensFrom[this.networkTokenIdMint].networkToIcId ===
+            ethId
+          ) {
+            this.BTCType = null;
+            this.showDissolveETH();
+          }
+          this.getAccountEvents();
         }
-        this.getAccountEvents();
       }
     }
   }
@@ -6041,6 +7095,9 @@ export default class extends Mixins(BalanceMixin) {
     } else {
       this.ckBTCTransactionsPage = page;
     }
+  }
+  private pageChangeCKETHMint(page: number) {
+    this.ckETHMintPage = page;
   }
   private mintEventPageChange(page: number): void {
     this.mintEventPage = page;
@@ -7032,7 +8089,10 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
-  private async refreshCkETHBalance(isRefresh = true): Promise<void> {
+  private async refreshCkETHBalance(
+    isRefresh = true,
+    std = 'DRC20'
+  ): Promise<void> {
     if (isRefresh) {
       this.refreshCkETHBalanceLoading = true;
     }
@@ -7041,7 +8101,7 @@ export default class extends Mixins(BalanceMixin) {
       if (ERC20TokenId) {
         const balance = await getTokenBalance({ icrc1: null }, ERC20TokenId);
         this.$set(this.ERC20Balance, ERC20TokenId, balance);
-        this.toAddToken();
+        this.toAddToken(std);
       }
       if (isRefresh) {
         this.refreshCkETHBalanceLoading = false;
@@ -7050,10 +8110,13 @@ export default class extends Mixins(BalanceMixin) {
       console.log(e);
     }
   }
-  private async toAddToken(): Promise<void> {
+  private async toAddToken(std = 'DRC20'): Promise<void> {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     if (ERC20TokenId) {
-      if (this.ERC20Balance[ERC20TokenId]) {
+      if (
+        this.ERC20Balance[ERC20TokenId] &&
+        new BigNumber(this.ERC20Balance[ERC20TokenId]).gt(0)
+      ) {
         try {
           const tokens = await this.ICLighthouseService.getTokens();
           // check token is added
@@ -7063,15 +8126,18 @@ export default class extends Mixins(BalanceMixin) {
           if (flag) {
             return;
           }
-          const name = await this.ICLighthouseTokenService.getName(
-            ERC20TokenId
-          );
+          let name = '';
+          if (std === 'DRC20') {
+            name = await this.ICLighthouseTokenService.getName(ERC20TokenId);
+          } else if (std === 'ICRC-1') {
+            name = await this.DRC20TokenService.icrcName(ERC20TokenId);
+          }
           await this.ICLighthouseService.addToken(
             Principal.from(ERC20TokenId),
             this.icNetworkTokens.symbol,
             name,
             this.icNetworkTokens.icTokenInfo.decimals,
-            'DRC20',
+            std,
             {
               add: null
             }
@@ -7117,6 +8183,20 @@ export default class extends Mixins(BalanceMixin) {
         this.refreshCkBTCBalanceLoading = false;
       }
     }
+  }
+  private showApprove(type: BTCTypeEnum): void {
+    this.BTCType = type;
+    this.getBalance();
+    const approveTokenInfo = this.tokens[LEDGER_CANISTER_ID] || {
+      name: 'Icp',
+      symbol: 'ICP',
+      decimals: 8,
+      fee: '10000',
+      totalSupply: null,
+      logo: null,
+      tokenStd: { icp: null }
+    };
+    this.$refs.approveIcrc2.init(approveTokenInfo);
   }
   private showTransfer(type: BTCTypeEnum): void {
     this.BTCType = type;
@@ -7187,6 +8267,22 @@ export default class extends Mixins(BalanceMixin) {
     this.mintStep = 1;
     this.mintEvent = [];
   }
+  private afterRetrieveCloseCKETH(): void {
+    this.retrieveStep = 1;
+    this.ckETHMintPage = 1;
+    (this.$refs as any).ethDissolveFormCK &&
+      (this.$refs as any).ethDissolveFormCK.resetFields();
+    window.clearInterval(this.ckETHTimer);
+    this.ckETHTimer = null;
+  }
+  private afterForgeCloseCKETH(): void {
+    this.mintStep = 1;
+    this.ckETHMintPage = 1;
+    (this.$refs as any).erc20Form &&
+      (this.$refs as any).erc20Form.resetFields();
+    window.clearInterval(this.ckETHTimer);
+    this.ckETHTimer = null;
+  }
   private afterForgeCloseETH(): void {
     try {
       this.mintStep = 1;
@@ -7235,6 +8331,51 @@ export default class extends Mixins(BalanceMixin) {
       callback('icBTC only supports P2PKH addresses');
     } else {
       callback();
+    }
+  }
+  private validateAmountCKETH(
+    rule: ValidationRule,
+    value: number,
+    callback: (arg0?: string) => void
+  ): void {
+    if (
+      typeof this.networkIdMint === 'number' &&
+      typeof this.networkIdMintTo === 'number' &&
+      typeof this.networkTokenIdMint === 'number' &&
+      typeof this.networkTokenIdMintTo === 'number'
+    ) {
+      const erc20TokenInfo = this.icNetworkTokens.icTokenInfo;
+      const ERC20TokenId = this.icNetworkTokens.tokenId;
+      const std = Object.keys(erc20TokenInfo.std)[0];
+      let total;
+      let fee;
+      let decimals;
+      if (ERC20TokenId) {
+        if (std === 'ERC20') {
+          //
+        }
+        decimals = this.tokens[ERC20TokenId].decimals;
+        total = this.ERC20Balance[ERC20TokenId];
+        fee = new BigNumber(this.tokens[ERC20TokenId].fee.toString(10))
+          .div(10 ** decimals)
+          .toString(10);
+      }
+      const min = Number(
+        new BigNumber(total)
+          .div(10 ** decimals)
+          .minus(fee)
+          .minus(value)
+          .toString(10)
+      );
+      if (value && min < 0) {
+        callback(
+          `Insufficient ${this.icNetworkTokens.symbol} (${
+            networkIds[this.icNetworkTokens.networkId]
+          })`
+        );
+      } else {
+        callback();
+      }
     }
   }
   private validateAmountETH(
@@ -7406,6 +8547,23 @@ export default class extends Mixins(BalanceMixin) {
     //This will start the onboarding proccess
     onboarding.startOnboarding();
   }
+  private previousMintStepCK(): void {
+    if (this.mintStep > 1) {
+      this.changeMintStepCK(this.mintStep - 1);
+    }
+  }
+  private nextMintStepCK(max: number): void {
+    if (this.mintStep < max) {
+      this.changeMintStepCK(this.mintStep + 1);
+    }
+  }
+  private changeMintStepCK(step: number): void {
+    this.mintStep = step;
+    this.pendingLoading = false;
+    if ((this.$refs as any).erc20Form) {
+      (this.$refs as any).erc20Form.resetFields();
+    }
+  }
   private previousMintStep(): void {
     if (this.mintStep > 1) {
       this.changeMintStep(this.mintStep - 1);
@@ -7424,6 +8582,22 @@ export default class extends Mixins(BalanceMixin) {
   private nextRetrieveStep(max: number): void {
     if (this.retrieveStep < max) {
       this.changeRetrieveStep(this.retrieveStep + 1);
+    }
+  }
+  private previousRetrieveStepCK(): void {
+    if (this.retrieveStep > 1) {
+      this.changeRetrieveStepCK(this.retrieveStep - 1);
+    }
+  }
+  private nextRetrieveStepCK(max: number): void {
+    if (this.retrieveStep < max) {
+      this.changeRetrieveStepCK(this.retrieveStep + 1);
+    }
+  }
+  private changeRetrieveStepCK(step: number): void {
+    this.retrieveStep = step;
+    if (step === 3) {
+      this.retrieveEventPage = 1;
     }
   }
   private changeMintStep(step: number): void {
@@ -7455,6 +8629,83 @@ export default class extends Mixins(BalanceMixin) {
       if (valid) {
         this.showEthAddressCode = true;
         this.setMintPending();
+      }
+    });
+  }
+  private transferFromMetaMaskCK(): void {
+    (this.$refs as any).erc20Form.validate(async (valid: any) => {
+      if (valid) {
+        if (!this.isMetaMaskInstalled()) {
+          this.metaMaskVisible = true;
+        } else {
+          const loading = this.$loading({
+            lock: true,
+            background: 'rgba(0, 0, 0, 0.5)'
+          });
+          try {
+            const ethChainId = '0xaa36a7';
+            const chainId = await ethereum.request({ method: 'eth_chainId' });
+            if (chainId !== ethChainId) {
+              await ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: ethChainId }]
+              });
+            }
+            const accounts: string[] = await ethereum.request({
+              method: 'eth_requestAccounts'
+            });
+            const contractId = this.icNetworkTokens.icTokenInfo.tokenId;
+            const amount =
+              '0x' +
+              new BigNumber(this.erc20Form.amount).times(10 ** 18).toString(16);
+            const _principalHex = principalToBytes32(this.getPrincipalId);
+            const web3 = new Web3();
+            const ethContract = new web3.eth.Contract(ethAbi, contractId);
+            const contractData = ethContract.methods
+              .deposit(_principalHex)
+              .encodeABI();
+            console.log(amount, _principalHex);
+            const sendTransactionRes = await ethereum.request({
+              method: 'eth_sendTransaction',
+              params: [
+                {
+                  from: accounts[0],
+                  to: contractId,
+                  value: amount,
+                  data: contractData
+                }
+              ]
+            });
+            console.log(sendTransactionRes);
+            const amountMint = new BigNumber(this.erc20Form.amount)
+              .times(10 ** 18)
+              .toString(10);
+            this.ckETHMint.unshift({
+              txHash: sendTransactionRes,
+              amount: amountMint,
+              blockNum: ''
+            });
+            const currentInfo =
+              JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+            let mint = currentInfo['ckETHMint-' + this.icNetworkTokens.id];
+            if (!mint) {
+              mint = {};
+            }
+            mint[this.icNetworkTokens.tokenId] = this.ckETHMint;
+            localStorage.setItem(
+              this.getPrincipalId,
+              JSON.stringify(currentInfo)
+            );
+            this.changeMintStepCK(2);
+            this.onGetMintCKETHPending();
+          } catch (e) {
+            console.error(e);
+            if (e.code !== 4001) {
+              this.$message.error(e.message);
+            }
+          }
+          loading.close();
+        }
       }
     });
   }
@@ -8032,6 +9283,15 @@ export default class extends Mixins(BalanceMixin) {
   private onError(): void {
     console.log('err');
   }
+  private getCKETHRetrieveTxid(status: RetrieveEthStatus): string {
+    const type = Object.keys(status)[0];
+    const hasTx = ['TxSigned', 'TxConfirmed', 'TxSent'];
+    if (hasTx.includes(type)) {
+      const value = Object.values(status)[0];
+      return value.transaction_hash;
+    }
+    return '';
+  }
 }
 </script>
 
@@ -8606,6 +9866,12 @@ button {
     border-radius: 10px;
   }
 }
+.ckEth-mint-top {
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #101014;
+  border-radius: 10px;
+}
 .forge-main {
   display: flex;
   background: #101014;
@@ -8743,6 +10009,15 @@ button {
   }
   .forge-right {
     width: 100%;
+    table {
+      font-size: 12px;
+    }
+    table,
+    tr,
+    th,
+    td {
+      background: transparent !important;
+    }
     .deposit-balance {
       font-size: 18px;
       color: #f5f5f5;

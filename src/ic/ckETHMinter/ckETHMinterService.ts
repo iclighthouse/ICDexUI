@@ -17,40 +17,23 @@ import Service, {
 } from '@/ic/ckETHMinter/model';
 import { Principal } from '@dfinity/principal';
 import IDL from '@/ic/ckETHMinter/ckETHMinter.did';
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
-import store from '@/store';
 import { IC_ETH_MINTER_CANISTER_ID } from '@/ic/utils';
-import { fromSubAccountId, SerializableIC } from '@/ic/converter';
+import {
+  fromSubAccountId,
+  hexToBytes,
+  principalToAccountIdentifier
+} from '@/ic/converter';
 import { Icrc1Account, Time } from '@/ic/common/icType';
+import { checkService } from '@/ic/checkService';
 
 export class ckETHMinterService {
   private check = async (renew = true, isUpdate = true): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew, IC_ETH_MINTER_CANISTER_ID);
-    }
-    let service: Service;
-    if (!isUpdate) {
-      service = buildService(null, IDL, IC_ETH_MINTER_CANISTER_ID);
-    } else if ((window as any).icx) {
-      service = await createIcxActor(IDL, IC_ETH_MINTER_CANISTER_ID);
-    } else if (priList[principal] === 'Plug') {
-      service = await createPlugActor(IDL, IC_ETH_MINTER_CANISTER_ID);
-    } else if (priList[principal] === 'Infinity') {
-      service = await createInfinityActor(IDL, IC_ETH_MINTER_CANISTER_ID);
-    } else {
-      service = buildService(
-        store.getters['common/getIdentity'],
-        IDL,
-        IC_ETH_MINTER_CANISTER_ID
-      );
-    }
-    return service;
+    return await checkService<Service>(
+      IC_ETH_MINTER_CANISTER_ID,
+      IDL,
+      renew,
+      isUpdate
+    );
   };
   public getEthAddress = async (subAccountId = 0): Promise<string> => {
     const service = await this.check();
@@ -95,11 +78,10 @@ export class ckETHMinterService {
     }
     const principal = localStorage.getItem('principal');
     try {
-      const res = await service.update_balance(tokenId, {
+      return await service.update_balance(tokenId, {
         owner: Principal.from(principal),
         subaccount: subAccount
       });
-      return SerializableIC(res);
     } catch (e) {
       console.log(e);
     }
@@ -108,8 +90,7 @@ export class ckETHMinterService {
   public getEthTx = async (txIndex: TxIndex): Promise<Array<TxStatus>> => {
     const service = await this.check();
     try {
-      const res =  await service.get_tx(txIndex);
-      return SerializableIC(res);
+      return await service.get_tx(txIndex);
     } catch (e) {
       console.log(e);
     }
@@ -119,13 +100,20 @@ export class ckETHMinterService {
     const service = await this.check();
     try {
       const principal = localStorage.getItem('principal');
-      const res = await service.get_withdrawal_account({
-        owner: Principal.from(principal),
-        subaccount: []
-      });
+      // const res = await service.get_withdrawal_account({
+      //   owner: Principal.from(principal),
+      //   subaccount: []
+      // });
+      const subaccount = Array.from(
+        hexToBytes(principalToAccountIdentifier(Principal.fromText(principal)))
+      );
+      const res: Icrc1Account = {
+        owner: Principal.fromText(IC_ETH_MINTER_CANISTER_ID),
+        subaccount: [subaccount]
+      };
       const principal1 = localStorage.getItem('principal');
       if (principal === principal1) {
-        return SerializableIC(res);
+        return res;
       } else {
         return null;
       }
@@ -146,8 +134,7 @@ export class ckETHMinterService {
       if (subAccountId) {
         subAccount = [fromSubAccountId(subAccountId)];
       }
-      const res = await service.retrieve(tokenId, ethAddress, amount, subAccount);
-      return SerializableIC(res);
+      return await service.retrieve(tokenId, ethAddress, amount, subAccount);
     } catch (e) {
       console.log(e);
     }
@@ -163,11 +150,10 @@ export class ckETHMinterService {
         subAccount = [fromSubAccountId(subAccountId)];
       }
       const principal = localStorage.getItem('principal');
-      const res = await service.get_retrieval_list({
+      return await service.get_retrieval_list({
         owner: Principal.from(principal),
         subaccount: subAccount
       });
-      return SerializableIC(res);
     } catch (e) {
       console.log(e);
     }
@@ -182,7 +168,7 @@ export class ckETHMinterService {
       const res = await service.get_retrieval(txIndex);
       const principal1 = localStorage.getItem('principal');
       if (principal === principal1) {
-        return SerializableIC(res);
+        return res;
       } else {
         return null;
       }
@@ -210,8 +196,7 @@ export class ckETHMinterService {
   public updateRetrievals = async (): Promise<Array<[TxStatus, bigint]>> => {
     const service = await this.check();
     try {
-      const res = await service.update_retrievals();
-      return SerializableIC(res);
+      return await service.update_retrievals();
     } catch (e) {
       console.log(e);
       return null;
@@ -220,8 +205,7 @@ export class ckETHMinterService {
   public getCkTokens = async (): Promise<Array<[EthAddress, IcTokenInfo]>> => {
     const service = await this.check();
     try {
-      const res = await service.get_ck_tokens();
-      return SerializableIC(res);
+      return await service.get_ck_tokens();
     } catch (e) {
       console.log(e);
       return null;
@@ -258,13 +242,12 @@ export class ckETHMinterService {
         subAccount = [fromSubAccountId(subAccountId)];
       }
       const principal = localStorage.getItem('principal');
-      const res = await service.get_depositing_all(token, [
+      return await service.get_depositing_all(token, [
         {
           owner: Principal.from(principal),
           subaccount: subAccount
         }
       ]);
-      return SerializableIC(res);
     } catch (e) {
       console.log(e);
       return null;
@@ -281,13 +264,12 @@ export class ckETHMinterService {
         subAccount = [fromSubAccountId(subAccountId)];
       }
       const principal = localStorage.getItem('principal');
-      const res = await service.get_retrieving_all(token, [
+      return await service.get_retrieving_all(token, [
         {
           owner: Principal.from(principal),
           subaccount: subAccount
         }
       ]);
-      return SerializableIC(res);
     } catch (e) {
       console.log(e);
       return null;
@@ -307,8 +289,7 @@ export class ckETHMinterService {
   ): Promise<Array<[ckETHEvent, Time]>> => {
     const service = await this.check();
     try {
-      const res =  await service.get_account_events(account);
-      return SerializableIC(res);
+      return await service.get_account_events(account);
     } catch (e) {
       console.log(e);
       return null;
@@ -326,7 +307,7 @@ export class ckETHMinterService {
         subAccount = [fromSubAccountId(subAccountId)];
       }
       const principal = localStorage.getItem('principal');
-      const res =  await service.claim(
+      return await service.claim(
         {
           owner: Principal.from(principal),
           subaccount: subAccount
@@ -334,7 +315,6 @@ export class ckETHMinterService {
         txHash,
         signature
       );
-      return SerializableIC(res);
     } catch (e) {
       console.log(e);
       return null;
@@ -345,8 +325,7 @@ export class ckETHMinterService {
   ): Promise<Array<PendingDepositTxn>> => {
     const service = await this.check();
     try {
-      const res = await service.get_mode2_pending_deposit_txn(txHash);
-      return SerializableIC(res);
+      return service.get_mode2_pending_deposit_txn(txHash);
     } catch (e) {
       console.error(e);
       return null;
@@ -372,13 +351,12 @@ export class ckETHMinterService {
         subAccount = [fromSubAccountId(subAccountId)];
       }
       const principal = localStorage.getItem('principal');
-      const res = await service.get_mode2_pending_all(token, [
+      return await service.get_mode2_pending_all(token, [
         {
           owner: Principal.from(principal),
           subaccount: subAccount
         }
       ]);
-      return SerializableIC(res);
     } catch (e) {
       console.log(e);
       return null;

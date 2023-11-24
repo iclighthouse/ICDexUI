@@ -1,5 +1,11 @@
 import { Principal } from '@dfinity/principal';
-import { AccountIdentifier, BlockHeight, E8s } from '../common/icType';
+import {
+  AccountIdentifier,
+  BlockHeight,
+  E8s,
+  Icrc1Account
+} from '../common/icType';
+import { ApproveArgs, ApproveError } from '@/ic/DRC20Token/model';
 export interface GetBalancesRequest {
   account: string;
 }
@@ -25,12 +31,24 @@ export interface ICP {
 export interface AccountBalanceArgsT {
   account: Array<number>;
 }
+export type Result_1 = { Ok: bigint } | { Err: ApproveError };
+export interface AllowanceArgs {
+  account: Icrc1Account;
+  spender: Icrc1Account;
+}
+export interface Allowance {
+  allowance: bigint;
+  expires_at: Array<bigint>;
+}
 
 export default interface Service {
-  'account_balance_dfx'(
+  account_balance_dfx(
     request: GetBalancesRequest
   ): Promise<Record<AccountIdentifier, E8s>>;
-  'send_dfx'(request: SendICPTsRequest): Promise<BlockHeight>;
-  'notify_dfx'(request: NotifyCanisterRequest): Promise<Uint8Array>;
-  'account_balance'(request: AccountBalanceArgsT): Promise<ICP>;
+  send_dfx(request: SendICPTsRequest): Promise<BlockHeight>;
+  notify_dfx(request: NotifyCanisterRequest): Promise<Uint8Array>;
+  account_balance(request: AccountBalanceArgsT): Promise<ICP>;
+  icrc2_approve(approveArgs: ApproveArgs): Promise<Result_1>;
+  icrc2_allowance(allowanceArgs: AllowanceArgs): Promise<Allowance>;
+  icrc2_transfer_from(res: any): Promise<any>;
 }

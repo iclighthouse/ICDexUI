@@ -1,6 +1,8 @@
 import { IDL } from '@dfinity/candid';
 import { Actor, QueryResponseReplied, HttpAgent } from '@dfinity/agent';
-const didc = import('@/assets/pkg/didc_js');
+import { DIDGenerateService } from '@/ic/DIDGenerate/DIDGenerateService';
+
+const didGenerateService = new DIDGenerateService();
 
 export const getCandidInterfaceTmpHack = async (
   canisterId: string
@@ -21,17 +23,18 @@ export const getCandidInterfaceTmpHack = async (
             [IDL.Text],
             Buffer.from((res as QueryResponseReplied).reply.arg)
           )[0] as string;
-          didc.then((mod) => {
-            const bindings = mod.generate(candid); // Bindings { js: "...", ts: "...", motoko: "..." }
-            const did = bindings.js
-              .replace(/export default\s+/, 'return ')
-              .replace('export', '');
-            const actor_ = Actor.createActor(new Function(did)(), {
-              agent: agent,
-              canisterId: canisterId
-            });
-            const candidMethods = Actor.interfaceOf(actor_)._fields;
-            resolve({ ...Object.fromEntries(candidMethods) });
+          didGenerateService.did_to_js(candid).then((res) => {
+            if (res && res.length) {
+              const did = res[0]
+                .replace(/export const idlFactory =\s+/, 'return ')
+                .replace('export', '');
+              const actor_ = Actor.createActor(new Function(did)(), {
+                agent: agent,
+                canisterId: canisterId
+              });
+              const candidMethods = Actor.interfaceOf(actor_)._fields;
+              resolve({ ...Object.fromEntries(candidMethods) });
+            }
           });
         }
       });

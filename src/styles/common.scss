@@ -288,7 +288,7 @@ button {
   border-radius: 20px;
   color: #747884;
   border: 1px solid #000;
-  padding-bottom: 40px;
+  padding-bottom: 30px;
 }
 .ant-popover-arrow {
   border-color: #13181d !important;
@@ -704,13 +704,12 @@ input {
   padding-right: 35px !important;
 }
 .ant-tooltip {
-  max-width: 500px;
+  max-width: 100%;
   .ant-tooltip-inner {
     background: #06080b;
     color: #727a87;
     padding: 10px 20px;
-    line-height: 1.5;
-    word-break: break-word;
+    line-height: 2;
   }
 }
 .delete-modal {
@@ -869,9 +868,6 @@ input {
     border-color: #3aa8b5;
     color: #ffffff;
   }
-  .ant-modal-confirm-btns {
-    display: flex;
-  }
 }
 .ant-btn {
   background: #1a2a33;
@@ -965,9 +961,6 @@ input {
   }
 }
 @media screen and (max-width: 768px) {
-  .ant-tooltip {
-    max-width: 100%;
-  }
   .warning-confirm {
     .ant-modal-confirm-btns {
       display: flex;
@@ -1200,30 +1193,24 @@ dt {
     color: #727a87;
   }
 }
-.strat-list {
-  background: #0e0e11;
-  .ant-dropdown-menu-item {
-    padding: 0;
-    &:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-  }
-}
-.strat-list-item {
+.flex-center {
   display: flex;
   align-items: center;
-  color: #fff;
-  padding: 8px 15px !important;
-  border-bottom: 1px solid #383e4e;
-  cursor: pointer;
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #51b7c3;
-  }
-  &.active {
-    color: #51b7c3;
-  }
-  &:last-child {
-    border-bottom: none;
-  }
+}
+.v-tour__target--highlighted {
+  background-color: #fff;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
+  pointer-events: none !important;
+  z-index: 9999 !important;
+}
+.v-tour--active {
+  overflow-y: hidden;
+}
+.v-tour--active::before {
+  content: '';
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
 }

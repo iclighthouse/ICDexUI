@@ -194,6 +194,9 @@ export interface KBar {
   close: bigint;
   open: bigint;
   updatedTs: bigint;
+  change?: number;
+  token0volume?: number;
+  token1volume?: number;
 }
 export type LatestFilledRecord = Array<[Time, Txid, OrderFilled]>;
 export type TxAccount = [Icrc1Account, string, Nonce, Txid];

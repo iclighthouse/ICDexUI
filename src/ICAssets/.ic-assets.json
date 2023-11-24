@@ -1,5 +1,18 @@
 [
   {
+    "match": "**/*",
+    "headers": {
+      "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+      "Content-Security-Policy": "default-src 'none';connect-src 'self' https://ic0.app/ https://icp0.io/ https://icp-api.io/ https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/ https://api.iplocation.net/ https://blockstream.info/ https://blockchain.info/ https://api-goerli.etherscan.io/ https://eth-goerli.g.alchemy.com/ wss://eth-goerli.g.alchemy.com/ https://api.etherscan.io/ https://api-goerli.etherscan.io/ https://www.googletagmanager.com/ https://www.google-analytics.com/ blob:;img-src 'self' data: https://www.googletagmanager.com/ https://pgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app/;child-src 'self';manifest-src 'self';script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com/;base-uri 'self';form-action 'none';style-src 'self' 'unsafe-inline';font-src 'self' data:;",
+      "X-Frame-Options": "DENY",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "same-origin",
+      "Permissions-Policy": "accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), clipboard-read=(self), clipboard-write=(self), gamepad=(), speaker-selection=(), conversion-measurement=(), focus-without-user-activation=(), hid=(), idle-detection=(), interest-cohort=(), serial=(), sync-script=(), trust-token-redemption=(), window-placement=(), vertical-scroll=()",
+      "X-XSS-Protection": "1; mode=block"
+    },
+    "allow_raw_access": false
+  },
+  {
     "match": ".well-known",
     "ignore": false
   },

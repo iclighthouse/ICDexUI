@@ -779,7 +779,6 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Menu } from '@/components/menu/model';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
-import { ICSwapRouterService } from '@/ic/ICSwapRouter/ICSwapRouterService';
 import {
   CompetitionsData,
   CompetitionsDataInfo,
@@ -789,12 +788,12 @@ import {
 } from '@/ic/ICSwapRouter/model';
 import { TokenId, TokenInfo, TokenStd } from '@/ic/common/icType';
 import BigNumber from 'bignumber.js';
-import { TokenLiquidity } from '@/ic/ICSwap/model';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { namespace } from 'vuex-class';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 
 const commonModule = namespace('common');
 
@@ -806,7 +805,7 @@ const commonModule = namespace('common');
 })
 export default class extends Vue {
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
-  private ICSwapRouterService: ICSwapRouterService;
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   private tokens: { [key: string]: TokenInfo } = {};
   private competitions: Array<CompetitionsData> = [];
   private page = {
@@ -880,7 +879,7 @@ export default class extends Vue {
   }
   created(): void {
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    this.ICSwapRouterService = new ICSwapRouterService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.getCompetitions('init');
     this.getDexCompetitions();
     const principal = localStorage.getItem('principal');
@@ -893,7 +892,7 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    const res = await this.ICSwapRouterService.registerDexCompetition();
+    const res = await this.ICSwapRouterFiduciaryService.registerDexCompetition();
     loading.close();
     if (res) {
       this.$message.success('Register Success');
@@ -907,8 +906,8 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    this.round = await this.ICSwapRouterService.getDexCompetitionRound();
-    const res = await this.ICSwapRouterService.getDexCompetition(this.round);
+    this.round = await this.ICSwapRouterFiduciaryService.getDexCompetitionRound();
+    const res = await this.ICSwapRouterFiduciaryService.getDexCompetition(this.round);
     console.log(this.round, res);
     if (res && res.length) {
       this.dexCompetitionResponse = res[0];
@@ -928,7 +927,7 @@ export default class extends Vue {
   private async getDexCompetition(): Promise<void> {
     const principal = localStorage.getItem('principal');
     if (principal) {
-      const res = await this.ICSwapRouterService.getDexCompetitionTrader(
+      const res = await this.ICSwapRouterFiduciaryService.getDexCompetitionTrader(
         this.round,
         principalToAccountIdentifier(Principal.fromText(principal))
       );
@@ -1049,7 +1048,7 @@ export default class extends Vue {
     if (this.$route.query.type) {
       dexName = [this.$route.query.type];
     }
-    const res = await this.ICSwapRouterService.getCompetitions(
+    const res = await this.ICSwapRouterFiduciaryService.getCompetitions(
       dexName,
       [this.page.current],
       [this.page.pageSize]

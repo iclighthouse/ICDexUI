@@ -1,15 +1,11 @@
 import { Principal } from '@dfinity/principal';
 import Service, {
-  AccountSetting,
   Ambassador,
   CompDepositAccount,
   CompResult,
   CompRoundResponse,
-  ConfigMode,
-  DexRole,
   DexSetting,
   KBar,
-  KeepingBalance,
   LatestFilledRecord,
   LevelResponse,
   MakerRebate,
@@ -18,14 +14,9 @@ import Service, {
   OrderStatusResponse,
   OrderType,
   PairInfo,
-  ProOrderConfig,
-  ProOrderConfigUpdate,
   Round,
   Setting,
-  Soid,
   Stats,
-  STOrder,
-  StoSetting,
   SysMode,
   TradingResult,
   TrieList,
@@ -36,14 +27,20 @@ import { checkAuth } from '@/ic/CheckAuth';
 import { buildService } from '@/ic/Service';
 import ICDexIDL from './ICDex.did';
 import store from '@/store';
-import { AccountIdentifier, Time, Txid } from '@/ic/common/icType';
+import {
+  AccountIdentifier,
+  Icrc1Account,
+  Time,
+  Txid
+} from '@/ic/common/icType';
 import { Amount, DexInfo, TokenLiquidity } from '@/ic/ICSwap/model';
 import { Address } from '@/ic/DRC20Token/model';
 import { _data, Nonce } from '@/ic/ICLighthouseToken/model';
 import {
   fromSubAccountId,
-  principalToAccountIdentifier,
-  SerializableIC
+  generateTxid,
+  hexToBytes,
+  principalToAccountIdentifier
 } from '@/ic/converter';
 import { createPlugActor } from '@/ic/createPlugActor';
 import { createIcxActor } from '@/ic/createIcxActor';
@@ -51,8 +48,6 @@ import { validatePrincipal } from '@/ic/utils';
 import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
-
-const ProSubaccountId = 1;
 
 export class ICDexService {
   private check = async (
@@ -95,14 +90,13 @@ export class ICDexService {
     } else {
       return {
         pairId: canisterId,
-        tokenLiquidity: SerializableIC(res)
+        tokenLiquidity: res
       };
     }
   };
   public level10 = async (canisterId: string): Promise<LevelResponse> => {
     const service = await this.check(canisterId, false, false);
-    const res = await service.level10();
-    return SerializableIC(res);
+    return await service.level10();
   };
   public level100 = async (
     canisterId: string
@@ -112,7 +106,7 @@ export class ICDexService {
     if (res) {
       return {
         pairId: canisterId,
-        levelResponse: SerializableIC(res)
+        levelResponse: res
       };
     }
   };
@@ -124,9 +118,25 @@ export class ICDexService {
     const res = await service.getTxAccount(address);
     const principal = localStorage.getItem('principal');
     if (res && principal === address) {
+      const nonce = res[2];
+      const txid = generateTxid(
+        Principal.fromText(principal),
+        nonce,
+        new Uint8Array(fromSubAccountId(0)),
+        canisterId
+      );
+      const account: Icrc1Account = {
+        owner: Principal.fromText(canisterId),
+        subaccount: [txid]
+      };
+      const address: string = principalToAccountIdentifier(
+        account.owner,
+        new Uint8Array(account.subaccount[0])
+      );
+      const txAccount: TxAccount = [account, address, nonce, txid];
       return {
         pairId: canisterId,
-        txAccount: SerializableIC(res)
+        txAccount: txAccount
       };
     } else {
       return null;
@@ -152,7 +162,7 @@ export class ICDexService {
     ) {
       nonce = [];
     }
-    const res = await service.trade(
+    return await service.trade(
       orderPrice,
       orderType,
       expiration,
@@ -160,7 +170,6 @@ export class ICDexService {
       subAccount,
       data
     );
-    return SerializableIC(res);
   };
   public pending = async (
     canisterId: string,
@@ -169,13 +178,12 @@ export class ICDexService {
     size: Array<number> = []
   ): Promise<{ pairId: string; trieList: TrieList }> => {
     const service = await this.check(canisterId, false, false);
-    const principal = localStorage.getItem('principal');
     const res = await service.pending(address, page, size);
-    const principal1 = localStorage.getItem('principal');
-    if (principal1 !== principal) {
+    const principal = localStorage.getItem('principal');
+    if (address[0] && address[0] !== principal) {
       return null;
     } else {
-      return { pairId: canisterId, trieList: SerializableIC(res) };
+      return { pairId: canisterId, trieList: res };
     }
   };
   public cancel = async (
@@ -193,8 +201,7 @@ export class ICDexService {
     //   nonce = [];
     // }
     console.log(nonce);
-    const res = await service.cancel(nonce, subAccount);
-    return SerializableIC(res);
+    return await service.cancel(nonce, subAccount);
   };
   public cancelByTxid = async (
     canisterId: string,
@@ -211,20 +218,14 @@ export class ICDexService {
   public drc205Events = async (
     canisterId: string,
     address: Array<Address>
-  ): Promise<{ paidId: string; records: Array<TxnRecord> }> => {
-    try {
-      const service = await this.check(canisterId, false, false);
-      const principal = localStorage.getItem('principal');
-      const res = await service.drc205_events(address);
-      const principal1 = localStorage.getItem('principal');
-      if (principal1 !== principal) {
-        return null;
-      } else {
-        return { paidId: canisterId, records: SerializableIC(res) };
-      }
-    } catch (e) {
-      console.error(e);
+  ): Promise<Array<TxnRecord>> => {
+    const service = await this.check(canisterId, false, false);
+    const res = await service.drc205_events(address);
+    const principal = localStorage.getItem('principal');
+    if (address[0] && address[0] !== principal) {
       return null;
+    } else {
+      return res;
     }
   };
   public getQuotes = async (
@@ -234,7 +235,7 @@ export class ICDexService {
     const service = await this.check(canisterId, false, false);
     const res = await service.getQuotes(kInterval);
     if (res) {
-      return { paidId: canisterId, quotes: SerializableIC(res) };
+      return { paidId: canisterId, quotes: res };
     }
   };
   public latestFilled = async (
@@ -243,7 +244,7 @@ export class ICDexService {
     const service = await this.check(canisterId, false, false);
     const res = await service.latestFilled();
     if (res) {
-      return { pairId: canisterId, latestFilledRecord: SerializableIC(res) };
+      return { pairId: canisterId, latestFilledRecord: res };
     }
   };
   public ictc_getTO = async (
@@ -254,7 +255,7 @@ export class ICDexService {
     const res = await service.ictc_getTO(toid);
     return {
       pairId: canisterId,
-      orders: SerializableIC(res)
+      orders: res
     };
   };
   public drc205_getConfig = async (
@@ -264,7 +265,7 @@ export class ICDexService {
     const res = await service.drc205_getConfig();
     return {
       pairId: canisterId,
-      setting: SerializableIC(res)
+      setting: res
     };
   };
   public ictc_TTRun = async (canisterId: string): Promise<bigint> => {
@@ -278,7 +279,7 @@ export class ICDexService {
     const res = await service.getConfig();
     return {
       pairId: canisterId,
-      dexSetting: SerializableIC(res)
+      dexSetting: res
     };
   };
   public makerRebate = async (
@@ -292,7 +293,7 @@ export class ICDexService {
     const res = await service.makerRebate(address);
     return {
       pairId: canisterId,
-      makerRebate: SerializableIC(res)
+      makerRebate: res
     };
   };
   public drc205_dexInfo = async (
@@ -304,7 +305,7 @@ export class ICDexService {
       const res = await service.drc205_dexInfo();
       return {
         pairId: canisterId,
-        dexInfo: SerializableIC(res)
+        dexInfo: res
       };
     } catch (e) {
       console.error(e);
@@ -330,7 +331,7 @@ export class ICDexService {
     const res = await service.stats();
     return {
       pairId: canisterId,
-      stats: SerializableIC(res)
+      stats: res
     };
   };
   public monitor = async (
@@ -341,7 +342,7 @@ export class ICDexService {
       const res = await service.monitor();
       return {
         pairId: canisterId,
-        monitor: SerializableIC(res)
+        monitor: res
       };
     } catch (e) {
       //
@@ -355,7 +356,7 @@ export class ICDexService {
       const res = await service.info();
       return {
         pairId: canisterId,
-        pairInfo: SerializableIC(res)
+        pairInfo: res
       };
     } catch (e) {
       //
@@ -370,7 +371,7 @@ export class ICDexService {
       const res = await service.statusByTxid(txid);
       return {
         pairId: canisterId,
-        orderStatusResponse: SerializableIC(res)
+        orderStatusResponse: res
       };
     } catch (e) {
       return null;
@@ -384,7 +385,7 @@ export class ICDexService {
       const res = await service.pendingCount();
       return {
         pairId: canisterId,
-        count: SerializableIC(res)
+        count: res
       };
     } catch (e) {
       return {
@@ -401,7 +402,7 @@ export class ICDexService {
       const res = await service.orderExpirationDuration();
       return {
         pairId: canisterId,
-        time: SerializableIC(res)
+        time: res
       };
     } catch (e) {
       return null;
@@ -414,7 +415,7 @@ export class ICDexService {
     const res = await service.ta_description();
     return {
       pairId: canisterId,
-      ta_description: SerializableIC(res)
+      ta_description: res
     };
   };
   public ta_getReferrer = async (
@@ -428,7 +429,7 @@ export class ICDexService {
     const res = await service.ta_getReferrer(address);
     return {
       pairId: canisterId,
-      referrer: SerializableIC(res)
+      referrer: res
     };
   };
   public comp_round = async (
@@ -439,7 +440,7 @@ export class ICDexService {
     const res = await service.comp_round(round);
     return {
       pairId: canisterId,
-      compRoundResponse: SerializableIC(res)
+      compRoundResponse: res
     };
   };
   public comp_result = async (
@@ -460,7 +461,7 @@ export class ICDexService {
       Principal.fromText(principal)
     );
     if (address1 === address) {
-      return SerializableIC(res);
+      return res;
     } else {
       return null;
     }
@@ -498,7 +499,7 @@ export class ICDexService {
       Principal.fromText(principal)
     );
     if (address1 === address) {
-      return SerializableIC(res);
+      return res;
     } else {
       return null;
     }
@@ -531,7 +532,7 @@ export class ICDexService {
     const res = await service.ta_ambassador(address);
     return {
       pairId: canisterId,
-      ambassador: SerializableIC(res)
+      ambassador: res
     };
   };
   public compFallback = async (
@@ -579,199 +580,6 @@ export class ICDexService {
       };
     } catch (e) {
       console.error(e);
-      return null;
-    }
-  };
-  public accountBalance = async (
-    canisterId: string,
-    subAccountId = 0
-  ): Promise<{ pairId: string; keepingBalance: KeepingBalance }> => {
-    const service = await this.check(canisterId);
-    try {
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(
-        Principal.fromText(principal),
-        new Uint8Array(fromSubAccountId(subAccountId))
-      );
-      const res = await service.accountBalance(address);
-      const principal1 = localStorage.getItem('principal');
-      if (principal === principal1) {
-        return {
-          pairId: canisterId,
-          keepingBalance: res
-        };
-      } else {
-        return null;
-      }
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public accountSetting = async (
-    canisterId: string,
-    address: Address
-  ): Promise<{ pairId: string; accountSetting: AccountSetting }> => {
-    const service = await this.check(canisterId);
-    try {
-      const res = await service.accountSetting(address);
-      return {
-        pairId: canisterId,
-        accountSetting: SerializableIC(res)
-      };
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public accountConfig = async (
-    canisterId: string,
-    mode: ConfigMode,
-    keeping: boolean,
-    subAccountId = 0
-  ): Promise<void> => {
-    const service = await this.check(canisterId);
-    try {
-      let subAccount = [[]];
-      if (subAccountId || subAccountId === 0) {
-        subAccount = [fromSubAccountId(subAccountId)];
-      }
-      return await service.accountConfig(mode, keeping, subAccount);
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public deposit = async (
-    canisterId: string,
-    token: { token0: null } | { token1: null },
-    amount: Amount,
-    subAccountId = 0
-  ): Promise<void> => {
-    const service = await this.check(canisterId);
-    try {
-      let subAccount = [[]];
-      if (subAccountId || subAccountId === 0) {
-        subAccount = [fromSubAccountId(subAccountId)];
-      }
-      return await service.deposit(token, amount, subAccount);
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public depositFallback = async (
-    canisterId: string,
-    subAccountId = 0
-  ): Promise<[Amount, Amount]> => {
-    const service = await this.check(canisterId);
-    try {
-      let subAccount = [[]];
-      if (subAccountId || subAccountId === 0) {
-        subAccount = [fromSubAccountId(subAccountId)];
-      }
-      return await service.depositFallback(subAccount);
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public withdraw = async (
-    canisterId: string,
-    token0Amount: Array<Amount> = [],
-    token1Amount: Array<Amount> = [],
-    subAccountId = 0
-  ): Promise<[Amount, Amount]> => {
-    const service = await this.check(canisterId);
-    try {
-      let subAccount = [[]];
-      if (subAccountId || subAccountId === 0) {
-        subAccount = [fromSubAccountId(subAccountId)];
-      }
-      return await service.withdraw(token0Amount, token1Amount, subAccount);
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public getRole = async (
-    canisterId: string,
-    address: Address
-  ): Promise<{ pairId: string; dexRole: DexRole }> => {
-    const service = await this.check(canisterId);
-    try {
-      const res = await service.getRole(address);
-      return {
-        pairId: canisterId,
-        dexRole: SerializableIC(res)
-      };
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public sto_createProOrder = async (
-    canisterId: string,
-    proOrderConfig: ProOrderConfig,
-    subAccountId = 0
-  ): Promise<Soid> => {
-    const service = await this.check(canisterId);
-    let subAccount = [[]];
-    if (subAccountId || subAccountId === 0) {
-      subAccount = [fromSubAccountId(subAccountId)];
-    }
-    return await service.sto_createProOrder(proOrderConfig, subAccount);
-  };
-  public sto_updateProOrder = async (
-    canisterId: string,
-    soid: Soid,
-    proOrderConfig: ProOrderConfigUpdate,
-    subAccountId = 0
-  ): Promise<Soid> => {
-    const service = await this.check(canisterId);
-    let subAccount = [[]];
-    if (subAccountId || subAccountId === 0) {
-      subAccount = [fromSubAccountId(subAccountId)];
-    }
-    return await service.sto_updateProOrder(soid, proOrderConfig, subAccount);
-  };
-  public sto_getAccountProOrders = async (
-    canisterId: string,
-    address: Address
-  ): Promise<{ pairId: string; orders: Array<STOrder> }> => {
-    const service = await this.check(canisterId);
-    try {
-      const res = await service.sto_getAccountProOrders(address);
-      const principal = localStorage.getItem('principal');
-      const address1 = principalToAccountIdentifier(
-        Principal.fromText(principal),
-        new Uint8Array(fromSubAccountId(ProSubaccountId))
-      );
-      if (address1 === address) {
-        return {
-          pairId: canisterId,
-          orders: SerializableIC(res)
-        };
-      } else {
-        return null;
-      }
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  };
-  public sto_getConfig = async (
-    canisterId: string
-  ): Promise<{ pairId: string; stoSetting: StoSetting }> => {
-    const service = await this.check(canisterId);
-    try {
-      const res = await service.sto_getConfig();
-      return {
-        pairId: canisterId,
-        stoSetting: SerializableIC(res)
-      };
-    } catch (e) {
-      console.log(e);
       return null;
     }
   };

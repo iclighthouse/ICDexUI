@@ -1,6 +1,8 @@
 import { Principal } from '@dfinity/principal';
 import Service, {
   Address,
+  ApproveArgs,
+  ApproveResponse,
   DRC207Support,
   IcrcMetadata,
   IcrcReceipt,
@@ -372,6 +374,29 @@ export class DRC20TokenService {
         created_at_time: []
       };
       return await service.send_dfx(request);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public icrc2_approve = async (
+    canisterId: string,
+    spender: Icrc1Account,
+    amount: Amount
+  ): Promise<ApproveResponse> => {
+    const service = await this.check(canisterId);
+    const approveArgs: ApproveArgs = {
+      fee: [],
+      memo: [],
+      from_subaccount: [],
+      created_at_time: [],
+      amount: amount,
+      expected_allowance: [],
+      expires_at: [],
+      spender: spender
+    };
+    try {
+      return await service.icrc2_approve(approveArgs);
     } catch (e) {
       console.log(e);
       return null;

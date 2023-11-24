@@ -54,7 +54,6 @@ import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { SwapMenu, SwapTokenInfo, SwapType } from '@/views/home/ICSwap/model';
 import { TokenId, TokenInfo, TokenStd } from '@/ic/common/icType';
 import { getTokenInfo } from '@/ic/getTokenInfo';
-import { ICSwapRouterService } from '@/ic/ICSwapRouter/ICSwapRouterService';
 import { BalanceMixin } from '@/mixins';
 import { swapTokenIdToIcpOrCycles } from '@/ic/icSwapUtils';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
@@ -67,6 +66,7 @@ import {
   currentPageConnectInfinity,
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 
 @Component({
   name: 'Index',
@@ -105,7 +105,7 @@ export default class extends Mixins(BalanceMixin) {
       ];
     }
   }
-  private IcSwapRouterService: ICSwapRouterService;
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   private tokensBalance: { [key: string]: string } = {};
   private swapMenu = SwapMenu;
   private menuList = [
@@ -129,7 +129,7 @@ export default class extends Mixins(BalanceMixin) {
     } else {
       // this.swapType = SwapMenu.Wrap;
     }
-    this.IcSwapRouterService = new ICSwapRouterService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
     this.tokensBalance = currentInfo.tokensBalance || {};
@@ -167,7 +167,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async getDexPairs(page = 1, size = 100): Promise<TrieList> {
     try {
-      return await this.IcSwapRouterService.getPairs(
+      return await this.ICSwapRouterFiduciaryService.getPairs(
         ['icswap'],
         [page],
         [size]
@@ -182,7 +182,8 @@ export default class extends Mixins(BalanceMixin) {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
-      const res = await this.IcSwapRouterService.getTokens();
+      const res = await this.ICSwapRouterFiduciaryService.getTokens();
+      console.log(res);
       loading.close();
       const tokenFromId = this.$route.params.tokenFromId;
       if (!tokenFromId) {

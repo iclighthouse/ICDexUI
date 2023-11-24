@@ -306,6 +306,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
+    this.setIdentity(null);
     this.setCheckAuth(false);
   }
   private checkRiskWarning(): void {
@@ -397,9 +398,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
   private signInstead(): void {
     this.password = '';
-    this.setCheckAuth(false);
-    localStorage.removeItem('principal');
-    this.setPrincipalId(null);
+    this.logout();
     this.$router.replace({
       path: '/login',
       query: { redirect: this.$route.fullPath }
@@ -430,7 +429,13 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           const phraseList =
             JSON.parse(localStorage.getItem('phraseList')) || {};
           const encryptSeedPhrase = phraseList[this.getPrincipalId];
-          const mnemonic = await decrypt(encryptSeedPhrase, this.password);
+          let salt = 'ICLightHouse';
+          let data = encryptSeedPhrase;
+          if (encryptSeedPhrase.salt) {
+            salt = encryptSeedPhrase.salt;
+            data = encryptSeedPhrase.encryptSeedPhrase;
+          }
+          const mnemonic = await decrypt(data, this.password, salt);
           const root = ethers.utils.HDNode.fromMnemonic(mnemonic);
           const path = "m/44'/223'/0'/0/0";
           const keyPair = root.derivePath(path);
@@ -438,13 +443,16 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
             new Uint8Array(hexToBytes(keyPair.privateKey))
           );
         } else {
-          const encryptIdentity = JSON.parse(localStorage.getItem('priList'))[
-            this.getPrincipalId
-          ];
-          const identityJson = await decrypt(
-            JSON.parse(encryptIdentity),
-            this.password
+          const encryptIdentity = JSON.parse(
+            JSON.parse(localStorage.getItem('priList'))[this.getPrincipalId]
           );
+          let salt = 'ICLightHouse';
+          let data = encryptIdentity;
+          if (encryptIdentity.salt) {
+            salt = encryptIdentity.salt;
+            data = encryptIdentity.encryptIdentity;
+          }
+          const identityJson = await decrypt(data, this.password, salt);
           if (JSON.parse(identityJson)[1].length > 64) {
             identity = Ed25519KeyIdentity.fromJSON(identityJson as string);
           } else {

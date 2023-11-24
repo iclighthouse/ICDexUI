@@ -233,7 +233,7 @@
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDex Canister v0.9.28 beta
             </span>
-            <span>Web v1.8.3 beta</span>
+            <span>Web v1.9.1 beta</span>
           </span>
           <a
             class="old-version"
@@ -558,6 +558,7 @@ export default class extends Vue {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
       const encryptSeedPhrase = phraseList[this.getPrincipalId];
+      console.log(encryptSeedPhrase);
       if (!encryptSeedPhrase) {
         this.activeKey = 0;
       }

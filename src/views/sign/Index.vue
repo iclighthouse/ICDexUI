@@ -176,6 +176,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   public reset(): void {
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
+    this.setIdentity(null);
     this.$router.replace('/');
   }
   private async onSubmitMetaMask(): Promise<void> {
@@ -184,7 +185,13 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     const encryptSeedPhrase = phraseList[this.selectedAccount];
     let mnemonic;
     try {
-      mnemonic = await decrypt(encryptSeedPhrase, this.password);
+      let salt = 'ICLightHouse';
+      let data = encryptSeedPhrase;
+      if (encryptSeedPhrase.salt) {
+        salt = encryptSeedPhrase.salt;
+        data = encryptSeedPhrase.encryptSeedPhrase;
+      }
+      mnemonic = await decrypt(data, this.password, salt);
     } catch (e) {
       this.spinning = false;
       console.log(e);
@@ -321,6 +328,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   private signInstead(): void {
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
+    this.setIdentity(null);
     if (this.$route.query.redirect) {
       this.$router.replace({
         path: '/login',
@@ -335,13 +343,16 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     setTimeout(async () => {
       try {
         const principal = localStorage.getItem('principal');
-        const encryptIdentity = JSON.parse(localStorage.getItem('priList'))[
-          principal
-        ];
-        const identityJson = await decrypt(
-          JSON.parse(encryptIdentity),
-          this.password
+        const encryptIdentity = JSON.parse(
+          JSON.parse(localStorage.getItem('priList'))[principal]
         );
+        let salt = 'ICLightHouse';
+        let data = encryptIdentity;
+        if (encryptIdentity.salt) {
+          salt = encryptIdentity.salt;
+          data = encryptIdentity.encryptIdentity;
+        }
+        const identityJson = await decrypt(data, this.password, salt);
         let identity;
         if (JSON.parse(identityJson)[1].length > 64) {
           identity = Ed25519KeyIdentity.fromJSON(identityJson as string);

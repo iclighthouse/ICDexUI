@@ -43,6 +43,7 @@ const commonModule = namespace('common');
 export default class extends Vue {
   @commonModule.Mutation('SET_PRINCIPAL_ID') setPrincipalId?: any;
   @commonModule.Mutation('SET_SHOW_CHECK_AUTH') setCheckAuth?: any;
+  @commonModule.Mutation('SET_IDENTITY') setIdentity?: any;
   @Prop({ type: String, default: '' })
   private plugAccount!: string;
   @Prop({ type: String, default: '' })
@@ -66,6 +67,7 @@ export default class extends Vue {
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
+    this.setIdentity(null);
     this.setCheckAuth(false);
     this.$router.replace({
       path: '/login',

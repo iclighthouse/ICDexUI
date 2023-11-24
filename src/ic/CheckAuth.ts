@@ -29,6 +29,12 @@ export const checkAuth = (
       return;
     }
     const principal = localStorage.getItem('principal');
+    if (store.getters['common/getIdentity']) {
+      const identity = store.getters['common/getIdentity'] as Identity;
+      if (identity && identity.getPrincipal().toString() !== principal) {
+        location.reload();
+      }
+    }
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     if (priList[principal] === 'AuthClient') {
       AuthClientAPi.create().then((authClientAPi) => {

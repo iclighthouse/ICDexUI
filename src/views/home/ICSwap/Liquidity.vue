@@ -278,7 +278,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
-import { ICSwapRouterService } from '@/ic/ICSwapRouter/ICSwapRouterService';
 import {
   DexNameEnum,
   DexNameType,
@@ -305,6 +304,7 @@ import {
   swapTokenIdToIcpOrCycles,
   toLocalPool
 } from '@/ic/icSwapUtils';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 
 @Component({
   name: 'IcSwapLiquidity',
@@ -317,7 +317,7 @@ export default class extends Vue {
   tokensBalance!: { [key: string]: string };
   @Prop({ type: Array, default: () => [] })
   tokenList!: Array<SwapTokenInfo>;
-  private ICSwapRouterService: ICSwapRouterService;
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   private pools: Array<Pool> = [];
   private currentPoolIndex: number = null;
   private currentPool: Pool = null;
@@ -329,7 +329,7 @@ export default class extends Vue {
   private principal = '';
   created(): void {
     this.principal = localStorage.getItem('principal');
-    this.ICSwapRouterService = new ICSwapRouterService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     const tokenFromId = icpOrCyclesToSwapTokenId(
       this.$route.params.tokenFromId
     );
@@ -424,7 +424,7 @@ export default class extends Vue {
           const promiseAllValue = [];
           const principal = localStorage.getItem('principal');
           promiseAllValue.push(
-            this.ICSwapRouterService.route(
+            this.ICSwapRouterFiduciaryService.route(
               Principal.fromText(this.getCurrentTokenId(dexInfo.token0[0])),
               Principal.fromText(this.getCurrentTokenId(dexInfo.token1[0]))
             ),
@@ -756,7 +756,7 @@ export default class extends Vue {
     page = 1,
     size = 20
   ): Promise<Array<TrieListData>> {
-    const res = await this.ICSwapRouterService.getPairs(
+    const res = await this.ICSwapRouterFiduciaryService.getPairs(
       [dexName],
       [page],
       [size]

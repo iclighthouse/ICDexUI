@@ -1,7 +1,6 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
 import BigNumber from 'bignumber.js';
-import { ICSwapRouterService } from '@/ic/ICSwapRouter/ICSwapRouterService';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { ICManagementService } from '@/ic/ICManagement/ICManagementService';
 import {
@@ -47,6 +46,7 @@ import {
   currentPageConnectInfinity,
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 const commonModule = namespace('common');
 
 @Component({
@@ -65,7 +65,7 @@ export class PairsMixin extends Vue {
   @Prop({ type: Array, default: () => [] })
   currentPool!: Pool;
   public walletService: WalletService;
-  public ICSwapRouterService: ICSwapRouterService;
+  public ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   public cyclesFinanceService: CyclesFinanceService;
   public tokenListLoading = false;
   public swapDecimals = 0;
@@ -120,7 +120,7 @@ export class PairsMixin extends Vue {
     this.walletService = new WalletService();
     this.cyclesFinanceService = new CyclesFinanceService();
     this.ICManagementService = new ICManagementService();
-    this.ICSwapRouterService = new ICSwapRouterService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.ICLighthouseService = new ICLighthouseService();
     this.ledgerService = new LedgerService();
     const tokenFromId = icpOrCyclesToSwapTokenId(
@@ -718,7 +718,7 @@ export class PairsMixin extends Vue {
     }
   }
   public async initAddLiquidity(): Promise<void> {
-    this.currentRoute = await this.ICSwapRouterService.route(
+    this.currentRoute = await this.ICSwapRouterFiduciaryService.route(
       this.tokenSwapFrom[0],
       this.tokenSwapTo[0]
     );
@@ -932,13 +932,13 @@ export class PairsMixin extends Vue {
     try {
       let res: Array<Pairs> = [];
       if (hasICDex) {
-        res = await this.ICSwapRouterService.getPairsByToken(tokenId);
+        res = await this.ICSwapRouterFiduciaryService.getPairsByToken(tokenId);
       } else {
         const routers = await Promise.all([
-          this.ICSwapRouterService.getPairsByToken(tokenId, [
+          this.ICSwapRouterFiduciaryService.getPairsByToken(tokenId, [
             DexNameEnum.cyclesfinance
           ]),
-          this.ICSwapRouterService.getPairsByToken(tokenId, [
+          this.ICSwapRouterFiduciaryService.getPairsByToken(tokenId, [
             DexNameEnum.icswap
           ])
         ]);
@@ -1131,7 +1131,7 @@ export class PairsMixin extends Vue {
     this.depositing = null;
     try {
       if (this.tokenSwapFrom && this.tokenSwapTo) {
-        const res = await this.ICSwapRouterService.route(
+        const res = await this.ICSwapRouterFiduciaryService.route(
           this.tokenSwapFrom[0],
           this.tokenSwapTo[0]
         );

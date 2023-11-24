@@ -1,22 +1,9 @@
 export default ({ IDL }) => {
-  const Txid = IDL.Vec(IDL.Nat8);
-  const TxnResult = IDL.Variant({
-    ok: Txid,
-    err: IDL.Record({
-      code: IDL.Variant({
-        NonceError: IDL.Null,
-        InsufficientGas: IDL.Null,
-        InsufficientAllowance: IDL.Null,
-        UndefinedError: IDL.Null,
-        InsufficientBalance: IDL.Null,
-        NoLockedTransfer: IDL.Null,
-        DuplicateExecutedTransfer: IDL.Null,
-        LockedTransferExpired: IDL.Null
-      }),
-      message: IDL.Text
-    })
+  const Subaccount = IDL.Vec(IDL.Nat8);
+  const Account = IDL.Record({
+    owner: IDL.Principal,
+    subaccount: IDL.Opt(Subaccount)
   });
-  const Address = IDL.Text;
   const definite_canister_settings = IDL.Record({
     freezing_threshold: IDL.Nat,
     controllers: IDL.Vec(IDL.Principal),
@@ -35,6 +22,7 @@ export default ({ IDL }) => {
     module_hash: IDL.Opt(IDL.Vec(IDL.Nat8))
   });
   const Metadata = IDL.Record({ content: IDL.Text, name: IDL.Text });
+  const Address = IDL.Text;
   const InitArgs = IDL.Record({
     fee: IDL.Nat,
     decimals: IDL.Nat8,
@@ -56,51 +44,6 @@ export default ({ IDL }) => {
     }),
     cycles_receivable: IDL.Bool
   });
-  const Time__1 = IDL.Int;
-  const Gas = IDL.Variant({
-    token: IDL.Nat,
-    cycles: IDL.Nat,
-    noFee: IDL.Null
-  });
-  const AccountId = IDL.Vec(IDL.Nat8);
-  const Time = IDL.Int;
-  const Operation = IDL.Variant({
-    approve: IDL.Record({ allowance: IDL.Nat }),
-    lockTransfer: IDL.Record({
-      locked: IDL.Nat,
-      expiration: Time,
-      decider: AccountId
-    }),
-    transfer: IDL.Record({
-      action: IDL.Variant({
-        burn: IDL.Null,
-        mint: IDL.Null,
-        send: IDL.Null
-      })
-    }),
-    executeTransfer: IDL.Record({
-      fallback: IDL.Nat,
-      lockedTxid: Txid
-    })
-  });
-  const Transaction = IDL.Record({
-    to: AccountId,
-    value: IDL.Nat,
-    data: IDL.Opt(IDL.Vec(IDL.Nat8)),
-    from: AccountId,
-    operation: Operation
-  });
-  const TxnRecord = IDL.Record({
-    gas: Gas,
-    msgCaller: IDL.Opt(IDL.Principal),
-    transaction: Transaction,
-    txid: Txid,
-    nonce: IDL.Nat,
-    timestamp: Time,
-    caller: AccountId,
-    index: IDL.Nat
-  });
-  const CallbackLog = IDL.Tuple(IDL.Principal, Time__1, TxnRecord);
   const Token = IDL.Record({
     decimals: IDL.Nat8,
     moduleHash: IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -108,12 +51,8 @@ export default ({ IDL }) => {
     note: IDL.Text,
     symbol: IDL.Text
   });
-  const TokenItem = IDL.Tuple(IDL.Principal, Token, IDL.Nat, IDL.Nat, Time__1);
-  const ExecuteType = IDL.Variant({
-    fallback: IDL.Null,
-    send: IDL.Nat,
-    sendAll: IDL.Null
-  });
+  const Time = IDL.Int;
+  const TokenItem = IDL.Tuple(IDL.Principal, Token, IDL.Nat, IDL.Nat, Time);
   const TokenStatus = IDL.Record({
     status: IDL.Variant({
       stopped: IDL.Null,
@@ -131,48 +70,55 @@ export default ({ IDL }) => {
     module_hash: IDL.Opt(IDL.Vec(IDL.Nat8))
   });
   return IDL.Service({
-    ICLBurn: IDL.Func([IDL.Nat], [TxnResult], []),
-    ICLWithdraw: IDL.Func([Address, IDL.Nat], [TxnResult], []),
-    cancelStar: IDL.Func([IDL.Principal], [IDL.Bool], []),
+    ICLWithdraw: IDL.Func([Account, IDL.Nat], [], []),
+    cancelStar: IDL.Func(
+      [IDL.Principal, IDL.Opt(IDL.Vec(IDL.Nat8))],
+      [IDL.Bool],
+      []
+    ),
     canister_status: IDL.Func([], [canister_status], []),
     changeOwner: IDL.Func([IDL.Principal], [IDL.Bool], []),
-    create: IDL.Func([InitArgs], [IDL.Opt(IDL.Principal)], []),
+    config: IDL.Func(
+      [
+        IDL.Record({
+          BLACKHOLE: IDL.Opt(IDL.Principal),
+          SYSTOKEN_FEE: IDL.Opt(IDL.Nat),
+          TOKEN_CREATION_FEE: IDL.Opt(IDL.Nat),
+          SYSTOKEN: IDL.Opt(IDL.Principal),
+          STAR_IT_FEE: IDL.Opt(IDL.Nat)
+        })
+      ],
+      [],
+      []
+    ),
+    create: IDL.Func(
+      [InitArgs, IDL.Opt(IDL.Vec(IDL.Nat8))],
+      [IDL.Opt(IDL.Principal)],
+      []
+    ),
     cyclesWithdraw: IDL.Func([IDL.Principal, IDL.Nat], [], []),
     deleteToken: IDL.Func([IDL.Principal, IDL.Bool], [IDL.Bool], []),
     deleteTokenList: IDL.Func([IDL.Principal], [IDL.Bool], []),
     drc207: IDL.Func([], [DRC207Support], ['query']),
-    getCallbackLogs: IDL.Func([], [IDL.Vec(CallbackLog)], ['query']),
     getMemory: IDL.Func([], [IDL.Nat, IDL.Nat, IDL.Nat], ['query']),
     getStarTokens: IDL.Func(
-      [IDL.Principal],
+      [IDL.Principal, IDL.Opt(IDL.Vec(IDL.Nat8))],
       [IDL.Opt(IDL.Vec(IDL.Principal))],
       ['query']
     ),
     getTokenList: IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(TokenItem)], ['query']),
     getTokens: IDL.Func([IDL.Principal], [IDL.Vec(IDL.Principal)], ['query']),
     getWasmVersion: IDL.Func([], [IDL.Text, IDL.Text, IDL.Nat], ['query']),
-    lockTransferFromTest: IDL.Func(
-      [IDL.Principal, Address, Address, IDL.Nat, ExecuteType],
-      [IDL.Opt(Txid)],
-      []
-    ),
-    lockTransferTest: IDL.Func(
-      [IDL.Principal, Address, IDL.Nat, ExecuteType],
-      [IDL.Opt(Txid)],
-      []
-    ),
     modifyControllers: IDL.Func(
       [IDL.Principal, IDL.Vec(IDL.Principal)],
       [IDL.Bool],
       []
     ),
-    modifyOwner: IDL.Func([IDL.Principal, IDL.Principal], [IDL.Bool], []),
+    modifyManager: IDL.Func([IDL.Principal, IDL.Principal], [IDL.Bool], []),
     rollback: IDL.Func([IDL.Principal, InitArgs], [], []),
     setWasm: IDL.Func([IDL.Vec(IDL.Nat8), IDL.Text, IDL.Bool], [], []),
-    subscribe: IDL.Func([IDL.Principal], [IDL.Bool], []),
-    tokenCallback: IDL.Func([TxnRecord], [], []),
+    starIt: IDL.Func([IDL.Principal, IDL.Opt(IDL.Vec(IDL.Nat8))], [], []),
     tokenStatus: IDL.Func([IDL.Principal], [TokenStatus], []),
-    unsubscribe: IDL.Func([IDL.Principal], [IDL.Bool], []),
     update: IDL.Func([IDL.Principal, InitArgs], [], []),
     updateTokenList: IDL.Func([IDL.Principal, Token, IDL.Nat], [IDL.Bool], []),
     wallet_receive: IDL.Func([], [], [])

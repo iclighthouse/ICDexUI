@@ -4,13 +4,13 @@ import Service, {
   WithdrawalArg,
   WithdrawalResponse
 } from '@/ic/ckETHMinter/model';
-import { checkService } from '@/ic/checkService';
+import { createService } from '@/ic/createService';
 import { CK_ETH_MINTER_CANISTER_ID } from '@/ic/utils';
 import IDL from '@/ic/ckETHMinter/ckETHMinterDfi.did';
 
 export class ckETHMinterDfiService {
   private check = async (renew = true, isUpdate = true): Promise<Service> => {
-    return await checkService<Service>(
+    return await createService<Service>(
       CK_ETH_MINTER_CANISTER_ID,
       IDL,
       renew,

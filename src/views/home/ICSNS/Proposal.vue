@@ -184,7 +184,7 @@
                 <div>Voting Period Remaining</div>
                 <div class="voting-power-num">
                   <a-statistic-countdown
-                    class="voting-power-countdown"
+                    class="voting-power-countdown-proposal"
                     :value="deadline"
                     format="DD:HH:mm:ss"
                   />
@@ -206,7 +206,7 @@
             <div v-show="canVote" class="h5-show voting-power-countdown-h5">
               <span>Voting Period Left:</span>
               <a-statistic-countdown
-                class="voting-power-countdown"
+                class="voting-power-countdown-proposal"
                 :value="deadline"
                 format="DD:HH:mm:ss"
               />
@@ -623,6 +623,7 @@ export default class extends Vue {
         this.proposal.id,
         hexToBytes(neuronId)
       );
+      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -919,6 +920,7 @@ export default class extends Vue {
           governanceId,
           request
         );
+        console.log(res);
         if (res && res.proposals) {
           this.proposal = res.proposals[0];
         }
@@ -992,6 +994,7 @@ export default class extends Vue {
         governanceId,
         request
       );
+      console.log(res);
       if (res) {
         return res.neurons;
         // this.SNSNeurons = this.filterNeuron(res.neurons);
@@ -1431,7 +1434,7 @@ export default class extends Vue {
     max-width: 100%;
   }
 }
-.voting-power-countdown {
+.voting-power-countdown-proposal {
   line-height: 1;
   .ant-statistic-content {
     color: #fff;

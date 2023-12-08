@@ -1,30 +1,8 @@
 import { IDL } from '@dfinity/candid';
 import { canRequest } from '@/ic/ConnectPlug';
 import { Actor } from '@dfinity/agent';
-import {
-  // CYCLES_FINANCE_CANISTER_ID,
-  // GOVERNANCE_CANISTER_ID,
-  // IC_CANISTER_ID,
-  // IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
-  // IC_MANAGEMENT_CANISTER_ID,
-  // IC_STABLE_CANISTER_ID,
-  // IC_SWAP_ROUTER_CANISTER_ID,
-  // IC_TOKEN_CANISTER_ID,
-  // IC_MINING_CANISTER_ID
-  LEDGER_CANISTER_ID,
-  WICP_CANISTER_ID
-} from '@/ic/utils';
-// import ICManagementIDL from '@/ic/ICManagement/ICManagement.did';
+import { LEDGER_CANISTER_ID, WICP_CANISTER_ID } from '@/ic/utils';
 import ledgerIDL from '@/ic/ledger/ledger.did.js';
-// import governanceIDL from '@/ic/governance/governance.did';
-// import ICLighthouseIDL from '@/ic/ICLighthouse/ICLighthouse.did';
-// import ICTokenIDL from '@/ic/ICTokens/ICToken.did';
-// import ICLighthouseTokenIDL from '@/ic/ICLighthouseToken/ICLighthouseToken.did';
-// import cyclesFinanceIDL from '@/ic/cyclesFinance/cyclesFinance.did';
-// import ICSwapRouterIDL from '@/ic/ICSwapRouter/ICSwapRouter.did';
-// import ICStableIDL from '@/ic/ICStable/ICStable.did';
-// import IcMiningIDL from '@/ic/icMining/icMining.did';
-// import { transform } from '@/ic/Service';
 import DRC20IDL from '@/ic/DRC20Token/DRC20Token.did';
 
 const CHAT = '2ouva-viaaa-aaaaq-aaamq-cai';
@@ -35,8 +13,26 @@ const GHOST = '4c4fd-caaaa-aaaaq-aaa3a-cai';
 const MOD = 'xsi2v-cyaaa-aaaaq-aabfq-cai';
 const BOOM = 'vtrom-gqaaa-aaaaq-aabia-cai';
 const CAT = 'uf2wh-taaaa-aaaaq-aabna-cai';
-const snsToken = [CHAT, SNS1, KINIC, HOT, GHOST, MOD, BOOM, CAT];
+const ICX = 'rffwt-piaaa-aaaaq-aabqq-cai';
+const NUA = 'rxdbk-dyaaa-aaaaq-aabtq-cai';
+const SONIC = 'qbizb-wiaaa-aaaaq-aabwq-cai';
+const CKBTC = 'mxzaz-hqaaa-aaaar-qaada-cai';
+const snsToken = [
+  CKBTC,
+  CHAT,
+  SNS1,
+  KINIC,
+  HOT,
+  GHOST,
+  MOD,
+  BOOM,
+  CAT,
+  ICX,
+  NUA,
+  SONIC
+];
 
+const OT = 'imeri-bqaaa-aaaai-qnpla-cai';
 const plugActor: { [key: string]: any } = {};
 const plugIc = (window as any).ic?.plug;
 // each item will be an actor from to be executed
@@ -53,6 +49,7 @@ export const createPlugActor = async <T>(
   if (
     canisterId === LEDGER_CANISTER_ID ||
     canisterId === WICP_CANISTER_ID ||
+    canisterId == OT ||
     snsToken.includes(canisterId)
   ) {
     if (requestsCanisterId.includes(canisterId)) {
@@ -68,12 +65,14 @@ export const createPlugActor = async <T>(
       if (await canRequest(canisterId)) {
         requestsCanisterId.push(canisterId);
         const t = new Date().getTime();
+        console.log(canisterId + ': ' + t);
         return plugIc
           .createActor({
             canisterId: canisterId,
             interfaceFactory: IDL
           })
           .then((res) => {
+            console.log(canisterId + ': ' + (new Date().getTime() - t));
             plugActor[canisterId] = res;
             if (requests[canisterId] && requests[canisterId].length) {
               requests[canisterId].forEach((m) => m(plugActor[canisterId]));
@@ -139,6 +138,22 @@ const plugWhitelist = [
   {
     canisterId: CAT,
     idl: DRC20IDL
+  },
+  {
+    canisterId: ICX,
+    idl: DRC20IDL
+  },
+  {
+    canisterId: NUA,
+    idl: DRC20IDL
+  },
+  {
+    canisterId: SONIC,
+    idl: DRC20IDL
+  },
+  {
+    canisterId: CKBTC,
+    idl: DRC20IDL
   }
   // {
   //   canisterId: GOVERNANCE_CANISTER_ID,
@@ -180,6 +195,7 @@ const plugWhitelist = [
 ];
 export const createPlugWhiteActor = async (): Promise<void> => {
   const t = new Date().getTime();
+  console.log(t);
   for (let i = 0; i < plugWhitelist.length; i++) {
     createPlugActor(plugWhitelist[i].idl, plugWhitelist[i].canisterId);
   }
@@ -190,4 +206,5 @@ export const createPlugWhiteActor = async (): Promise<void> => {
   //   );
   // }
   // await Promise.all(promiseAll);
+  console.log('end: ' + (new Date().getTime() - t));
 };

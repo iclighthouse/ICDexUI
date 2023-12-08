@@ -101,6 +101,7 @@ export default class extends Vue {
             this.neuron.id[0].id,
             this.hotkeysForm.principal
           );
+          console.log(res);
           if (res && res.command) {
             const type = Object.keys(res.command[0])[0];
             if (type === 'Error') {
@@ -128,6 +129,7 @@ export default class extends Vue {
       this.neuron.id[0].id,
       principal
     );
+    console.log(res);
     if (res && res.command) {
       const type = Object.keys(res.command[0])[0];
       if (type === 'Error') {

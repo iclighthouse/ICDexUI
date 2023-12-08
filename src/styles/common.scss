@@ -288,7 +288,7 @@ button {
   border-radius: 20px;
   color: #747884;
   border: 1px solid #000;
-  padding-bottom: 30px;
+  padding-bottom: 40px;
 }
 .ant-popover-arrow {
   border-color: #13181d !important;
@@ -688,7 +688,7 @@ input {
   max-height: 100% !important;
 }
 .text-right {
-  text-align: right;
+  text-align: right !important;
 }
 input {
   height: 36px !important;
@@ -704,12 +704,13 @@ input {
   padding-right: 35px !important;
 }
 .ant-tooltip {
-  max-width: 100%;
+  max-width: 500px;
   .ant-tooltip-inner {
     background: #06080b;
     color: #727a87;
     padding: 10px 20px;
-    line-height: 2;
+    line-height: 1.5;
+    word-break: break-word;
   }
 }
 .delete-modal {
@@ -868,6 +869,9 @@ input {
     border-color: #3aa8b5;
     color: #ffffff;
   }
+  .ant-modal-confirm-btns {
+    display: flex;
+  }
 }
 .ant-btn {
   background: #1a2a33;
@@ -961,6 +965,9 @@ input {
   }
 }
 @media screen and (max-width: 768px) {
+  .ant-tooltip {
+    max-width: 100%;
+  }
   .warning-confirm {
     .ant-modal-confirm-btns {
       display: flex;
@@ -1193,9 +1200,91 @@ dt {
     color: #727a87;
   }
 }
+.strat-list {
+  background: #0e0e11;
+  .ant-dropdown-menu-item {
+    padding: 0;
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+}
+.strat-list-item {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  padding: 8px 15px !important;
+  border-bottom: 1px solid #383e4e;
+  cursor: pointer;
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #51b7c3;
+  }
+  &.active {
+    color: #51b7c3;
+  }
+  &:last-child {
+    border-bottom: none;
+  }
+}
 .flex-center {
   display: flex;
   align-items: center;
+}
+.nft-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  li {
+    position: relative;
+    width: 165px;
+    margin: 0 15px 15px 0;
+    border: 1px solid #313b46;
+    cursor: pointer;
+    transition: all 0.3s;
+    &.active {
+      border-color: #21c77d;
+    }
+    &:nth-child(2n + 1) {
+      margin-left: 0;
+    }
+    &:nth-child(2n) {
+      margin-right: 0;
+    }
+    .ext-info {
+      font-size: 12px;
+      padding-top: 5px;
+      padding-bottom: 10px;
+    }
+    .ext-transfer {
+      padding-bottom: 5px;
+      color: #1996c4;
+      cursor: pointer;
+    }
+    .nft-img {
+      img {
+        width: 165px;
+        height: 165px;
+        object-fit: contain;
+      }
+    }
+    div {
+      text-align: center;
+      line-height: 1.5;
+    }
+  }
+  .checked {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 16px;
+  }
+}
+.nft-main-pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 .v-tour__target--highlighted {
   background-color: #fff;

@@ -120,6 +120,7 @@ export default class AuthClientAPi {
       const durationUntilLogoutMs =
         durationUntilSessionExpiresMs - ONE_MINUTE_MILLIS;
       if (durationUntilLogoutMs <= 0) {
+        console.log(durationUntilSessionExpiresMs);
         this.logout().then((r) => {
           console.log(r);
         });

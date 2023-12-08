@@ -9,7 +9,7 @@
               <th class="token-id">Token ID</th>
               <th class="total-supply">TotalSupply</th>
               <th class="total-supply">MaxSupply</th>
-              <th class="gas">Gas</th>
+              <th class="gas">Fee</th>
               <th class="metadata">Metadata</th>
               <th></th>
             </tr>

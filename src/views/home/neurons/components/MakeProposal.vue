@@ -208,6 +208,7 @@ export default class extends Vue {
         BigInt(this.neuronId),
         proposal
       );
+      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -279,6 +280,7 @@ export default class extends Vue {
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });
+    console.log(res);
     if (res && res.full_neurons) {
       this.neurons = res.full_neurons.filter((neuron) => {
         const reject_cost_e8s = 10 * 10 ** 8;

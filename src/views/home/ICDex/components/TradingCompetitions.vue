@@ -75,6 +75,7 @@ export default class extends Vue {
     this.canTradeCompetitions = false;
     const currentICDexService = new ICDexService();
     const res = await currentICDexService.comp_round(this.pairId);
+    console.log(res);
     const now = new Date().getTime();
     if (
       res &&

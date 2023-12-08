@@ -43,6 +43,8 @@ Vue.use(VueTour);
 Vue.use(JsonViewer);
 Vue.use(infiniteScroll);
 Vue.use(VueCookies, { expires: '30d', sameSite: 'Strict' });
+// import VConsole from 'vconsole';
+// new VConsole();
 
 echarts.use([
   ToolboxComponent,
@@ -105,6 +107,7 @@ Vue.config.productionTip = false;
 
 // Register global filter functions
 Object.keys(filters).forEach((key) => {
+  console.log(key, filters);
   Vue.filter(key, filters[key]);
 });
 // Register global directives
@@ -175,7 +178,8 @@ router.beforeEach(async (to, from, next) => {
     } else {
       to.meta.isBack =
         (to.meta.details === 'proposals' && from.meta.details === 'proposal') ||
-        (to.meta.details === 'launchpad' && from.meta.details === 'token');
+        (to.meta.details === 'launchpad' && from.meta.details === 'token') ||
+        (to.meta.details === 'Pools' && from.meta.details === 'Pool');
       if (
         from.meta.details === 'proposals' &&
         to.meta.details === 'proposal'
@@ -194,6 +198,13 @@ router.afterEach((to) => {
   window.scrollTo(0, 0);
   if (to.meta.title) {
     document.title = to.meta.title;
+  }
+  if (to.meta.measurementId) {
+    (window as any).gtag('config', to.meta.measurementId, {
+      page_title: to.name,
+      page_path: to.path,
+      page_location: location
+    });
   }
 });
 new Vue({

@@ -326,10 +326,12 @@ export default class extends Vue {
               this.walletId
             );
           } else {
+            console.time();
             const blockHeight = await this.ledgerService.sendIcp(
               this.createdIcp,
               this.depositAccountId
             );
+            console.log(blockHeight);
             const icp = BigInt(
               new BigNumber(this.createdIcp).times(10 ** this.decimals)
             );
@@ -350,6 +352,9 @@ export default class extends Vue {
                 ).CreditRecord.toString(10)
               })
             );
+            console.log(res);
+            console.timeEnd();
+            console.time();
             loading.setText(
               'Do not close the page, it takes 20-60 seconds.\nstep2: create cycles wallet'
             );
@@ -387,7 +392,9 @@ export default class extends Vue {
           } else {
             this.$message.error((walletResult as { Err: string }).Err);
           }
+          console.log(walletResult);
           loading.close();
+          console.timeEnd();
         } catch (e) {
           console.log(e);
           this.$message.error(toHttpError(e).message);

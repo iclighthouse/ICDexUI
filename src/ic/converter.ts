@@ -298,6 +298,8 @@ const generateMeatMaskSeed = (
     ])
   );
   const hash = new Uint8Array(shaObj.digest());
+  console.log(hash);
+  console.log([...Buffer.from(hash)].slice(0, 16));
   return new Uint8Array([...Buffer.from(hash)].slice(0, 16));
 };
 const toPrincipalAndAccountId = (

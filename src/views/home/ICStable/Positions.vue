@@ -493,6 +493,7 @@ export default class extends Mixins(StableTokensMixin) {
   private async getConfig(): Promise<void> {
     const res = await this.ICStableService.getConfig();
     this.config = res[1];
+    console.log(res);
   }
   private async getBorrower(): Promise<void> {
     const principal = localStorage.getItem('principal');
@@ -502,6 +503,7 @@ export default class extends Mixins(StableTokensMixin) {
     this.tableSpinning = true;
     try {
       const res = await this.ICStableService.borrower(principal);
+      console.log(res);
       if (res && res.length) {
         this.positions = res[1].slice().reverse();
         this.positionsLog = res[2].slice().reverse();

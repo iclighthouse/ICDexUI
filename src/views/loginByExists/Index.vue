@@ -241,7 +241,10 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   private async onSubmitMetaMask(): Promise<void> {
     this.spinning = true;
     const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
-    const encryptSeedPhrase = phraseList[this.selectedAccount];
+    let encryptSeedPhrase = phraseList[this.selectedAccount];
+    if (typeof encryptSeedPhrase === 'string') {
+      encryptSeedPhrase = JSON.parse(encryptSeedPhrase);
+    }
     let mnemonic;
     try {
       let salt = 'ICLightHouse';

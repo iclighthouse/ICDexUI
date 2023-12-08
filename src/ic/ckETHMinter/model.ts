@@ -500,8 +500,9 @@ export interface ETHEvent {
   payload: EventPayload;
 }
 export type EventPayload =
+  | { SkippedBlock: { block_number: bigint } }
   | {
-      SentTransaction: { transaction_hash: string; withdrawal_id: bigint };
+      SignedTransaction: { raw_transaction: string; withdrawal_id: bigint };
     }
   | {
       Upgrade: UpgradeArg;
@@ -521,10 +522,27 @@ export type EventPayload =
       };
     }
   | {
-      SignedTx: { withdrawal_id: bigint; raw_tx: string };
+      ReplacedTransaction: {
+        withdrawal_id: bigint;
+        transaction: UnsignedTransaction;
+      };
     }
   | {
       MintedCkEth: { event_source: EventSource; mint_block_index: bigint };
+    }
+  | {
+      ReimbursedEthWithdrawal: {
+        transaction_hash: Array<string>;
+        withdrawal_id: bigint;
+        reimbursed_amount: bigint;
+        reimbursed_in_block: bigint;
+      };
+    }
+  | {
+      CreatedTransaction: {
+        withdrawal_id: bigint;
+        transaction: UnsignedTransaction;
+      };
     }
   | {
       InvalidDeposit: {
@@ -537,21 +555,52 @@ export type EventPayload =
         ledger_burn_index: bigint;
         destination: string;
         withdrawal_amount: bigint;
+        from: Principal;
+        created_at: Array<bigint>;
+        from_subaccount: Array<Array<number>>;
       };
     }
   | {
       FinalizedTransaction: {
-        transaction_hash: string;
+        transaction_receipt: TransactionReceipt;
         withdrawal_id: bigint;
       };
     };
-
+export interface TransactionReceipt {
+  effective_gas_price: bigint;
+  status: { Success: null } | { Failure: null };
+  transaction_hash: string;
+  block_hash: string;
+  block_number: bigint;
+  gas_used: bigint;
+}
+export interface UnsignedTransaction {
+  destination: string;
+  value: bigint;
+  max_priority_fee_per_gas: bigint;
+  data: Array<number>;
+  max_fee_per_gas: bigint;
+  chain_id: bigint;
+  nonce: bigint;
+  gas_limit: bigint;
+  access_list: Array<{
+    storage_keys: Array<Array<number>>;
+    address: string;
+  }>;
+}
 export interface EventSource {
   transaction_hash: string;
   log_index: bigint;
 }
 export interface InitArg {
   ethereum_network: EthereumNetwork;
+  last_scraped_block_number: bigint;
+  ecdsa_key_name: string;
+  next_transaction_nonce: bigint;
+  ledger_id: Principal;
+  ethereum_contract_address: Array<string>;
+  minimum_withdrawal_amount: bigint;
+  ethereum_block_height: BlockTag;
 }
 export type EthereumNetwork =
   | {
@@ -586,16 +635,29 @@ export type WithdrawalError =
   | { TemporarilyUnavailable: string }
   | { InsufficientAllowance: { allowance: bigint } }
   | { AmountTooLow: { min_withdrawal_amount: bigint } }
-  | { InsufficientFunds: { balance: bigint } };
+  | { InsufficientFunds: { balance: bigint } }
+  | { RecipientAddressBlocked: { address: string } };
 export type RetrieveEthStatus =
-  | {
-      TxSigned: { transaction_hash: string };
-    }
   | { NotFound: null }
-  | { TxConfirmed: { transaction_hash: string } }
-  | { TxSent: { transaction_hash: string } }
+  | { TxFinalized: TxFinalizedStatus }
+  | { TxSent: EthTransaction }
   | { TxCreated: null }
   | { Pending: null };
+export type TxFinalizedStatus =
+  | { Success: EthTransaction }
+  | {
+      Reimbursed: {
+        transaction_hash: string;
+        reimbursed_amount: bigint;
+        reimbursed_in_block: bigint;
+      };
+    }
+  | {
+      PendingReimbursement: EthTransaction;
+    };
+export interface EthTransaction {
+  transaction_hash: string;
+}
 
 export default interface Service {
   get_deposit_address(request: Icrc1Account): Promise<string>;

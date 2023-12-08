@@ -14,9 +14,6 @@
       <a-form-model-item class="transfer-me-label" :colon="false">
         <template slot="label">
           <span>To list:</span>
-          <span v-show="isIcx" @click="copyMEWallet" class="label-me-wallet"
-            >Copy from ME wallet</span
-          >
         </template>
         <a-textarea
           v-model="transferForm.to"
@@ -207,19 +204,6 @@ export default class extends Vue {
     console.log(account);
     console.log(this.toError);
   }
-  public copyMEWallet(): void {
-    if ((window as any).icx) {
-      const thisIcx = store.getters['common/getIcx'];
-      if (
-        this.currentToken.standard === TokenStandard['ICRC-1'] ||
-        this.currentToken.standard === TokenStandard['DIP20']
-      ) {
-        this.transferForm.to = thisIcx.wallet.principal;
-      } else {
-        this.transferForm.to = thisIcx.wallet.accountId;
-      }
-    }
-  }
   public async init(token: AddTokenItem): Promise<void> {
     if (
       this.currentToken.canisterId &&
@@ -233,6 +217,7 @@ export default class extends Vue {
     this.DRC20TokenService = new DRC20TokenService();
     if (
       token.standard === TokenStandard['ICRC-1'] ||
+      token.standard === TokenStandard['ICRC-2'] ||
       token.standard === TokenStandard['DIP20']
     ) {
       this.placeholder = 'Principal';
@@ -255,7 +240,10 @@ export default class extends Vue {
         this.currentToken.canisterId.toString(),
         Principal.fromText(principal)
       );
-    } else if (this.currentToken.standard === TokenStandard['ICRC-1']) {
+    } else if (
+      this.currentToken.standard === TokenStandard['ICRC-1'] ||
+      this.currentToken.standard === TokenStandard['ICRC-2']
+    ) {
       const to = {
         owner: Principal.fromText(principal),
         subaccount: []
@@ -292,7 +280,10 @@ export default class extends Vue {
         this.currentToken.canisterId.toString()
       );
       fee = res.fee;
-    } else if (this.currentToken.standard === TokenStandard['ICRC-1']) {
+    } else if (
+      this.currentToken.standard === TokenStandard['ICRC-1'] ||
+      this.currentToken.standard === TokenStandard['ICRC-2']
+    ) {
       fee = await this.DRC20TokenService.icrcFee(
         this.currentToken.canisterId.toString()
       );
@@ -359,6 +350,7 @@ export default class extends Vue {
             0,
             data
           );
+          console.log(res);
           if (
             res.length &&
             (

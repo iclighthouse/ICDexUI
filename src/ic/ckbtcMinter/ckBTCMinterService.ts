@@ -6,25 +6,22 @@ import Service, {
   RetrieveStatus,
   UpdateBalanceRes
 } from '@/ic/ckbtcMinter/model';
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createPlugActor } from '@/ic/createPlugActor';
 import IDL from './ckBTCMinter.did.js';
 import icIDL from './icBTCMinter.did.js';
-import store from '@/store';
 import {
   fromSubAccountId,
   hexToBytes,
-  principalToAccountIdentifier
+  principalToAccountIdentifier,
+  SerializableIC
 } from '@/ic/converter';
+
 import { Icrc1Account } from '@/ic/common/icType';
 import {
   CK_BTC_MINTER_CANISTER_ID,
   IC_BTC_MINTER_CANISTER_ID
 } from '@/ic/utils';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { Principal } from '@dfinity/principal';
+import { createService } from '@/ic/createService';
 
 export class ckBTCMinterService {
   private check = async (
@@ -41,28 +38,7 @@ export class ckBTCMinterService {
       canisterId = CK_BTC_MINTER_CANISTER_ID;
       idl = IDL;
     }
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew, canisterId);
-    }
-    let service: Service;
-    if (!isUpdate) {
-      service = buildService(null, idl, canisterId);
-    } else if ((window as any).icx) {
-      service = await createIcxActor(idl, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      service = await createPlugActor(idl, canisterId);
-    } else if (priList[principal] === 'Infinity') {
-      service = await createInfinityActor(idl, canisterId);
-    } else {
-      service = buildService(
-        store.getters['common/getIdentity'],
-        idl,
-        canisterId
-      );
-    }
-    return service;
+    return await createService<Service>(canisterId, idl, renew, isUpdate);
   };
   public getBtcAddress = async (
     type: string,
@@ -112,7 +88,10 @@ export class ckBTCMinterService {
       };
       const principal1 = localStorage.getItem('principal');
       if (principal === principal1) {
-        return res;
+        return {
+          owner: res.owner,
+          subaccount: Array.from(res.subaccount)
+        };
       } else {
         return null;
       }
@@ -120,7 +99,10 @@ export class ckBTCMinterService {
       const res = await service.get_withdrawal_account();
       const principal1 = localStorage.getItem('principal');
       if (principal === principal1) {
-        return res;
+        return {
+          owner: res.owner,
+          subaccount: Array.from(res.subaccount)
+        };
       } else {
         return null;
       }
@@ -132,9 +114,11 @@ export class ckBTCMinterService {
   ): Promise<RetrieveBtcRes> => {
     const service = await this.check(type);
     if (type === 'icBTC') {
-      return await service.retrieve_btc(retrieveBtcArgs, []);
+      const res = await service.retrieve_btc(retrieveBtcArgs, []);
+      return SerializableIC(res);
     } else {
-      return await service.retrieve_btc(retrieveBtcArgs);
+      const res = await service.retrieve_btc(retrieveBtcArgs);
+      return SerializableIC(res);
     }
   };
   public retrieveBtcStatus = async (
@@ -142,7 +126,8 @@ export class ckBTCMinterService {
     blockIndex: bigint
   ): Promise<RetrieveBtcStatus> => {
     const service = await this.check(type, false, true);
-    return await service.retrieve_btc_status({ block_index: blockIndex });
+    const res = await service.retrieve_btc_status({ block_index: blockIndex });
+    return SerializableIC(res);
   };
   public updateBalance = async (
     type: string,
@@ -155,15 +140,17 @@ export class ckBTCMinterService {
     }
     if (type === 'icBTC') {
       const principal1 = localStorage.getItem('principal');
-      return await service.update_balance({
+      const res = await service.update_balance({
         owner: Principal.from(principal1),
         subaccount: subAccount
       });
+      return SerializableIC(res);
     } else {
-      return await service.update_balance({
+      const res = await service.update_balance({
         owner: [],
         subaccount: subAccount
       });
+      return SerializableIC(res);
     }
   };
   public batchSend = async (
@@ -182,7 +169,8 @@ export class ckBTCMinterService {
     blockIndex: Array<number>
   ): Promise<Array<RetrieveStatus>> => {
     const service = await this.check(type);
-    return await service.retrieveLog(blockIndex);
+    const res = await service.retrieveLog(blockIndex);
+    return SerializableIC(res);
   };
   public estimate_fee = async (
     type: string,

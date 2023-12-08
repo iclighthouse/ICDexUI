@@ -5,9 +5,12 @@ import randomBytes from 'randombytes';
 import CryptoJS from 'crypto-js';
 import { Icrc1Account } from '@/ic/common/icType';
 import BigNumber from 'bignumber.js';
-const ethereum = (window as any).ethereum;
 const pbkdf2 = require('pbkdf2');
 const sjcl = require('sjcl');
+let ethereum = (window as any).ethereum;
+if (ethereum && ethereum.providers) {
+  ethereum = ethereum.providers.find((provider) => provider.isMetaMask);
+}
 
 const LEDGER_CANISTER_ID = 'ryjl3-tyaaa-aaaaa-aaaba-cai';
 const LEDGER_CANDID_CANISTER_ID = 'ockk2-xaaaa-aaaai-aaaua-cai';
@@ -19,13 +22,18 @@ const IC_MANAGEMENT_CANISTER_ID = 'aaaaa-aa';
 const NNS_DAPP_CANISTER_ID = 'qoctq-giaaa-aaaaa-aaaea-cai';
 const OGY_CANISTER_ID = 'rd6wb-lyaaa-aaaaj-acvla-cai';
 const WICP_CANISTER_ID = 'utozz-siaaa-aaaam-qaaxq-cai';
-// let IC_SWAP_ROUTER_CANISTER_ID = 'pwokq-miaaa-aaaak-act6a-cai';
-let IC_SWAP_ROUTER_CANISTER_ID = 'j4d4d-pqaaa-aaaak-aanxq-cai';
-let IC_SWAP_ROUTER_CANISTER_ID_Fiduciary = 'i2ied-uqaaa-aaaar-qaaza-cai';
-let IC_DEX_ROUTER_CANISTER_ID_Fiduciary = 'i5jcx-ziaaa-aaaar-qaazq-cai';
+let IC_SWAP_ROUTER_CANISTER_ID = 'pwokq-miaaa-aaaak-act6a-cai';
+// let IC_SWAP_ROUTER_CANISTER_ID = 'j4d4d-pqaaa-aaaak-aanxq-cai';
+let IC_DEX_ROUTER_CANISTER_ID = 'pymhy-xyaaa-aaaak-act7a-cai';
+// let IC_DEX_ROUTER_CANISTER_ID = 'ltyfs-qiaaa-aaaak-aan3a-cai';
+// let IC_DEX_ROUTER_CANISTER_ID = 'i5jcx-ziaaa-aaaar-qaazq-cai';
+let IC_SWAP_ROUTER_CANISTER_ID_Fiduciary = 'pwokq-miaaa-aaaak-act6a-cai';
+// let IC_SWAP_ROUTER_CANISTER_ID_Fiduciary = 'i2ied-uqaaa-aaaar-qaaza-cai';
 let IC_ETH_MINTER_CANISTER_ID = 'nhgv3-fiaaa-aaaak-aer5q-cai';
 let CK_ETH_MINTER_CANISTER_ID = 'jzenf-aiaaa-aaaar-qaa7q-cai';
+// let CK_ETH_MINTER_CANISTER_ID = 'sv3dd-oaaaa-aaaar-qacoa-cai';
 let CK_ETH_LEDGER_CANISTER_ID = 'apia6-jaaaa-aaaar-qabma-cai';
+// let CK_ETH_LEDGER_CANISTER_ID = 'ss2fx-dyaaa-aaaar-qacoq-cai';
 let IC_WALLET_ID = 'eife2-cqaaa-aaaai-qatkq-cai';
 // let IC_WALLET_ID = 'u2nvr-zyaaa-aaaai-qgbaa-cai';
 let IC_CANISTER_ID = 'foios-saaaa-aaaai-qa7aq-cai';
@@ -51,14 +59,16 @@ const ME_ACCOUNT_CANISTER_ID = 'dnmrm-hqaaa-aaaao-aapuq-cai';
 const SNS_WASM_CANISTER_ID = 'qaa6y-5yaaa-aaaaa-aaafa-cai';
 const QUESTS_CANISTER_ID = 'iairp-iiaaa-aaaao-ahryq-cai';
 const IC_TOKENS_SCAN_CANISTER_ID = 'ytcww-qyaaa-aaaak-aacra-cai';
+const BLACKHOLE_CANISTER_ID = '7hdtw-jqaaa-aaaak-aaccq-cai';
 const DID_CANISTER_ID = 'a4gq6-oaaaa-aaaab-qaa4q-cai';
 const ETHHttps = [
   'https://eth-goerli.g.alchemy.com/v2/gm4OKMIz91Ca1w5WoKT3xXafUtQtdJd9',
   'https://eth-goerli.g.alchemy.com/v2/wREEsnLaFrPgZaXy3Kfhgx2bJ04spvfc',
   'https://eth-goerli.g.alchemy.com/v2/cxoNSpAs233I0lszO1j8n3eWLeEjjHf8'
 ];
-const ETHHttpsSepolia = [
-  'https://eth-sepolia.g.alchemy.com/v2/mi31Fwitq3xSl5q2-yMwiQ9edeLul_S2'
+const ETHHttpsMainnet = [
+  'https://eth-mainnet.g.alchemy.com/v2/KsCEIRwf5rPkmhFy6uvm7lCPC0gIZxk7',
+  'https://eth-mainnet.g.alchemy.com/v2/3rh5DTcZ97IcSwS-BthnbCWwjLactENf'
 ];
 const ETHWebsocketProvider = [
   'wss://eth-goerli.g.alchemy.com/v2/gm4OKMIz91Ca1w5WoKT3xXafUtQtdJd9',
@@ -73,10 +83,15 @@ const etherScanKey = [
 if (process.env.NODE_ENV === 'production') {
   IC_SWAP_ROUTER_CANISTER_ID = 'j4d4d-pqaaa-aaaak-aanxq-cai';
   // IC_SWAP_ROUTER_CANISTER_ID = 'pwokq-miaaa-aaaak-act6a-cai';
+  // IC_SWAP_ROUTER_CANISTER_ID_Fiduciary = 'i2ied-uqaaa-aaaar-qaaza-cai';
+  IC_SWAP_ROUTER_CANISTER_ID_Fiduciary = 'j4d4d-pqaaa-aaaak-aanxq-cai';
+  // IC_DEX_ROUTER_CANISTER_ID = 'ltyfs-qiaaa-aaaak-aan3a-cai';
+  IC_DEX_ROUTER_CANISTER_ID = 'i5jcx-ziaaa-aaaar-qaazq-cai';
+  // IC_DEX_ROUTER_CANISTER_ID = 'pymhy-xyaaa-aaaak-act7a-cai';
   // todo
   IC_ETH_MINTER_CANISTER_ID = 'nhgv3-fiaaa-aaaak-aer5q-cai';
-  CK_ETH_MINTER_CANISTER_ID = 'jzenf-aiaaa-aaaar-qaa7q-cai';
-  CK_ETH_LEDGER_CANISTER_ID = 'apia6-jaaaa-aaaar-qabma-cai';
+  CK_ETH_MINTER_CANISTER_ID = 'sv3dd-oaaaa-aaaar-qacoa-cai';
+  CK_ETH_LEDGER_CANISTER_ID = 'ss2fx-dyaaa-aaaar-qacoq-cai';
   IC_WALLET_ID = 'eife2-cqaaa-aaaai-qatkq-cai';
   IC_CANISTER_ID = 'foios-saaaa-aaaai-qa7aq-cai';
   IC_TOKEN_CANISTER_ID = 'igm6s-dqaaa-aaaar-qaa3a-cai';
@@ -90,8 +105,6 @@ if (process.env.NODE_ENV === 'production') {
   IC_BTC_CANISTER_ID = '3fwop-7iaaa-aaaak-adzca-cai';
   CK_BTC_MINTER_CANISTER_ID = 'mqygn-kiaaa-aaaar-qaadq-cai';
   CK_BTC_CANISTER_ID = 'mxzaz-hqaaa-aaaar-qaada-cai';
-  IC_SWAP_ROUTER_CANISTER_ID_Fiduciary = 'i2ied-uqaaa-aaaar-qaaza-cai';
-  IC_DEX_ROUTER_CANISTER_ID_Fiduciary = 'i5jcx-ziaaa-aaaar-qaazq-cai';
 }
 const plugWhitelist = [
   NNS_DAPP_CANISTER_ID,
@@ -118,10 +131,11 @@ const plugWhitelist = [
   QUESTS_CANISTER_ID,
   IC_TOKENS_SCAN_CANISTER_ID,
   IC_ETH_MINTER_CANISTER_ID,
+  IC_DEX_ROUTER_CANISTER_ID,
   CK_ETH_MINTER_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
-  IC_DEX_ROUTER_CANISTER_ID_Fiduciary
+  BLACKHOLE_CANISTER_ID
 ];
 const ICXWhitelist = [
   NNS_DAPP_CANISTER_ID,
@@ -144,10 +158,11 @@ const ICXWhitelist = [
   QUESTS_CANISTER_ID,
   IC_TOKENS_SCAN_CANISTER_ID,
   IC_ETH_MINTER_CANISTER_ID,
+  IC_DEX_ROUTER_CANISTER_ID,
   CK_ETH_MINTER_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
-  IC_DEX_ROUTER_CANISTER_ID_Fiduciary
+  BLACKHOLE_CANISTER_ID
 ];
 const SUB_ACCOUNT_BYTE_LENGTH = 32;
 const ICLighthouseNeuronId =
@@ -200,10 +215,6 @@ const to32bits = (num: number): number[] => {
   return Array.from(new Uint8Array(b));
 };
 
-let iterations = 100;
-if (process.env.NODE_ENV === 'production') {
-  iterations = 210000;
-}
 const encrypt = (
   message: string,
   password: string,
@@ -211,6 +222,10 @@ const encrypt = (
   keylen = 256,
   digest = 'sha512'
 ): Promise<string> => {
+  let iterations = 100;
+  if (process.env.NODE_ENV === 'production') {
+    iterations = 210000;
+  }
   if (salt === 'ICLightHouse' && process.env.NODE_ENV === 'production') {
     iterations = 10000;
   }
@@ -237,6 +252,10 @@ const decrypt = (
   keylen = 256,
   digest = 'sha512'
 ): Promise<string> => {
+  let iterations = 100;
+  if (process.env.NODE_ENV === 'production') {
+    iterations = 210000;
+  }
   if (salt === 'ICLightHouse' && process.env.NODE_ENV === 'production') {
     iterations = 10000;
   }
@@ -441,14 +460,15 @@ export {
   ICLighthouseCHATNeuronId,
   IC_TOKENS_SCAN_CANISTER_ID,
   ETHHttps,
-  ETHHttpsSepolia,
+  ETHHttpsMainnet,
   ETHWebsocketProvider,
   etherScanKey,
   NNS_DAPP_CANISTER_ID,
+  IC_DEX_ROUTER_CANISTER_ID,
   CK_ETH_MINTER_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
-  IC_DEX_ROUTER_CANISTER_ID_Fiduciary,
+  BLACKHOLE_CANISTER_ID,
   DID_CANISTER_ID,
   isHex,
   isHexString,

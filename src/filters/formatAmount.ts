@@ -13,7 +13,7 @@ export const formatAmount = (
           .div(10 ** 12)
           .decimalPlaces(2, 1)
           .toString(10)
-      ) + ' T'
+      ) + 'T'
     );
   } else if (new BigNumber(num.toString(10)).gt(10 ** 9)) {
     return (
@@ -22,7 +22,7 @@ export const formatAmount = (
           .div(10 ** 9)
           .decimalPlaces(2, 1)
           .toString(10)
-      ) + ' B'
+      ) + 'B'
     );
   } else if (new BigNumber(num.toString(10)).gt(10 ** 6)) {
     return (
@@ -31,7 +31,7 @@ export const formatAmount = (
           .div(10 ** 6)
           .decimalPlaces(2, 1)
           .toString(10)
-      ) + ' M'
+      ) + 'M'
     );
   } else {
     return setSeparator(

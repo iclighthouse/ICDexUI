@@ -9,25 +9,29 @@
     :maskClosable="false"
     class="transfer-modal"
     :after-close="afterClose"
+    :z-index="1400"
   >
     <div class="swap-main">
       <div>
         <span class="swap-main-type">From</span>
         <span class="base-font-title">
-          <span v-show="type === 'toPro'">Wallet</span>
+          <span v-show="type === 'toPro'">Main-Wallet</span>
           <span v-show="type === 'toWallet'">Pro-wallet</span>
         </span>
       </div>
       <div class="swap-main-icon">
         <span><a-icon type="arrow-down" /></span>
-        <span class="margin-left-auto pointer main-color" @click="changeType"
+        <span
+          v-show="showSwap"
+          class="margin-left-auto pointer main-color"
+          @click="changeType"
           ><a-icon class="swap-main-icon-swap" type="swap"
         /></span>
       </div>
       <div>
         <span class="swap-main-type">To</span>
         <span class="base-font-title">
-          <span v-show="type === 'toWallet'">Wallet</span>
+          <span v-show="type === 'toWallet'">Main-Wallet</span>
           <span v-show="type === 'toPro'">Pro-wallet</span>
         </span>
       </div>
@@ -144,6 +148,7 @@ export default class extends Vue {
   private transferForm = {
     amount: ''
   };
+  private showSwap = true;
   private transferFormRules = {
     amount: [
       { required: true, message: 'Please enter Amount', trigger: 'change' },
@@ -203,32 +208,33 @@ export default class extends Vue {
             let to;
             let res;
             const proSubaccount = 1;
-            if (standard.toLocaleLowerCase() === 'icp') {
-              if (this.type === 'toPro') {
-                to = principalToAccountIdentifier(
-                  Principal.from(principal),
-                  new Uint8Array(fromSubAccountId(proSubaccount))
-                );
-                res = await this.ledgerService.sendIcp(
-                  this.transferForm.amount.toString(),
-                  to,
-                  BigInt('0')
-                );
-              } else {
-                to = principalToAccountIdentifier(Principal.from(principal));
-                res = await this.ledgerService.sendIcp(
-                  this.transferForm.amount.toString(),
-                  to,
-                  BigInt('0'),
-                  proSubaccount
-                );
-              }
-              if (res) {
-                this.visible = false;
-                this.$message.success('Success');
-                this.$emit('proWalletSwapSuccess');
-              }
-            } else if (standard.toLocaleLowerCase() === 'drc20') {
+            // if (standard.toLocaleLowerCase() === 'icp') {
+            //   if (this.type === 'toPro') {
+            //     to = principalToAccountIdentifier(
+            //       Principal.from(principal),
+            //       new Uint8Array(fromSubAccountId(proSubaccount))
+            //     );
+            //     res = await this.ledgerService.sendIcp(
+            //       this.transferForm.amount.toString(),
+            //       to,
+            //       BigInt('0')
+            //     );
+            //   } else {
+            //     to = principalToAccountIdentifier(Principal.from(principal));
+            //     res = await this.ledgerService.sendIcp(
+            //       this.transferForm.amount.toString(),
+            //       to,
+            //       BigInt('0'),
+            //       proSubaccount
+            //     );
+            //   }
+            //   if (res) {
+            //     this.visible = false;
+            //     this.$message.success('Success');
+            //     this.$emit('proWalletSwapSuccess');
+            //   }
+            // } else
+            if (standard.toLocaleLowerCase() === 'drc20') {
               if (this.type === 'toPro') {
                 to = principalToAccountIdentifier(
                   Principal.from(principal),
@@ -266,7 +272,10 @@ export default class extends Vue {
               } else {
                 this.$message.error((res as TxnResultErr).err.message);
               }
-            } else if (standard.toLocaleLowerCase().includes('icrc')) {
+            } else if (
+              standard.toLocaleLowerCase() === 'icp' ||
+              standard.toLocaleLowerCase().includes('icrc')
+            ) {
               if (this.type === 'toPro') {
                 to = {
                   owner: Principal.fromText(principal),

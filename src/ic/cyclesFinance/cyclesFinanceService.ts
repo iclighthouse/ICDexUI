@@ -9,67 +9,23 @@ import Service, {
   TxnResultOk,
   YieldResponse
 } from '@/ic/cyclesFinance/model';
-import { buildService } from '@/ic/Service';
 import cyclesFinanceIDL from './cyclesFinance.did';
 import { CYCLES_FINANCE_CANISTER_ID } from '@/ic/utils';
 import { Principal } from '@dfinity/principal';
-import { checkAuth } from '@/ic/CheckAuth';
 import { AccountIdentifier } from '@/ic/common/icType';
-import store from '@/store';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isInfinity } from '@/ic/isInfinity';
 import { isPlug } from '@/ic/isPlug';
 import { SerializableIC } from '@/ic/converter';
+import { createService } from '@/ic/createService';
 
 export class CyclesFinanceService {
-  private service: Service;
-  // private readonly host: string;
-  // constructor(identity: Identity, host?: string) {
-  //   this.host = host;
-  //   this.service = buildService(
-  //     identity,
-  //     cyclesFinanceIDL,
-  //     CYCLES_FINANCE_CANISTER_ID,
-  //     host
-  //   );
-  // }
   private check = async (renew = true, isUpdate = true): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
-    if (!isUpdate) {
-      this.service = buildService(
-        null,
-        cyclesFinanceIDL,
-        CYCLES_FINANCE_CANISTER_ID
-      );
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(
-        cyclesFinanceIDL,
-        CYCLES_FINANCE_CANISTER_ID
-      );
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(
-        cyclesFinanceIDL,
-        CYCLES_FINANCE_CANISTER_ID
-      );
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(
-        cyclesFinanceIDL,
-        CYCLES_FINANCE_CANISTER_ID
-      );
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        cyclesFinanceIDL,
-        CYCLES_FINANCE_CANISTER_ID
-      );
-    }
-    return this.service;
+    return await createService<Service>(
+      CYCLES_FINANCE_CANISTER_ID,
+      cyclesFinanceIDL,
+      renew,
+      isUpdate
+    );
   };
   public getAccountId = async (
     accountId: AccountIdentifier
@@ -137,12 +93,12 @@ export class CyclesFinanceService {
     accountId: Array<AccountIdentifier>
   ): Promise<Array<Txid>> => {
     const service = await this.check(false, false);
-    const res =  await service.lastTxids(accountId);
+    const res = await service.lastTxids(accountId);
     return SerializableIC(res);
   };
   public txnRecord = async (txid: Txid): Promise<TxnRecord> => {
-    await this.check(false, false);
-    const recode = await this.service.txnRecord(txid);
+    const service = await this.check(false, false);
+    const recode = await service.txnRecord(txid);
     if (recode && recode.length) {
       return SerializableIC(recode[0]);
     }
@@ -227,7 +183,7 @@ export class CyclesFinanceService {
         service
           .remove(shares, cyclesWallet, nonce, subaccount, data)
           .then((txnResult) => {
-            txnResult = SerializableIC(txnResult)
+            txnResult = SerializableIC(txnResult);
             if (
               (
                 txnResult as {

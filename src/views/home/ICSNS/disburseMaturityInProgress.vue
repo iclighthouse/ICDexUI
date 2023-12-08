@@ -21,6 +21,7 @@ export default class extends Vue {
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
+    console.log(this.timer);
   }
   mounted(): void {
     if (this.timer) {

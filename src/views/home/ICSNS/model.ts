@@ -43,6 +43,7 @@ export interface SNSToken {
   deadline?: number;
   deadlineLoading?: boolean;
   init?: Init;
+  direct_participation_icp_e8s?: bigint;
 }
 
 export interface SNSNeuronsInfo {

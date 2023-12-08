@@ -96,7 +96,6 @@
     <div v-if="isIcx && getPrincipalId" class="current-account-h5 h5-show">
       <img :src="accountImg" alt="account" />
       <copy-account
-        :front="4"
         :account="getPrincipalId"
         :show-copy="false"
         copy-text="Principal ID"
@@ -238,7 +237,10 @@
           v-for="(menu, index) in menuList"
           :key="index"
           class="user-setting-item"
-          :class="{ active: $route.path === menu.path }"
+          :class="{
+            active:
+              $route.path.toLocaleLowerCase() === menu.path.toLocaleLowerCase()
+          }"
         >
           <router-link :to="menu.path">
             <span>{{ menu.value }}</span>
@@ -419,8 +421,8 @@ export default class extends Vue {
   @Prop({ type: Array, default: () => [] })
   private menuList!: Menu[];
   @commonModule.Mutation('SET_SHOW_CHECK_AUTH') setCheckAuth?: any;
-  @commonModule.Mutation('SET_PRINCIPAL_ID') setPrincipalId?: any;
   @commonModule.Mutation('SET_IDENTITY') setIdentity?: any;
+  @commonModule.Mutation('SET_PRINCIPAL_ID') setPrincipalId?: any;
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
   @commonModule.Getter('getIdentity') getIdentity?:
     | Secp256k1KeyIdentity
@@ -491,7 +493,10 @@ export default class extends Vue {
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
-      const encryptSeedPhrase = phraseList[this.getPrincipalId];
+      let encryptSeedPhrase = phraseList[this.getPrincipalId];
+      if (typeof encryptSeedPhrase === 'string') {
+        encryptSeedPhrase = JSON.parse(encryptSeedPhrase);
+      }
       console.log(encryptSeedPhrase);
       if (!encryptSeedPhrase) {
         this.activeKey = 0;
@@ -595,9 +600,12 @@ export default class extends Vue {
     });
     setTimeout(async () => {
       try {
-        const encryptSeedPhrase = JSON.parse(
-          JSON.parse(localStorage.getItem('phraseList'))[this.getPrincipalId]
-        );
+        const phraseList =
+          JSON.parse(localStorage.getItem('phraseList')) || {};
+        let encryptSeedPhrase = phraseList[this.getPrincipalId];
+        if (typeof encryptSeedPhrase === 'string') {
+          encryptSeedPhrase = JSON.parse(encryptSeedPhrase);
+        }
         let salt = 'ICLightHouse';
         let data = encryptSeedPhrase;
         if (encryptSeedPhrase.salt) {
@@ -684,8 +692,8 @@ export default class extends Vue {
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
-    this.setIdentity(null);
     this.setCheckAuth(false);
+    this.setIdentity(null);
     await this.$router.replace('/loginByExists');
   }
 }

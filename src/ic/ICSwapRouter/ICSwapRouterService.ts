@@ -12,54 +12,22 @@ import Service, {
   Valid,
   Verified
 } from '@/ic/ICSwapRouter/model';
-import { checkAuth } from '@/ic/CheckAuth';
 import { IC_SWAP_ROUTER_CANISTER_ID } from '@/ic/utils';
 import ICSwapRouterIDL from './ICSwapRouter.did';
-import { buildService } from '@/ic/Service';
-import store from '@/store';
 import { TokenId } from '@/ic/common/icType';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { Principal } from '@dfinity/principal';
 import { SerializableIC } from '@/ic/converter';
+import { createService } from '@/ic/createService';
 
 export class ICSwapRouterService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
-    if (!isUpdate) {
-      this.service = buildService(
-        null,
-        ICSwapRouterIDL,
-        IC_SWAP_ROUTER_CANISTER_ID
-      );
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(
-        ICSwapRouterIDL,
-        IC_SWAP_ROUTER_CANISTER_ID
-      );
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(
-        ICSwapRouterIDL,
-        IC_SWAP_ROUTER_CANISTER_ID
-      );
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(
-        ICSwapRouterIDL,
-        IC_SWAP_ROUTER_CANISTER_ID
-      );
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        ICSwapRouterIDL,
-        IC_SWAP_ROUTER_CANISTER_ID
-      );
-    }
+    this.service = await createService<Service>(
+      IC_SWAP_ROUTER_CANISTER_ID,
+      ICSwapRouterIDL,
+      renew,
+      isUpdate
+    );
   };
   public getTokens = async (
     dexName: Array<DexName> = []

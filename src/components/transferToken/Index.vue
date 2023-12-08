@@ -9,6 +9,7 @@
     :maskClosable="false"
     class="transfer-modal"
     :after-close="afterClose"
+    :z-index="1400"
   >
     <a-form-model
       :model="transferForm"
@@ -113,6 +114,7 @@ import { isInfinity } from '@/ic/isInfinity';
 import { validateAccount } from '@/ic/utils';
 
 const OGYTokenId = 'jwcfb-hyaaa-aaaaj-aac4q-cai';
+const ProSubaccountId = 1;
 
 @Component({
   name: 'Index',
@@ -174,6 +176,7 @@ export default class extends Vue {
       const thisIcx = store.getters['common/getIcx'];
       if (
         this.currentToken.standard === TokenStandard['ICRC-1'] ||
+        this.currentToken.standard === TokenStandard['ICRC-2'] ||
         this.currentToken.standard === TokenStandard['DIP20']
       ) {
         this.transferForm.to = thisIcx.wallet.principal;
@@ -196,7 +199,8 @@ export default class extends Vue {
     this.DRC20TokenService = new DRC20TokenService();
     // ogy
     if (
-      (token.standard === TokenStandard['ICRC-1'] &&
+      ((token.standard === TokenStandard['ICRC-1'] ||
+        token.standard === TokenStandard['ICRC-2']) &&
         token.canisterId.toString() !== OGYTokenId) ||
       token.standard === TokenStandard['DIP20']
     ) {
@@ -251,7 +255,10 @@ export default class extends Vue {
         this.currentToken.canisterId.toString(),
         Principal.fromText(principal)
       );
-    } else if (this.currentToken.standard === TokenStandard['ICRC-1']) {
+    } else if (
+      this.currentToken.standard === TokenStandard['ICRC-1'] ||
+      this.currentToken.standard === TokenStandard['ICRC-2']
+    ) {
       const to = {
         owner: Principal.fromText(principal),
         subaccount: [fromSubAccountId(this.subaccountId)]
@@ -272,6 +279,7 @@ export default class extends Vue {
         this.gas = await this.ICLighthouseTokenService.gas(
           this.currentToken.canisterId.toString()
         );
+        console.log(this.gas);
         fee = (this.gas as { token: bigint }).token;
       } catch (e) {
         fee = await this.ICLighthouseTokenService.fee(
@@ -283,7 +291,10 @@ export default class extends Vue {
         this.currentToken.canisterId.toString()
       );
       fee = res.fee;
-    } else if (this.currentToken.standard === TokenStandard['ICRC-1']) {
+    } else if (
+      this.currentToken.standard === TokenStandard['ICRC-1'] ||
+      this.currentToken.standard === TokenStandard['ICRC-2']
+    ) {
       fee = await this.DRC20TokenService.icrcFee(
         this.currentToken.canisterId.toString()
       );
@@ -292,7 +303,7 @@ export default class extends Vue {
       this.fee = new BigNumber(fee.toString(10))
         .div(10 ** Number(this.currentToken.decimals))
         .toString(10);
-      // approve
+      // todo approve
       if (
         this.currentToken.standard === TokenStandard.DRC20 &&
         this.type === 'Deposit'
@@ -380,6 +391,7 @@ export default class extends Vue {
                   data,
                   this.currentToken.canisterId.toString()
                 );
+                console.log(res);
                 if (
                   (
                     res as {
@@ -500,7 +512,11 @@ export default class extends Vue {
                   this.$message.error(err);
                 }
               }
-            } else if (this.currentToken.standard === TokenStandard['ICRC-1']) {
+            } else if (
+              this.currentToken.standard === TokenStandard['ICRC-1'] ||
+              this.currentToken.standard === TokenStandard['ICRC-2']
+            ) {
+              // todo icrc2
               const principalAndAccountId = toPrincipalAndAccountId(
                 this.transferForm.to
               );
@@ -514,7 +530,10 @@ export default class extends Vue {
                 const res = await this.DRC20TokenService.icrc1Transfer(
                   this.currentToken.canisterId.toString(),
                   amount,
-                  to
+                  to,
+                  [],
+                  [],
+                  this.subaccountId
                 );
                 if (
                   (
@@ -527,7 +546,12 @@ export default class extends Vue {
                     this.$message.success('Transfer Success');
                     this.visibleTransfer = false;
                   }
-                  this.$emit('transferTokenSuccess', amount, loading);
+                  this.$emit(
+                    'transferTokenSuccess',
+                    amount,
+                    loading,
+                    this.subaccountId
+                  );
                 } else {
                   const err = Object.keys(
                     (res as { Err: IcrcTransferError }).Err

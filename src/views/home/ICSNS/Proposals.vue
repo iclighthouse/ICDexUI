@@ -470,6 +470,7 @@ export default class extends Vue {
         this.SNSTokens[this.currentIndex].governanceId,
         request
       );
+      console.log(res);
       if (res.proposals.length < 10) {
         this.loadMore = false;
       }
@@ -647,6 +648,7 @@ export default class extends Vue {
     const res = await Promise.all(promiseAll);
     let allTopics = [];
     let types = {};
+    console.log(res);
     let listTypes = [];
     if (res[3] && res[3].functions) {
       res[3].functions.forEach((item) => {

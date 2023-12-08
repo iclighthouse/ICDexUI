@@ -26,33 +26,17 @@ import { createIcxActor } from '@/ic/createIcxActor';
 import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
+import { createService } from '@/ic/createService';
 
 export class ICStableService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, ICStableIDL, IC_STABLE_CANISTER_ID);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(ICStableIDL, IC_STABLE_CANISTER_ID);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(ICStableIDL, IC_STABLE_CANISTER_ID);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(
-        ICStableIDL,
-        IC_STABLE_CANISTER_ID
-      );
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        ICStableIDL,
-        IC_STABLE_CANISTER_ID
-      );
-    }
+    this.service = await createService<Service>(
+      IC_STABLE_CANISTER_ID,
+      ICStableIDL,
+      renew,
+      isUpdate
+    );
   };
   public getConfig = async (): Promise<ConfigRes> => {
     await this.check(false, false);

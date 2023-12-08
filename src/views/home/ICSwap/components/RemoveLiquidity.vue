@@ -550,18 +550,21 @@ export default class extends Vue {
   }
   private onchange(): void {
     this.autoWithdraw = !this.autoWithdraw;
+    console.log(this.autoWithdraw);
   }
   public async getAutoWithdrawal(swapId: string): Promise<void> {
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       this.autoWithdraw = true;
     } else {
       const principal = localStorage.getItem('principal');
+      console.log(swapId, principal);
       const currentICSwapService = new ICSwapService();
       this.autoWithdraw = await currentICSwapService.autoWithdrawal(
         swapId,
         principal
       );
     }
+    console.log(this.autoWithdraw);
   }
   private connectWallet(): void {
     this.$router.push({
@@ -616,6 +619,7 @@ export default class extends Vue {
   }
   private async claim(): Promise<void> {
     const principal = localStorage.getItem('principal');
+    console.time();
     const swapId = this.currentPool[0].toString();
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       const nonce = await this.getCount(Principal.fromText(principal));
@@ -649,6 +653,7 @@ export default class extends Vue {
         }
         this.shares = '';
         this.setCyclesCanister();
+        console.timeEnd();
       } catch (e) {
         console.log(e);
         this.removeLiquidityVisible = false;
@@ -695,6 +700,7 @@ export default class extends Vue {
       }
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
+      console.log(state);
       if (!state || (state && !state.moduleHash)) {
         flag = false;
         this.$info({
@@ -748,6 +754,7 @@ export default class extends Vue {
     const principal = localStorage.getItem('principal');
     this.removeLiquidityVisible = true;
     this.removeLiquidityStep = 0;
+    console.time();
     const swapId = this.currentPool[0].toString();
     const shares = BigInt(
       new BigNumber(this.shares).times(10 ** this.currentPool[4])
@@ -802,6 +809,7 @@ export default class extends Vue {
           this.removeLiquidityVisible = false;
           this.setCyclesCanister();
         }
+        console.timeEnd();
       } catch (e) {
         console.log(e);
         this.removeLiquidityVisible = false;

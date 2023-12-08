@@ -198,6 +198,7 @@ export default class extends Vue {
       'k7tml-iaaaa-aaaak-aecgq-cai',
       [principalId]
     );
+    console.log(res);
     this.isCkBTCCanClaim = new BigNumber(
       res.tokenLiquidity.vol.value1.toString(10)
     )

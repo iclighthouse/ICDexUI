@@ -13,48 +13,22 @@ import Service, {
   DepositAccount,
   AccountBalance
 } from '@/ic/ICSwap/model';
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
 import ICSwapIDL from './ICSwap.did';
-import store from '@/store';
 import { AccountIdentifier } from '@/ic/common/icType';
 import { _data, Nonce } from '@/ic/ICLighthouseToken/model';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { Address } from '@/ic/DRC20Token/model';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
+import { createService } from '@/ic/createService';
 
 export class ICSwapService {
-  private service: Service;
   private check = async (
     canisterId: string,
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew, canisterId);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, ICSwapIDL, canisterId);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(ICSwapIDL, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(ICSwapIDL, canisterId);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(ICSwapIDL, canisterId);
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        ICSwapIDL,
-        canisterId
-      );
-    }
-    return this.service;
+    return await createService<Service>(canisterId, ICSwapIDL, renew, isUpdate);
   };
   public drc205_dexInfo = async (canisterId: string): Promise<DexInfo> => {
     const service = await this.check(canisterId, false, false);

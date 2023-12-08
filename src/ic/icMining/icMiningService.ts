@@ -10,44 +10,22 @@ import Service, {
   TradingMiningStatus,
   TmNFTBalance
 } from '@/ic/icMining/model';
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
-import store from '@/store';
 import IcMiningIDL from './icMining.did';
 import { IC_MINING_CANISTER_ID, validatePrincipal } from '@/ic/utils';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
 import { Address } from '@/ic/DRC20Token/model';
 import { principalToAccountIdentifier, SerializableIC } from '@/ic/converter';
 import { TokenIdentifier } from '@/ic/nft/model';
-import { createInfinityActor } from '@/ic/createInfinityActor';
+import { createService } from '@/ic/createService';
 
 export class IcMiningService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, IcMiningIDL, IC_MINING_CANISTER_ID);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(IcMiningIDL, IC_MINING_CANISTER_ID);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(IcMiningIDL, IC_MINING_CANISTER_ID);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(
-        IcMiningIDL,
-        IC_MINING_CANISTER_ID
-      );
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        IcMiningIDL,
-        IC_MINING_CANISTER_ID
-      );
-    }
+    this.service = await createService<Service>(
+      IC_MINING_CANISTER_ID,
+      IcMiningIDL,
+      renew,
+      isUpdate
+    );
   };
   public status = async (): Promise<MiningStatusResponse> => {
     await this.check(false, false);

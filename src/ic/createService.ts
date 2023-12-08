@@ -1,12 +1,12 @@
+import { IDL } from '@dfinity/candid';
 import { checkAuth } from '@/ic/CheckAuth';
 import { buildService } from '@/ic/Service';
 import { createIcxActor } from '@/ic/createIcxActor';
 import { createPlugActor } from '@/ic/createPlugActor';
 import { createInfinityActor } from '@/ic/createInfinityActor';
-import { IDL } from '@dfinity/candid';
 import store from '@/store';
 
-export const checkService = async <T>(
+export const createService = async <T>(
   canisterId: string,
   IDL: IDL.InterfaceFactory,
   renew = true,

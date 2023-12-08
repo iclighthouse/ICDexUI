@@ -19,9 +19,13 @@ export const getTokenBalance = async (
   }
   let balance = BigInt(0);
   try {
-    if (tokenStd && (tokenStd as { icp: null }).icp === null) {
+    let std;
+    if (tokenStd) {
+      std = Object.keys(tokenStd)[0].toLocaleLowerCase();
+    }
+    if (std && std === 'icp') {
       balance = BigInt(await getIcpBalance(subAccountId));
-    } else if (tokenStd && (tokenStd as { drc20: null }).drc20 === null) {
+    } else if (std && std === 'drc20') {
       balance = await currentDRC20TokenService.drc20_balanceOf(
         tokenId,
         principalToAccountIdentifier(
@@ -29,13 +33,13 @@ export const getTokenBalance = async (
           new Uint8Array(fromSubAccountId(subAccountId))
         )
       );
-    } else if (tokenStd && (tokenStd as { dip20: null }).dip20 === null) {
+    } else if (std && std === 'dip20') {
       // deleted
       balance = await currentDRC20TokenService.balanceOf(
         tokenId,
         Principal.fromText(principal)
       );
-    } else if (tokenStd && (tokenStd as { icrc1: null }).icrc1 === null) {
+    } else if (std && (std === 'icrc1' || std === 'icrc2')) {
       const to = {
         owner: Principal.fromText(principal),
         subaccount: [getSubAccountArray(subAccountId)]
@@ -114,7 +118,11 @@ export const getDepositing = async (
     if (balanceRes?.e8s || Number(balanceRes?.e8s) === 0) {
       balance = new BigNumber(balanceRes?.e8s.toString(10)).toString(10);
     }
-  } else if (tokenStd && (tokenStd as { icrc1: null }).icrc1 === null) {
+  } else if (
+    tokenStd &&
+    ((tokenStd as { icrc1: null }).icrc1 === null ||
+      (tokenStd as { icrc2: null }).icrc2 === null)
+  ) {
     const currentDRC20TokenService = new DRC20TokenService();
     if (
       icrc1Account &&
@@ -164,7 +172,7 @@ export const getCompetitionsBalance = async (
       balance = new BigNumber(balanceRes?.e8s.toString(10)).toString(10);
     }
   }
-  if (std === 'icrc1') {
+  if (std === 'icrc1' || std === 'icrc2') {
     const currentDRC20TokenService = new DRC20TokenService();
     const res = await currentDRC20TokenService.icrc1_balance_of(
       tokenId,

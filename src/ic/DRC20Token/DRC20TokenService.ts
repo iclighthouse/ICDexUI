@@ -11,7 +11,6 @@ import Service, {
   TxnRecord,
   TxReceipt
 } from './model';
-import { buildService } from '../Service';
 import DRC20IDL from './DRC20Token.did';
 import OGYIDL from './OGYToken.did';
 import OGYICRCIDL from './OGYICRCToken.did';
@@ -27,8 +26,6 @@ import {
   TotalSupply,
   Txid
 } from '../common/icType';
-import { checkAuth } from '@/ic/CheckAuth';
-import store from '@/store';
 import { _data, Amount, Nonce, TxnResult } from '@/ic/ICLighthouseToken/model';
 import {
   getSubAccountArray,
@@ -37,49 +34,26 @@ import {
   OGY_CANISTER_ID
 } from '@/ic/utils';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isInfinity } from '@/ic/isInfinity';
 import { isPlug } from '@/ic/isPlug';
-import { SendICPTsRequest } from '@/ic/ledger/model';
+import { Allowance, AllowanceArgs, SendICPTsRequest } from '@/ic/ledger/model';
+import { createService } from '@/ic/createService';
 
 const OGYTokenId = 'jwcfb-hyaaa-aaaaj-aac4q-cai';
 
 export class DRC20TokenService {
-  private service: Service;
   private check = async (
     canisterId: string,
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew, canisterId);
-    }
     let idl = DRC20IDL;
     if (canisterId === OGY_CANISTER_ID) {
       idl = OGYIDL;
     } else if (canisterId === OGYTokenId) {
       idl = OGYICRCIDL;
     }
-    if (!isUpdate) {
-      this.service = buildService(null, idl, canisterId);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(idl, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor<Service>(idl, canisterId);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor<Service>(idl, canisterId);
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        idl,
-        canisterId
-      );
-    }
-    return this.service;
+    return await createService<Service>(canisterId, idl, renew, isUpdate);
   };
   public decimals = async (canisterId: string): Promise<Decimals> => {
     const service = await this.check(canisterId, false, false);
@@ -197,8 +171,8 @@ export class DRC20TokenService {
     canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
   ): Promise<TxnResult> => {
     const service = await this.check(canisterId);
-    let subAccount = [[]];
-    if (subAccountId || subAccountId === 0) {
+    let subAccount = [];
+    if (subAccountId) {
       subAccount = [fromSubAccountId(subAccountId)];
     }
     if (
@@ -312,6 +286,7 @@ export class DRC20TokenService {
       created_at_time: created_at_time,
       amount: amount
     };
+    console.log(transferArgs);
     // const args = IDL.encode(
     //   [
     //     IDL.Record({
@@ -337,7 +312,7 @@ export class DRC20TokenService {
     // ).then((res) => {
     //   console.log(toHexString(new Uint8Array(res)));
     // });
-    const res =  await service.icrc1_transfer(transferArgs);
+    const res = await service.icrc1_transfer(transferArgs);
     return SerializableIC(res);
   };
   public icrc1_balance_of = async (
@@ -373,6 +348,7 @@ export class DRC20TokenService {
         memo: memo,
         created_at_time: []
       };
+      console.log(request);
       return await service.send_dfx(request);
     } catch (e) {
       console.log(e);
@@ -397,6 +373,18 @@ export class DRC20TokenService {
     };
     try {
       return await service.icrc2_approve(approveArgs);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public icrc2_allowance = async (
+    canisterId: string,
+    allowanceArgs: AllowanceArgs
+  ): Promise<Allowance> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      return await service.icrc2_allowance(allowanceArgs);
     } catch (e) {
       console.log(e);
       return null;

@@ -218,6 +218,7 @@ export default class extends Vue {
           ).transactions;
           console.log(this.transactionList);
         }
+        console.log(res);
       } catch (e) {
         console.log(e);
       }

@@ -1,12 +1,6 @@
 import { TokenItem } from '@/ic/ICLighthouse/model';
 import { Txid } from '@/ic/ICLighthouseToken/model';
-import {
-  IcTokenInfo,
-  PendingDepositTxn,
-  TxIndex,
-  TxStatus,
-  Wei
-} from '@/ic/ckETHMinter/model';
+import { IcTokenInfo, TxIndex, TxStatus, Wei } from '@/ic/ckETHMinter/model';
 import { Time } from '@/ic/common/icType';
 
 export type SettingType = 'Modify' | 'Update';
@@ -57,9 +51,9 @@ export enum BTCTypeEnum {
 export const networkIds = {
   '-1': 'IC Network',
   '0': 'Bitcoin',
-  '1': 'Ethereum',
-  '2': 'Goerli',
-  '3': 'Sepolia'
+  '1': 'Ethereum Mainnet',
+  '2': 'Goerli'
+  // '3': 'Sepolia'
 };
 export const networkList = [
   {
@@ -72,20 +66,15 @@ export const networkList = [
     name: 'Bitcoin',
     logo: require('@/assets/img/bitcoin.svg')
   },
-  // {
-  //   id: 1,
-  //   name: 'Ethereum',
-  //   logo: require('@/assets/img/ethereum.svg')
-  // },
+  {
+    id: '1',
+    name: 'Ethereum Mainnet',
+    logo: require('@/assets/img/ethereum.svg')
+  },
   {
     id: '2',
     name: 'Goerli Testnet',
     logo: require('@/assets/img/goerlieth.svg')
-  },
-  {
-    id: '3',
-    name: 'Sepolia Testnet',
-    logo: require('@/assets/img/subway.svg')
   }
 ];
 export interface ICNetworkTokensInterface {

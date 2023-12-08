@@ -2022,7 +2022,8 @@ export default class extends Mixins(PairsMixin) {
             try {
               if (
                 _that.createPairForm.token0Std === 'drc20' ||
-                _that.createPairForm.token0Std === 'icrc1'
+                _that.createPairForm.token0Std === 'icrc1' ||
+                _that.createPairForm.token0Std === 'icrc2'
               ) {
                 token0Symbol = await currentDrc20Token.symbol(
                   _that.createPairForm.token0Id
@@ -2052,7 +2053,8 @@ export default class extends Mixins(PairsMixin) {
             try {
               if (
                 _that.createPairForm.token1Std === 'drc20' ||
-                _that.createPairForm.token1Std === 'icrc1'
+                _that.createPairForm.token1Std === 'icrc1' ||
+                _that.createPairForm.token0Std === 'icrc2'
               ) {
                 token1Symbol = await currentDrc20Token.symbol(
                   _that.createPairForm.token1Id
@@ -2178,7 +2180,9 @@ export default class extends Mixins(PairsMixin) {
                 (checkLoading as any).setText(
                   'Creating swapping pair canister, it takes 20-60 seconds.'
                 );
-                const res = await _that.ICSwapRouterFiduciaryService.create(pairRequest);
+                const res = await _that.ICSwapRouterFiduciaryService.create(
+                  pairRequest
+                );
                 console.log(res);
                 _that.createPairVisible = false;
                 // todo
@@ -2214,7 +2218,8 @@ export default class extends Mixins(PairsMixin) {
             try {
               if (
                 _that.createPairForm.token0Std === 'drc20' ||
-                _that.createPairForm.token0Std === 'icrc1'
+                _that.createPairForm.token0Std === 'icrc1' ||
+                _that.createPairForm.token0Std === 'icrc2'
               ) {
                 token0Symbol = await currentDrc20Token.symbol(
                   _that.createPairForm.token0Id
@@ -2244,7 +2249,8 @@ export default class extends Mixins(PairsMixin) {
             try {
               if (
                 _that.createPairForm.token1Std === 'drc20' ||
-                _that.createPairForm.token1Std === 'icrc1'
+                _that.createPairForm.token1Std === 'icrc1' ||
+                _that.createPairForm.token0Std === 'icrc2'
               ) {
                 token1Symbol = await currentDrc20Token.symbol(
                   _that.createPairForm.token1Id
@@ -2370,7 +2376,9 @@ export default class extends Mixins(PairsMixin) {
                 (checkLoading as any).setText(
                   'Creating swapping pair canister, it takes 20-60 seconds.'
                 );
-                const res = await _that.ICSwapRouterFiduciaryService.create(pairRequest);
+                const res = await _that.ICSwapRouterFiduciaryService.create(
+                  pairRequest
+                );
                 console.log(res);
                 _that.createPairVisible = false;
                 // todo
@@ -2394,7 +2402,8 @@ export default class extends Mixins(PairsMixin) {
       try {
         if (
           this.createPairForm.token0Std === 'drc20' ||
-          this.createPairForm.token0Std === 'icrc1'
+          this.createPairForm.token0Std === 'icrc1' ||
+          this.createPairForm.token0Std === 'icrc2'
         ) {
           token0Symbol = await currentDrc20Token.symbol(
             this.createPairForm.token0Id
@@ -2422,7 +2431,8 @@ export default class extends Mixins(PairsMixin) {
       try {
         if (
           this.createPairForm.token1Std === 'drc20' ||
-          this.createPairForm.token1Std === 'icrc1'
+          this.createPairForm.token1Std === 'icrc1' ||
+          this.createPairForm.token0Std === 'icrc2'
         ) {
           token1Symbol = await currentDrc20Token.symbol(
             this.createPairForm.token1Id
@@ -2540,7 +2550,9 @@ export default class extends Mixins(PairsMixin) {
           (checkLoading as any).setText(
             'Creating swapping pair canister, it takes 20-60 seconds.'
           );
-          const res = await this.ICSwapRouterFiduciaryService.create(pairRequest);
+          const res = await this.ICSwapRouterFiduciaryService.create(
+            pairRequest
+          );
           console.log(res);
           this.createPairVisible = false;
           // todo
@@ -2588,7 +2600,7 @@ export default class extends Mixins(PairsMixin) {
         let tokenSwapFromCreditRecord: BigNumber;
         if (
           this.swapId === CYCLES_FINANCE_CANISTER_ID ||
-          ((fromStd === 'icp' || fromStd === 'icrc1') &&
+          ((fromStd === 'icp' || fromStd === 'icrc1' || fromStd === 'icrc2') &&
             this.getTokenDepositingAndPairBalance(this.tokenSwapFrom)
               .div(10 ** this.tokenSwapFrom[3].decimals)
               .lt(this.swapFromAmount))
@@ -2772,7 +2784,9 @@ export default class extends Mixins(PairsMixin) {
           const fromStd = Object.keys(this.tokenSwapFrom[2])[0];
           if (
             this.swapId === CYCLES_FINANCE_CANISTER_ID ||
-            ((fromStd === 'icp' || fromStd === 'icrc1') &&
+            ((fromStd === 'icp' ||
+              fromStd === 'icrc1' ||
+              fromStd === 'icrc2') &&
               this.getTokenDepositingAndPairBalance(this.tokenSwapFrom)
                 .div(10 ** this.tokenSwapFrom[3].decimals)
                 .lt(tokenSwapFromCreditRecord))

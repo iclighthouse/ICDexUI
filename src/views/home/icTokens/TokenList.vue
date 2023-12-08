@@ -7,13 +7,14 @@
             <tr>
               <th class="name">Token</th>
               <th class="token-id">Token ID</th>
-              <th>TotalSupply</th>
-              <th>MaxSupply</th>
+              <th class="token-id">Controllers</th>
+              <th>Supply</th>
+              <th>Cycles</th>
               <th class="gas">Fee</th>
               <th class="metadata">Metadata</th>
               <th class="score">Score</th>
               <th class="star">Star</th>
-              <th></th>
+              <!--<th></th>-->
             </tr>
           </thead>
           <tbody>
@@ -41,25 +42,70 @@
                   ></copy-account
                 ></a>
               </td>
-              <td class="total-supply">
-                {{
-                  token[5]
-                    | bigintToFloat(
-                      Number(token[1].decimals),
-                      Number(token[1].decimals)
-                    )
-                    | formatNum
-                }}
+              <td class="token-id" style="line-height: 1.2">
+                <div v-if="token[10] && token[10].length">
+                  <div v-for="item in token[10]" :key="item">
+                    <a
+                      :href="
+                        item === '7hdtw-jqaaa-aaaak-aaccq-cai' ||
+                        item === 'igm6s-dqaaa-aaaar-qaa3a-cai' ||
+                        item === token[0].toString()
+                          ? `https://ic.house/canister/${item}`
+                          : `https://ic.house/icp/address/${item}`
+                      "
+                      target="_blank"
+                      class="token-id-rocks"
+                      rel="nofollow noreferrer noopener"
+                      :class="{
+                        'controller-red':
+                          item !== '7hdtw-jqaaa-aaaak-aaccq-cai' &&
+                          item !== 'igm6s-dqaaa-aaaar-qaa3a-cai' &&
+                          item !== token[0].toString() &&
+                          item !== getPrincipalId
+                      }"
+                      ><copy-account
+                        :account="item"
+                        copyText="Controller"
+                      ></copy-account
+                    ></a>
+                    <!-- <span v-if="item === '7hdtw-jqaaa-aaaak-aaccq-cai'">
+                      (Blackhole)
+                    </span>
+                    <span v-if="item === token[0].toString()"> (Token) </span>
+                    <span v-if="item === 'igm6s-dqaaa-aaaar-qaa3a-cai'">
+                      (Factory)
+                    </span>
+                    <span v-if="item === getPrincipalId"> (Your)</span>-->
+                  </div>
+                </div>
               </td>
               <td class="total-supply">
-                {{
-                  token[9]
-                    | bigintToFloat(
-                      Number(token[1].decimals),
-                      Number(token[1].decimals)
-                    )
-                    | formatNum
-                }}
+                <div>
+                  Total:
+                  {{
+                    token[5]
+                      | bigintToFloat(
+                        Number(token[1].decimals),
+                        Number(token[1].decimals)
+                      )
+                      | formatNum
+                  }}
+                </div>
+                <div>
+                  Max:
+                  {{
+                    token[9]
+                      | bigintToFloat(
+                        Number(token[1].decimals),
+                        Number(token[1].decimals)
+                      )
+                      | formatNum
+                  }}
+                </div>
+              </td>
+              <td>
+                <span v-if="token[11]">{{ token[11] }}</span>
+                <span v-else>-</span>
               </td>
               <td class="gas">{{ token[6] | filterGas(token) }}</td>
               <td class="metadata">
@@ -176,11 +222,11 @@
                   }"
                 />{{ token[3] }}
               </td>
-              <td class="operation">
+              <!--<td class="operation">
                 <div v-if="showAddToken(token)" @click="addToken(token)">
                   Add to wallet
                 </div>
-              </td>
+              </td>-->
             </tr>
             <tr v-if="!tokenList.length">
               <td colspan="9">
@@ -214,13 +260,11 @@ import { Identity } from '@dfinity/agent';
 import { namespace } from 'vuex-class';
 import { TokenItemGas, TokenList } from '@/ic/ICTokens/model';
 import { Principal } from '@dfinity/principal';
-import { asciiStringToByteArray } from '@/ic/converter';
 import {
   IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
   IC_TOKEN_CANISTER_ID
 } from '@/ic/utils';
 import { PrincipalString } from '@/ic/common/icType';
-import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { TokenItem } from '@/ic/ICLighthouse/model';
 import { addToken, addedTokens } from '@/ic/addToken';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
@@ -228,6 +272,10 @@ import {
   currentPageConnectInfinity,
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { toHttpError } from '@/ic/httpError';
+import { readState } from '@/ic/readState';
+import { BlackholeService } from '@/ic/Blackhole/BlackholeService';
 
 const commonModule = namespace('common');
 
@@ -259,6 +307,7 @@ export default class extends Vue {
   private ICTokenService: ICTokenService;
   private ICLighthouseTokenService: ICLighthouseTokenService;
   private ICLighthouseService: ICLighthouseService;
+  private BlackholeService: BlackholeService;
   private spinning = false;
   private showMore = false;
   // private principal: string;
@@ -270,11 +319,14 @@ export default class extends Vue {
   private decimals = 8;
   private starTokens: Array<PrincipalString> = [];
   private addedTokens: Array<TokenItem> = null;
+  private DRC20TokenService: DRC20TokenService;
   created(): void {
     // this.principal = localStorage.getItem('principal');
     this.ICTokenService = new ICTokenService();
     this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.ICLighthouseService = new ICLighthouseService();
+    this.DRC20TokenService = new DRC20TokenService();
+    this.BlackholeService = new BlackholeService();
     this.getTokenList();
     if (this.getPrincipalId) {
       this.getStarTokens();
@@ -285,6 +337,18 @@ export default class extends Vue {
   private pageChange(page: number): void {
     this.page = page - 1;
     this.getTokenList('pageChange');
+  }
+  private async readState(token: TokenList): Promise<void> {
+    console.log(token);
+    const state = await readState(token[0].toString());
+    console.log(token[0].toString());
+    console.log(state);
+    if (state) {
+      this.$set(token, 10, state.controllers);
+      if (state.controllers.includes('7hdtw-jqaaa-aaaak-aaccq-cai')) {
+        this.tokenStatus(token);
+      }
+    }
   }
   private async getIclDecimals(): Promise<void> {
     this.decimals = await this.ICLighthouseTokenService.getDecimals(
@@ -334,42 +398,40 @@ export default class extends Vue {
     } else {
       this.starTokens = [];
     }
+    console.log(this.starTokens);
   }
   private async handleStar(tokenItem: TokenList): Promise<void> {
     this.spinning = true;
     try {
-      const nonceRes = await this.ICLighthouseTokenService.txnQuery({
-        txnCount: { owner: this.getPrincipalId }
-      });
-      const nonce = (
-        nonceRes as {
-          txnCount: bigint;
-        }
-      ).txnCount;
-      const _data = [0, 0, 0, 1].concat(
-        asciiStringToByteArray(tokenItem[0].toString())
+      const res = await this.DRC20TokenService.icrc2_approve(
+        IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+        {
+          owner: Principal.fromText(IC_TOKEN_CANISTER_ID),
+          subaccount: []
+        },
+        BigInt(10 ** this.decimals)
       );
-      const res = await this.ICLighthouseTokenService.transfer(
-        IC_TOKEN_CANISTER_ID,
-        BigInt(10 ** this.decimals),
-        [nonce],
-        0,
-        [_data]
-      );
-      if (
-        (
-          res as {
-            ok: Txid;
+      if (res) {
+        const type = Object.keys(res)[0];
+        if (type === 'Ok') {
+          try {
+            await this.ICTokenService.starIt(tokenItem[0]);
+            this.$message.success('Success');
+            this.starTokens.push(tokenItem[0].toString());
+            tokenItem[3] = BigInt(
+              new BigNumber(tokenItem[3].toString()).plus(1)
+            );
+          } catch (e) {
+            console.log(e);
+            this.$message.error(toHttpError(e).message);
           }
-        ).ok
-      ) {
-        this.$message.success('Success');
-        this.starTokens.push(tokenItem[0].toString());
-        tokenItem[3] = BigInt(new BigNumber(tokenItem[3].toString()).plus(1));
-      } else {
-        this.$message.error((res as TxnResultErr).err.message);
+          this.spinning = false;
+        } else {
+          console.log(res);
+          this.$message.error('Approve Error');
+          this.spinning = false;
+        }
       }
-      this.spinning = false;
     } catch (e) {
       this.spinning = false;
       console.log(e);
@@ -392,7 +454,9 @@ export default class extends Vue {
           this.lastPage = parseInt((this.total / this.size).toString());
         }
       }
+      console.log(this.lastPage);
     }
+    console.log(this.total);
     this.showMore = res.length && res.length >= this.size;
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -420,13 +484,24 @@ export default class extends Vue {
             if (res.length) {
               const tokenList: Array<TokenList> = [];
               for (let i = 0; i < res.length; i++) {
-                tokenList[i] = [...res[i], null, null, null, null, null];
+                tokenList[i] = [
+                  ...res[i],
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null
+                ];
                 that.getTotalSupply(tokenList[i]);
                 that.getMaxSupply(tokenList[i]);
                 that.getGas(tokenList[i]);
                 that.getMetadata(tokenList[i]);
+                that.readState(tokenList[i]);
               }
               that.tokenList = tokenList;
+              console.log(tokenList);
             } else {
               that.tokenList = [];
             }
@@ -450,13 +525,24 @@ export default class extends Vue {
             if (res.length) {
               const tokenList: Array<TokenList> = [];
               for (let i = 0; i < res.length; i++) {
-                tokenList[i] = [...res[i], null, null, null, null, null];
+                tokenList[i] = [
+                  ...res[i],
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null
+                ];
                 that.getTotalSupply(tokenList[i]);
                 that.getMaxSupply(tokenList[i]);
                 that.getGas(tokenList[i]);
                 that.getMetadata(tokenList[i]);
+                that.readState(tokenList[i]);
               }
               that.tokenList = tokenList;
+              console.log(tokenList);
             } else {
               that.tokenList = [];
             }
@@ -468,17 +554,37 @@ export default class extends Vue {
       if (res.length) {
         const tokenList: Array<TokenList> = [];
         for (let i = 0; i < res.length; i++) {
-          tokenList[i] = [...res[i], null, null, null, null, null];
+          tokenList[i] = [...res[i], null, null, null, null, null, null, null];
           this.getTotalSupply(tokenList[i]);
           this.getMaxSupply(tokenList[i]);
           this.getGas(tokenList[i]);
           this.getMetadata(tokenList[i]);
+          this.readState(tokenList[i]);
         }
         this.tokenList = tokenList;
+        console.log(tokenList);
       } else {
         this.tokenList = [];
       }
       this.spinning = false;
+    }
+  }
+  private async tokenStatus(token: TokenList): Promise<void> {
+    try {
+      const res = await this.BlackholeService.canister_status({
+        canister_id: token[0]
+      });
+      if (res && res.cycles) {
+        const cycles = new BigNumber(res.cycles.toString(10))
+          .div(10 ** 12)
+          .decimalPlaces(4, 1)
+          .toString(10);
+        this.$set(token, 11, `${cycles} T`);
+      } else {
+        this.$set(token, 11, '-');
+      }
+    } catch (e) {
+      console.log(e);
     }
   }
   private async getMetadata(token: TokenList): Promise<void> {
@@ -492,6 +598,7 @@ export default class extends Vue {
         this.$set(token, 8, val.content);
       }
     });
+    console.log(metadataType);
     // todo
     if (!metadataType.includes('webUrl')) {
       metadata.push({ name: 'webUrl', content: '' });
@@ -545,7 +652,7 @@ export default class extends Vue {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       this.$confirm({
-        content: 'It costs 1ICL to star',
+        content: 'It costs 1 ICL to star',
         class: 'connect-plug register-mining-confirm',
         icon: 'connect-plug',
         okText: 'Confirm',
@@ -578,11 +685,11 @@ export default class extends Vue {
   border-radius: 10px;
   background: #141b23;
   box-shadow: 0 0 10px 0 rgba(82, 183, 195, 0.3);
-  padding: 20px 25px;
   margin-top: 0;
   overflow: auto;
   table {
     width: 100%;
+    font-size: 12px;
     th {
       background: #141b23;
     }
@@ -595,24 +702,18 @@ export default class extends Vue {
   tr {
     td,
     th {
-      width: 150px;
       vertical-align: middle;
       flex-shrink: 0;
       .token-id-rocks {
         display: inline-block;
-        width: 120px;
         line-height: 1.1;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         color: #1996c4;
       }
-      &.metadata {
-        width: 200px;
-      }
       &.operation {
         div {
-          width: 100px;
           cursor: pointer;
           text-align: center;
           color: #1996c4;
@@ -635,9 +736,6 @@ export default class extends Vue {
         dt {
           margin-bottom: 3px;
           font-weight: bold;
-        }
-        dd {
-          font-size: 13px;
         }
         .token-logo {
           width: 30px;
@@ -695,7 +793,10 @@ p {
   }
 }
 .total-supply {
-  font-size: 12px;
+  line-height: 1.2;
+}
+.controller-red {
+  color: #d13651 !important;
 }
 /*.more-tokens {
   color: #1890ff;

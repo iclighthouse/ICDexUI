@@ -1,5 +1,4 @@
 import { Principal } from '@dfinity/principal';
-import { buildService } from '../Service';
 import {
   IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
   IC_TOKEN_CANISTER_ID
@@ -25,64 +24,22 @@ import {
   principalToAccountIdentifier,
   SerializableIC
 } from '@/ic/converter';
-import { checkAuth } from '@/ic/CheckAuth';
-import store from '@/store';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
+import { createService } from '@/ic/createService';
 
 export class ICLighthouseTokenService {
-  private service: Service;
-  // private readonly host: string;
-  // private readonly canisterId: string;
-  // constructor(
-  //   identity: Identity,
-  //   canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
-  //   host?: string
-  // ) {
-  //   this.host = host;
-  //   this.canisterId = canisterId;
-  //   this.service = buildService(
-  //     identity,
-  //     ICLighthouseTokenIDL,
-  //     canisterId,
-  //     host
-  //   );
-  // }
   private check = async (
     canisterId: string,
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew, canisterId);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, ICLighthouseTokenIDL, canisterId);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(ICLighthouseTokenIDL, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor<Service>(
-        ICLighthouseTokenIDL,
-        canisterId
-      );
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor<Service>(
-        ICLighthouseTokenIDL,
-        canisterId
-      );
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        ICLighthouseTokenIDL,
-        canisterId
-      );
-    }
-    return this.service;
+    return await createService<Service>(
+      canisterId,
+      ICLighthouseTokenIDL,
+      renew,
+      isUpdate
+    );
   };
   public approve = async (
     amount: Amount,

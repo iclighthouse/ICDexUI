@@ -16,7 +16,7 @@
               <th class="name">Token</th>
               <th class="token-id">Token ID</th>
               <th class="total-supply">TotalSupply</th>
-              <th class="gas">Gas</th>
+              <th class="gas">Fee</th>
               <th class="metadata">Metadata</th>
               <th class="cycles">Cycles</th>
               <th></th>
@@ -374,20 +374,20 @@
               :key="controller"
             >
               <div v-if="controller === '7hdtw-jqaaa-aaaak-aaccq-cai'">
-                Blackhole: ({{ controller }})
+                {{ controller }} (Blackhole)
               </div>
               <div v-if="controller === currentToken.tokenId.toString()">
-                TokenId: ({{ controller }})
+                {{ controller }} (Token)
               </div>
-              <div v-if="controller === 'y2b5k-gqaaa-aaaak-aacqq-cai'">
-                Factory: ({{ controller }})
+              <div v-if="controller === 'igm6s-dqaaa-aaaar-qaa3a-cai'">
+                {{ controller }} (Factory)
               </div>
               <div v-if="controller === getPrincipalId">
-                Your: ({{ controller }})
+                {{ controller }} (Your)
               </div>
               <div
                 v-if="
-                  controller !== 'y2b5k-gqaaa-aaaak-aacqq-cai' &&
+                  controller !== 'igm6s-dqaaa-aaaar-qaa3a-cai' &&
                   controller !== '7hdtw-jqaaa-aaaak-aaccq-cai' &&
                   controller !== currentToken.tokenId.toString() &&
                   controller !== getPrincipalId
@@ -989,6 +989,7 @@ export default class extends Mixins(BalanceMixin) {
   private async approvals(): Promise<void> {
     const principal = localStorage.getItem('principal');
     const res = await this.ICLighthouseTokenService.approvals(principal);
+    console.log(res);
     const remaining = res.reduce((remaining, item) => {
       return BigInt(
         new BigNumber(remaining.toString(10)).plus(item.remaining.toString(10))
@@ -1063,9 +1064,35 @@ export default class extends Mixins(BalanceMixin) {
           this.createTokenSuccess(res.toString());
           loading.close();
           this.createTokenVisible = false;
+          const h = this.$createElement;
+          this.$info({
+            title: 'Notice',
+            content: h('div', {}, [
+              h(
+                'p',
+                `1.You need to monitor the token canister (${res.toString()}) 's Cycles balance and top it up when it gets low.`
+              ),
+              h(
+                'p',
+                "2.Currently the token canister's controllers contain your account and ICTokens canister, you need to modify the controllers before the token can be used in a production environment."
+              ),
+              h(
+                'p',
+                '3.ICTokens only provides the technical interface to create tokens, it does not assume all consequences and responsibilities due to technical defects and the use of tokens.'
+              )
+            ]),
+            class: 'connect-plug register-mining-confirm',
+            icon: 'connect-plug',
+            okText: 'Confirm',
+            centered: true,
+            onOk() {
+              //
+            }
+          });
           // this.getBalance();
         } catch (e) {
           console.log(e);
+          this.$message.error(toHttpError(e).message);
           loading.close();
         }
       }
@@ -1288,6 +1315,7 @@ export default class extends Mixins(BalanceMixin) {
         }
       };
       const res = await this.ICManagementService.updateSettings(request);
+      console.log(res);
       this.$message.success('update Controllers Success');
       this.updateControllersVisible = false;
       await this.readState(this.currentToken);
@@ -1355,7 +1383,7 @@ export default class extends Mixins(BalanceMixin) {
   private async readState(token: Token): Promise<void> {
     console.log(token);
     const state = await readState(token.tokenId.toString());
-    console.log(token.tokenId.toString())
+    console.log(token.tokenId.toString());
     console.log(state);
     if (state) {
       // isICTokenController is false, can not call TokenFactory methods
@@ -1643,7 +1671,7 @@ export default class extends Mixins(BalanceMixin) {
       loading.close();
     } else {
       this.$info({
-        content: `You need to add the factory(${IC_TOKEN_CANISTER_ID}) to the controllers`,
+        content: `You need to add the factory (${IC_TOKEN_CANISTER_ID}) to the controllers`,
         class: 'connect-plug',
         icon: 'connect-plug',
         okText: 'Confirm',

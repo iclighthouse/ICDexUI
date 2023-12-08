@@ -32,6 +32,7 @@ export interface TokenLiquidity {
   shares: Shares;
   shareWeighted: ShareWeighted;
   unitValue: [Amount, Amount];
+  orderCount: bigint;
   token0: Amount;
   token1: Amount;
   priceWeighted: PriceWeighted;

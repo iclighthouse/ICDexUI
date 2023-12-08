@@ -1162,6 +1162,7 @@ export default class extends Vue {
     this.paybackDusdAmountInput = '';
     this.tokenId = this.$route.params.tokenId;
     this.dpId = this.$route.params.dpId;
+    console.log(this.dpId);
     if (this.dpId) {
       if (this.operateType === 'open') {
         this.operateType = 'add';
@@ -1233,6 +1234,7 @@ export default class extends Vue {
   }
   private async getDp(): Promise<void> {
     const res = await this.ICStableService.dp(BigInt(this.dpId));
+    console.log(res);
     if (res && res.length) {
       const status = Object.keys(res[0].status)[0];
       if (status === 'Opening') {
@@ -1250,6 +1252,7 @@ export default class extends Vue {
         .decimalPlaces(this.dusdDecimal)
         .toString(10);
       this.currentCollaterals = res[0].collaterals;
+      console.log(this.currentCollaterals);
       this.dpInfo = res[0];
       this.payable = new BigNumber(res[0].payable.toString(10))
         .div(10 ** this.dusdDecimal)
@@ -1339,6 +1342,7 @@ export default class extends Vue {
     }
   }
   private async open(): Promise<void> {
+    console.time();
     this.openLoading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -1359,6 +1363,7 @@ export default class extends Vue {
         const res = await this.ICStableService.open([
           [Principal.fromText(this.tokenId), amount]
         ]);
+        console.log(res);
         if (
           (
             res as {
@@ -1405,6 +1410,7 @@ export default class extends Vue {
         const res = await this.ICStableService.add(BigInt(this.dpId), [
           [Principal.fromText(this.tokenId), amount]
         ]);
+        console.log(res);
         if (
           (
             res as {
@@ -1448,6 +1454,7 @@ export default class extends Vue {
         Principal.fromText(this.tokenId),
         [shares]
       ]);
+      console.log(res);
       if (
         (
           res as {
@@ -1479,6 +1486,7 @@ export default class extends Vue {
       const res = await this.ICStableService.generate(BigInt(this.dpId), [
         amount
       ]);
+      console.log(res);
       if (
         (
           res as {
@@ -1568,6 +1576,7 @@ export default class extends Vue {
         BigInt(this.dpId),
         chargeMethod
       );
+      console.log(res);
       if (
         (
           res as {
@@ -1579,6 +1588,7 @@ export default class extends Vue {
         await this.$router.push('/ICStable/positions');
         // this.init();
       } else {
+        console.log(res);
         this.$message.error((res as { err: StableTxnResultErr }).err.message);
       }
     } catch (e) {
@@ -1771,6 +1781,7 @@ export default class extends Vue {
   private async getConfig(): Promise<void> {
     const res = await this.ICStableService.getConfig();
     this.config = res[1];
+    console.log(res);
   }
 }
 </script>

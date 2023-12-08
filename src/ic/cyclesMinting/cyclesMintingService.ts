@@ -2,22 +2,10 @@ import Service from './model';
 import IDL from './cyclesMinting.did.js';
 import { buildService } from '../Service';
 import { CYCLES_MINTING_CANISTER_ID } from '@/ic/utils';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createPlugActor } from '@/ic/createPlugActor';
 const CYCLES_PER_XDR = BigInt(1_000_000_000_000);
 
 export class CyclesMintingService {
   private service: Service;
-  // private readonly host: string;
-  // constructor(identity: Identity, host?: string) {
-  //   this.host = host;
-  //   this.service = buildService(
-  //     identity,
-  //     IDL,
-  //     CYCLES_MINTING_CANISTER_ID,
-  //     host
-  //   );
-  // }
   private check = async (): Promise<void> => {
     // await checkAuth();
     const principal = localStorage.getItem('principal');

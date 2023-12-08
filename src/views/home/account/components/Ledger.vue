@@ -133,7 +133,7 @@
                     class="select-erc20-token"
                     v-model="networkIdMint"
                     @change="changeNetworkIdMint"
-                    :disabled="networkTokens.length <= 3"
+                    :disabled="networkTokens.length <= 5"
                   >
                     <span
                       class="ic-router-token-placeholder"
@@ -339,7 +339,8 @@
                     Canister Id:
                     <a
                       :href="
-                        Number(minterInfo.chainId) === 5
+                        networkTokensFrom[networkTokenIdMint].networkToIcId ===
+                        '2'
                           ? `https://ic.house/tokensTest/token/${networkTokensFrom[networkTokenIdMint].tokenId}`
                           : `https://ic.house/token/${networkTokensFrom[networkTokenIdMint].tokenId}`
                       "
@@ -390,7 +391,8 @@
                       Contract:
                       <a
                         :href="
-                          Number(minterInfo.chainId) === 5
+                          networkTokensFrom[networkTokenIdMint].networkId ===
+                          '2'
                             ? `https://goerli.etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}`
                             : `https://etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}`
                         "
@@ -405,6 +407,7 @@
                     </div>
                     <div
                       v-show="
+                        ethereumIsConnected &&
                         ERC20EthereumBalance[
                           networkTokensFrom[networkTokenIdMint].tokenId
                         ]
@@ -650,7 +653,8 @@
                     Canister Id:
                     <a
                       :href="
-                        Number(minterInfo.chainId) === 5
+                        networkTokensTo[networkTokenIdMintTo].networkToIcId ===
+                        '2'
                           ? `https://ic.house/tokensTest/token/${networkTokensTo[networkTokenIdMintTo].tokenId}`
                           : `https://ic.house/token/${networkTokensTo[networkTokenIdMintTo].tokenId}`
                       "
@@ -701,7 +705,8 @@
                       Contract:
                       <a
                         :href="
-                          Number(minterInfo.chainId) === 5
+                          networkTokensTo[networkTokenIdMintTo].networkId ===
+                          '2'
                             ? `https://goerli.etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}`
                             : `https://etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}`
                         "
@@ -716,6 +721,7 @@
                     </div>
                     <div
                       v-show="
+                        ethereumIsConnected &&
                         ERC20EthereumBalance[
                           networkTokensTo[networkTokenIdMintTo].tokenId
                         ]
@@ -788,7 +794,7 @@
     <a-modal
       v-model="retrieveModalCKETH"
       centered
-      width="650px"
+      width="750px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
@@ -848,21 +854,6 @@
             :model="ethDissolveFormCK"
             :rules="ethDissolveFormCKRules"
           >
-            <a-form-model-item :colon="false" prop="retrieveAmount">
-              <template slot="label"
-                >Amount:&nbsp;<span class="label-tip"
-                  >(includes network fees)</span
-                >
-              </template>
-              <a-input
-                v-model="ethDissolveFormCK.retrieveAmount"
-                autocomplete="off"
-                type="text"
-                v-only-float="icNetworkTokens.icTokenInfo.decimals"
-                min="0"
-                placeholder="0.00"
-              />
-            </a-form-model-item>
             <a-form-model-item
               :label="`Destination ${icNetworkTokens.icTokenInfo.symbol} (${
                 networkIds[otherNetworkTokens.networkId]
@@ -876,6 +867,21 @@
                 :placeholder="`${icNetworkTokens.icTokenInfo.symbol} (${
                   networkIds[otherNetworkTokens.networkId]
                 }) address`"
+              />
+            </a-form-model-item>
+            <a-form-model-item :colon="false" prop="retrieveAmount">
+              <template slot="label"
+                >Amount:&nbsp;<span class="label-tip"
+                  >(includes network fees)</span
+                >
+              </template>
+              <a-input
+                v-model="ethDissolveFormCK.retrieveAmount"
+                autocomplete="off"
+                type="text"
+                v-only-float="icNetworkTokens.icTokenInfo.decimals"
+                min="0"
+                placeholder="0.00"
               />
             </a-form-model-item>
           </a-form-model>
@@ -941,7 +947,7 @@
             </div>
             <router-link
               class="transfer-balance-right pc-show"
-              :to="`/ICDex/${icNetworkTokens.symbol}/USDT`"
+              :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
             >
               Trade
             </router-link>
@@ -958,25 +964,103 @@
           v-show="retrieveStep === 2"
           class="forge-right retrieve-btc-status"
         >
-          <table>
-            <thead>
-              <tr>
-                <th>recipient</th>
-                <th>Amount</th>
-                <th>Block Index</th>
-                <th>Status</th>
-                <th>Txid</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(item, index) in ckETHRetrieve.slice(
-                  (ckETHMintPage - 1) * 5,
-                  ckETHMintPage * 5
-                )"
-                :key="index"
-              >
-                <td>
+          <div class="pc-show">
+            <table>
+              <thead>
+                <tr>
+                  <th>Recipient</th>
+                  <th>Amount</th>
+                  <th>Block Index</th>
+                  <th>Status</th>
+                  <th>Txid</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(item, index) in ckETHRetrieve.slice(
+                    (ckETHMintPage - 1) * 5,
+                    ckETHMintPage * 5
+                  )"
+                  :key="index"
+                >
+                  <td>
+                    <a
+                      :href="`${ckEthLink}/address/${item.recipient}`"
+                      rel="nofollow noreferrer noopener"
+                      target="_blank"
+                      class="link"
+                    >
+                      {{ item.recipient | ellipsisAccount() }}
+                    </a>
+                  </td>
+                  <td>
+                    <span>
+                      {{
+                        item.amount
+                          | bigintToFloat(
+                            8,
+                            icNetworkTokens.icTokenInfo.decimals
+                          )
+                          | formatAmount(8)
+                      }}
+                    </span>
+                  </td>
+                  <td>
+                    <span>{{ item.blockIndex }}</span>
+                  </td>
+                  <td>
+                    <span class="flex-center">
+                      <span>
+                        {{ Object.keys(item.status)[0] }}
+                      </span>
+                      <span
+                        v-show="
+                          item.status &&
+                          ['Pending', 'TxCreated', 'TxSent'].includes(
+                            Object.keys(item.status)[0]
+                          )
+                        "
+                        class="loading-spinner"
+                      ></span>
+                    </span>
+                  </td>
+                  <td>
+                    <a
+                      v-if="getCKETHRetrieveTxid(item.status)"
+                      :href="`${ckEthLink}/tx/${getCKETHRetrieveTxid(
+                        item.status
+                      )}`"
+                      rel="nofollow noreferrer noopener"
+                      target="_blank"
+                      class="link"
+                    >
+                      {{
+                        getCKETHRetrieveTxid(item.status) | ellipsisAccount()
+                      }}
+                    </a>
+                    <span v-else>-</span>
+                  </td>
+                </tr>
+                <tr v-show="!ckETHRetrieve.length">
+                  <td colspan="5" style="text-align: center">No records</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="h5-show">
+            <li v-show="!ckETHRetrieve.length" style="justify-content: center">
+              No records
+            </li>
+            <li
+              v-for="(item, index) in ckETHRetrieve.slice(
+                (ckETHMintPage - 1) * 5,
+                ckETHMintPage * 5
+              )"
+              :key="index"
+            >
+              <div class="li-h5-item">
+                <span class="li-left">Recipient:</span>
+                <span class="margin-left-auto">
                   <a
                     :href="`${ckEthLink}/address/${item.recipient}`"
                     rel="nofollow noreferrer noopener"
@@ -985,36 +1069,44 @@
                   >
                     {{ item.recipient | ellipsisAccount() }}
                   </a>
-                </td>
-                <td>
+                </span>
+              </div>
+              <div class="li-h5-item">
+                <span class="li-left">Amount:</span>
+                <span class="margin-left-auto">
+                  {{
+                    item.amount
+                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                      | formatAmount(8)
+                  }}
+                </span>
+              </div>
+              <div class="li-h5-item">
+                <span class="li-left">Block Index:</span>
+                <span class="margin-left-auto">
+                  {{ item.blockIndex }}
+                </span>
+              </div>
+              <div class="li-h5-item">
+                <span class="li-left">Status:</span>
+                <span class="margin-left-auto">
                   <span>
-                    {{
-                      item.amount
-                        | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                        | formatAmount(8)
-                    }}
+                    {{ Object.keys(item.status)[0] }}
                   </span>
-                </td>
-                <td>
-                  <span>{{ item.blockIndex }}</span>
-                </td>
-                <td>
-                  <span class="flex-center">
-                    <span>
-                      {{ Object.keys(item.status)[0] }}
-                    </span>
-                    <span
-                      v-show="
-                        item.status &&
-                        ['Pending', 'TxCreated', 'TxSent', 'TxSigned'].includes(
-                          Object.keys(item.status)[0]
-                        )
-                      "
-                      class="loading-spinner"
-                    ></span>
-                  </span>
-                </td>
-                <td>
+                  <span
+                    v-show="
+                      item.status &&
+                      ['Pending', 'TxCreated', 'TxSent'].includes(
+                        Object.keys(item.status)[0]
+                      )
+                    "
+                    class="loading-spinner"
+                  ></span>
+                </span>
+              </div>
+              <div class="li-h5-item">
+                <span class="li-left">Txid:</span>
+                <span class="margin-left-auto">
                   <a
                     v-if="getCKETHRetrieveTxid(item.status)"
                     :href="`${ckEthLink}/tx/${getCKETHRetrieveTxid(
@@ -1027,13 +1119,10 @@
                     {{ getCKETHRetrieveTxid(item.status) | ellipsisAccount() }}
                   </a>
                   <span v-else>-</span>
-                </td>
-              </tr>
-              <tr v-show="!ckETHRetrieve.length">
-                <td colspan="5">No records</td>
-              </tr>
-            </tbody>
-          </table>
+                </span>
+              </div>
+            </li>
+          </ul>
           <div class="pagination-transaction-main">
             <a-pagination
               v-if="ckETHRetrieve.length > 5"
@@ -1127,8 +1216,11 @@
             class="reload-icon"
           />
         </div>
-        <div class="base-font-title" style="margin: 5px 0 10px">
-          Last Accepted Deposit Block Number: {{ lastScrapedBlockNumber }}
+        <div v-show="ckETHBlockNum" class="base-font-title">
+          Latest Block Number: {{ ckETHBlockNum }}
+        </div>
+        <div class="base-font-title" v-show="lastScrapedBlockNumber">
+          Latest Accepted Deposit Block Number: {{ lastScrapedBlockNumber }}
         </div>
       </div>
       <div
@@ -1171,24 +1263,87 @@
           </div>
         </div>
         <div v-show="mintStep === 2" class="forge-right retrieve-btc-status">
-          <table>
-            <thead>
-              <tr>
-                <th>TxHash</th>
-                <th>Amount</th>
-                <th>Block Num</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="item in ckETHMint.slice(
-                  (ckETHMintPage - 1) * 5,
-                  ckETHMintPage * 5
-                )"
-                :key="item.txHash"
-              >
-                <td>
+          <div class="pc-show">
+            <table>
+              <thead>
+                <tr>
+                  <th>TxHash</th>
+                  <th>Amount</th>
+                  <th>Block Num</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="item in ckETHMint.slice(
+                    (ckETHMintPage - 1) * 5,
+                    ckETHMintPage * 5
+                  )"
+                  :key="item.txHash"
+                >
+                  <td>
+                    <a
+                      :href="`${ckEthLink}/tx/${item.txHash}`"
+                      rel="nofollow noreferrer noopener"
+                      target="_blank"
+                      class="link"
+                    >
+                      {{ item.txHash | ellipsisAccount() }}
+                    </a>
+                  </td>
+                  <td>
+                    <span>
+                      {{
+                        item.amount
+                          | bigintToFloat(
+                            8,
+                            icNetworkTokens.icTokenInfo.decimals
+                          )
+                          | formatAmount(8)
+                      }}
+                    </span>
+                  </td>
+                  <td>
+                    <span v-if="item.blockNum">{{ item.blockNum }}</span>
+                    <span v-else>-</span>
+                  </td>
+                  <td style="width: 92px">
+                    <span v-show="lastScrapedBlockNumber">
+                      <span v-if="item.blockNum">
+                        <span
+                          v-if="lastScrapedBlockNumber >= Number(item.blockNum)"
+                          >Confirmed</span
+                        >
+                        <span v-else class="flex-center"
+                          >Submitted <span class="loading-spinner"></span
+                        ></span>
+                      </span>
+                      <span v-else class="flex-center"
+                        >Pending <span class="loading-spinner"></span
+                      ></span>
+                    </span>
+                  </td>
+                </tr>
+                <tr v-show="!ckETHMint.length">
+                  <td colspan="4" style="text-align: center">No records</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="h5-show">
+            <li v-show="!ckETHMint.length" style="justify-content: center">
+              No records
+            </li>
+            <li
+              v-for="item in ckETHMint.slice(
+                (ckETHMintPage - 1) * 5,
+                ckETHMintPage * 5
+              )"
+              :key="item.txHash"
+            >
+              <div class="li-h5-item">
+                <span class="li-left">TxHash:</span>
+                <span class="margin-left-auto">
                   <a
                     :href="`${ckEthLink}/tx/${item.txHash}`"
                     rel="nofollow noreferrer noopener"
@@ -1197,21 +1352,28 @@
                   >
                     {{ item.txHash | ellipsisAccount() }}
                   </a>
-                </td>
-                <td>
-                  <span>
-                    {{
-                      item.amount
-                        | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                        | formatAmount(8)
-                    }}
-                  </span>
-                </td>
-                <td>
+                </span>
+              </div>
+              <div class="li-h5-item">
+                <span class="li-left">Amount:</span>
+                <span class="margin-left-auto">
+                  {{
+                    item.amount
+                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                      | formatAmount(8)
+                  }}
+                </span>
+              </div>
+              <div class="li-h5-item">
+                <span class="li-left">Block Num:</span>
+                <span class="margin-left-auto">
                   <span v-if="item.blockNum">{{ item.blockNum }}</span>
                   <span v-else>-</span>
-                </td>
-                <td style="width: 92px">
+                </span>
+              </div>
+              <div class="li-h5-item">
+                <span class="li-left">Status:</span>
+                <span class="margin-left-auto">
                   <span v-show="lastScrapedBlockNumber">
                     <span v-if="item.blockNum">
                       <span
@@ -1226,13 +1388,10 @@
                       >Pending <span class="loading-spinner"></span
                     ></span>
                   </span>
-                </td>
-              </tr>
-              <tr v-show="!ckETHMint.length">
-                <td colspan="4">No records</td>
-              </tr>
-            </tbody>
-          </table>
+                </span>
+              </div>
+            </li>
+          </ul>
           <div class="pagination-transaction-main">
             <a-pagination
               v-if="ckETHMint.length > 5"
@@ -1244,9 +1403,9 @@
             />
           </div>
         </div>
-        <!--<div v-show="mintStep === 2" class="step-footer-confirmation">
-          Wait for 64 confirmations, then will deposit.
-        </div>-->
+        <div v-show="mintStep === 2" class="step-footer-confirmation">
+          Wait for 64-96 confirmations (~12.8-19.2 minutes) to finalize.
+        </div>
       </div>
     </a-modal>
     <a-modal
@@ -1891,7 +2050,7 @@
     </a-modal>
     <a-modal
       v-model="forgeModalTransactions"
-      width="650px"
+      width="750px"
       centered
       :footer="null"
       :keyboard="false"
@@ -2166,7 +2325,7 @@
     <a-modal
       v-model="forgeModal"
       centered
-      width="650px"
+      width="750px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
@@ -2337,7 +2496,7 @@
     </a-modal>
     <a-modal
       v-model="forgeModalBTCTransactions"
-      width="650px"
+      width="750px"
       centered
       :footer="null"
       :keyboard="false"
@@ -2670,7 +2829,7 @@
     <a-modal
       v-model="dissolveModal"
       centered
-      width="650px"
+      width="750px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
@@ -2964,7 +3123,7 @@
     <a-modal
       v-model="dissolveModalETH"
       centered
-      width="650px"
+      width="750px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
@@ -3120,7 +3279,7 @@
               </div>
               <router-link
                 class="transfer-balance-right pc-show"
-                :to="`/ICDex/${icNetworkTokens.symbol}/USDT`"
+                :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
               >
                 Trade
               </router-link>
@@ -3601,7 +3760,7 @@
     </a-modal>
     <a-modal
       v-model="activePendingModal"
-      width="650px"
+      width="750px"
       title="Activities"
       centered
       :footer="null"
@@ -3909,7 +4068,11 @@
         No data
       </div>
     </a-modal>
-    <approve-icrc2 ref="approveIcrc2" :balance="balance"></approve-icrc2>
+    <approve-icrc2
+      ref="approveIcrc2"
+      :balance="balance"
+      @approveIcrc2Success="approveIcrc2Success"
+    ></approve-icrc2>
   </div>
 </template>
 
@@ -3919,12 +4082,10 @@ import TransferIcp from '@/components/transferIcp/Index.vue';
 import TopUp from '@/components/topUp/Index.vue';
 import { BalanceMixin } from '@/mixins';
 import {
-  Gas,
   Icrc1Account,
   PrincipalString,
   Time,
-  TokenInfo,
-  TokenStd
+  TokenInfo
 } from '@/ic/common/icType';
 import ReceiveModal from '@/components/receiveModal/Index.vue';
 import { getDepositing, getTokenBalance } from '@/ic/getTokenBalance';
@@ -3952,7 +4113,6 @@ import {
   fromSubAccountId,
   hexToBytes,
   principalToAccountIdentifier,
-  principalToSubAccount,
   toHexString
 } from '@/ic/converter';
 import BigNumber from 'bignumber.js';
@@ -3973,7 +4133,7 @@ import {
   CK_ETH_MINTER_CANISTER_ID,
   etherScanKey,
   ETHHttps,
-  ETHHttpsSepolia,
+  ETHHttpsMainnet,
   ETHWebsocketProvider,
   IC_BTC_CANISTER_ID,
   IC_BTC_MINTER_CANISTER_ID,
@@ -4010,7 +4170,12 @@ import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
 
 const { Web3 } = require('web3');
 
-const ethereum = (window as any).ethereum;
+let ethereum = (window as any).ethereum;
+if (ethereum && ethereum.providers) {
+  ethereum = ethereum.providers.find(
+    (provider) => provider.isMetaMask
+  );
+}
 let ETHUpdateTime = null;
 let ETHDepositTime = null;
 const ethVersion = '0.1';
@@ -4105,6 +4270,7 @@ export default class extends Mixins(BalanceMixin) {
   private refreshCkETHBalanceLoading = false;
   private ERC20Balance: { [key: string]: string } = {};
   private ERC20EthereumBalance: { [key: string]: string } = {};
+  private ethereumIsConnected = false;
   private forgeTitleETH = 'Mint';
   private dissolveTitleETH = 'Retrieve';
   private retrieveTitleETH = 'Retrieve';
@@ -4137,6 +4303,7 @@ export default class extends Mixins(BalanceMixin) {
   private showCkETHTransactions = false;
   private updateCkETHBlockHeight: { [key: string]: number } = {};
   private blockCountETH = 0;
+  private ckETHBlockNum = 0;
   private ckETHTransactions: { [key: string]: [] } = {};
   private hasCkETHConfirmedLoading = false;
   private ckETHTransactionTotal = 0;
@@ -4189,9 +4356,10 @@ export default class extends Mixins(BalanceMixin) {
   private depositInfoPage = 1;
   private depositInfoPageSize = 5;
   private otherNetworkTokens: ICNetworkTokensInterface = null;
+  private smartContractAddress = '';
   private ethLink = 'https://etherscan.io';
   private etherscanLink = 'https://api.etherscan.io';
-  private ckEthLink = 'https://sepolia.etherscan.io';
+  private ckEthLink = 'https://etherscan.io';
   private signatureForm = {
     txHash: ''
   };
@@ -4340,9 +4508,14 @@ export default class extends Mixins(BalanceMixin) {
         this.networkTokensFrom[this.networkTokenIdMint as number].networkId;
       const networkIdTo =
         this.networkTokensTo[this.networkTokenIdMintTo as number].networkId;
+      console.log(this.networkTokensFrom[this.networkTokenIdMint as number]);
+      console.log(this.networkTokensTo[this.networkTokenIdMintTo as number]);
       return !(
         (networkIdFrom === '1' || networkIdFrom === '2') &&
-        networkIdTo === '-1'
+        networkIdTo === '-1' &&
+        this.networkTokensTo[this.networkTokenIdMintTo as number].icTokenInfo &&
+        this.networkTokensTo[this.networkTokenIdMintTo as number].icTokenInfo
+          .dexPair
       );
     }
     return true;
@@ -4473,6 +4646,7 @@ export default class extends Mixins(BalanceMixin) {
         principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
       )
     );
+    console.log(res);
     if (this.forgeModalETH) {
       this.filterMint(res);
     }
@@ -4590,14 +4764,81 @@ export default class extends Mixins(BalanceMixin) {
       this.etherscanLink = 'https://api-goerli.etherscan.io';
     }
   }
+  private async getCkTokensDfi(): Promise<void> {
+    this.smartContractAddress = await this.getMinterAddress();
+    if (!this.tokens[CK_ETH_LEDGER_CANISTER_ID]) {
+      const res = await getTokenInfo(
+        Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
+        {
+          icrc2: null
+        }
+      );
+      this.$set(this.tokens, CK_ETH_LEDGER_CANISTER_ID, res);
+    } else {
+      if (!this.tokens[CK_ETH_LEDGER_CANISTER_ID].logo) {
+        const logo = await getTokenLogo(
+          Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
+          {
+            icrc2: null
+          }
+        );
+        this.$set(
+          this.tokens,
+          CK_ETH_LEDGER_CANISTER_ID,
+          Object.assign(this.tokens[CK_ETH_LEDGER_CANISTER_ID], {
+            logo: logo
+          })
+        );
+      }
+    }
+    // ckETH
+    const icTokenInfo = {
+      ckLedgerId: Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
+      ckSymbol: this.tokens[CK_ETH_LEDGER_CANISTER_ID].symbol,
+      decimals: this.tokens[CK_ETH_LEDGER_CANISTER_ID].decimals,
+      dexPair: null,
+      dexPrice: null,
+      fee: null,
+      minAmount: BigInt('30000000000000000'),
+      std: { ETH: null },
+      symbol: 'ETH',
+      tokenId: this.smartContractAddress,
+      totalSupply: null
+    };
+    this.networkTokens.unshift({
+      id: this.smartContractAddress,
+      networkId: '-1',
+      networkToIcId: '1',
+      symbol: this.tokens[CK_ETH_LEDGER_CANISTER_ID].symbol,
+      tokenId: CK_ETH_LEDGER_CANISTER_ID,
+      icTokenInfo: icTokenInfo
+    });
+    this.networkTokens.unshift({
+      id: this.smartContractAddress,
+      networkId: '1',
+      networkToIcId: '-1',
+      symbol: 'ETH',
+      tokenId: CK_ETH_LEDGER_CANISTER_ID,
+      logo: require('@/assets/img/ethereum.svg')
+    });
+    this.ethersTokenIdToCkTokenId[this.smartContractAddress] =
+      CK_ETH_LEDGER_CANISTER_ID;
+    this.ckTokenInfo[CK_ETH_LEDGER_CANISTER_ID] = Object.assign(
+      {},
+      icTokenInfo,
+      { symbol: 'ETH' }
+    );
+  }
   private async getCkTokens(): Promise<void> {
     let res = await this.ckETHMinterService.getCkTokens();
+    console.log(res);
     if (res.length) {
       this.networkTokensFrom =
         this.networkTokensTo =
         this.networkTokens =
           JSON.parse(JSON.stringify(networkTokens));
       console.log(this.networkTokens);
+      await this.getCkTokensDfi();
       res = res.sort((a, b) => b[1].symbol.localeCompare(a[1].symbol));
       res.forEach((item) => {
         if (!this.tokens[item[1].ckLedgerId.toString()]) {
@@ -4660,50 +4901,6 @@ export default class extends Mixins(BalanceMixin) {
         });
       });
     }
-    const smartContractAddress = await this.getMinterAddress();
-    if (!this.tokens[CK_ETH_LEDGER_CANISTER_ID]) {
-      getTokenInfo(Principal.fromText(CK_ETH_LEDGER_CANISTER_ID), {
-        icrc1: null
-      }).then((res) => {
-        this.$set(this.tokens, CK_ETH_LEDGER_CANISTER_ID, res);
-      });
-    }
-    // ckETH
-    const icTokenInfo = {
-      ckLedgerId: Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
-      ckSymbol: 'ckSepoliaETH',
-      decimals: 18,
-      dexPair: null,
-      dexPrice: null,
-      fee: null,
-      minAmount: BigInt('10000000000000000'),
-      std: { ETH: null },
-      symbol: 'SepoliaETH',
-      tokenId: smartContractAddress,
-      totalSupply: null
-    };
-    this.networkTokens.unshift({
-      id: smartContractAddress,
-      networkId: '-1',
-      networkToIcId: '3',
-      symbol: 'ckSepoliaETH',
-      tokenId: CK_ETH_LEDGER_CANISTER_ID,
-      icTokenInfo: icTokenInfo
-    });
-    this.networkTokens.unshift({
-      id: smartContractAddress,
-      networkId: '3',
-      networkToIcId: '-1',
-      symbol: 'SepoliaETH',
-      tokenId: CK_ETH_LEDGER_CANISTER_ID
-    });
-    this.ethersTokenIdToCkTokenId[smartContractAddress] =
-      CK_ETH_LEDGER_CANISTER_ID;
-    this.ckTokenInfo[CK_ETH_LEDGER_CANISTER_ID] = Object.assign(
-      {},
-      icTokenInfo,
-      { symbol: 'ckSepoliaETH' }
-    );
     this.getActive();
     this.initICRouter();
     console.log(this.networkTokens);
@@ -4732,12 +4929,13 @@ export default class extends Mixins(BalanceMixin) {
       type === 'mintCKETH'
     ) {
       let network;
+      // todo networkIdMint
       if (type === 'mintCKETH') {
-        this.networkIdMint = 3;
+        this.networkIdMint = 2;
       } else if (Number(this.minterInfo.chainId) === 5) {
-        this.networkIdMint = 2;
+        this.networkIdMint = 3;
       } else if (Number(this.minterInfo.chainId) === 1) {
-        this.networkIdMint = 2;
+        this.networkIdMint = 3;
       } else {
         //
       }
@@ -4850,6 +5048,7 @@ export default class extends Mixins(BalanceMixin) {
   private onGetDepositing(): void {
     this.ckETHMinterService.getDepositing({ all: null }).then((res) => {
       if (res && res[0] && res[0][2] && res[0][2].length) {
+        console.log(res);
         this.$set(this.activePending, 'deposit', res[0]);
       } else {
         this.$set(this.activePending, 'deposit', null);
@@ -4869,6 +5068,7 @@ export default class extends Mixins(BalanceMixin) {
   private onGetRetrieving(): void {
     this.ckETHMinterService.getRetrieving({ all: null }).then((res) => {
       if (res && res.length) {
+        console.log(res);
         this.$set(this.activePending, 'retrieve2', res[0]);
       } else {
         this.$set(this.activePending, 'retrieve2', null);
@@ -4918,7 +5118,7 @@ export default class extends Mixins(BalanceMixin) {
       if (retrieveCKETH[key]) {
         for (let i = 0; i < retrieveCKETH[key].length; i++) {
           const type = Object.keys(retrieveCKETH[key][i].status)[0];
-          if (type !== 'TxConfirmed') {
+          if (type !== 'TxFinalized' && type !== 'NotFound') {
             retrievePending.push({
               amount: retrieveCKETH[key][i].amount,
               tokenId: key
@@ -5200,6 +5400,7 @@ export default class extends Mixins(BalanceMixin) {
           .get(`https://blockstream.info/api/address/${this.BTCAddressIc}`)
           .then((res) => {
             if (res && res.data && res.data.chain_stats) {
+              console.log(res);
               this.BTCBalanceIC = new BigNumber(
                 res.data.chain_stats.funded_txo_sum
               )
@@ -5218,6 +5419,7 @@ export default class extends Mixins(BalanceMixin) {
           .get(`https://blockstream.info/api/address/${this.BTCAddressCk}`)
           .then((res) => {
             if (res && res.data && res.data.chain_stats) {
+              console.log(res);
               this.BTCBalanceCk = new BigNumber(
                 res.data.chain_stats.funded_txo_sum
               )
@@ -5232,6 +5434,7 @@ export default class extends Mixins(BalanceMixin) {
         const ERC20TokenId = this.icNetworkTokens.tokenId;
         if (ERC20TokenId) {
           getTokenBalance({ icrc1: null }, ERC20TokenId).then((res) => {
+            console.log(res);
             this.$set(this.ERC20Balance, ERC20TokenId, res);
             // this.ckETHBalance = res;
           });
@@ -5355,6 +5558,7 @@ export default class extends Mixins(BalanceMixin) {
                 JSON.stringify(currentInfo)
               );
               this.retrieveStep = 2;
+              this.onGetRetrieveCKETHPending();
               (this.$refs as any).ethDissolveFormCK.resetFields();
             } else {
               const err = (withdraw as { Err: WithdrawalError }).Err;
@@ -5552,6 +5756,7 @@ export default class extends Mixins(BalanceMixin) {
             BigInt(this.dissolveBalanceETH),
             ERC20TokenId
           );
+          console.log(res);
           const type = Object.keys(res)[0];
           const time = new Date().getTime();
           if (type === 'Ok') {
@@ -5597,6 +5802,7 @@ export default class extends Mixins(BalanceMixin) {
             address: this.retrieveForm.address.trim(),
             amount: BigInt(this.availableBalance)
           });
+          console.log(res);
           const type = Object.keys(res)[0];
           if (type === 'Ok') {
             const block = (
@@ -5700,14 +5906,15 @@ export default class extends Mixins(BalanceMixin) {
     tokenId: string,
     address: string,
     ETHHttpsNum?: number,
-    retry = 0
+    retry = 0,
+    ETHHttpsKeys: Array<string> = ETHHttps
   ): Promise<string> {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
-        ETHHttpsNum = Math.floor(Math.random() * ETHHttps.length);
+        ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
         console.log(ETHHttpsNum);
       } else {
-        if (ETHHttpsNum + 1 >= ETHHttps.length) {
+        if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
         } else {
           ETHHttpsNum += 1;
@@ -5715,22 +5922,24 @@ export default class extends Mixins(BalanceMixin) {
       }
       let balance: string = null;
       if (std.toLocaleLowerCase() === 'eth') {
-        const res = await axios.post(ETHHttps[ETHHttpsNum], {
+        const res = await axios.post(ETHHttpsKeys[ETHHttpsNum], {
           id: 1,
           jsonrpc: '2.0',
           params: [address, 'latest'],
           method: 'eth_getBalance'
         });
+        console.log(res);
         if (res.data.result) {
           balance = res.data.result.toString(10);
         }
       } else {
-        const res = await axios.post(ETHHttps[ETHHttpsNum], {
+        const res = await axios.post(ETHHttpsKeys[ETHHttpsNum], {
           id: 1,
           jsonrpc: '2.0',
           params: [address, [tokenId]],
           method: 'alchemy_getTokenBalances'
         });
+        console.log(res);
         if (
           res.data.result.tokenBalances &&
           res.data.result.tokenBalances.length
@@ -5741,13 +5950,14 @@ export default class extends Mixins(BalanceMixin) {
       return balance;
     } catch (e) {
       console.error(e);
-      if (retry < ETHHttps.length) {
+      if (retry < ETHHttpsKeys.length) {
         await this.getEthTokenBalance(
           std,
           tokenId,
           address,
           ETHHttpsNum,
-          ++retry
+          ++retry,
+          ETHHttpsKeys
         );
       }
     }
@@ -5816,27 +6026,31 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
-  private async getEthBlock(ETHHttpsNum?: number, retry = 0): Promise<any> {
+  private async getEthBlock(
+    ETHHttpsNum?: number,
+    retry = 0,
+    ETHHttpsKeys: Array<string> = ETHHttps
+  ): Promise<any> {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
-        ETHHttpsNum = Math.floor(Math.random() * ETHHttps.length);
+        ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
         console.log(ETHHttpsNum);
       } else {
-        if (ETHHttpsNum + 1 >= ETHHttps.length) {
+        if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
         } else {
           ETHHttpsNum += 1;
         }
       }
-      return await axios.post(ETHHttps[ETHHttpsNum], {
+      return await axios.post(ETHHttpsKeys[ETHHttpsNum], {
         id: 1,
         jsonrpc: '2.0',
         method: 'eth_blockNumber'
       });
     } catch (e) {
       console.error(e);
-      if (retry < ETHHttps.length) {
-        await this.getEthBlock(ETHHttpsNum, ++retry);
+      if (retry < ETHHttpsKeys.length) {
+        await this.getEthBlock(ETHHttpsNum, ++retry, ETHHttpsKeys);
       }
     }
   }
@@ -5861,6 +6075,7 @@ export default class extends Mixins(BalanceMixin) {
         token = { token: this.icNetworkTokens.icTokenInfo.tokenId };
       }
       const res = await this.ckETHMinterService.getDepositing(token);
+      console.log(res);
       if (res && res[0] && res[0][1] && res[0][1].length) {
         const promiseValue = [];
         const txIndex = [];
@@ -6082,6 +6297,7 @@ export default class extends Mixins(BalanceMixin) {
       token = { token: this.icNetworkTokens.icTokenInfo.tokenId };
     }
     const res = await this.ckETHMinterService.getRetrieving(token);
+    console.log(res);
     if (res && res.length) {
       this.retrieveETHStatus = res;
       this.updateRetrieveETHStatus();
@@ -6271,6 +6487,7 @@ export default class extends Mixins(BalanceMixin) {
         }
         if (canGetStatus.includes(status) || !status) {
           this.getRetrieveBtcStatus(val.blockIndex).then(async (res) => {
+            console.log(res);
             const currentStatus = Object.keys(res)[0];
             if (
               status === 'Pending' &&
@@ -6541,7 +6758,7 @@ export default class extends Mixins(BalanceMixin) {
     for (let i = 0; i < this.ckETHRetrieve.length; i++) {
       const retrieve = this.ckETHRetrieve[i];
       const status = Object.keys(retrieve.status)[0];
-      if (status !== 'TxConfirmed' && status !== 'NotFound') {
+      if (status !== 'TxFinalized' && status !== 'NotFound') {
         const res = await this.ckETHMinterDfiService.retrieve_eth_status(
           BigInt(retrieve.blockIndex)
         );
@@ -6550,7 +6767,6 @@ export default class extends Mixins(BalanceMixin) {
           this.$set(retrieve, 'status', res);
           const currentInfo =
             JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-          const ckETHRetrieve = currentInfo['ckETHRetrieve-' + id] || {};
           currentInfo['ckETHRetrieve-' + id][tokenId] = this.ckETHRetrieve;
           localStorage.setItem(
             this.getPrincipalId,
@@ -6621,6 +6837,12 @@ export default class extends Mixins(BalanceMixin) {
     id: string,
     tokenId: string
   ): Promise<void> {
+    this.getEthBlock(0, 0, ETHHttpsMainnet).then((res) => {
+      console.log(res);
+      if (res) {
+        this.ckETHBlockNum = parseInt(res.data.result);
+      }
+    });
     for (let i = 0; i < this.ckETHMint.length; i++) {
       const mint = this.ckETHMint[i];
       if (!mint.blockNum) {
@@ -6628,7 +6850,7 @@ export default class extends Mixins(BalanceMixin) {
           mint.txHash,
           0,
           0,
-          ETHHttpsSepolia
+          ETHHttpsMainnet
         );
         if (res) {
           const receipt = res.data.result;
@@ -6668,7 +6890,7 @@ export default class extends Mixins(BalanceMixin) {
       if (new BigNumber(start).lt(0)) {
         start = '0';
       }
-      this.getEvents(BigInt(start), BigInt(length));
+      await this.getEvents(BigInt(start), BigInt(length));
     }
   }
   private async getEvents(start: bigint, length: bigint): Promise<void> {
@@ -6836,7 +7058,7 @@ export default class extends Mixins(BalanceMixin) {
       ) {
         this.showForge(BTCTypeEnum.icBTC);
       } else {
-        const ckETHId = '3';
+        const ckETHId = '1';
         if (
           this.networkTokensTo[this.networkTokenIdMintTo].networkToIcId ===
           ckETHId
@@ -6972,7 +7194,7 @@ export default class extends Mixins(BalanceMixin) {
       this.networkTokensFrom[val].networkId === '1' ||
       this.networkTokensFrom[val].networkId === '2'
     ) {
-      if (ethereum.isConnected()) {
+      if (ethereum && ethereum.isConnected()) {
         ethereum._metamask.isUnlocked().then((isUnlocked) => {
           if (isUnlocked) {
             ethereum
@@ -6981,6 +7203,7 @@ export default class extends Mixins(BalanceMixin) {
                 params: []
               })
               .then((res) => {
+                console.log(res);
                 if (res && res.length) {
                   ethereum
                     .request({
@@ -6990,18 +7213,24 @@ export default class extends Mixins(BalanceMixin) {
                       if (accounts && accounts.length) {
                         const account = accounts[0];
                         const ethereumTokenId = this.networkTokensFrom[val].id;
+                        const networkId = this.networkTokensFrom[val].networkId;
                         let std = 'ERC20';
                         if (
                           ethereumTokenId ===
-                          '0x0000000000000000000000000000000000000000'
+                            '0x0000000000000000000000000000000000000000' ||
+                          ethereumTokenId === this.smartContractAddress
                         ) {
                           std = 'ETH';
                         }
                         this.getEthTokenBalance(
                           std,
                           ethereumTokenId,
-                          account
+                          account,
+                          0,
+                          0,
+                          networkId === '2' ? ETHHttps : ETHHttpsMainnet
                         ).then((res) => {
+                          this.ethereumIsConnected = true;
                           const balance = new BigNumber(res)
                             .div(10 ** 18)
                             .decimalPlaces(8, 1)
@@ -7018,6 +7247,8 @@ export default class extends Mixins(BalanceMixin) {
               });
           }
         });
+      } else {
+        this.ethereumIsConnected = false;
       }
     }
   }
@@ -7037,7 +7268,7 @@ export default class extends Mixins(BalanceMixin) {
       this.networkTokensTo[val].networkId === '1' ||
       this.networkTokensTo[val].networkId === '2'
     ) {
-      if (ethereum.isConnected()) {
+      if (ethereum && ethereum.isConnected()) {
         ethereum._metamask.isUnlocked().then((isUnlocked) => {
           if (isUnlocked) {
             ethereum
@@ -7046,6 +7277,7 @@ export default class extends Mixins(BalanceMixin) {
                 params: []
               })
               .then((res) => {
+                console.log(res);
                 if (res && res.length) {
                   ethereum
                     .request({
@@ -7055,18 +7287,24 @@ export default class extends Mixins(BalanceMixin) {
                       if (accounts && accounts.length) {
                         const account = accounts[0];
                         const ethereumTokenId = this.networkTokensTo[val].id;
+                        const networkId = this.networkTokensTo[val].networkId;
                         let std = 'ERC20';
                         if (
                           ethereumTokenId ===
-                          '0x0000000000000000000000000000000000000000'
+                            '0x0000000000000000000000000000000000000000' ||
+                          ethereumTokenId === this.smartContractAddress
                         ) {
                           std = 'ETH';
                         }
                         this.getEthTokenBalance(
                           std,
                           ethereumTokenId,
-                          account
+                          account,
+                          0,
+                          0,
+                          networkId === '2' ? ETHHttps : ETHHttpsMainnet
                         ).then((res) => {
+                          this.ethereumIsConnected = true;
                           const balance = new BigNumber(res)
                             .div(10 ** 18)
                             .decimalPlaces(8, 1)
@@ -7083,6 +7321,8 @@ export default class extends Mixins(BalanceMixin) {
               });
           }
         });
+      } else {
+        this.ethereumIsConnected = false;
       }
     }
   }
@@ -7219,6 +7459,7 @@ export default class extends Mixins(BalanceMixin) {
       this.pendingLoading = false;
       this.setCkETHUpdateBlockHeight();
       if (res) {
+        console.log(res);
         const type = Object.keys(res)[0];
         if (type === 'Ok') {
           this.getMintDepositing();
@@ -7256,6 +7497,7 @@ export default class extends Mixins(BalanceMixin) {
           break;
         }
       }
+      console.log(res);
       let receipt;
       if (res) {
         receipt = res.data.result;
@@ -7434,6 +7676,7 @@ export default class extends Mixins(BalanceMixin) {
     try {
       ETHUpdateTime = now;
       const res = await this.ckETHMinterService.updateBalance();
+      console.log(res);
       if (res) {
         const type = Object.keys(res)[0];
         if (type === 'Ok') {
@@ -7469,6 +7712,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     try {
       const res = await this.ckBTCMinterService.updateBalance(BTCType);
+      console.log(res);
       if (res) {
         const type = Object.keys(res)[0];
         if (type === 'Ok') {
@@ -7625,6 +7869,7 @@ export default class extends Mixins(BalanceMixin) {
           `${this.etherscanLink}/api?module=account&action=tokentx&contractaddress=${ERC20Id}&address=${this.ETHAddressCk}&page=1&offset=50&startblock=0&endblock=${this.blockCountETH}&sort=desc&apikey=${etherScanKey[scanNum]}`
         );
       }
+      console.log(res);
       if (res && res.data && res.data.status === '1') {
         this.filterETHTx(res, this.ETHAddressCk);
       } else {
@@ -7837,6 +8082,7 @@ export default class extends Mixins(BalanceMixin) {
   private async getInfo(BTCType: BTCTypeEnum): Promise<string> {
     if (BTCType === BTCTypeEnum.icBTC) {
       const res = await this.ckBTCMinterService.info(BTCType);
+      console.log(res);
       return res.version;
     } else {
       return '1.0';
@@ -7949,6 +8195,7 @@ export default class extends Mixins(BalanceMixin) {
     } else {
       try {
         const res = await this.ckBTCMinterService.estimate_fee(this.BTCType);
+        console.log(res);
         this.btcRetrieveFee = res;
       } catch (e) {
         console.log(e);
@@ -8129,7 +8376,7 @@ export default class extends Mixins(BalanceMixin) {
           let name = '';
           if (std === 'DRC20') {
             name = await this.ICLighthouseTokenService.getName(ERC20TokenId);
-          } else if (std === 'ICRC-1') {
+          } else if (std === 'ICRC-1' || std === 'ICRC-2') {
             name = await this.DRC20TokenService.icrcName(ERC20TokenId);
           }
           await this.ICLighthouseService.addToken(
@@ -8234,6 +8481,9 @@ export default class extends Mixins(BalanceMixin) {
   private async topUpSuccess(): Promise<void> {
     this.getBalance();
     this.$emit('topUpSuccess');
+  }
+  private approveIcrc2Success(): void {
+    this.getBalance();
   }
   private async transferTokenSuccess(): Promise<void> {
     try {
@@ -8367,11 +8617,23 @@ export default class extends Mixins(BalanceMixin) {
           .minus(value)
           .toString(10)
       );
+      let retrieve_eth_min_amount = new BigNumber(
+        this.icNetworkTokens.icTokenInfo.minAmount.toString(10)
+      )
+        .div(10 ** decimals)
+        .decimalPlaces(8)
+        .toString(10);
       if (value && min < 0) {
         callback(
           `Insufficient ${this.icNetworkTokens.symbol} (${
             networkIds[this.icNetworkTokens.networkId]
           })`
+        );
+      } else if (new BigNumber(value).lt(retrieve_eth_min_amount)) {
+        callback(
+          `Min amount is ${retrieve_eth_min_amount} ${
+            this.icNetworkTokens.symbol
+          } (${networkIds[this.icNetworkTokens.networkId]})`
         );
       } else {
         callback();
@@ -8643,7 +8905,7 @@ export default class extends Mixins(BalanceMixin) {
             background: 'rgba(0, 0, 0, 0.5)'
           });
           try {
-            const ethChainId = '0xaa36a7';
+            const ethChainId = '0x1';
             const chainId = await ethereum.request({ method: 'eth_chainId' });
             if (chainId !== ethChainId) {
               await ethereum.request({
@@ -8850,6 +9112,7 @@ export default class extends Mixins(BalanceMixin) {
         ERC20TokenId,
         this.ckETHWithdrawalAccount
       ).then((res) => {
+        console.log(res);
         if (!currentInfo.ckETHRetrievePending) {
           currentInfo.ckETHRetrievePending = {};
         }
@@ -9006,6 +9269,7 @@ export default class extends Mixins(BalanceMixin) {
           resReceipt.data.result.logsBloom,
           resReceipt.data.result.logs[0].topics.slice(1)
         );
+        console.log(res);
         to = res.to.toLocaleLowerCase();
         amount = resReceipt.data.result.logs[0].data.toString(10);
       } else {
@@ -9015,6 +9279,7 @@ export default class extends Mixins(BalanceMixin) {
         }
         to = resReceipt.data.result.to.toLocaleLowerCase();
         const res = await this.getEthTransactionByHash(hash);
+        console.log(res);
         amount = res.data.result.value.toString(10);
       }
       console.log(amount);
@@ -9165,6 +9430,7 @@ export default class extends Mixins(BalanceMixin) {
               resReceipt.data.result.logsBloom,
               resReceipt.data.result.logs[0].topics.slice(1)
             );
+            console.log(res);
             address = res.from.toLocaleLowerCase();
             to = res.to.toLocaleLowerCase();
           } else {
@@ -9285,10 +9551,13 @@ export default class extends Mixins(BalanceMixin) {
   }
   private getCKETHRetrieveTxid(status: RetrieveEthStatus): string {
     const type = Object.keys(status)[0];
-    const hasTx = ['TxSigned', 'TxConfirmed', 'TxSent'];
-    if (hasTx.includes(type)) {
+    if (type === 'TxSent') {
       const value = Object.values(status)[0];
       return value.transaction_hash;
+    }
+    if (type === 'TxFinalized') {
+      const value = Object.values(status)[0];
+      return value.Success.transaction_hash;
     }
     return '';
   }
@@ -9939,7 +10208,7 @@ button {
 .step-footer-confirmation {
   position: absolute;
   right: 70px;
-  left: 70px;
+  left: 90px;
   bottom: -60px;
   width: auto;
   display: flex;
@@ -10017,6 +10286,11 @@ button {
     th,
     td {
       background: transparent !important;
+    }
+    tbody {
+      tr:nth-child(2n-1) {
+        background: rgba(21, 22, 27, 0.4) !important;
+      }
     }
     .deposit-balance {
       font-size: 18px;
@@ -10264,6 +10538,7 @@ button {
     position: static;
     line-height: 1;
     font-size: 12px;
+    padding-top: 5px;
   }
   .cross-title {
     .minting-method-info {

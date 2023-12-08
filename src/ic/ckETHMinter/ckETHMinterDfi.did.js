@@ -16,6 +16,7 @@ export default ({ IDL }) => {
   });
   const InitArg = IDL.Record({
     ethereum_network: EthereumNetwork,
+    last_scraped_block_number: IDL.Nat,
     ecdsa_key_name: IDL.Text,
     next_transaction_nonce: IDL.Nat,
     ledger_id: IDL.Principal,
@@ -52,15 +53,40 @@ export default ({ IDL }) => {
     idle_cycles_burned_per_day: IDL.Nat,
     module_hash: IDL.Opt(IDL.Vec(IDL.Nat8))
   });
+  const UnsignedTransaction = IDL.Record({
+    destination: IDL.Text,
+    value: IDL.Nat,
+    max_priority_fee_per_gas: IDL.Nat,
+    data: IDL.Vec(IDL.Nat8),
+    max_fee_per_gas: IDL.Nat,
+    chain_id: IDL.Nat,
+    nonce: IDL.Nat,
+    gas_limit: IDL.Nat,
+    access_list: IDL.Vec(
+      IDL.Record({
+        storage_keys: IDL.Vec(IDL.Vec(IDL.Nat8)),
+        address: IDL.Text
+      })
+    )
+  });
   const EventSource = IDL.Record({
     transaction_hash: IDL.Text,
     log_index: IDL.Nat
   });
+  const TransactionReceipt = IDL.Record({
+    effective_gas_price: IDL.Nat,
+    status: IDL.Variant({ Success: IDL.Null, Failure: IDL.Null }),
+    transaction_hash: IDL.Text,
+    block_hash: IDL.Text,
+    block_number: IDL.Nat,
+    gas_used: IDL.Nat
+  });
   const Event = IDL.Record({
     timestamp: IDL.Nat64,
     payload: IDL.Variant({
-      SentTransaction: IDL.Record({
-        transaction_hash: IDL.Text,
+      SkippedBlock: IDL.Record({ block_number: IDL.Nat }),
+      SignedTransaction: IDL.Record({
+        raw_transaction: IDL.Text,
         withdrawal_id: IDL.Nat
       }),
       Upgrade: UpgradeArg,
@@ -74,13 +100,23 @@ export default ({ IDL }) => {
         block_number: IDL.Nat,
         from_address: IDL.Text
       }),
-      SignedTx: IDL.Record({
+      ReplacedTransaction: IDL.Record({
         withdrawal_id: IDL.Nat,
-        raw_tx: IDL.Text
+        transaction: UnsignedTransaction
       }),
       MintedCkEth: IDL.Record({
         event_source: EventSource,
         mint_block_index: IDL.Nat
+      }),
+      ReimbursedEthWithdrawal: IDL.Record({
+        transaction_hash: IDL.Opt(IDL.Text),
+        withdrawal_id: IDL.Nat,
+        reimbursed_amount: IDL.Nat,
+        reimbursed_in_block: IDL.Nat
+      }),
+      CreatedTransaction: IDL.Record({
+        withdrawal_id: IDL.Nat,
+        transaction: UnsignedTransaction
       }),
       InvalidDeposit: IDL.Record({
         event_source: EventSource,
@@ -89,19 +125,31 @@ export default ({ IDL }) => {
       AcceptedEthWithdrawalRequest: IDL.Record({
         ledger_burn_index: IDL.Nat,
         destination: IDL.Text,
-        withdrawal_amount: IDL.Nat
+        withdrawal_amount: IDL.Nat,
+        from: IDL.Principal,
+        created_at: IDL.Opt(IDL.Nat64),
+        from_subaccount: IDL.Opt(IDL.Vec(IDL.Nat8))
       }),
       FinalizedTransaction: IDL.Record({
-        transaction_hash: IDL.Text,
-        withdrawal_id: IDL.Nat
+        withdrawal_id: IDL.Nat,
+        transaction_receipt: TransactionReceipt
       })
     })
   });
+  const EthTransaction = IDL.Record({ transaction_hash: IDL.Text });
+  const TxFinalizedStatus = IDL.Variant({
+    Success: EthTransaction,
+    Reimbursed: IDL.Record({
+      transaction_hash: IDL.Text,
+      reimbursed_amount: IDL.Nat,
+      reimbursed_in_block: IDL.Nat
+    }),
+    PendingReimbursement: EthTransaction
+  });
   const RetrieveEthStatus = IDL.Variant({
-    TxSigned: IDL.Record({ transaction_hash: IDL.Text }),
     NotFound: IDL.Null,
-    TxConfirmed: IDL.Record({ transaction_hash: IDL.Text }),
-    TxSent: IDL.Record({ transaction_hash: IDL.Text }),
+    TxFinalized: TxFinalizedStatus,
+    TxSent: EthTransaction,
     TxCreated: IDL.Null,
     Pending: IDL.Null
   });
@@ -114,6 +162,7 @@ export default ({ IDL }) => {
     TemporarilyUnavailable: IDL.Text,
     InsufficientAllowance: IDL.Record({ allowance: IDL.Nat }),
     AmountTooLow: IDL.Record({ min_withdrawal_amount: IDL.Nat }),
+    RecipientAddressBlocked: IDL.Record({ address: IDL.Text }),
     InsufficientFunds: IDL.Record({ balance: IDL.Nat })
   });
   return IDL.Service({

@@ -384,6 +384,7 @@ export default class extends Vue {
         principal,
         permissionIds
       );
+      console.log(res);
     } catch (e) {
       console.error(e);
     }
@@ -410,6 +411,7 @@ export default class extends Vue {
         Principal.from(principalId),
         [BigInt(permissionId)]
       );
+      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -462,6 +464,7 @@ export default class extends Vue {
                 Principal.from(this.addPermissionForm.principalId.trim()),
                 [BigInt(this.permissionId)]
               );
+              console.log(res);
               if (res && res.command) {
                 const type = Object.keys(res.command[0])[0];
                 if (type === 'Error') {
@@ -528,6 +531,7 @@ export default class extends Vue {
         Principal.from(this.addPermissionForm.principalId.trim()),
         [BigInt(permissionId)]
       );
+      console.log(res);
       // if (res && res.command) {
       //   const type = Object.keys(res.command[0])[0];
       //   if (type === 'Error') {

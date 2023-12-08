@@ -409,6 +409,7 @@ export default class extends Vue {
     });
     try {
       const res = await this.tradingMiningService.tmClaim();
+      console.log(res);
       this.$message.success('Claim Success');
       this.init();
       this.claimVisible = false;
@@ -431,6 +432,7 @@ export default class extends Vue {
         const res = await this.tradingMiningService.tmRegister(
           getTokenIdentifier(NFT_CANISTER_ID, Number(nftId))
         );
+        console.log(res);
         if (res) {
           this.$message.success('Register Success');
           localStorage.removeItem('approveNft');
@@ -466,6 +468,7 @@ export default class extends Vue {
         spender: Principal.fromText(IC_MINING_CANISTER_ID)
       };
       const res = await this.NftService.allowance(allowanceRequest);
+      console.log(res);
       if ((res as { ok: bigint }).ok) {
         this.hasAllowance = true;
       }
@@ -526,6 +529,7 @@ export default class extends Vue {
       });
       try {
         const res = await this.tradingMiningService.tmRegister2();
+        console.log(res);
         if (res) {
           this.$message.success('Register Success');
           this.getStatus();
@@ -555,6 +559,7 @@ export default class extends Vue {
       try {
         const currentICDexService = new ICDexService();
         const res = await currentICDexService.liquidity(swapId, [principal]);
+        console.log(res);
         if (res && res.pairId === swapId) {
           volume = new BigNumber(res.tokenLiquidity.vol.value1.toString(10))
             .times(weight.toString(10))
@@ -583,6 +588,7 @@ export default class extends Vue {
               promiseAll.push(this.getLiquidity(pair[0].toString(), pair[1]));
             });
             const res = await Promise.all(promiseAll);
+            console.log(res);
             let totalVolume = '0';
             res.forEach((volume: string) => {
               if (volume) {

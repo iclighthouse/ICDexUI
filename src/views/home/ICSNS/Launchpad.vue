@@ -45,9 +45,25 @@
             <div class="launch-pad-token-item-info">
               <span class="launch-pad-token-item-info-label">Hard Cap</span>
               <span class="base-color-w margin-left-auto">
-                {{
-                  token.params[0].max_icp_e8s | bigintToFloat(8, 8) | formatNum
-                }}
+                <span
+                  v-if="
+                    token.params[0].max_direct_participation_icp_e8s &&
+                    token.params[0].max_direct_participation_icp_e8s.length
+                  "
+                >
+                  {{
+                    token.params[0].max_direct_participation_icp_e8s[0]
+                      | bigintToFloat(8, 8)
+                      | formatNum
+                  }}
+                </span>
+                <span v-else>
+                  {{
+                    token.params[0].max_icp_e8s
+                      | bigintToFloat(8, 8)
+                      | formatNum
+                  }}
+                </span>
               </span>
               &nbsp;ICP
             </div>
@@ -709,6 +725,7 @@ export default class extends Vue {
           }
         ).CreateServiceNervousSystem;
         if (createServiceNervousSystem) {
+          console.log(createServiceNervousSystem);
           const swapParameters = createServiceNervousSystem.swap_parameters[0];
           const swap_due_timestamp_seconds = new BigNumber(
             proposal.proposal_timestamp_seconds.toString(10)
@@ -728,7 +745,9 @@ export default class extends Vue {
                     .count[0]
               }
             ],
-            max_icp_e8s: swapParameters.maximum_icp[0].e8s[0],
+            max_icp_e8s: swapParameters.maximum_icp.length
+              ? swapParameters.maximum_icp[0].e8s[0]
+              : swapParameters.maximum_direct_participation_icp[0].e8s[0],
             swap_due_timestamp_seconds: BigInt(swap_due_timestamp_seconds),
             min_participants: swapParameters.minimum_participants[0],
             sns_token_e8s:
@@ -737,7 +756,9 @@ export default class extends Vue {
             max_participant_icp_e8s:
               swapParameters.maximum_participant_icp[0].e8s[0],
             sale_delay_seconds: null,
-            min_icp_e8s: swapParameters.minimum_icp[0].e8s[0]
+            min_icp_e8s: swapParameters.minimum_icp.length
+              ? swapParameters.minimum_icp[0].e8s[0]
+              : swapParameters.minimum_direct_participation_icp[0].e8s[0]
           };
           console.log(params);
           const tokenInfo = createServiceNervousSystem.ledger_parameters[0];
@@ -826,6 +847,7 @@ export default class extends Vue {
     }
   }
   private async refreshPendingLifecycle(res: SNSToken): Promise<void> {
+    console.log(res);
     if (Number(res.lifecycle[0]) !== 1) {
       return;
     }
@@ -952,6 +974,7 @@ export default class extends Vue {
     const snsSwapService = new SNSSwapService();
     console.time('getParams');
     const res = await snsSwapService.getSaleParameters(tokenId);
+    console.log(res);
     console.time('getParams');
     return res.params;
   }

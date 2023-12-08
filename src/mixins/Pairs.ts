@@ -127,6 +127,7 @@ export class PairsMixin extends Vue {
       this.$route.params.tokenFromId
     );
     const tokenToId = icpOrCyclesToSwapTokenId(this.$route.params.tokenToId);
+    console.log(tokenFromId, tokenToId);
     if (!tokenFromId) {
       this.tokenSwapFrom = [
         Principal.fromText(LEDGER_CANISTER_ID),
@@ -146,6 +147,7 @@ export class PairsMixin extends Vue {
     this.init().then(() => {
       //
     });
+    console.log('created');
     this.getTokensBalanceInterval();
     this.getWallets().then(() => {
       //
@@ -193,6 +195,7 @@ export class PairsMixin extends Vue {
       }
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
+      console.log(state);
       if (!state || (state && !state.moduleHash)) {
         flag = false;
         this.$info({
@@ -245,7 +248,7 @@ export class PairsMixin extends Vue {
     this.autoWithdraw = !this.autoWithdraw;
   }
   public hasApprove(token: SwapTokenInfo): boolean {
-    const noApproveToken = ['icp', 'icrc1'];
+    const noApproveToken = ['icp', 'icrc1', 'icrc2'];
     if (token && token[2]) {
       const std = Object.keys(token[2])[0].toLocaleLowerCase();
       return !noApproveToken.includes(std);
@@ -255,7 +258,7 @@ export class PairsMixin extends Vue {
   public hasDeposit(token: SwapTokenInfo): boolean {
     if (token[2]) {
       const tokenStd = Object.keys(token[2])[0];
-      const hasDepositToken = ['icp', 'icrc1'];
+      const hasDepositToken = ['icp', 'icrc1', 'icrc2'];
       return hasDepositToken.includes(tokenStd.toLocaleLowerCase());
     }
     return false;
@@ -420,6 +423,7 @@ export class PairsMixin extends Vue {
         max = new BigNumber(max).plus(depositAmount);
       }
     }
+    console.log(max.toString(10));
     return max;
   }
   public setMax(token: SwapTokenInfo, type: string): void {
@@ -462,6 +466,7 @@ export class PairsMixin extends Vue {
       }
     }
 
+    console.log(this.depositAccount);
   }
   public async transferIcrc1(
     tokenId: string,
@@ -702,6 +707,7 @@ export class PairsMixin extends Vue {
       }
     }
     if (tokenFromId && tokenToId) {
+      console.log('getRouter');
       await this.getRouter();
       // const loading = this.$loading({
       //   lock: true,
@@ -748,9 +754,11 @@ export class PairsMixin extends Vue {
         this.getAutoWithdrawal(this.swapId)
       );
       const promiseAll = await Promise.all(promiseAllValue);
+      console.log('setCurrentPool');
       this.getPairBalance();
       this.getCurrentDepositing();
       this.liquidity = promiseAll[0];
+      console.log(this.liquidity);
       this.swapDecimals = this.currentPool[4];
       this.$forceUpdate();
     } else {
@@ -772,6 +780,7 @@ export class PairsMixin extends Vue {
         ];
         this.tokenSwapTo = null;
       } else {
+        console.log('setCurrentPool');
         this.$emit('setCurrentPool', this.swapId, this.currentRoute);
       }
     }
@@ -820,6 +829,7 @@ export class PairsMixin extends Vue {
   ): Promise<void> {
     this.$set(this.refreshDepositBalanceLoading, tokenId, true);
     try {
+      console.log(this.depositAccountId);
       const std = Object.keys(tokenStd)[0].toLocaleLowerCase();
       let balance: string;
       if (std === 'icp') {
@@ -851,6 +861,7 @@ export class PairsMixin extends Vue {
     )[0].toLocaleLowerCase();
     let token0Id: string;
     let token1Id: string;
+    console.log(this.dexInfo);
     if (this.swapId === CYCLES_FINANCE_CANISTER_ID) {
       const balanceRes = await this.ledgerService.getBalances({
         account: this.depositAccountId
@@ -898,7 +909,8 @@ export class PairsMixin extends Vue {
         if (
           isIcp &&
           std.toLocaleLowerCase() !== 'icp' &&
-          std.toLocaleLowerCase() !== 'icrc1'
+          std.toLocaleLowerCase() !== 'icrc1' &&
+          std.toLocaleLowerCase() !== 'icrc2'
         ) {
           return '';
         }
@@ -990,6 +1002,7 @@ export class PairsMixin extends Vue {
       currentICSwapService
         .balance(this.swapId, principal)
         .then((balance) => {
+          console.log(balance);
           this.accountBalance = balance;
         })
         .finally(() => {
@@ -1056,12 +1069,14 @@ export class PairsMixin extends Vue {
       const currentICSwapService = new ICSwapService();
       this.config = await currentICSwapService.getConfig(swapId);
     }
+    console.log(this.config);
   }
   public async getAutoWithdrawal(swapId: string): Promise<void> {
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       this.autoWithdraw = true;
     } else {
       const principal = localStorage.getItem('principal');
+      console.log(principal);
       const currentICSwapService = new ICSwapService();
       if (principal) {
         this.autoWithdraw = await currentICSwapService.autoWithdrawal(
@@ -1070,6 +1085,7 @@ export class PairsMixin extends Vue {
         );
       }
     }
+    console.log(this.autoWithdraw);
   }
   public async getDexInfo(swapId: string): Promise<void> {
     const currentICSwapService = new ICSwapService();
@@ -1130,6 +1146,7 @@ export class PairsMixin extends Vue {
     this.accountBalance = null;
     this.depositing = null;
     try {
+      console.time();
       if (this.tokenSwapFrom && this.tokenSwapTo) {
         const res = await this.ICSwapRouterFiduciaryService.route(
           this.tokenSwapFrom[0],
@@ -1305,6 +1322,7 @@ export class PairsMixin extends Vue {
           this.routerLoading = false;
         }
       }
+      console.timeEnd();
       // this.routerLoading = false;
     } catch (e) {
       this.routerLoading = false;

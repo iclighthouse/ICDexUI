@@ -18,45 +18,20 @@ import {
 import BigNumber from 'bignumber.js';
 // @ts-ignore
 import ledgerIDL from './ledger.did.js';
-import { buildService } from '../Service';
-import { checkAuth } from '@/ic/CheckAuth';
-import store from '@/store';
 import { isPlug } from '@/ic/isPlug';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
-import { isInfinity } from '@/ic/isInfinity';
 import { ApproveArgs } from '@/ic/DRC20Token/model';
 import { Amount } from '@/ic/ICLighthouseToken/model';
+import { createService } from '@/ic/createService';
 const decimals = 8;
 export class LedgerService {
   private service: Service;
-  // private readonly host: string;
-  // constructor(identity: Identity, host?: string) {
-  //   this.host = host;
-  //   this.service = buildService(identity, ledgerIDL, LEDGER_CANISTER_ID, host);
-  // }
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, ledgerIDL, LEDGER_CANISTER_ID);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(ledgerIDL, LEDGER_CANISTER_ID);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(ledgerIDL, LEDGER_CANISTER_ID);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(ledgerIDL, LEDGER_CANISTER_ID);
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        ledgerIDL,
-        LEDGER_CANISTER_ID
-      );
-    }
+    this.service = await createService<Service>(
+      LEDGER_CANISTER_ID,
+      ledgerIDL,
+      renew,
+      isUpdate
+    );
   };
   public getBalances = async (
     request: GetBalancesRequest
@@ -104,6 +79,7 @@ export class LedgerService {
     // else if ((window as any).icx) {
     //   const icx = store.getters['common/getIcx'];
     //   const b = await icx.queryBalance();
+    //   console.log('balance:' + b);
     //   const result = await icx.requestTransfer({
     //     symbol: 'ICP',
     //     standard: 'ICP',
@@ -129,6 +105,7 @@ export class LedgerService {
         memo: memo,
         created_at_time: []
       };
+      console.log(request);
       return await this.service.send_dfx(request);
     }
   };

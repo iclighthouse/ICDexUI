@@ -309,8 +309,12 @@
       </div>
       <div class="launch-pad-modal-slide-main">
         <div class="h5-show mt20 base-font-title main-color">
-          {{ currentToken.buyersTotal | bigintToFloat(8, 8) | formatNum }}
-          ICP Completed
+          {{
+            currentToken.direct_participation_icp_e8s
+              | bigintToFloat(8, 8)
+              | formatNum
+          }}
+          Direct Commitment
         </div>
         <div class="launch-pad-modal-slide">
           <span class="launch-pad-modal-slide-line"></span>
@@ -335,8 +339,12 @@
               launch-pad-modal-slide-cap launch-pad-modal-slide-cap-completed
             "
           >
-            {{ currentToken.buyersTotal | bigintToFloat(8, 8) | formatNum }}
-            ICP Completed
+            {{
+              currentToken.direct_participation_icp_e8s
+                | bigintToFloat(8, 8)
+                | formatNum
+            }}
+            Direct Commitment
           </span>
           <span
             v-if="currentToken.params && currentToken.params[0]"
@@ -487,9 +495,36 @@
               >{{ paramsCommunityFund | formatNum }} ICP</span
             >
           </span>
+          <a-tooltip placement="top">
+            <template slot="title">
+              The Neurons' Fund commitment increases based on direct
+              participation. The exact amount is computed at the end of the
+              swap.
+            </template>
+            <a-icon
+              v-if="
+                currentToken &&
+                currentToken.params &&
+                currentToken.params.length &&
+                currentToken.params[0].max_direct_participation_icp_e8s &&
+                currentToken.params[0].max_direct_participation_icp_e8s.length
+              "
+              style="margin-left: 10px"
+              type="info-circle"
+            />
+          </a-tooltip>
+        </div>
+        <div>
+          <span class="base-font-title">Overall Commitment:</span>
+          <span class="base-color-w">
+            &nbsp;<span>
+              {{ currentToken.buyersTotal | bigintToFloat(8, 8) | formatNum }}
+              ICP
+            </span>
+          </span>
         </div>
         <div v-if="directParticipantCount">
-          <span class="base-font-title">Current Total Participants:</span>
+          <span class="base-font-title">Current Direct Participants:</span>
           <span class="base-color-w">
             &nbsp;<span>{{ directParticipantCount }}</span>
           </span>
@@ -960,11 +995,13 @@ export default class extends Mixins(BalanceMixin) {
     if (
       this.currentToken.params &&
       this.currentToken.params[0] &&
-      (this.currentToken.buyersTotal ||
-        this.currentToken.buyersTotal === BigInt(0))
+      (this.currentToken.direct_participation_icp_e8s ||
+        this.currentToken.direct_participation_icp_e8s === BigInt(0))
     ) {
       return (
-        new BigNumber(this.currentToken.buyersTotal.toString(10))
+        new BigNumber(
+          this.currentToken.direct_participation_icp_e8s.toString(10)
+        )
           .div(this.currentToken.params[0].max_icp_e8s.toString(10))
           .times(100)
           .decimalPlaces(2)
@@ -1119,6 +1156,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(governanceId);
       this.governanceId = governanceId;
       this.currentToken = await this.getSNSTokenInfo(swapId);
+      this.getDerivedState(swapId);
       console.log(this.currentToken);
     } else {
       await this.getUpcomingProposalInfo();
@@ -1216,7 +1254,6 @@ export default class extends Mixins(BalanceMixin) {
     promiseAll.push(
       this.getSNSTokenGovernanceInfo(governanceCanisterId.toString()),
       this.getCurrentTokenInfo(tokenId),
-      this.getDerivedState(swapId),
       this.getLifecycle(swapId),
       this.getParams(swapId),
       this.listCommunityFundParticipants(swapId),
@@ -1226,12 +1263,12 @@ export default class extends Mixins(BalanceMixin) {
     this.getBuyersTotal(swapId, 3000, 1);
     this.getNeuronRecipesTotal(swapId, 3000, 1);
     const res = await Promise.all(promiseAll);
-    let params = res[4];
+    let params = res[3];
     if (!params || (params && !params.length)) {
       params = await this.getProposalParams(swapId);
     }
-    if (res[3] && res[3][0]) {
-      if (Number(res[3][0]) === 1) {
+    if (res[2] && res[2][0]) {
+      if (Number(res[2][0]) === 1) {
         // LIFECYCLE_PENDING
         this.getProposalInfo();
         window.clearInterval(this.timer1);
@@ -1249,18 +1286,19 @@ export default class extends Mixins(BalanceMixin) {
       swapId: swapId,
       ...res[1],
       ...res[0],
-      lifecycle: res[3],
+      lifecycle: res[2],
       params: params,
-      cf_participants: res[5],
+      cf_participants: res[4],
       // state: res[2]
-      buyersTotal: res[2],
-      init: res[6]
+      // buyersTotal: res[2],
+      init: res[5]
     };
   }
   private async getInit(tokenId: string): Promise<Init> {
     const snsSwapService = new SNSSwapService();
     console.time('getInit');
     const res = await snsSwapService.getInit(tokenId);
+    console.log(res);
     console.time('getInit');
     if (res && res.init && res.init[0]) {
       if (
@@ -1280,6 +1318,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private iplocation(iso_codes: Array<string>): void {
     axios.get('https://api.iplocation.net/?cmd=get-ip').then((res) => {
+      console.log(res);
       const ip = res.data.ip;
       axios
         .get(`https://api.iplocation.net/?cmd=ip-country&ip=${ip}`)
@@ -1295,7 +1334,16 @@ export default class extends Mixins(BalanceMixin) {
     const snsSwapService = new SNSSwapService();
     console.time('getParams');
     const res = await snsSwapService.getSaleParameters(tokenId);
+    console.log(res);
     console.time('getParams');
+    if (
+      res.params.length &&
+      res.params[0].max_direct_participation_icp_e8s &&
+      res.params[0].max_direct_participation_icp_e8s.length
+    ) {
+      res.params[0].max_icp_e8s =
+        res.params[0].max_direct_participation_icp_e8s[0];
+    }
     return res.params;
   }
   private async getLifecycle(tokenId: string): Promise<Array<bigint>> {
@@ -1549,9 +1597,10 @@ export default class extends Mixins(BalanceMixin) {
     console.timeEnd('listCommunityFundParticipants');
     return res.cf_participants;
   }
-  private async getDerivedState(tokenId: string): Promise<bigint> {
+  private async getDerivedState(tokenId: string): Promise<void> {
     const snsSwapService = new SNSSwapService();
     const res = await snsSwapService.getDerivedState(tokenId);
+    console.log(res);
     if (
       (res as GetDerivedStateResponse1).direct_participant_count &&
       (res as GetDerivedStateResponse1).direct_participant_count[0]
@@ -1560,12 +1609,44 @@ export default class extends Mixins(BalanceMixin) {
         res as GetDerivedStateResponse1
       ).direct_participant_count[0];
     }
-    return res.buyer_total_icp_e8s[0];
+    if (
+      (res as GetDerivedStateResponse1).neurons_fund_participation_icp_e8s &&
+      (res as GetDerivedStateResponse1).neurons_fund_participation_icp_e8s[0]
+    ) {
+      this.getCommunityFund = this.paramsCommunityFund = new BigNumber(
+        (
+          res as GetDerivedStateResponse1
+        ).neurons_fund_participation_icp_e8s[0].toString(10)
+      )
+        .div(10 ** 8)
+        .toString(10);
+    }
+    console.log(this.currentToken);
+    if (this.currentToken) {
+      this.$set(this.currentToken, 'buyersTotal', res.buyer_total_icp_e8s[0]);
+      if (
+        (res as GetDerivedStateResponse1).direct_participation_icp_e8s &&
+        (res as GetDerivedStateResponse1).direct_participation_icp_e8s.length
+      ) {
+        this.$set(
+          this.currentToken,
+          'direct_participation_icp_e8s',
+          (res as GetDerivedStateResponse1).direct_participation_icp_e8s[0]
+        );
+      } else {
+        this.$set(
+          this.currentToken,
+          'direct_participation_icp_e8s',
+          res.buyer_total_icp_e8s[0]
+        );
+      }
+    }
   }
   private async getSNSTokenSwapState(tokenId: string): Promise<void> {
     const snsSwapService = new SNSSwapService();
     console.time('2');
     const res = await snsSwapService.getState(tokenId);
+    console.log(res);
     console.timeEnd('2');
     try {
       this.proposalId =
@@ -1651,24 +1732,39 @@ export default class extends Mixins(BalanceMixin) {
           .times(100)
           .decimalPlaces(2)
           .toString(10) + '%';
+      let cf = '0';
+      if (this.getCommunityFund) {
+        cf = new BigNumber(this.getCommunityFund).times(10 ** 8).toString(10);
+      }
+      if (!cf && this.paramsCommunityFund) {
+        cf = new BigNumber(this.paramsCommunityFund)
+          .times(10 ** 8)
+          .toString(10);
+      }
       this.getConversionRatio = new BigNumber(
         this.currentToken.params[0].sns_token_e8s.toString(10)
       )
         .div(10 ** this.currentToken.decimals)
-        .div(this.currentToken.params[0].max_icp_e8s.toString(10))
+        .div(
+          new BigNumber(cf).plus(
+            this.currentToken.params[0].max_icp_e8s.toString(10)
+          )
+        )
         .times(10 ** 8)
         .decimalPlaces(2)
         .toString(10);
-      this.getCommunityFund = '0';
       let communityFund = '0';
       console.log(this.currentToken.cf_participants);
-      if (this.currentToken.params[0].neurons_fund_investment_icp) {
+      if (
+        !this.paramsCommunityFund &&
+        this.currentToken.params[0].neurons_fund_investment_icp
+      ) {
         this.paramsCommunityFund = this.getCommunityFund = new BigNumber(
           this.currentToken.params[0].neurons_fund_investment_icp.toString(10)
         )
           .div(10 ** 8)
           .toString(10);
-      } else if (this.currentToken.cf_participants) {
+      } else if (!this.getCommunityFund && this.currentToken.cf_participants) {
         this.currentToken.cf_participants.forEach((participant) => {
           participant.cf_neurons.forEach((neuron) => {
             communityFund = new BigNumber(neuron.amount_icp_e8s.toString(10))
@@ -1712,14 +1808,18 @@ export default class extends Mixins(BalanceMixin) {
         swapCanisterAccount
       );
       window.clearTimeout(this.refundIcpTimer);
-      this.refundIcpTimer = window.setTimeout(() => {
-        this.getRefundIcp().then();
-        this.getDerivedState(this.currentToken.swapId.toString()).then(
-          (derivedState) => {
-            this.$set(this.currentToken, 'buyersTotal', derivedState);
-          }
-        );
-      }, 10 * 1000);
+      if (
+        this.currentToken.lifecycle[0] &&
+        Number(this.currentToken.lifecycle[0]) !== 3 &&
+        Number(this.currentToken.lifecycle[0]) !== 4
+      ) {
+        this.refundIcpTimer = window.setTimeout(() => {
+          this.getRefundIcp().then();
+          this.getDerivedState(this.currentToken.swapId.toString()).then(() => {
+            this.initSide();
+          });
+        }, 10 * 1000);
+      }
     }
   }
   private async getBuyerState(): Promise<void> {
@@ -1728,6 +1828,7 @@ export default class extends Mixins(BalanceMixin) {
       const res = await snsSwapService.getBuyerState(this.currentToken.swapId, {
         principal_id: [Principal.fromText(this.getPrincipalId)]
       });
+      console.log(res);
       if (
         res &&
         res.buyer_state &&
@@ -1907,11 +2008,7 @@ export default class extends Mixins(BalanceMixin) {
   private async refreshState(): Promise<void> {
     // this.getBuyersTotal(this.currentToken.swapId.toString(), 3000, 1);
     this.getBuyerState();
-    const derivedState = await this.getDerivedState(
-      this.currentToken.swapId.toString()
-    );
-    console.log(derivedState);
-    this.$set(this.currentToken, 'buyersTotal', derivedState);
+    await this.getDerivedState(this.currentToken.swapId.toString());
   }
   private showConfirmationText(text: string): void {
     this.$info({
@@ -1968,6 +2065,7 @@ export default class extends Mixins(BalanceMixin) {
           confirmation_text: confirmationText
         }
       );
+      console.log(res);
       if (res && res.icp_accepted_participation_e8s) {
         this.$message.success('Success');
         if (this.currentToken.symbol === 'CHAT') {
@@ -1997,6 +2095,7 @@ export default class extends Mixins(BalanceMixin) {
       const res = await snsSwapService.refundIcp(this.currentToken.swapId, {
         source_principal_id: [Principal.fromText(this.getPrincipalId)]
       });
+      console.log(res);
       if (res.result) {
         const type = Object.keys(res.result[0])[0];
         if (type === 'Ok') {

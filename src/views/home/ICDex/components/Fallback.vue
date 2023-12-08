@@ -67,9 +67,8 @@
               <td>
                 <span
                   v-if="
-                    !modeDisabled &&
-                    depositToken0 === '0' &&
-                    depositToken1 === '0'
+                    modeDisabled ||
+                    (depositToken0 === '0' && depositToken1 === '0')
                   "
                   class="base-font"
                   >-</span
@@ -125,9 +124,8 @@
               <td>
                 <span
                   v-if="
-                    !modeDisabled &&
-                    depositToken0Pro === '0' &&
-                    depositToken1Pro === '0'
+                    modeDisabled ||
+                    (depositToken0Pro === '0' && depositToken1Pro === '0')
                   "
                   class="base-font"
                   >-</span
@@ -369,6 +367,7 @@ export default class extends Vue {
         this.currentPair[0].toString(),
         subAccountId
       );
+      console.log(res);
       if (
         res &&
         res.length &&
@@ -443,30 +442,12 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
-      const fallbackLocal = JSON.parse(localStorage.getItem('fallback')) || {};
-      const nonceKey =
-        this.getPrincipalId +
-        '-' +
-        this.currentPair[0].toString() +
-        '-' +
-        nonce;
-      const now = new Date().getTime();
-      if (fallbackLocal[nonceKey]) {
-        if (
-          new BigNumber(fallbackLocal[nonceKey]).plus(60 * 60 * 1000).gt(now)
-        ) {
-          this.$message.error('Please try again in 1 hour.');
-          loading.close();
-          return;
-        }
-      }
       const currentICDexService = new ICDexService();
       const res = await currentICDexService.fallback(
         this.currentPair[0].toString(),
         BigInt(nonce)
       );
-      fallbackLocal[nonceKey] = now;
-      localStorage.setItem('fallback', JSON.stringify(fallbackLocal));
+      console.log(res);
       if (res) {
         const txAccount = this.getTxidAccount(nonce);
         this.$set(
@@ -575,6 +556,7 @@ export default class extends Vue {
     try {
       if (this.currentPair[0].toString() !== 'scjza-fiaaa-aaaak-ac2kq-cai') {
         const prepare = await this.getTxAccount();
+        console.log(prepare);
         this.nonce = Number(prepare[2]) + 2;
       } else {
         this.nonce = 50;

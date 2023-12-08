@@ -202,6 +202,7 @@ export default class extends Vue {
               walletSendRequest,
               this.walletId
             );
+            console.log(res);
             if (res && Object.keys(res)[0] === 'Ok') {
               this.$message.success('Success');
               this.getWalletBalance();

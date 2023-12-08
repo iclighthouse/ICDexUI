@@ -1407,6 +1407,7 @@ export default class extends Vue {
         );
       }
       this.locationHost = window.location.origin;
+      console.log(menu);
       if (menu === TradeCompetitionsEnum.Info) {
         const promiseValue = [
           this.getInfo(this.currentPair[0].toString()),
@@ -1565,6 +1566,7 @@ export default class extends Vue {
             this.referrerForm.referrerValue.trim(),
             entity
           );
+          console.log(res);
           if (res) {
             this.$message.success('Success');
             this.visible = false;
@@ -1611,6 +1613,7 @@ export default class extends Vue {
         );
         this.getTextHeight();
         this.getDepositAccount([res.compRoundResponse[0]]);
+        console.log(this.compRoundInfo);
       }
     } catch (e) {
       console.log(e);
@@ -1630,6 +1633,7 @@ export default class extends Vue {
         dexId,
         principal
       );
+      console.log(account);
       this.getEquity(account, round);
     }
   }
@@ -1651,6 +1655,7 @@ export default class extends Vue {
       token1Id,
       account.balance
     );
+    console.log(this.currentPair);
     const total = new BigNumber(token0Balance)
       .times(this.currentPair[2].price)
       .plus(token1Balance)
@@ -1660,6 +1665,8 @@ export default class extends Vue {
       value0: BigInt(token0Balance),
       value1: BigInt(token1Balance)
     };
+    console.log(token0Balance, token1Balance);
+    console.log(total);
     this.getCompResult(round);
   }
   private async ta_ambassador(): Promise<void> {
@@ -1670,6 +1677,7 @@ export default class extends Vue {
       const res = await currentICDexService.ta_ambassador(dexId, principal);
       if (res && res.pairId === dexId) {
         this.ambassador = res.ambassador;
+        console.log(this.ambassador);
         this.entity = this.ambassador[1];
       }
     } catch (e) {
@@ -1677,6 +1685,7 @@ export default class extends Vue {
     }
   }
   private async getCompResult(round: Array<bigint> = []): Promise<void> {
+    console.log(round);
     if (
       round.length &&
       this.compRoundResult &&
@@ -1704,6 +1713,7 @@ export default class extends Vue {
       ) {
         const assetValue =
           this.compRoundResult[round[0].toString(10)].assetValue;
+        console.log(assetValue);
         this.equity = {
           total: new BigNumber(this.currentEquity.total)
             .plus(assetValue[0].total)
@@ -1721,6 +1731,7 @@ export default class extends Vue {
         };
       }
     }
+    console.log(this.compRoundResult);
     this.loading && this.loading.close();
   }
   private async getLiquidity(): Promise<void> {
@@ -1731,6 +1742,7 @@ export default class extends Vue {
     if (res && res.pairId === this.currentPair[0].toString()) {
       this.liquidity = res.tokenLiquidity;
     }
+    console.log(this.liquidity);
   }
   private async comp_register(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1775,6 +1787,7 @@ export default class extends Vue {
     const dexId = this.currentPair[0].toString();
     const principal = localStorage.getItem('principal');
     const res = await currentICDexService.ta_getReferrer(dexId, principal);
+    console.log(res);
     if (res && res.pairId === dexId && res.referrer[0] && res.referrer[0][0]) {
       this.referrer = res.referrer[0][0];
     }
@@ -1786,6 +1799,7 @@ export default class extends Vue {
     if (res && res.pairId === dexId) {
       this.description = res.ta_description;
     }
+    console.log(this.description);
   }
   private async getTotalSupply(): Promise<void> {
     const DRC20Token = new DRC20TokenService();
@@ -1800,6 +1814,7 @@ export default class extends Vue {
     }
     if (
       std.toLocaleLowerCase() === 'icrc1' ||
+      std.toLocaleLowerCase() === 'icrc2' ||
       std.toLocaleLowerCase() === 'icp'
     ) {
       this.totalSupply = await DRC20Token.icrcTotalSupply(tokenId);
@@ -1816,12 +1831,15 @@ export default class extends Vue {
   private async getTotalSupplyToken1(): Promise<void> {
     const DRC20Token = new DRC20TokenService();
     const tokenId = this.currentPair[1][0].token1[0].toString();
+    console.log(tokenId);
+    console.log(this.currentPair[1][0].token1);
     const std = Object.keys(this.currentPair[1][0].token1[2])[0];
     if (std.toLocaleLowerCase() === 'drc20') {
       this.totalSupplyToken1 = await DRC20Token.totalSupply(tokenId);
     }
     if (
       std.toLocaleLowerCase() === 'icrc1' ||
+      std.toLocaleLowerCase() === 'icrc2' ||
       std.toLocaleLowerCase() === 'icp'
     ) {
       this.totalSupplyToken1 = await DRC20Token.icrcTotalSupply(tokenId);
@@ -1841,6 +1859,7 @@ export default class extends Vue {
     if (res && res.pairId === pairId) {
       this.dexInfo = res.pairInfo;
     }
+    console.log(this.dexInfo);
   }
   private onCopy(): void {
     this.$message.success('Copied');

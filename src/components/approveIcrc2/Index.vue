@@ -52,12 +52,17 @@ import { LedgerService } from '@/ic/ledger/ledgerService';
 import { Principal } from '@dfinity/principal';
 import { ApproveError } from '@/ic/DRC20Token/model';
 import { validateCanister } from '@/utils/validate';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { namespace } from 'vuex-class';
+
+const commonModule = namespace('common');
 
 @Component({
   name: 'Index',
   components: {}
 })
 export default class extends Vue {
+  @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
   @Prop({ type: String, default: LEDGER_CANISTER_ID })
   tokenId!: string;
   @Prop({ type: String, default: '' })
@@ -93,6 +98,10 @@ export default class extends Vue {
   private approve(): void {
     (this.$refs.approveForm as any).validate(async (valid: any) => {
       if (valid) {
+        if (this.approveForm.spender === this.getPrincipalId) {
+          this.$message.error('Self approval is not allowed.');
+          return;
+        }
         await checkAuth();
         const loading = this.$loading({
           lock: true,
@@ -109,14 +118,20 @@ export default class extends Vue {
           subaccount: []
         };
         let res;
-        if (std && std.toLocaleLowerCase() === 'icp') {
-          res = await this.ledgerService.icrc2_approve(spender, amount);
+        if (
+          std &&
+          (std.toLocaleLowerCase() === 'icp' ||
+            std.toLocaleLowerCase() === 'icrc2')
+        ) {
+          const DRC20Token = new DRC20TokenService();
+          res = await DRC20Token.icrc2_approve(this.tokenId, spender, amount);
         }
         if (res) {
           const type = Object.keys(res)[0];
           if (type === 'Ok') {
             this.visible = false;
             this.$message.success('Success');
+            this.$emit('approveIcrc2Success', this.tokenId);
           } else {
             const err = (res as { Err: ApproveError }).Err;
             this.$message.error(

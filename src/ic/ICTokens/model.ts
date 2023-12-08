@@ -34,8 +34,11 @@ export type TokenList = [
   TokenItemGas,
   Array<Metadata>,
   TokenLogo,
-  MaxSupply
+  MaxSupply,
+  Controllers,
+  string
 ];
+export type Controllers = Array<string>;
 export type TokenLogo = string;
 export type TokenItemGas =
   | { token: string }

@@ -25,45 +25,19 @@ import Service, {
 import governanceIDL from './governance.did';
 import { GOVERNANCE_CANISTER_ID } from '@/ic/utils';
 import { NeuronId } from '@/ic/common/icType';
-import { buildService } from '../Service';
-import { checkAuth } from '@/ic/CheckAuth';
-import store from '@/store';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { Principal } from '@dfinity/principal/lib/cjs';
 import { SerializableIC } from '@/ic/converter';
+import { createService } from '@/ic/createService';
 
 export class GovernanceService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth();
-    }
-    if ((window as any).icx) {
-      this.service = await createIcxActor(
-        governanceIDL,
-        GOVERNANCE_CANISTER_ID
-      );
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(
-        governanceIDL,
-        GOVERNANCE_CANISTER_ID
-      );
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(
-        governanceIDL,
-        GOVERNANCE_CANISTER_ID
-      );
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        governanceIDL,
-        GOVERNANCE_CANISTER_ID
-      );
-    }
+    this.service = await createService<Service>(
+      GOVERNANCE_CANISTER_ID,
+      governanceIDL,
+      renew,
+      isUpdate
+    );
   };
   public getFullNeuron = async (request: NeuronId): Promise<Result_2> => {
     await this.check();

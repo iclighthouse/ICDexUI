@@ -35,11 +35,10 @@ export function toHttpError(error: Error): HttpError {
 
 export function toHttpRejectError(error: Error): string {
   try {
-    const statusLine = error.message
+    return error.message
       .split('\n')
       .map((l) => l.trim().toLowerCase())
       .find((l) => l.startsWith('reject text:'));
-    return statusLine;
   } catch (e) {
     console.log(e);
     return null;

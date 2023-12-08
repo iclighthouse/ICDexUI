@@ -535,6 +535,7 @@ export default class extends Vue {
       BigInt(this.functionId),
       followees
     );
+    console.log(res);
     if (res && res.command) {
       const type = Object.keys(res.command[0])[0];
       if (type === 'Error') {

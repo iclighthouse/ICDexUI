@@ -20,7 +20,9 @@ export const getTokenLogo = async (
   } else if (std === 'dip20') {
     const info = await DRC20Token.getMetadata(tokenId.toString());
     logo = info.logo;
-  } else if (std === 'icrc1') {
+  } else if (std === 'icp') {
+    logo = require('@/assets/img/dfinity.png');
+  } else if (std === 'icrc1' || std === 'icrc2') {
     const res = await DRC20Token.icrc1Metadata(tokenId.toString());
     res.some((val: [string, IcrcValue]) => {
       if (val[0].includes('logo')) {

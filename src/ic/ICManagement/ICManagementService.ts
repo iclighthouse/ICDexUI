@@ -14,16 +14,6 @@ const Ic = (window as any).ic;
 
 export class ICManagementService {
   private service: Service;
-  // private readonly host: string;
-  // constructor(identity: Identity, host?: string) {
-  //   this.host = host;
-  //   this.service = buildService(
-  //     identity,
-  //     ICManagementIDL,
-  //     IC_MANAGEMENT_CANISTER_ID,
-  //     host
-  //   );
-  // }
   private check = async (renew = true, isUpdate = true): Promise<void> => {
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};

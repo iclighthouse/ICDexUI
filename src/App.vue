@@ -169,7 +169,7 @@
 
 <script lang="ts">
 import { Component, Mixins, Vue, Watch } from 'vue-property-decorator';
-import { decrypt, plugWhitelist } from '@/ic/utils';
+import { decrypt, LEDGER_CANISTER_ID, plugWhitelist } from '@/ic/utils';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
 import { namespace } from 'vuex-class';
@@ -226,6 +226,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     // todo new site
     const hostname = window.location.hostname;
     this.hostname = window.location.hostname;
+    console.log(window.parent.origin);
     if (hostname === 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app') {
       this.showTip = true;
     }
@@ -279,6 +280,18 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       // }
     });
     localStorage.removeItem('icxCanisterIds');
+    const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
+    if (!tokens[LEDGER_CANISTER_ID]) {
+      tokens[LEDGER_CANISTER_ID] = {
+        decimals: 8,
+        fee: '10000',
+        name: 'Icp',
+        price: '',
+        symbol: 'ICP',
+        tokenStd: { icp: null }
+      };
+    }
+    localStorage.setItem('tokens', JSON.stringify(tokens));
   }
   private skip(): void {
     localStorage.setItem('skip', 'true');
@@ -319,7 +332,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
   private async init(checkAuth: boolean): Promise<void> {
     if ((window as any).icx) {
-      //
+      console.log('116:' + this.getPrincipalId);
     } else {
       // this.principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -428,7 +441,10 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         if (this.type === 'MetaMask') {
           const phraseList =
             JSON.parse(localStorage.getItem('phraseList')) || {};
-          const encryptSeedPhrase = phraseList[this.getPrincipalId];
+          let encryptSeedPhrase = phraseList[this.getPrincipalId];
+          if (typeof encryptSeedPhrase === 'string') {
+            encryptSeedPhrase = JSON.parse(encryptSeedPhrase);
+          }
           let salt = 'ICLightHouse';
           let data = encryptSeedPhrase;
           if (encryptSeedPhrase.salt) {

@@ -67,7 +67,6 @@
     "@types/crc": "^3.4.0",
     "@types/identicon.js": "^2.3.1",
     "@types/json-bigint": "^1.0.1",
-    "@types/lodash.debounce": "^4.0.6",
     "@types/node": "^16.11.0",
     "@types/qrcode": "^1.4.1",
     "@types/randombytes": "^2.0.0",

@@ -915,6 +915,7 @@ export default class extends Mixins(BalanceMixin) {
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });
+    console.log(res);
     if (res && res.full_neurons) {
       this.neuronList = res.full_neurons
         .filter((neuron) => {
@@ -985,6 +986,7 @@ export default class extends Mixins(BalanceMixin) {
         neuronId,
         !auto_stake_maturity
       );
+      console.log(res);
       await this.refreshNeuron(neuronId);
       if (res && res.command && res.command[0]) {
         const type = Object.keys(res.command[0])[0];

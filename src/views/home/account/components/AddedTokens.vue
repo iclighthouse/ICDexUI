@@ -78,7 +78,11 @@
                       >
                         {{ token.name | ellipsisAccount(10) }}
                       </dd>
-                      <dd v-if="!token.name.includes('(')" class="pc-show">
+                      <dd
+                        style="font-size: 12px"
+                        v-if="!token.name.includes('(')"
+                        class="pc-show"
+                      >
                         {{ token.name }}
                       </dd>
                     </dl>
@@ -234,7 +238,10 @@
                         >TransferBatch</a-menu-item
                       >
                       <a-menu-item
-                        v-show="token.standard === 'DRC20'"
+                        v-show="
+                          token.standard === 'DRC20' ||
+                          token.standard === 'ICRC-2'
+                        "
                         @click="showApprove(token, index)"
                         >Approve</a-menu-item
                       >
@@ -283,7 +290,7 @@
               style="color: #1996c4"
               rel="nofollow noreferrer noopener"
               >DRC20</a
-            >/ICRC-1 standard tokens)
+            >/ICRC-1/ICRC-2 standard tokens)
           </template>
           <!--<a-input
             v-model="addTokenForm.tokenId"
@@ -582,6 +589,12 @@
         </button>
       </div>
     </a-modal>
+    <approve-icrc2
+      ref="approveIcrc2"
+      :balance="currentToken.balance"
+      :token-id="currentToken.canisterId && currentToken.canisterId.toString()"
+      @approveIcrc2Success="approveIcrc2Success"
+    ></approve-icrc2>
   </div>
 </template>
 
@@ -637,6 +650,7 @@ import { ICTokensScanService } from '@/ic/ICTokensScan/ICTokensScanService';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
+import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
 
 const commonModule = namespace('common');
 
@@ -648,7 +662,8 @@ const commonModule = namespace('common');
     ApproveModal,
     TransferToken,
     ReceiveModal,
-    TransferBatchToken
+    TransferBatchToken,
+    ApproveIcrc2
   },
   filters: {
     filterCoinSeconds(val: string): string {
@@ -749,6 +764,7 @@ export default class extends Vue {
     addTokenForm: HTMLFormElement;
     transferToken: HTMLFormElement;
     transferBatchToken: HTMLFormElement;
+    approveIcrc2;
   };
   @Prop()
   private identity!: Identity;
@@ -1021,6 +1037,9 @@ export default class extends Vue {
           if (std.toLocaleLowerCase() === 'icrc1') {
             this.tokenStd = TokenStandard['ICRC-1'];
           }
+          if (std.toLocaleLowerCase() === 'icrc2') {
+            this.tokenStd = TokenStandard['ICRC-2'];
+          }
         }
       }
     }
@@ -1051,7 +1070,10 @@ export default class extends Vue {
           this.getDip20Balance(token),
           this.getDip20Metadata(token)
         );
-      } else if (token.standard === TokenStandard['ICRC-1']) {
+      } else if (
+        token.standard === TokenStandard['ICRC-1'] ||
+        token.standard === TokenStandard['ICRC-2']
+      ) {
         promiseValue.push(
           this.getICRCBalance(token),
           this.getIcrcMetadata(token)
@@ -1188,7 +1210,7 @@ export default class extends Vue {
   }
   private showReceive(token: AddTokenItem): void {
     const std = token.standard;
-    const noAccount = ['dip20', 'icrc-1'];
+    const noAccount = ['dip20', 'icrc-1', 'icrc-2'];
     this.$refs.receiveModal.principal = localStorage.getItem('principal');
     this.$refs.receiveModal.visibleReceive = true;
     const hasAccount = !noAccount.includes(std.toLocaleLowerCase());
@@ -1197,10 +1219,17 @@ export default class extends Vue {
   private showApprove(token: AddTokenItem, index: number): void {
     this.currentToken = token;
     this.currentIndex = index;
-    this.$refs.approve.visible = true;
-    this.approveType = 'add';
-    this.$refs.approve.approveForm.spender = '';
-    this.$refs.approve.approveForm.amount = '';
+    if (token.standard === 'DRC20') {
+      this.$refs.approve.visible = true;
+      this.approveType = 'add';
+      this.$refs.approve.approveForm.spender = '';
+      this.$refs.approve.approveForm.amount = '';
+    } else if (token.standard === 'ICRC-2') {
+      this.$refs.approveIcrc2.init(
+        Object.assign({}, this.currentToken, { tokenStd: { icrc2: null } })
+      );
+      console.log(this.currentToken);
+    }
   }
   private showLockTransfer(token: AddTokenItem, index: number): void {
     this.currentToken = token;
@@ -1211,6 +1240,10 @@ export default class extends Vue {
     this.getApprovals(this.currentToken, this.currentIndex);
     this.getApprovalsAllowance(this.tokens[this.currentIndex]);
     this.txnCount(this.tokens[this.currentIndex]);
+    this.transferTokenSuccess();
+  }
+  private approveIcrc2Success(): void {
+    this.transferTokenSuccess();
   }
   private lockTransferSuccess(): void {
     this.getLocked(this.tokens[this.currentIndex]);
@@ -1221,11 +1254,15 @@ export default class extends Vue {
       this.getBalance(this.tokens[this.currentIndex]);
     } else if (this.currentToken.standard === TokenStandard.DIP20) {
       this.getDip20Balance(this.tokens[this.currentIndex]);
-    } else if (this.currentToken.standard === TokenStandard['ICRC-1']) {
+    } else if (
+      this.currentToken.standard === TokenStandard['ICRC-1'] ||
+      this.currentToken.standard === TokenStandard['ICRC-2']
+    ) {
       this.getICRCBalance(this.tokens[this.currentIndex]);
     }
   }
   private handleTransferToken(token: AddTokenItem, index: number): void {
+    console.log(token);
     this.currentToken = token;
     this.currentIndex = index;
     this.$refs.transferToken.init(token);
@@ -1235,7 +1272,10 @@ export default class extends Vue {
       this.getBalance(this.tokens[this.currentIndex]);
     } else if (this.currentToken.standard === TokenStandard.DIP20) {
       this.getDip20Balance(this.tokens[this.currentIndex]);
-    } else if (this.currentToken.standard === TokenStandard['ICRC-1']) {
+    } else if (
+      this.currentToken.standard === TokenStandard['ICRC-1'] ||
+      this.currentToken.standard === TokenStandard['ICRC-2']
+    ) {
       this.getICRCBalance(this.tokens[this.currentIndex]);
     }
   }
@@ -1415,7 +1455,11 @@ export default class extends Vue {
     let logo = await getTokenLogo(token.canisterId, {
       icrc1: null
     });
-    if (!logo && token.standard === TokenStandard['ICRC-1']) {
+    if (
+      !logo &&
+      (token.standard === TokenStandard['ICRC-1'] ||
+        token.standard === TokenStandard['ICRC-2'])
+    ) {
       let SNSGovernance = '';
       this.listDeployedSnses.some((item) => {
         if (
@@ -1766,7 +1810,10 @@ export default class extends Vue {
         this.ICLighthouseTokenService.getDecimals(this.addTokenForm.tokenId)
       );
       tokenInfo = await Promise.all(promiseAllValue);
-    } else if (this.tokenStd === TokenStandard['ICRC-1']) {
+    } else if (
+      this.tokenStd === TokenStandard['ICRC-1'] ||
+      this.tokenStd === TokenStandard['ICRC-2']
+    ) {
       const promiseAllValue = [];
       promiseAllValue.push(
         this.DRC20TokenService.icrcName(this.addTokenForm.tokenId),
@@ -1815,7 +1862,10 @@ export default class extends Vue {
         } else if (this.tokenStd === TokenStandard.DIP20) {
           this.getDip20Balance(token);
           this.getDip20Metadata(token);
-        } else if (this.tokenStd === TokenStandard['ICRC-1']) {
+        } else if (
+          this.tokenStd === TokenStandard['ICRC-1'] ||
+          this.tokenStd === TokenStandard['ICRC-2']
+        ) {
           this.getICRCBalance(token);
           this.getIcrcMetadata(token);
           if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
@@ -1926,6 +1976,7 @@ export default class extends Vue {
   line-height: 100px;
 }
 .your-token-list {
+  font-size: 13px;
   dt {
     margin-bottom: 3px;
   }
@@ -1939,6 +1990,9 @@ export default class extends Vue {
   }
   .name {
     padding: 5px 5px 5px 0 !important;
+    dd {
+      font-size: 12px;
+    }
   }
 }
 .operation-div {

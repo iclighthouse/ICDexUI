@@ -107,6 +107,7 @@ export default class extends Vue {
       );
       if (KIntervals.paidId === this.swapId) {
         this.KIntervals = KIntervals.quotes.slice().reverse();
+        console.log(this.KIntervals);
         this.initEcharts();
       }
     } catch (e) {
@@ -339,6 +340,7 @@ export default class extends Vue {
         }
       });
     }
+    console.log(this.swapId);
     const type = Object.keys(this.dexInfo.mmType)[0];
     let unitSize;
     let buyUnit;

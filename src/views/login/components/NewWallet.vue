@@ -136,7 +136,12 @@
 import { Component, Vue } from 'vue-property-decorator';
 import ConfirmPassword from '@/views/login/components/ConfirmPassword.vue';
 const ethers = require('ethers');
-const ethereum = (window as any).ethereum;
+let ethereum = (window as any).ethereum;
+if (ethereum && ethereum.providers) {
+  ethereum = ethereum.providers.find(
+    (provider) => provider.isMetaMask
+  );
+}
 
 @Component({
   name: 'NewWallet',

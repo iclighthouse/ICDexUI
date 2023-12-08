@@ -38,7 +38,11 @@ export const getTokenInfo = async (
     tokenInfo = await getDrc20TokenInfo(tokenId.toString(), tokenInfo);
   } else if (tokenStd && (tokenStd as { dip20: null }).dip20 === null) {
     tokenInfo = await getDip20TokenInfo(tokenId.toString(), tokenInfo);
-  } else if (tokenStd && (tokenStd as { icrc1: null }).icrc1 === null) {
+  } else if (
+    tokenStd &&
+    ((tokenStd as { icrc1: null }).icrc1 === null ||
+      (tokenStd as { icrc2: null }).icrc2 === null)
+  ) {
     tokenInfo = await getIcrc1TokenInfo(tokenId.toString(), tokenInfo);
   } else {
     tokenInfo = await getDip20TokenInfo(tokenId.toString(), tokenInfo);

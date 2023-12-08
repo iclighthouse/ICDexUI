@@ -949,6 +949,7 @@ export default class extends Vue {
           this.updateTime = Number(updateTime);
         }
       }
+      console.log(res);
     }
   }
   private changeMenu(menu: string): void {
@@ -1053,6 +1054,7 @@ export default class extends Vue {
       [this.page.current],
       [this.page.pageSize]
     );
+    console.log(res);
     if (res) {
       if (res.data && res.data.length < this.page.pageSize) {
         this.loadMore = false;

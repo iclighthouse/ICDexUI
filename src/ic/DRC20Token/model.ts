@@ -13,7 +13,7 @@ import {
   BlockHeight
 } from '@/ic/common/icType';
 import { _data, Amount, Nonce, TxnResult } from '@/ic/ICLighthouseToken/model';
-import { SendICPTsRequest } from '@/ic/ledger/model';
+import { Allowance, AllowanceArgs, SendICPTsRequest } from '@/ic/ledger/model';
 
 export interface TxnRecord {
   gas: Gas;
@@ -296,4 +296,5 @@ export default interface Service {
   ictokens_maxSupply(): Promise<bigint>;
   send_dfx(request: SendICPTsRequest): Promise<BlockHeight>;
   icrc2_approve(approveArgs: ApproveArgs): Promise<ApproveResponse>;
+  icrc2_allowance(allowanceArgs: AllowanceArgs): Promise<Allowance>;
 }

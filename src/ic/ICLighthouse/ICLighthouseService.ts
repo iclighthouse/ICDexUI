@@ -13,57 +13,28 @@ import Service, {
 } from '@/ic/ICLighthouse/model';
 import ICLighthouseIDL from '@/ic/ICLighthouse/ICLighthouse.did';
 import { IC_CANISTER_ID } from '@/ic/utils';
-import { buildService } from '../Service';
-import { checkAuth } from '@/ic/CheckAuth';
-import store from '@/store';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
 import { hexToBytes, SerializableIC } from '@/ic/converter';
-import { createInfinityActor } from '@/ic/createInfinityActor';
+import { createService } from '@/ic/createService';
 
 export class ICLighthouseService {
   private service: Service;
-  // private readonly host: string;
-  // constructor(identity: Identity, host?: string) {
-  //   this.host = host;
-  //   this.service = buildService(
-  //     identity,
-  //     ICLighthouseIDL,
-  //     IC_CANISTER_ID,
-  //     this.host
-  //   );
-  // }
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, ICLighthouseIDL, IC_CANISTER_ID);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(ICLighthouseIDL, IC_CANISTER_ID);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(ICLighthouseIDL, IC_CANISTER_ID);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(ICLighthouseIDL, IC_CANISTER_ID);
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        ICLighthouseIDL,
-        IC_CANISTER_ID
-      );
-    }
+    this.service = await createService<Service>(
+      IC_CANISTER_ID,
+      ICLighthouseIDL,
+      renew,
+      isUpdate
+    );
   };
   public getAddressBookItems = async (): Promise<AddressBookItem[]> => {
     await this.check(false);
     const res = await this.service.getAddressBookItems();
-    return SerializableIC(res)
+    return SerializableIC(res);
   };
   public getEthConnectItems = async (): Promise<EthConnectItem[]> => {
     await this.check(false);
     const res = await this.service.getEthConnectItems();
-    return SerializableIC(res)
+    return SerializableIC(res);
   };
   public manageAddressBook = async (
     address: string,
@@ -71,8 +42,12 @@ export class ICLighthouseService {
     operation: Operation
   ): Promise<Result> => {
     await this.check();
-    const res = await this.service.manageAddressBook(address, encrypt, operation);
-    return SerializableIC(res)
+    const res = await this.service.manageAddressBook(
+      address,
+      encrypt,
+      operation
+    );
+    return SerializableIC(res);
   };
   public manageEthConnect = async (
     ethAddress: string,
@@ -85,7 +60,7 @@ export class ICLighthouseService {
   public getWallets = async (): Promise<ManageWalletResponse[]> => {
     await this.check(false);
     const res = await this.service.getWallets();
-    return SerializableIC(res)
+    return SerializableIC(res);
   };
   public manageWallet = async (
     walletId: Principal,
@@ -99,17 +74,17 @@ export class ICLighthouseService {
   ): Promise<WalletResultCreate> => {
     await this.check();
     const res = await this.service.createCyclesWallet(request);
-    return SerializableIC(res)
+    return SerializableIC(res);
   };
   public getNotice = async (): Promise<Message> => {
     await this.check(false);
     const res = await this.service.getMessage();
-    return SerializableIC(res)
+    return SerializableIC(res);
   };
   public getTokens = async (): Promise<Array<TokenItem>> => {
     await this.check(false);
-    const res=await this.service.getTokens();
-    return SerializableIC(res)
+    const res = await this.service.getTokens();
+    return SerializableIC(res);
   };
   public getMetaMask = async (
     ethAccount: string
@@ -117,7 +92,7 @@ export class ICLighthouseService {
     const account = hexToBytes(ethAccount);
     await this.check(false);
     const res = await this.service.getMetaMask(account);
-    return SerializableIC(res)
+    return SerializableIC(res);
   };
   public addMetaMask = async (
     ethAccount: string,

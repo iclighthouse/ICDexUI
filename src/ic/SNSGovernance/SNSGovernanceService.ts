@@ -20,15 +20,10 @@ import Service, {
 } from '@/ic/SNSGovernance/model';
 import SNSGovernanceIDL from './SNSGovernance.did';
 import SNSGovernanceSNS1IDL from './SNSGovernanceSNS1.did';
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
-import store from '@/store';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import { Icrc1Account } from '@/ic/common/icType';
+import { createService } from '@/ic/createService';
 
 export class SNSGovernanceService {
   private check = async (
@@ -36,32 +31,11 @@ export class SNSGovernanceService {
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
     let idl = SNSGovernanceIDL;
     if (canisterId === 'zqfso-syaaa-aaaaq-aaafq-cai') {
       idl = SNSGovernanceSNS1IDL;
     }
-    let service: Service;
-    if (!isUpdate) {
-      service = buildService(null, idl, canisterId);
-    } else if ((window as any).icx) {
-      service = await createIcxActor(idl, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      service = await createPlugActor(idl, canisterId);
-    } else if (priList[principal] === 'Infinity') {
-      service = await createInfinityActor(idl, canisterId);
-    } else {
-      service = buildService(
-        store.getters['common/getIdentity'],
-        idl,
-        canisterId
-      );
-    }
-    return service;
+    return await createService<Service>(canisterId, idl, renew, isUpdate);
   };
   public getMetadata = async (
     canisterId: string

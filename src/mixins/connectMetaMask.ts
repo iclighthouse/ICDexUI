@@ -7,7 +7,12 @@ import {
 } from '@metamask/eth-sig-util';
 import { LoginType } from '@/views/login/model';
 import { ellipsisAccount } from '@/filters';
-const ethereum = (window as any).ethereum;
+let ethereum = (window as any).ethereum;
+if (ethereum && ethereum.providers) {
+  ethereum = ethereum.providers.find(
+    (provider) => provider.isMetaMask
+  );
+}
 
 @Component({})
 export class ConnectMetaMaskMixin extends Vue {

@@ -1915,6 +1915,7 @@ export default class extends Mixins(BalanceMixin) {
         Number(this.cyclesAmount) &&
         this.cyclesCanister
       ) {
+        console.log(this.cycles.toString(), this.freezingThreshold);
         let yourCycles;
         if (this.cycles === '-') {
           yourCycles = '0';
@@ -2066,6 +2067,7 @@ export default class extends Mixins(BalanceMixin) {
       );
     }
     this.liquidity = await this.getLiquidity();
+    console.log(this.liquidity, this.userLiquidity);
     this.getIntervalLiquidity();
   }
   private connectWallet(): void {
@@ -2249,6 +2251,7 @@ export default class extends Mixins(BalanceMixin) {
       }
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
+      console.log(state);
       if (!state || (state && !state.moduleHash)) {
         flag = false;
         this.$info({
@@ -2566,6 +2569,7 @@ export default class extends Mixins(BalanceMixin) {
         this.depositAccountId
       );
       this.isLoading = true;
+      console.log(blockHeight);
       const nonce = await this.getCount(
         Principal.fromText(this.cyclesCanister.trim())
       );
@@ -2618,6 +2622,7 @@ export default class extends Mixins(BalanceMixin) {
       this.walletService
         .walletCall(walletCallRequest, this.cyclesCanister.trim())
         .then(async (res) => {
+          console.log(res);
           loading.close();
           if ((res as { Ok: { return: Array<number> } }).Ok) {
             this.getIcpBalance();
@@ -2759,11 +2764,13 @@ export default class extends Mixins(BalanceMixin) {
       this.walletService
         .walletCall(walletCallRequest, this.cyclesCanister.trim())
         .then(async (res) => {
+          console.log(res);
           if ((res as { Ok: { return: Array<number> } }).Ok) {
             this.getIcpBalance();
             this.getDepositBalance();
             this.getCycles();
             const record = await this.cyclesFinanceService.txnRecord(txid);
+            console.log(record);
             // const index = this.recordList.findIndex(
             //   (item) =>
             //     item.nonce === nonce &&
@@ -2837,10 +2844,12 @@ export default class extends Mixins(BalanceMixin) {
       const icp = BigInt(
         new BigNumber(this.depositAmount).times(10 ** this.decimals)
       );
+      console.log(icp);
       const blockHeight = await this.ledgerService.sendIcp(
         this.depositAmount.toString(),
         this.depositAccountId
       );
+      console.log(blockHeight);
       const nonce = await this.getCount(
         Principal.fromText(this.getPrincipalId)
       );
@@ -2877,6 +2886,7 @@ export default class extends Mixins(BalanceMixin) {
           nonce
         ])
         .then(async (res) => {
+          console.log(res);
           this.getIcpBalance();
           this.getDepositBalance();
           this.getCycles();
@@ -3050,6 +3060,7 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private getSlippage(cycles: BigNumber, icp: BigNumber): void {
+    console.log(cycles.toString(), icp.toString());
     const rate = new BigNumber(this.liquidity.cycles.toString(10)).div(
       this.liquidity.icpE8s.toString(10)
     );
@@ -3063,6 +3074,7 @@ export default class extends Mixins(BalanceMixin) {
         .div(100)
         .toString(10)
     );
+    console.log(rate.toString(), newRate.toString(), this.slippage);
   }
   private async depositAmountChange(): Promise<void> {
     try {

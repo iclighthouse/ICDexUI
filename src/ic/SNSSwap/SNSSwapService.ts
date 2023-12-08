@@ -17,16 +17,11 @@ import Service, {
   RefreshBuyerTokensRequest1,
   RefreshBuyerTokensResponse
 } from '@/ic/SNSSwap/model';
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
-import store from '@/store';
 import SNSSwapIDL from './SNSSwap.did';
 import SNSSwap1IDL from './SNSSwap1.did';
 import { GetStateResponse } from '@/ic/SNSSwap/model';
 import { SerializableIC } from '@/ic/converter';
+import { createService } from '@/ic/createService';
 
 export class SNSSwapService {
   private check = async (
@@ -34,11 +29,6 @@ export class SNSSwapService {
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
     let idl = SNSSwapIDL;
     const old = [
       'zcdfx-6iaaa-aaaaq-aaagq-cai',
@@ -48,23 +38,7 @@ export class SNSSwapService {
     if (!old.includes(canisterId)) {
       idl = SNSSwap1IDL;
     }
-    let service: Service;
-    if (!isUpdate) {
-      service = buildService(null, idl, canisterId);
-    } else if ((window as any).icx) {
-      service = await createIcxActor(idl, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      service = await createPlugActor(idl, canisterId);
-    } else if (priList[principal] === 'Infinity') {
-      service = await createInfinityActor(idl, canisterId);
-    } else {
-      service = buildService(
-        store.getters['common/getIdentity'],
-        idl,
-        canisterId
-      );
-    }
-    return service;
+    return await createService<Service>(canisterId, idl, renew, isUpdate);
   };
   public getState = async (canisterId: string): Promise<GetStateResponse> => {
     const service = await this.check(canisterId, false, false);

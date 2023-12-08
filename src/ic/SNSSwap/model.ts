@@ -6,18 +6,99 @@ export interface GetStateResponse {
   derived: Array<DerivedState>;
 }
 export interface Swap {
+  auto_finalize_swap_response: Array<FinalizeSwapResponse>;
   neuron_recipes: Array<SnsNeuronRecipe>;
   next_ticket_id?: Array<bigint>;
   decentralization_sale_open_timestamp_seconds?: Array<bigint>;
   finalize_swap_in_progress?: Array<boolean>;
   cf_participants: Array<CfParticipant>;
   init: Array<bigint>;
+  already_tried_to_auto_finalize: Array<boolean>;
+  neurons_fund_participation_icp_e8s: Array<bigint>;
   purge_old_tickets_last_completion_timestamp_nanoseconds?: Array<bigint>;
+  direct_participation_icp_e8s: Array<bigint>;
   lifecycle: bigint;
-  purge_old_tickets_next_principal?: Array<Array<number>>
+  purge_old_tickets_next_principal?: Array<Array<number>>;
   buyers: Array<[string, BuyerState]>;
   params: Array<Params>;
   open_sns_token_swap_proposal_id: Array<bigint>;
+}
+export interface FinalizeSwapResponse {
+  set_dapp_controllers_call_result: Array<SetDappControllersCallResult>;
+  create_sns_neuron_recipes_result: Array<SweepResult>;
+  settle_community_fund_participation_result: Array<SettleCommunityFundParticipationResult>;
+  error_message: Array<string>;
+  settle_neurons_fund_participation_result: Array<SettleNeuronsFundParticipationResult>;
+  set_mode_call_result: Array<SetModeCallResult>;
+  sweep_icp_result: Array<SweepResult>;
+  claim_neuron_result: Array<SweepResult>;
+  sweep_sns_result: Array<SweepResult>;
+}
+export interface SetModeCallResult {
+  possibility: Array<Possibility_3>;
+}
+export type Possibility_3 =
+  | { Ok: {} }
+  | {
+      Err: CanisterCallError;
+    };
+export interface SettleNeuronsFundParticipationResult {
+  possibility: Array<Possibility_2>;
+}
+export type Possibility_2 =
+  | { Ok: Possibility_2Ok_1 }
+  | { Err: Possibility_2Error };
+export interface Possibility_2Error {
+  message: Array<string>;
+}
+export interface Possibility_2Ok_1 {
+  neurons_fund_participation_icp_e8s: Array<bigint>;
+  neurons_fund_neurons_count: Array<bigint>;
+}
+export interface SettleCommunityFundParticipationResult {
+  possibility: Array<Possibility_1>;
+}
+export type Possibility_1 =
+  | {
+      Ok: Possibility_1Response;
+    }
+  | {
+      Err: CanisterCallError;
+    };
+export interface Possibility_1Response {
+  governance_error: Array<GovernanceError>;
+}
+export interface GovernanceError {
+  error_message: string;
+  error_type: bigint;
+}
+export interface SweepResult {
+  failure: bigint;
+  skipped: bigint;
+  invalid: bigint;
+  success: bigint;
+  global_failures: bigint;
+}
+export interface SetDappControllersCallResult {
+  possibility: Array<Possibility>;
+}
+export type Possibility =
+  | {
+      Ok: SetDappControllersResponse;
+    }
+  | {
+      Err: CanisterCallError;
+    };
+export interface SetDappControllersResponse {
+  failed_updates: Array<FailedUpdate>;
+}
+export interface FailedUpdate {
+  err: Array<CanisterCallError>;
+  dapp_canister_id: Array<Principal>;
+}
+export interface CanisterCallError {
+  code: Array<bigint>;
+  description: string;
 }
 export interface SnsNeuronRecipe {
   sns: Array<TransferableAmount>;
@@ -35,7 +116,7 @@ export interface TransferableAmount {
 export interface NeuronAttributes {
   dissolve_delay_seconds: bigint;
   memo: bigint;
-  followees?: Array<{id: Array<number>}>
+  followees?: Array<{ id: Array<number> }>;
 }
 export type Investor =
   | { CommunityFund: CfInvestment }
@@ -54,11 +135,13 @@ export interface CfParticipant {
   cf_neurons: Array<CfNeuron>;
 }
 export interface CfNeuron {
+  has_created_neuron_recipes: Array<boolean>;
   nns_neuron_id: bigint;
   amount_icp_e8s: bigint;
 }
 export interface BuyerState {
   icp: Array<TransferableAmount>;
+  has_created_neuron_recipes: Array<boolean>;
 }
 export interface Params {
   min_participant_icp_e8s: bigint;
@@ -71,6 +154,8 @@ export interface Params {
   sale_delay_seconds: Array<bigint>;
   min_icp_e8s: bigint;
   neurons_fund_investment_icp?: bigint;
+  min_direct_participation_icp_e8s?: Array<bigint>;
+  max_direct_participation_icp_e8s?: Array<bigint>;
 }
 export interface NeuronBasketConstructionParameters {
   dissolve_delay_interval_seconds: bigint;
@@ -80,6 +165,8 @@ export interface DerivedState {
   sns_tokens_per_icp: string;
   buyer_total_icp_e8s: bigint;
   cf_participant_count?: Array<bigint>;
+  neurons_fund_participation_icp_e8s: Array<bigint>;
+  direct_participation_icp_e8s: Array<bigint>;
   direct_participant_count?: Array<bigint>;
   cf_neuron_count?: Array<bigint>;
 }
@@ -133,6 +220,8 @@ export interface GetDerivedStateResponse1 {
   sns_tokens_per_icp: Array<string>;
   buyer_total_icp_e8s: Array<bigint>;
   cf_participant_count: Array<bigint>;
+  neurons_fund_participation_icp_e8s: Array<bigint>;
+  direct_participation_icp_e8s: Array<bigint>;
   direct_participant_count: Array<bigint>;
   cf_neuron_count: Array<bigint>;
 }
@@ -191,7 +280,7 @@ export interface InvalidUserAmount {
   max_amount_icp_e8s_included: bigint;
 }
 export interface GetInitResponse {
-  init: Array<Init>
+  init: Array<Init>;
 }
 export interface Init {
   sns_root_canister_id: string;
@@ -203,7 +292,42 @@ export interface Init {
   icp_ledger_canister_id: string;
   sns_ledger_canister_id: string;
   sns_governance_canister_id: string;
-  restricted_countries: Array<Countries>
+  restricted_countries: Array<Countries>;
+  nns_proposal_id: Array<bigint>;
+  neurons_fund_participation: Array<boolean>;
+  min_participant_icp_e8s: Array<bigint>;
+  neuron_basket_construction_parameters: Array<NeuronBasketConstructionParameters>;
+  max_icp_e8s: Array<bigint>;
+  swap_start_timestamp_seconds: Array<bigint>;
+  swap_due_timestamp_seconds: Array<bigint>;
+  min_participants: Array<bigint>;
+  sns_token_e8s: Array<bigint>;
+  neurons_fund_participation_constraints: Array<NeuronsFundParticipationConstraints>;
+  neurons_fund_participants: Array<NeuronsFundParticipants>;
+  should_auto_finalize: Array<boolean>;
+  max_participant_icp_e8s: Array<bigint>;
+  min_direct_participation_icp_e8s: Array<bigint>;
+  min_icp_e8s: Array<bigint>;
+  max_direct_participation_icp_e8s: Array<bigint>;
+}
+export interface NeuronsFundParticipants {
+  cf_participants: Array<CfParticipant>;
+}
+export interface NeuronsFundParticipationConstraints {
+  coefficient_intervals: Array<LinearScalingCoefficient>;
+  max_neurons_fund_participation_icp_e8s: Array<bigint>;
+  min_direct_participation_threshold_icp_e8s: Array<bigint>;
+  ideal_matched_participation_function: Array<IdealMatchedParticipationFunction>;
+}
+export interface IdealMatchedParticipationFunction {
+  serialized_representation: Array<string>;
+}
+export interface LinearScalingCoefficient {
+  slope_numerator: Array<bigint>;
+  intercept_icp_e8s: Array<bigint>;
+  from_direct_participation_icp_e8s: Array<bigint>;
+  slope_denominator: Array<bigint>;
+  to_direct_participation_icp_e8s: Array<bigint>;
 }
 export interface Countries {
   iso_codes: Array<string>;
@@ -217,7 +341,9 @@ export default interface Service {
   ): Promise<GetBuyerStateResponse>;
   get_lifecycle({}): Promise<GetLifecycleResponse>;
   get_sale_parameters({}): Promise<GetSaleParametersResponse>;
-  get_derived_state({}): Promise<GetDerivedStateResponse | GetDerivedStateResponse1>;
+  get_derived_state({}): Promise<
+    GetDerivedStateResponse | GetDerivedStateResponse1
+  >;
   list_community_fund_participants(
     request: ListRequest
   ): Promise<ListCommunityFundParticipantsResponse>;

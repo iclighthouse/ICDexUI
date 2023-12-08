@@ -10,45 +10,17 @@ import Service, {
   WalletSendRequest
 } from './model';
 import { WalletResultCreate } from '@/ic/ICLighthouse/model';
-import { buildService } from '../Service';
-import { checkAuth } from '@/ic/CheckAuth';
-import store from '@/store';
 import { Principal } from '@dfinity/principal';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { SerializableIC } from '@/ic/converter';
+import { createService } from '@/ic/createService';
 
 export class WalletService {
-  private service: Service;
-  // private readonly host: string;
-  // private readonly canisterId: string;
   private check = async (
     canisterId: string,
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew, canisterId);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, walletIDL, canisterId);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(walletIDL, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor<Service>(walletIDL, canisterId);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor<Service>(walletIDL, canisterId);
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        walletIDL,
-        canisterId
-      );
-    }
-    return this.service;
+    return await createService<Service>(canisterId, walletIDL, renew, isUpdate);
   };
   public getWalletBalance = async (
     canisterId: string

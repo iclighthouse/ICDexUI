@@ -223,6 +223,7 @@ export default class extends Vue {
   private async approvals(): Promise<void> {
     const principal = localStorage.getItem('principal');
     const res = await this.ICLighthouseTokenService.approvals(principal);
+    console.log(res);
     const remaining = res.reduce((remaining, item) => {
       return BigInt(
         new BigNumber(remaining.toString(10)).plus(item.remaining.toString(10))

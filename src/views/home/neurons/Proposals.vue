@@ -415,6 +415,7 @@ export default class extends Vue {
       };
       console.log(request);
       const res = await this.governanceService.listProposals(request);
+      console.log(res);
       if (res && res.proposal_info && res.proposal_info.length < 100) {
         this.loadMore = false;
       }

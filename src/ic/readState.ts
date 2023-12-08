@@ -36,6 +36,7 @@ export const readState = async (
       moduleHash: '-'
     };
   }
+  console.log(res);
   // @ts-ignore
   const cert = await Certificate.create({
     certificate: res.certificate,

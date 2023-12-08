@@ -9,6 +9,7 @@
     :maskClosable="false"
     class="transfer-modal"
     :after-close="afterClose"
+    :z-index="1400"
   >
     <a-form-model
       :model="transferForm"
@@ -86,11 +87,14 @@ import { Identity } from '@dfinity/agent';
 import { checkAuth } from '@/ic/CheckAuth';
 import { validateCanisterOrAccount } from '@/utils/validate';
 import {
+  bigIntToUint8Array,
   hexToBytes,
   principalToAccountIdentifier,
   toPrincipalAndAccountId
 } from '@/ic/converter';
 import store from '@/store';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { LEDGER_CANISTER_ID } from '@/ic/utils';
 
 @Component({
   name: 'Index',
@@ -112,7 +116,9 @@ export default class extends Vue {
   public decimals = 8;
   public fee = 0.0001;
   private isIcx = false;
+  public subaccountId = 0;
   public ledgerService: LedgerService | undefined;
+  private DRC20TokenService: DRC20TokenService;
   public visibleTransfer = false;
   public transferForm = {
     to: '',
@@ -212,11 +218,34 @@ export default class extends Vue {
                 to = principalAndAccountId.accountId;
               }
             }
-            await this.ledgerService.sendIcp(
-              this.transferForm.amount.toString(),
-              to,
-              memo
-            );
+            console.log(this.transferForm.to);
+            console.log(principalAndAccountId);
+            if (principalAndAccountId && principalAndAccountId.principal) {
+              const currentDrc20Token = new DRC20TokenService();
+              const amount = new BigNumber(this.transferForm.amount.toString())
+                .times(10 ** 8)
+                .toString(10);
+              await currentDrc20Token.icrc1Transfer(
+                LEDGER_CANISTER_ID,
+                BigInt(amount),
+                {
+                  owner: Principal.fromText(principalAndAccountId.principal),
+                  subaccount: principalAndAccountId.subaccount
+                    ? [hexToBytes(principalAndAccountId.subaccount)]
+                    : []
+                },
+                [Array.from(bigIntToUint8Array(memo))],
+                [],
+                this.subaccountId
+              );
+            } else {
+              await this.ledgerService.sendIcp(
+                this.transferForm.amount.toString(),
+                to,
+                memo,
+                this.subaccountId
+              );
+            }
             if (
               !(
                 this.type == 'topUpNeuron' ||
@@ -234,7 +263,7 @@ export default class extends Vue {
               'transferSuccess',
               this.transferForm.amount.toString(),
               loading,
-              principalAndAccountId ? principalAndAccountId.accountId : 0
+              this.subaccountId
             );
           } catch (e) {
             loading.close();

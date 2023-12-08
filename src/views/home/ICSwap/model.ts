@@ -31,6 +31,7 @@ export enum PairTokenStdMenu {
   dip20 = 'dip20',
   drc20 = 'drc20',
   icrc1 = 'icrc1',
+  icrc2 = 'icrc2',
   icp = 'icp'
 }
 export type PairTokenStd = keyof typeof PairTokenStdMenu;
@@ -40,6 +41,7 @@ export enum SwappingPairEnum {
   'drc20', // All drc20
   'dip20', // Has dip20
   'icrc1',
+  'icrc2',
   'icp'
 }
 

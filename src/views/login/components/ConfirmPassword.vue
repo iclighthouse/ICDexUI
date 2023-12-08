@@ -4,9 +4,6 @@
     <p class="password-tip">
       This password is used to encrypt your private data on your device.
     </p>
-    <p class="password-rule">
-      Use 8 or more characters with a mix of letters and numbers
-    </p>
     <a-form-model
       ref="passwordForm"
       :model="passwordForm"

@@ -584,6 +584,7 @@ export default class extends Vue {
         this.vote,
         this.proposal.id
       );
+      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -708,6 +709,7 @@ export default class extends Vue {
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });
+    console.log(res);
     const proposalId = this.$route.params.proposalId.trim();
     res.neuron_infos.forEach((item: [bigint, NeuronInfo]) => {
       item[1].recent_ballots.some((val: BallotInfo) => {
@@ -725,6 +727,7 @@ export default class extends Vue {
       BigInt(proposalId)
     );
     console.log(BigInt(proposalId));
+    console.log(res);
     if (res) {
       const type = Object.keys(res)[0];
       if (type === 'Ok') {

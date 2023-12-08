@@ -138,8 +138,8 @@ export default class extends Vue {
   public async init(): Promise<void> {
     await this.getIcpToCyclesConversionRate();
     this.topUpForm.amount = new BigNumber(0.02)
-      .div(this.icpToCyclesConversionRate.toString(10))
       .times(10 ** 12)
+      .div(this.icpToCyclesConversionRate.toString(10))
       .decimalPlaces(4)
       .toString(10);
   }

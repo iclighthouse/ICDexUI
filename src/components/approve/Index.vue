@@ -76,6 +76,9 @@ import {
 } from '@/ic/utils';
 import { validateCanisterOrAccount, validateData } from '@/utils/validate';
 import { hexToBytes } from '@/ic/converter';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { Principal } from '@dfinity/principal';
+import { Icrc1Account } from '@/ic/common/icType';
 
 @Component({
   name: 'Index',
@@ -93,9 +96,14 @@ export default class extends Vue {
   spender!: string;
   @Prop({ type: Boolean, default: false })
   isICLToken!: boolean;
+  @Prop({ type: Number, default: 100 })
+  IclTokenAmount!: number;
   @Prop({ type: String, default: 'add' })
   type!: string;
+  @Prop({ type: String, default: 'drc20' })
+  approveMode!: string;
   private ICLighthouseTokenService: ICLighthouseTokenService;
+  private DRC20TokenService: DRC20TokenService;
   private approveForm = {
     spender: '',
     amount: '',
@@ -117,8 +125,8 @@ export default class extends Vue {
     value: number,
     callback: (arg0?: string) => void
   ): void {
-    if (this.isICLToken && value && value - 100 < 0) {
-      callback(`Min amount is 100 ${this.symbol}`);
+    if (this.isICLToken && value && value - this.IclTokenAmount < 0) {
+      callback(`Min amount is ${this.IclTokenAmount} ${this.symbol}`);
     } else {
       callback();
     }
@@ -126,6 +134,7 @@ export default class extends Vue {
   private visible = false;
   created(): void {
     this.ICLighthouseTokenService = new ICLighthouseTokenService();
+    this.DRC20TokenService = new DRC20TokenService();
   }
   private afterClose(): void {
     this.$refs.approveForm.resetFields();
@@ -144,42 +153,67 @@ export default class extends Vue {
           background: 'rgba(0, 0, 0, 0.5)'
         });
         try {
-          const principal = localStorage.getItem('principal');
-          const nonceRes = await this.ICLighthouseTokenService.txnQuery(
-            {
-              txnCount: { owner: principal }
-            },
-            this.tokenId
-          );
-          const nonce = (
-            nonceRes as {
-              txnCount: bigint;
-            }
-          ).txnCount;
-          let data = [];
-          if (this.approveForm.data) {
-            data = [Array.from(Buffer.from(hexToBytes(this.approveForm.data)))];
-          }
-          const res = await this.ICLighthouseTokenService.approve(
-            amount,
-            data,
-            this.approveForm.spender,
-            [nonce],
-            0,
-            this.tokenId
-          );
-          if (
-            (
-              res as {
-                ok: Txid;
+          if (this.approveMode === 'drc20') {
+            const principal = localStorage.getItem('principal');
+            const nonceRes = await this.ICLighthouseTokenService.txnQuery(
+              {
+                txnCount: { owner: principal }
+              },
+              this.tokenId
+            );
+            const nonce = (
+              nonceRes as {
+                txnCount: bigint;
               }
-            ).ok
-          ) {
-            this.visible = false;
-            this.$message.success('Approve Success');
-            this.$emit('approveSuccess');
-          } else {
-            this.$message.error((res as TxnResultErr).err.message);
+            ).txnCount;
+            let data = [];
+            if (this.approveForm.data) {
+              data = [
+                Array.from(Buffer.from(hexToBytes(this.approveForm.data)))
+              ];
+            }
+            const res = await this.ICLighthouseTokenService.approve(
+              amount,
+              data,
+              this.approveForm.spender,
+              [nonce],
+              0,
+              this.tokenId
+            );
+            if (
+              (
+                res as {
+                  ok: Txid;
+                }
+              ).ok
+            ) {
+              this.visible = false;
+              this.$message.success('Approve Success');
+              this.$emit('approveSuccess');
+            } else {
+              this.$message.error((res as TxnResultErr).err.message);
+            }
+          } else if (this.approveMode === 'icrc1') {
+            const spender: Icrc1Account = {
+              owner: Principal.fromText(this.approveForm.spender),
+              subaccount: []
+            };
+            const res = await this.DRC20TokenService.icrc2_approve(
+              this.tokenId,
+              spender,
+              amount
+            );
+            if (res) {
+              const type = Object.keys(res)[0];
+              if (type === 'Ok') {
+                this.visible = false;
+                this.$message.success('Approve Success');
+                this.$emit('approveSuccess');
+              } else {
+                console.log(res);
+                this.$message.error('Approve Error');
+              }
+            }
           }
           loading.close();
         } catch (e) {

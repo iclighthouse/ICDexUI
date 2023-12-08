@@ -7,39 +7,20 @@ import Service, {
   TransferNFTResponse
 } from '@/ic/nft/model';
 import { Principal } from '@dfinity/principal';
-import { checkAuth } from '@/ic/CheckAuth';
-import { createPlugActor } from '@/ic/createPlugActor';
 import nftIDL from '@/ic/nft/erc721.did';
 import { NFT_CANISTER_ID } from '@/ic/utils';
-import { buildService } from '@/ic/Service';
-import store from '@/store';
 import { principalToAccountIdentifier, SerializableIC } from '@/ic/converter';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
+import { createService } from '@/ic/createService';
 
 export class NftService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew);
-    }
-    if (!isUpdate) {
-      this.service = buildService(null, nftIDL, NFT_CANISTER_ID);
-    } else if ((window as any).icx) {
-      this.service = await createIcxActor(nftIDL, NFT_CANISTER_ID);
-    } else if (priList[principal] === 'Plug') {
-      this.service = await createPlugActor(nftIDL, NFT_CANISTER_ID);
-    } else if (priList[principal] === 'Infinity') {
-      this.service = await createInfinityActor(nftIDL, NFT_CANISTER_ID);
-    } else {
-      this.service = buildService(
-        store.getters['common/getIdentity'],
-        nftIDL,
-        NFT_CANISTER_ID
-      );
-    }
+    this.service = await createService<Service>(
+      NFT_CANISTER_ID,
+      nftIDL,
+      renew,
+      isUpdate
+    );
   };
   public tokens_ext = async (): Promise<ExtResult> => {
     await this.check(false, false);

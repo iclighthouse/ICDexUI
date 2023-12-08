@@ -21,7 +21,8 @@ export type TokenStd =
   | { cycles: null }
   | { dip20: null }
   | { drc20: null }
-  | { icrc1: null };
+  | { icrc1: null }
+  | { icrc2: null };
 export interface TokenInfo {
   name?: string;
   symbol?: string;

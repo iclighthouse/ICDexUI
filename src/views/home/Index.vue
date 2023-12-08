@@ -173,7 +173,10 @@
       <account-info> </account-info>
     </div>
     <div class="home-main">
-      <router-view />
+      <keep-alive>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
     </div>
     <div
       class="home-footer pc-show"
@@ -557,7 +560,10 @@ export default class extends Vue {
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
-      const encryptSeedPhrase = phraseList[this.getPrincipalId];
+      let encryptSeedPhrase = phraseList[this.getPrincipalId];
+      if (typeof encryptSeedPhrase === 'string') {
+        encryptSeedPhrase = JSON.parse(encryptSeedPhrase);
+      }
       console.log(encryptSeedPhrase);
       if (!encryptSeedPhrase) {
         this.activeKey = 0;

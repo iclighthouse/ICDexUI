@@ -67,8 +67,8 @@ export default class extends Vue {
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
-    this.setIdentity(null);
     this.setCheckAuth(false);
+    this.setIdentity(null);
     this.$router.replace({
       path: '/login',
       query: { redirect: this.$route.fullPath }

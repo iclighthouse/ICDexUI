@@ -64,7 +64,11 @@ import { NftService } from '@/ic/nft/Service';
 import { ApproveRequest, TokenExt, TokensExt } from '@/ic/nft/model';
 import { getTokenIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
-import { IC_MINING_CANISTER_ID, NFT_CANISTER_ID } from '@/ic/utils';
+import {
+  IC_DEX_ROUTER_CANISTER_ID,
+  IC_MINING_CANISTER_ID,
+  NFT_CANISTER_ID
+} from '@/ic/utils';
 import NFTIdl from '@/ic/nft/erc721.did';
 import { isPlug } from '@/ic/isPlug';
 import { checkAuth } from '@/ic/CheckAuth';
@@ -82,6 +86,7 @@ export default class extends Vue {
   private NftService: NftService = null;
   private visible = false;
   private currentNft: TokenExt = null;
+  private spender = IC_MINING_CANISTER_ID;
   created(): void {
     this.NftService = new NftService();
   }
@@ -91,15 +96,19 @@ export default class extends Vue {
   private selectNft(nft: TokenExt): void {
     this.currentNft = nft;
   }
-  private init(): void {
+  private init(spender?: string): void {
     this.currentNft = this.tokensExt[0];
+    if (spender) {
+      this.spender = spender;
+    }
   }
   private async onApprove(): Promise<void> {
+    const spender = this.spender;
     const approveRequest: ApproveRequest = {
       token: getTokenIdentifier(NFT_CANISTER_ID, Number(this.currentNft[0])),
       subaccount: [],
       allowance: BigInt(1),
-      spender: Principal.fromText(IC_MINING_CANISTER_ID)
+      spender: Principal.fromText(spender)
     };
     await checkAuth();
     const loading = this.$loading({
@@ -116,7 +125,18 @@ export default class extends Vue {
         onSuccess: async (res) => {
           if (res) {
             this.$message.success('Approve Success');
-            localStorage.setItem('approveNft', this.currentNft[0].toString(10));
+            if (spender === IC_DEX_ROUTER_CANISTER_ID) {
+              localStorage.setItem(
+                'approveNftVip',
+                this.currentNft[0].toString(10)
+              );
+            }
+            if (spender === IC_MINING_CANISTER_ID) {
+              localStorage.setItem(
+                'approveNft',
+                this.currentNft[0].toString(10)
+              );
+            }
             this.visible = false;
             this.$emit('approveSuccess');
           } else {
@@ -131,6 +151,7 @@ export default class extends Vue {
       };
       const plugIc = (window as any).ic.plug;
       const res = await plugIc.batchTransactions([approve]);
+      console.log(res);
     } else if (isInfinity()) {
       const approve = {
         idl: NFTIdl,
@@ -140,7 +161,18 @@ export default class extends Vue {
         onSuccess: async (res) => {
           if (res) {
             this.$message.success('Approve Success');
-            localStorage.setItem('approveNft', this.currentNft[0].toString(10));
+            if (spender === IC_DEX_ROUTER_CANISTER_ID) {
+              localStorage.setItem(
+                'approveNftVip',
+                this.currentNft[0].toString(10)
+              );
+            }
+            if (spender === IC_MINING_CANISTER_ID) {
+              localStorage.setItem(
+                'approveNft',
+                this.currentNft[0].toString(10)
+              );
+            }
             this.visible = false;
             this.$emit('approveSuccess');
           } else {
@@ -155,13 +187,22 @@ export default class extends Vue {
       };
       const Ic = (window as any).ic.infinityWallet;
       const res = await Ic.batchTransactions([approve]);
+      console.log(res);
     } else {
       try {
         const res = await this.NftService.approve(approveRequest);
         if (res) {
           this.$message.success('Approve Success');
           this.visible = false;
-          localStorage.setItem('approveNft', this.currentNft[0].toString(10));
+          if (spender === IC_DEX_ROUTER_CANISTER_ID) {
+            localStorage.setItem(
+              'approveNftVip',
+              this.currentNft[0].toString(10)
+            );
+          }
+          if (spender === IC_MINING_CANISTER_ID) {
+            localStorage.setItem('approveNft', this.currentNft[0].toString(10));
+          }
           this.$emit('approveSuccess');
         } else {
           this.$message.error('Approve error');
@@ -186,62 +227,7 @@ export default class extends Vue {
 </script>
 
 <style scoped lang="scss">
-.nft-main {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 20px;
-  li {
-    position: relative;
-    width: 165px;
-    margin: 0 15px 15px 0;
-    border: 1px solid #313b46;
-    cursor: pointer;
-    transition: all 0.3s;
-    &.active {
-      border-color: #21c77d;
-    }
-    &:nth-child(2n + 1) {
-      margin-left: 0;
-    }
-    &:nth-child(2n) {
-      margin-right: 0;
-    }
-    .ext-info {
-      font-size: 12px;
-      padding-top: 5px;
-      padding-bottom: 10px;
-    }
-    .ext-transfer {
-      padding-bottom: 5px;
-      color: #1996c4;
-      cursor: pointer;
-    }
-    .nft-img {
-      img {
-        width: 165px;
-        height: 165px;
-        object-fit: contain;
-      }
-    }
-    div {
-      text-align: center;
-      line-height: 1.5;
-    }
-  }
-}
-.nft-main-pagination {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-}
 button {
   height: 36px;
-}
-.checked {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 16px;
 }
 </style>

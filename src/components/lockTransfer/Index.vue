@@ -204,6 +204,7 @@ export default class extends Vue {
             0,
             this.tokenId
           );
+          console.log(res);
           if (
             (
               res as {

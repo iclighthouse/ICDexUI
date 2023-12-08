@@ -1403,6 +1403,7 @@ export default class extends Vue {
               memo
             );
             console.log(amount);
+            console.log(res);
             if (res && res.command) {
               const type = Object.keys(res.command[0])[0];
               if (type === 'Error') {
@@ -2007,6 +2008,7 @@ export default class extends Vue {
                         .id[0].id
                     )
                     .then((res) => {
+                      console.log(res);
                       loading.close();
                       this.$message.success('Increase Stake Success');
                       this.stakeNeuronVisible = false;
@@ -2043,6 +2045,7 @@ export default class extends Vue {
         governanceId
       );
       console.log(governanceId);
+      console.log(res);
       this.$set(this.SNSNeuronsList[index], 'nervousSystemParameters', res);
       console.log(this.SNSNeuronsList);
     } catch (e) {
@@ -2105,6 +2108,7 @@ export default class extends Vue {
           BigInt(this.stakeMaturityValue)
         )
         .then((res) => {
+          console.log(res);
           if (res && res.command) {
             const type = Object.keys(res.command[0])[0];
             if (type === 'Error') {
@@ -2150,6 +2154,7 @@ export default class extends Vue {
           neuronInfo.SNSNeurons[this.currentNeuronIndex].id[0].id
         )
         .then((res) => {
+          console.log(res);
           if (res && res.command) {
             const type = Object.keys(res.command[0])[0];
             if (type === 'Error') {
@@ -2209,6 +2214,7 @@ export default class extends Vue {
         this.SNSNeuronsList[SNSIndex].SNSNeuronOfGovernanceId,
         this.SNSNeuronsList[SNSIndex].SNSNeurons[index].id[0].id
       );
+      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -2504,6 +2510,7 @@ export default class extends Vue {
       4,
       lastId
     );
+    console.log(res);
     if (
       res.length <
       this.SNSNeuronsList[this.currentNeuronInfoIndex].SNSNeuronPageSize
@@ -2525,6 +2532,7 @@ export default class extends Vue {
     index: number
   ): Promise<void> {
     const res = await this.getNeurons(governanceId, limit, startPageAt);
+    console.log(res);
     const snsNeuron: SNSNeuronsInfo = {
       SNSNeuronOfSNSTokenInfo:
         this.SNSNeuronsList[index].SNSNeuronOfSNSTokenInfo,
@@ -2621,6 +2629,7 @@ export default class extends Vue {
       governanceCanisterId,
       request
     );
+    console.log(res);
     if (res) {
       // return res.neurons;
       return this.filterNeuron(res.neurons);

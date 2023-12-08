@@ -1,11 +1,15 @@
 import { Principal } from '@dfinity/principal';
 import Service, {
+  AccountSetting,
   Ambassador,
   CompDepositAccount,
   CompResult,
   CompRoundResponse,
+  ConfigMode,
+  DexRole,
   DexSetting,
   KBar,
+  KeepingBalance,
   LatestFilledRecord,
   LevelResponse,
   MakerRebate,
@@ -14,19 +18,23 @@ import Service, {
   OrderStatusResponse,
   OrderType,
   PairInfo,
+  ProOrderConfig,
+  ProOrderConfigUpdate,
   Round,
   Setting,
+  Soid,
   Stats,
+  StopLossOrderConfig,
+  STOrder,
+  StoSetting,
   SysMode,
   TradingResult,
   TrieList,
+  TrieList_3,
   TxAccount,
-  TxnRecord
+  TxnRecord, UpdateStopLossOrderConfig
 } from '@/ic/ICDex/model';
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
 import ICDexIDL from './ICDex.did';
-import store from '@/store';
 import {
   AccountIdentifier,
   Icrc1Account,
@@ -38,16 +46,16 @@ import { Address } from '@/ic/DRC20Token/model';
 import { _data, Nonce } from '@/ic/ICLighthouseToken/model';
 import {
   fromSubAccountId,
+  SerializableIC,
   generateTxid,
-  hexToBytes,
   principalToAccountIdentifier
 } from '@/ic/converter';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
 import { validatePrincipal } from '@/ic/utils';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
+import { createService } from '@/ic/createService';
+
+const ProSubaccountId = 1;
 
 export class ICDexService {
   private check = async (
@@ -55,28 +63,7 @@ export class ICDexService {
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal) {
-      await checkAuth(renew, canisterId);
-    }
-    let service: Service;
-    if (!isUpdate) {
-      service = buildService(null, ICDexIDL, canisterId);
-    } else if ((window as any).icx) {
-      service = await createIcxActor(ICDexIDL, canisterId);
-    } else if (priList[principal] === 'Plug') {
-      service = await createPlugActor(ICDexIDL, canisterId);
-    } else if (priList[principal] === 'Infinity') {
-      service = await createInfinityActor(ICDexIDL, canisterId);
-    } else {
-      service = buildService(
-        store.getters['common/getIdentity'],
-        ICDexIDL,
-        canisterId
-      );
-    }
-    return service;
+    return await createService<Service>(canisterId, ICDexIDL, renew, isUpdate);
   };
   public liquidity = async (
     canisterId: string,
@@ -90,13 +77,14 @@ export class ICDexService {
     } else {
       return {
         pairId: canisterId,
-        tokenLiquidity: res
+        tokenLiquidity: SerializableIC(res)
       };
     }
   };
   public level10 = async (canisterId: string): Promise<LevelResponse> => {
     const service = await this.check(canisterId, false, false);
-    return await service.level10();
+    const res = await service.level10();
+    return SerializableIC(res);
   };
   public level100 = async (
     canisterId: string
@@ -106,7 +94,7 @@ export class ICDexService {
     if (res) {
       return {
         pairId: canisterId,
-        levelResponse: res
+        levelResponse: SerializableIC(res)
       };
     }
   };
@@ -162,7 +150,7 @@ export class ICDexService {
     ) {
       nonce = [];
     }
-    return await service.trade(
+    const res = await service.trade(
       orderPrice,
       orderType,
       expiration,
@@ -170,6 +158,7 @@ export class ICDexService {
       subAccount,
       data
     );
+    return SerializableIC(res);
   };
   public pending = async (
     canisterId: string,
@@ -178,12 +167,13 @@ export class ICDexService {
     size: Array<number> = []
   ): Promise<{ pairId: string; trieList: TrieList }> => {
     const service = await this.check(canisterId, false, false);
-    const res = await service.pending(address, page, size);
     const principal = localStorage.getItem('principal');
-    if (address[0] && address[0] !== principal) {
+    const res = await service.pending(address, page, size);
+    const principal1 = localStorage.getItem('principal');
+    if (principal1 !== principal) {
       return null;
     } else {
-      return { pairId: canisterId, trieList: res };
+      return { pairId: canisterId, trieList: SerializableIC(res) };
     }
   };
   public cancel = async (
@@ -201,7 +191,8 @@ export class ICDexService {
     //   nonce = [];
     // }
     console.log(nonce);
-    return await service.cancel(nonce, subAccount);
+    const res = await service.cancel(nonce, subAccount);
+    return SerializableIC(res);
   };
   public cancelByTxid = async (
     canisterId: string,
@@ -218,14 +209,15 @@ export class ICDexService {
   public drc205Events = async (
     canisterId: string,
     address: Array<Address>
-  ): Promise<Array<TxnRecord>> => {
+  ): Promise<{ pairId: string; records: Array<TxnRecord> }> => {
     const service = await this.check(canisterId, false, false);
-    const res = await service.drc205_events(address);
     const principal = localStorage.getItem('principal');
-    if (address[0] && address[0] !== principal) {
+    const res = await service.drc205_events(address);
+    const principal1 = localStorage.getItem('principal');
+    if (principal1 !== principal) {
       return null;
     } else {
-      return res;
+      return { pairId: canisterId, records: SerializableIC(res) };
     }
   };
   public getQuotes = async (
@@ -235,7 +227,7 @@ export class ICDexService {
     const service = await this.check(canisterId, false, false);
     const res = await service.getQuotes(kInterval);
     if (res) {
-      return { paidId: canisterId, quotes: res };
+      return { paidId: canisterId, quotes: SerializableIC(res) };
     }
   };
   public latestFilled = async (
@@ -244,7 +236,7 @@ export class ICDexService {
     const service = await this.check(canisterId, false, false);
     const res = await service.latestFilled();
     if (res) {
-      return { pairId: canisterId, latestFilledRecord: res };
+      return { pairId: canisterId, latestFilledRecord: SerializableIC(res) };
     }
   };
   public ictc_getTO = async (
@@ -255,7 +247,7 @@ export class ICDexService {
     const res = await service.ictc_getTO(toid);
     return {
       pairId: canisterId,
-      orders: res
+      orders: SerializableIC(res)
     };
   };
   public drc205_getConfig = async (
@@ -265,7 +257,7 @@ export class ICDexService {
     const res = await service.drc205_getConfig();
     return {
       pairId: canisterId,
-      setting: res
+      setting: SerializableIC(res)
     };
   };
   public ictc_TTRun = async (canisterId: string): Promise<bigint> => {
@@ -279,7 +271,7 @@ export class ICDexService {
     const res = await service.getConfig();
     return {
       pairId: canisterId,
-      dexSetting: res
+      dexSetting: SerializableIC(res)
     };
   };
   public makerRebate = async (
@@ -293,7 +285,7 @@ export class ICDexService {
     const res = await service.makerRebate(address);
     return {
       pairId: canisterId,
-      makerRebate: res
+      makerRebate: SerializableIC(res)
     };
   };
   public drc205_dexInfo = async (
@@ -305,7 +297,7 @@ export class ICDexService {
       const res = await service.drc205_dexInfo();
       return {
         pairId: canisterId,
-        dexInfo: res
+        dexInfo: SerializableIC(res)
       };
     } catch (e) {
       console.error(e);
@@ -331,7 +323,7 @@ export class ICDexService {
     const res = await service.stats();
     return {
       pairId: canisterId,
-      stats: res
+      stats: SerializableIC(res)
     };
   };
   public monitor = async (
@@ -342,7 +334,7 @@ export class ICDexService {
       const res = await service.monitor();
       return {
         pairId: canisterId,
-        monitor: res
+        monitor: SerializableIC(res)
       };
     } catch (e) {
       //
@@ -356,7 +348,7 @@ export class ICDexService {
       const res = await service.info();
       return {
         pairId: canisterId,
-        pairInfo: res
+        pairInfo: SerializableIC(res)
       };
     } catch (e) {
       //
@@ -371,7 +363,7 @@ export class ICDexService {
       const res = await service.statusByTxid(txid);
       return {
         pairId: canisterId,
-        orderStatusResponse: res
+        orderStatusResponse: SerializableIC(res)
       };
     } catch (e) {
       return null;
@@ -385,7 +377,7 @@ export class ICDexService {
       const res = await service.pendingCount();
       return {
         pairId: canisterId,
-        count: res
+        count: SerializableIC(res)
       };
     } catch (e) {
       return {
@@ -402,7 +394,7 @@ export class ICDexService {
       const res = await service.orderExpirationDuration();
       return {
         pairId: canisterId,
-        time: res
+        time: SerializableIC(res)
       };
     } catch (e) {
       return null;
@@ -415,7 +407,7 @@ export class ICDexService {
     const res = await service.ta_description();
     return {
       pairId: canisterId,
-      ta_description: res
+      ta_description: SerializableIC(res)
     };
   };
   public ta_getReferrer = async (
@@ -429,7 +421,7 @@ export class ICDexService {
     const res = await service.ta_getReferrer(address);
     return {
       pairId: canisterId,
-      referrer: res
+      referrer: SerializableIC(res)
     };
   };
   public comp_round = async (
@@ -440,7 +432,7 @@ export class ICDexService {
     const res = await service.comp_round(round);
     return {
       pairId: canisterId,
-      compRoundResponse: res
+      compRoundResponse: SerializableIC(res)
     };
   };
   public comp_result = async (
@@ -461,7 +453,7 @@ export class ICDexService {
       Principal.fromText(principal)
     );
     if (address1 === address) {
-      return res;
+      return SerializableIC(res);
     } else {
       return null;
     }
@@ -499,7 +491,7 @@ export class ICDexService {
       Principal.fromText(principal)
     );
     if (address1 === address) {
-      return res;
+      return SerializableIC(res);
     } else {
       return null;
     }
@@ -532,7 +524,7 @@ export class ICDexService {
     const res = await service.ta_ambassador(address);
     return {
       pairId: canisterId,
-      ambassador: res
+      ambassador: SerializableIC(res)
     };
   };
   public compFallback = async (
@@ -570,7 +562,7 @@ export class ICDexService {
   public sysMode = async (
     canisterId: string
   ): Promise<{ pairId: string; mode: SysMode; openingTime: Time }> => {
-    const service = await this.check(canisterId);
+    const service = await this.check(canisterId, false, false);
     try {
       const res = await service.sysMode();
       return {
@@ -578,6 +570,298 @@ export class ICDexService {
         mode: res.mode,
         openingTime: res.openingTime
       };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public accountBalance = async (
+    canisterId: string,
+    subAccountId = 0
+  ): Promise<{ pairId: string; keepingBalance: KeepingBalance }> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const principal = localStorage.getItem('principal');
+      const address = principalToAccountIdentifier(
+        Principal.fromText(principal),
+        new Uint8Array(fromSubAccountId(subAccountId))
+      );
+      const res = await service.accountBalance(address);
+      const principal1 = localStorage.getItem('principal');
+      if (principal === principal1) {
+        return {
+          pairId: canisterId,
+          keepingBalance: res
+        };
+      } else {
+        return null;
+      }
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public accountSetting = async (
+    canisterId: string,
+    address: Address
+  ): Promise<{ pairId: string; accountSetting: AccountSetting }> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.accountSetting(address);
+      return {
+        pairId: canisterId,
+        accountSetting: SerializableIC(res)
+      };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public accountConfig = async (
+    canisterId: string,
+    mode: ConfigMode,
+    keeping: boolean,
+    subAccountId = 0
+  ): Promise<void> => {
+    const service = await this.check(canisterId);
+    try {
+      let subAccount = [[]];
+      if (subAccountId) {
+        subAccount = [fromSubAccountId(subAccountId)];
+      }
+      return await service.accountConfig(mode, keeping, subAccount);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public deposit = async (
+    canisterId: string,
+    token: { token0: null } | { token1: null },
+    amount: Amount,
+    subAccountId = 0
+  ): Promise<void> => {
+    const service = await this.check(canisterId);
+    try {
+      let subAccount = [[]];
+      if (subAccountId || subAccountId === 0) {
+        subAccount = [fromSubAccountId(subAccountId)];
+      }
+      return await service.deposit(token, amount, subAccount);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public depositFallback = async (
+    canisterId: string,
+    subAccountId = 0
+  ): Promise<[Amount, Amount]> => {
+    const service = await this.check(canisterId);
+    try {
+      let subAccount = [[]];
+      if (subAccountId || subAccountId === 0) {
+        subAccount = [fromSubAccountId(subAccountId)];
+      }
+      return await service.depositFallback(subAccount);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public withdraw = async (
+    canisterId: string,
+    token0Amount: Array<Amount> = [],
+    token1Amount: Array<Amount> = [],
+    subAccountId = 0
+  ): Promise<[Amount, Amount]> => {
+    const service = await this.check(canisterId);
+    try {
+      let subAccount = [[]];
+      if (subAccountId) {
+        subAccount = [fromSubAccountId(subAccountId)];
+      }
+      console.log(subAccount);
+      return await service.withdraw(token0Amount, token1Amount, subAccount);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public getRole = async (
+    canisterId: string,
+    address: Address
+  ): Promise<{ pairId: string; dexRole: DexRole }> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.getRole(address);
+      return {
+        pairId: canisterId,
+        dexRole: SerializableIC(res)
+      };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public sto_createProOrder = async (
+    canisterId: string,
+    proOrderConfig: ProOrderConfig,
+    subAccountId = 0
+  ): Promise<Soid> => {
+    const service = await this.check(canisterId);
+    let subAccount = [[]];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    return await service.sto_createProOrder(proOrderConfig, subAccount);
+  };
+  public sto_updateProOrder = async (
+    canisterId: string,
+    soid: Soid,
+    proOrderConfig: ProOrderConfigUpdate,
+    subAccountId = 0
+  ): Promise<Soid> => {
+    const service = await this.check(canisterId);
+    let subAccount = [[]];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    return await service.sto_updateProOrder(soid, proOrderConfig, subAccount);
+  };
+  public sto_getAccountProOrders = async (
+    canisterId: string,
+    address: Address
+  ): Promise<{ pairId: string; orders: Array<STOrder> }> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.sto_getAccountProOrders(address);
+      const principal = localStorage.getItem('principal');
+      const address1 = principalToAccountIdentifier(
+        Principal.fromText(principal),
+        new Uint8Array(fromSubAccountId(ProSubaccountId))
+      );
+      if (address1 === address) {
+        return {
+          pairId: canisterId,
+          orders: SerializableIC(res)
+        };
+      } else {
+        return null;
+      }
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public sto_getConfig = async (
+    canisterId: string
+  ): Promise<{ pairId: string; stoSetting: StoSetting }> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.sto_getConfig();
+      return {
+        pairId: canisterId,
+        stoSetting: SerializableIC(res)
+      };
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public makerList = async (
+    canisterId: string,
+    page: Array<number> = [],
+    size: Array<number> = []
+  ): Promise<{ pairId: string; makerList: TrieList_3 }> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.makerList(page, size);
+      return {
+        pairId: canisterId,
+        makerList: SerializableIC(res)
+      };
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public drc205_events_filter = async (
+    canisterId: string,
+    address: Array<string> = [],
+    start: Array<bigint> = [],
+    end: Array<bigint> = []
+  ): Promise<{ pairId: string; records: Array<TxnRecord> }> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const principal = localStorage.getItem('principal');
+      const res = await service.drc205_events_filter(address, start, end);
+      const principal1 = localStorage.getItem('principal');
+      if (principal1 !== principal) {
+        return null;
+      } else {
+        return {
+          pairId: canisterId,
+          records: SerializableIC(res[0])
+        };
+      }
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public sto_createStopLossOrder = async (
+    canisterId: string,
+    stopLossOrderConfig: StopLossOrderConfig,
+    subAccountId = 0
+  ): Promise<Soid> => {
+    const service = await this.check(canisterId);
+    let subAccount = [[]];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    return await service.sto_createStopLossOrder(
+      stopLossOrderConfig,
+      subAccount
+    );
+  };
+  public sto_updateStopLossOrder = async (
+    canisterId: string,
+    soid: Soid,
+    updateStopLossOrderConfig: UpdateStopLossOrderConfig,
+    subAccountId = 0
+  ): Promise<Soid> => {
+    const service = await this.check(canisterId);
+    let subAccount = [[]];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    return await service.sto_updateStopLossOrder(
+      soid,
+      updateStopLossOrderConfig,
+      subAccount
+    );
+  };
+  public sto_getAccountStopLossOrders = async (
+    canisterId: string,
+    address: string
+  ): Promise<{ pairId: string; orders: Array<STOrder> }> => {
+    const service = await this.check(canisterId);
+    try {
+      const res = await service.sto_getAccountStopLossOrders(address);
+      const principal = localStorage.getItem('principal');
+      const address1 = principalToAccountIdentifier(
+        Principal.fromText(principal),
+        new Uint8Array(fromSubAccountId(0))
+      );
+      if (address1 === address) {
+        return {
+          pairId: canisterId,
+          orders: SerializableIC(res)
+        };
+      } else {
+        return null;
+      }
     } catch (e) {
       console.error(e);
       return null;

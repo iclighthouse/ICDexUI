@@ -367,8 +367,13 @@ import ConnectInfinity, {
 import { ckETHMinterService } from '@/ic/ckETHMinter/ckETHMinterService';
 // const plugIc = (window as any).ic;
 
-const ethereum = (window as any).ethereum;
 const commonModule = namespace('common');
+let ethereum = (window as any).ethereum;
+if (ethereum && ethereum.providers) {
+  ethereum = ethereum.providers.find(
+    (provider) => provider.isMetaMask
+  );
+}
 
 @Component({
   name: 'Index',
@@ -511,6 +516,7 @@ export default class extends Mixins(BalanceMixin) {
     this.nftSpinning = true;
     try {
       const res = await this.NftService.tokens_ext();
+      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
@@ -518,6 +524,7 @@ export default class extends Mixins(BalanceMixin) {
       ).ok;
       if (tokensExt && tokensExt.length) {
         this.tokensExt = tokensExt;
+        console.log(tokensExt.length);
       } else {
         this.tokensExt = [];
       }
@@ -630,6 +637,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   public async getNotice(): Promise<void> {
     const res = await this.ICLighthouseService.getNotice();
+    console.log(res);
   }
   public afterNftClose(): void {
     this.$refs.transferNFTForm.resetFields();
@@ -713,6 +721,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     } else {
       if ((window as any).icx) {
+        console.log('connectIcx');
         await addIcxWhitelist(walletId.toString());
       }
       this.getBalance();
@@ -722,6 +731,7 @@ export default class extends Mixins(BalanceMixin) {
   private showTransferToken(NFTIndex: bigint): void {
     this.NFTIndex = Number(NFTIndex);
     this.visibleTransferNFT = true;
+    console.log(getTokenIdentifier(NFT_CANISTER_ID, this.NFTIndex));
   }
   private async transferNFT(): Promise<void> {
     this.$refs.transferNFTForm.validate(async (valid: any) => {
@@ -772,6 +782,7 @@ export default class extends Mixins(BalanceMixin) {
             };
             const plugIc = (window as any).ic.plug;
             const res = await plugIc.batchTransactions([transfer]);
+            console.log(res);
           } else if (isInfinity()) {
             const transfer = {
               idl: NFTIdl,
@@ -788,6 +799,7 @@ export default class extends Mixins(BalanceMixin) {
             };
             const Ic = (window as any).ic.infinityWallet;
             const res = await Ic.batchTransactions([transfer]);
+            console.log(res);
           } else {
             const res = await this.NftService.transfer(transferRequest);
             this.transferNFTSuccess(res);
@@ -827,6 +839,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private removeWalletSuccess(index): void {
     // this.wallets.splice(index, 1);
+    console.log(index);
     this.getWallets();
   }
   public onManageWallet(): void {

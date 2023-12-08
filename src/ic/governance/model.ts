@@ -163,13 +163,16 @@ export interface SwapDistribution {
 }
 export interface SwapParameters {
   minimum_participants: Array<bigint>;
+  neurons_fund_participation: Array<boolean>;
   duration: Array<Duration>;
   neuron_basket_construction_parameters: Array<NeuronBasketConstructionParameters1>;
   confirmation_text: Array<string>;
   maximum_participant_icp: Array<Tokens>;
   minimum_icp: Array<Tokens>;
+  minimum_direct_participation_icp: Array<Tokens>;
   minimum_participant_icp: Array<Tokens>;
   start_time: Array<GlobalTimeOfDay>;
+  maximum_direct_participation_icp: Array<Tokens>;
   maximum_icp: Array<Tokens>;
   neurons_fund_investment_icp: Array<Tokens>;
   restricted_countries: Array<Countries>;
@@ -243,7 +246,9 @@ export interface Params {
   sns_token_e8s: bigint;
   sale_delay_seconds: Array<bigint>;
   max_participant_icp_e8s: bigint;
+  min_direct_participation_icp_e8s: Array<bigint>;
   min_icp_e8s: bigint;
+  max_direct_participation_icp_e8s: Array<bigint>;
 }
 export interface NeuronBasketConstructionParameters1 {
   dissolve_delay_interval: Array<Duration>;

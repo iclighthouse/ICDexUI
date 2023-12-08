@@ -30,6 +30,35 @@ const ICDexRouter: RouteConfig[] = [
     component: () => import('@/views/home/ICDex/Market.vue'),
     meta: {
       title: 'Market',
+      details: 'Market',
+      version: '0.5test',
+      scrollTop: 0,
+      requireAuth: true,
+      measurementId: 'G-056B85Q2L0'
+    }
+  },
+  {
+    path: '/ICDex/pools',
+    name: 'Pools',
+    component: () => import('@/views/home/ICDex/Pools.vue'),
+    meta: {
+      title: 'Pools',
+      details: 'Pools',
+      version: '0.5test',
+      keepAlive: true,
+      isBack: false,
+      scrollTop: 0,
+      requireAuth: true,
+      measurementId: 'G-056B85Q2L0'
+    }
+  },
+  {
+    path: '/ICDex/pools/pool/:poolId/:type?',
+    name: 'Pool',
+    component: () => import('@/views/home/ICDex/Pool.vue'),
+    meta: {
+      title: 'Pool',
+      details: 'Pool',
       version: '0.5test',
       requireAuth: true,
       measurementId: 'G-056B85Q2L0'

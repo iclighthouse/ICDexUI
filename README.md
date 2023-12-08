@@ -50,5 +50,5 @@ dfx deploy
 
 ## Usages
 
-See [web home](https://iclight.io/).
+See [web home](https://avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app/).
 

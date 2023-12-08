@@ -385,12 +385,68 @@ export interface DexRole {
   proTrader: boolean;
   vipMaker: boolean;
 }
-export type ProOrderConfig = {
-  GridOrder: GridOrderConfig;
-};
-export type ProOrderConfigUpdate = {
-  GridOrder: GridOrderConfigUpdate;
-};
+export type ProOrderConfig =
+  | {
+      GridOrder: GridOrderConfig;
+    }
+  | { IcebergOrder: IcebergOrderConfig }
+  | { TWAP: TWAPSetting }
+  | { VWAP: VWAPSetting };
+export interface VWAPSetting {
+  endTime: Time;
+  startingTime: Time;
+  order: {
+    priceLimit: Amount;
+    priceSpread: Amount;
+    side: OrderSide;
+  };
+  totalLimit: { Token0: bigint } | { Token1: bigint };
+  amountPerTrigger: { Token0: bigint } | { Token1: bigint };
+  triggerVol: { Geom: Ppm } | { Arith: bigint };
+}
+export interface TWAPSetting {
+  endTime: Time;
+  startingTime: Time;
+  order: {
+    priceLimit: Amount;
+    priceSpread: Amount;
+    side: OrderSide;
+  };
+  totalLimit: { Token0: bigint } | { Token1: bigint };
+  amountPerTrigger: { Token0: bigint } | { Token1: bigint };
+  triggerInterval: bigint; // seconds
+}
+export interface IcebergOrderConfig {
+  endTime: Time;
+  startingTime: Time;
+  order: { side: OrderSide; price: Amount };
+  totalLimit: { Token0: bigint } | { Token1: bigint };
+  amountPerTrigger: { Token0: bigint } | { Token1: bigint };
+}
+export type OrderSide = { Buy: null } | { Sell: null };
+export type ProOrderConfigUpdate =
+  | {
+      GridOrder: GridOrderConfigUpdate;
+    }
+  | { IcebergOrder: IcebergOrderUpdate }
+  | {
+      TWAP: TWAPUpdate;
+    }
+  | {
+      VWAP: VWAPUpdate;
+    };
+export interface VWAPUpdate {
+  status: STStatus[];
+  setting: Array<VWAPSetting>;
+}
+export interface TWAPUpdate {
+  status: STStatus[];
+  setting: Array<TWAPSetting>;
+}
+export interface IcebergOrderUpdate {
+  status: STStatus[];
+  setting: Array<IcebergOrderConfig>;
+}
 export interface GridOrderConfigUpdate {
   status: STStatus[];
   lowerLimit: bigint[];
@@ -439,7 +495,16 @@ export interface STOrder {
   triggerTime: Time;
   stType: STType;
 }
-export type STType = { GridOrder: null };
+export type STType =
+  | { GridOrder: null }
+  | { TWAP: null }
+  | { VWAP: null }
+  | {
+      IcebergOrder: null;
+    }
+  | {
+      StopLossOrder: null;
+    };
 export interface STStats {
   totalOutAmount: {
     token0: bigint;
@@ -452,7 +517,45 @@ export interface STStats {
   };
   errorCount: bigint;
 }
-export type STStrategy = { GridOrder: GridOrder };
+export type STStrategy =
+  | { GridOrder: GridOrder }
+  | { IcebergOrder: IcebergOrder }
+  | { TWAP: TWAP }
+  | { VWAP: VWAP }
+  | { StopLossOrder: StopLossOrder };
+export interface StopLossOrder {
+  triggeredOrder: Array<TriggeredOrder>;
+  condition: Condition;
+}
+export interface Condition {
+  order: {
+    side: OrderSide;
+    quantity: bigint;
+    price: Amount;
+  };
+  triggerPrice: Amount;
+}
+export interface TriggeredOrder {
+  order: TriggeredOrderInfo;
+  triggerPrice: Amount;
+}
+export interface TriggeredOrderInfo {
+  side: OrderSide;
+  quantity: bigint;
+  price: Amount;
+}
+export interface VWAP {
+  setting: VWAPSetting;
+  lastVol: Array<bigint>;
+}
+export interface TWAP {
+  setting: TWAPSetting;
+  lastTime: Array<Time>;
+}
+export interface IcebergOrder {
+  setting: IcebergOrderConfig;
+  lastTxid: Array<Array<number>>;
+}
 export interface GridOrder {
   setting: GridSetting;
   gridPrices: GridPrices;
@@ -485,6 +588,29 @@ export interface StoSetting {
   poFee2: string;
   sloFee1: bigint;
   sloFee2: string;
+}
+export interface TrieList_3 {
+  total: bigint;
+  data: Array<[Array<number>, MakerInfo]>;
+}
+export interface MakerInfo {
+  vol: Vol;
+  count: bigint;
+  rate: string;
+  commission: Vol;
+}
+export interface StopLossOrderConfig {
+  order: {
+    side: OrderSide;
+    quantity: bigint;
+    price: Amount;
+  };
+  triggerPrice: Amount;
+}
+export interface UpdateStopLossOrderConfig {
+  status: Array<STStatus>;
+  order: Array<TriggeredOrderInfo>;
+  triggerPrice: Array<Amount>
 }
 
 export default interface Service {
@@ -583,4 +709,20 @@ export default interface Service {
     subaccount: Array<Array<number>>
   ): Promise<void>;
   sto_getConfig(): Promise<StoSetting>;
+  makerList(page: Array<number>, size: Array<number>): Promise<TrieList_3>;
+  drc205_events_filter(
+    address: Array<string>,
+    start: Array<bigint>,
+    end: Array<bigint>
+  ): Promise<[Array<TxnRecord>, boolean]>;
+  sto_createStopLossOrder(
+    stopLossOrderConfig: StopLossOrderConfig,
+    subaccount: Array<Array<number>>
+  ): Promise<Soid>;
+  sto_getAccountStopLossOrders(address: string): Promise<Array<STOrder>>;
+  sto_updateStopLossOrder(
+    soid: Soid,
+    updateStopLossOrderConfig: UpdateStopLossOrderConfig,
+    subaccount: Array<Array<number>>
+  ): Promise<Soid>;
 }

@@ -215,6 +215,7 @@ export default class extends Vue {
         Array.from(hexToBytes(this.neuronId)),
         proposal
       );
+      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -293,6 +294,7 @@ export default class extends Vue {
       this.currentSNS.governanceId,
       request
     );
+    console.log(res);
     if (res) {
       this.SNSNeurons = this.filterNeuron(res.neurons);
     } else {

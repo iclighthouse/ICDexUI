@@ -1,6 +1,6 @@
 import { Principal } from '@dfinity/principal';
 import { TokenIdentifier } from '@/ic/nft/model';
-import { AccountId } from '@/ic/common/icType';
+import { AccountId, Time } from '@/ic/common/icType';
 
 export type NFT = [User, TokenIdentifier, BigInt, NFTType];
 export type User = { principal: Principal; address: string };
@@ -31,6 +31,7 @@ export type NFTType =
       EARTH: null;
     };
 export interface MakerCreateArg {
+  creator: Array<AccountId>;
   spreadRate: bigint;
   allow:
     | {
@@ -50,6 +51,16 @@ export interface TrieList {
   total: bigint;
   totalPage: bigint;
   data: Array<[Principal, Array<[Principal, AccountId]>]>;
+}
+export interface SysConfig {
+  blackhole: Principal;
+  creatingPairFee: bigint;
+  aggregator: Principal;
+  sysTokenFee: bigint;
+  icDao: Principal;
+  nftPlanetCards: Principal;
+  creatingMakerFee: bigint;
+  sysToken: Principal;
 }
 
 export default interface Service {
@@ -79,5 +90,23 @@ export default interface Service {
     accountId: Array<number>,
     subaccount: Array<Array<number>>
   ): Promise<void>;
-  maker_getPublicMakers(pair: Array<Principal>, page: Array<bigint>, size: Array<bigint>): Promise<TrieList>;
+  maker_getPublicMakers(
+    pair: Array<Principal>,
+    page: Array<bigint>,
+    size: Array<bigint>
+  ): Promise<TrieList>;
+  maker_getPrivateMakers(
+    AccountId: Array<number>,
+    page: Array<bigint>,
+    size: Array<bigint>
+  ): Promise<TrieList>;
+  sys_getConfig(): Promise<SysConfig>;
+  pubCreate(
+    token0: Principal,
+    token1: Principal,
+    time: Time
+  ): Promise<Principal>;
+  version(): Promise<string>;
+  getICDexPairWasmVersion(): Promise<[string, bigint]>;
+  getICDexMakerWasmVersion(): Promise<[string, bigint]>;
 }

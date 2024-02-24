@@ -10,9 +10,17 @@ import {
   Time,
   TokenInfo,
   Icrc1Account,
-  BlockHeight
+  BlockHeight, CanisterId
 } from '@/ic/common/icType';
-import { _data, Amount, Nonce, TxnResult } from '@/ic/ICLighthouseToken/model';
+import {
+  _data,
+  Amount,
+  CoinSeconds,
+  ExecuteType,
+  Nonce,
+  TxnQueryResponse,
+  TxnResult
+} from '@/ic/ICLighthouseToken/model';
 import { Allowance, AllowanceArgs, SendICPTsRequest } from '@/ic/ledger/model';
 
 export interface TxnRecord {
@@ -87,23 +95,6 @@ export type TxnQueryRequest =
   | { getTxn: { txid: Txid } }
   | { txnCountGlobal: null };
 
-export type TxnQueryResponse =
-  | { getEvents: Array<TxnRecord> }
-  | {
-      txnCount: bigint;
-    }
-  | {
-      lockedTxns: {
-        txns: Array<TxnRecord>;
-        lockedBalance: bigint;
-      };
-    }
-  | {
-      lastTxids: Array<Txid>;
-    }
-  | { lastTxidsGlobal: Array<TxnRecord> }
-  | { getTxn: Array<TxnRecord> }
-  | { txnCountGlobal: number };
 export type Top100Record = [Address, bigint];
 export type Address = string;
 export interface DRC207Support {
@@ -244,6 +235,10 @@ export type ApproveError =
   | { TooOld: null }
   | { Expired: { ledger_time: bigint } }
   | { InsufficientFunds: { balance: bigint } };
+export interface Drc20Allowance {
+  remaining: bigint;
+  spender: AccountId;
+}
 
 export default interface Service {
   drc20_decimals(): Promise<Decimals>;
@@ -297,4 +292,44 @@ export default interface Service {
   send_dfx(request: SendICPTsRequest): Promise<BlockHeight>;
   icrc2_approve(approveArgs: ApproveArgs): Promise<ApproveResponse>;
   icrc2_allowance(allowanceArgs: AllowanceArgs): Promise<Allowance>;
+  standard(): Promise<string>;
+  icrc1_supported_standards(): Promise<Array<{ url: string; name: string }>>;
+  drc20_transfer(
+    to: PrincipalString,
+    amount: Amount,
+    nonce: Array<Nonce>,
+    subAccount: Array<Array<number>>,
+    data: _data
+  ): Promise<TxnResult>;
+  drc20_executeTransfer(
+    txid: Txid,
+    executeType: ExecuteType,
+    to: Array<string>,
+    nonce: Array<bigint>,
+    subAccount: Array<Array<number>>,
+    data: _data
+  ): Promise<TxnResult>;
+  drc20_lockTransfer(
+    to: string,
+    amount: bigint,
+    timeout: bigint,
+    decider: Array<string>,
+    nonce: Array<bigint>,
+    subAccount: Array<Array<number>>,
+    data: _data
+  ): Promise<TxnResult>;
+  drc20_transferBatch(
+    to: Array<string>,
+    amount: Array<bigint>,
+    nonce: Array<Nonce>,
+    subAccount: Array<Array<number>>,
+    data: _data
+  ): Promise<Array<TxnResult>>;
+  drc20_getCoinSeconds(
+    address: Array<string>
+  ): Promise<[CoinSeconds, Array<CoinSeconds>]>;
+  drc20_approvals(ICTokensId: PrincipalString): Promise<Array<Drc20Allowance>>;
+  ictokens_setMetadata(request: Array<Metadata>): Promise<boolean>;
+  ictokens_getOwner(): Promise<CanisterId>;
+  ictokens_changeOwner(newOwner: Principal): Promise<boolean>;
 }

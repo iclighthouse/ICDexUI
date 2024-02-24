@@ -2,8 +2,10 @@ import {
   formatDateToSecond,
   formatDateToSecondUTC,
   formatDateToSecondUTCM,
-  formatDateToSecondUTCD, formatDateToSecondUTCMD,
-  formatDateTOSecondUTCToHour
+  formatDateToSecondUTCD,
+  formatDateToSecondUTCMD,
+  formatDateTOSecondUTCToHour,
+  formatDateToMinute
 } from '@/ic/converter';
 import BigNumber from 'bignumber.js';
 export const formatDateFromNanosecond = (time: bigint): string => {
@@ -52,6 +54,12 @@ export const formatDateFromSecondUTCMD = (timestamp: bigint): string => {
 export const formatDateFromSecondUTCToHour = (timestamp: bigint): string => {
   if (timestamp) {
     return formatDateTOSecondUTCToHour(new Date(Number(timestamp)));
+  }
+  return '';
+};
+export const formatDateToMinuteFilter = (timestamp: bigint): string => {
+  if (timestamp) {
+    return formatDateToMinute(new Date(Number(timestamp) * 1000));
   }
   return '';
 };

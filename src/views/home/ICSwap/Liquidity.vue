@@ -285,7 +285,7 @@ import {
   Pool,
   SwapTokenInfo
 } from '@/views/home/ICSwap/model';
-import { Pairs, SwapPair, TrieListData } from '@/ic/ICSwapRouter/model';
+import { Pairs, PairsData, SwapPair, TrieListData } from '@/ic/ICSwapRouter/model';
 import { Liquidity } from '@/ic/cyclesFinance/model';
 import { DexInfo, TokenLiquidity, TokenType } from '@/ic/ICSwap/model';
 import { CYCLES_FINANCE_CANISTER_ID, LEDGER_CANISTER_ID } from '@/ic/utils';
@@ -755,7 +755,7 @@ export default class extends Vue {
     dexName: DexNameType,
     page = 1,
     size = 20
-  ): Promise<Array<TrieListData>> {
+  ): Promise<Array<PairsData>> {
     const res = await this.ICSwapRouterFiduciaryService.getPairs(
       [dexName],
       [page],

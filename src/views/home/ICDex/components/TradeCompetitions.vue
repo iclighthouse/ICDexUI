@@ -64,6 +64,59 @@
             </span>
           </div>
           <div class="trade-competitions-info-metadata-item">
+            <span>Controllers: </span>
+            <span
+              v-if="
+                dexInfo && dexInfo.controllers && dexInfo.controllers.length
+              "
+            >
+              <div v-for="(item, index) in dexInfo.controllers" :key="index">
+                {{ item }}
+              </div>
+            </span>
+          </div>
+          <div class="trade-competitions-info-metadata-item">
+            <span>ICTC Admins: </span>
+            <span v-if="dexInfo && dexInfo.admins && dexInfo.admins.length">
+              <div v-for="(item, index) in dexInfo.admins" :key="index">
+                {{ item.toString() }}
+              </div>
+            </span>
+            <span v-else>-</span>
+          </div>
+          <div
+            v-if="dexInfo && dexInfo.IDOConfig && dexInfo.IDOConfig[0]"
+            class="trade-competitions-info-metadata-item"
+          >
+            <span>IDO: </span>
+            <span>
+              Funder: {{ dexInfo.IDOConfig[0] }}; Time
+              {{
+                dexInfo.IDOConfig[1].IDOOpeningTime
+                  | formatDateFromNanosecondUTC
+              }}~{{
+                dexInfo.IDOConfig[1].IDOClosingTime
+                  | formatDateFromNanosecondUTC
+              }}
+            </span>
+          </div>
+          <div
+            v-if="dexInfo && dexInfo.auctionMode"
+            class="trade-competitions-info-metadata-item"
+          >
+            <span>AuctionMode: </span>
+            <span>
+              {{ dexInfo.auctionMode[0] ? 'Enabled' : 'Disabled' }}; Funder
+              {{ arrayToString(dexInfo.auctionMode[1]) }}
+            </span>
+          </div>
+          <div class="trade-competitions-info-metadata-item">
+            <span>Module Hash: </span>
+            <span v-if="dexInfo && dexInfo.moduleHash">
+              {{ dexInfo.moduleHash }}
+            </span>
+          </div>
+          <div class="trade-competitions-info-metadata-item">
             <span>Version: </span>
             <span v-if="dexInfo">{{ dexInfo.version }}</span>
           </div>
@@ -88,10 +141,20 @@
                     tokens && tokens[currentPair[1][0].token0[0].toString()]
                   "
                 >
-                  {{
-                    tokens[currentPair[1][0].token0[0].toString()].name
-                      | ellipsisAccount(15)
-                  }}
+                  <span
+                    v-if="
+                      tokens[
+                        currentPair[1][0].token0[0].toString()
+                      ].name.toLocaleLowerCase() === 'icp'
+                    "
+                    >ICP</span
+                  >
+                  <span v-else>
+                    {{
+                      tokens[currentPair[1][0].token0[0].toString()].name
+                        | ellipsisAccount(15)
+                    }}
+                  </span>
                 </span>
               </div>
               <div class="trade-competitions-info-item">
@@ -171,6 +234,42 @@
                 </span>
                 <span v-else>-</span>
               </div>
+              <div class="trade-competitions-info-item">
+                <span>Controllers: </span>
+                <span
+                  v-if="
+                    tokenState[currentPair[1][0].token0[0].toString()] &&
+                    tokenState[currentPair[1][0].token0[0].toString()]
+                      .controllers &&
+                    tokenState[currentPair[1][0].token0[0].toString()]
+                      .controllers.length
+                  "
+                >
+                  <div
+                    v-for="(item, index) in tokenState[
+                      currentPair[1][0].token0[0].toString()
+                    ].controllers"
+                    :key="index"
+                  >
+                    {{ item }}
+                  </div>
+                </span>
+              </div>
+              <div class="trade-competitions-info-item">
+                <span>Module Hash: </span>
+                <span
+                  v-if="
+                    tokenState[currentPair[1][0].token0[0].toString()] &&
+                    tokenState[currentPair[1][0].token0[0].toString()]
+                      .moduleHash
+                  "
+                >
+                  {{
+                    tokenState[currentPair[1][0].token0[0].toString()]
+                      .moduleHash
+                  }}
+                </span>
+              </div>
             </div>
             <div class="trade-competitions-info-main">
               <div class="trade-competitions-info-item">
@@ -183,10 +282,20 @@
                     tokens && tokens[currentPair[1][0].token1[0].toString()]
                   "
                 >
-                  {{
-                    tokens[currentPair[1][0].token1[0].toString()].name
-                      | ellipsisAccount(15)
-                  }}
+                  <span
+                    v-if="
+                      tokens[
+                        currentPair[1][0].token1[0].toString()
+                      ].name.toLocaleLowerCase() === 'icp'
+                    "
+                    >ICP</span
+                  >
+                  <span v-else>
+                    {{
+                      tokens[currentPair[1][0].token1[0].toString()].name
+                        | ellipsisAccount(15)
+                    }}
+                  </span>
                 </span>
               </div>
               <div class="trade-competitions-info-item">
@@ -265,6 +374,42 @@
                   }}
                 </span>
                 <span v-else>-</span>
+              </div>
+              <div class="trade-competitions-info-item">
+                <span>Controllers: </span>
+                <span
+                  v-if="
+                    tokenState[currentPair[1][0].token1[0].toString()] &&
+                    tokenState[currentPair[1][0].token1[0].toString()]
+                      .controllers &&
+                    tokenState[currentPair[1][0].token1[0].toString()]
+                      .controllers.length
+                  "
+                >
+                  <div
+                    v-for="(item, index) in tokenState[
+                      currentPair[1][0].token1[0].toString()
+                    ].controllers"
+                    :key="index"
+                  >
+                    {{ item }}
+                  </div>
+                </span>
+              </div>
+              <div class="trade-competitions-info-item">
+                <span>Module Hash: </span>
+                <span
+                  v-if="
+                    tokenState[currentPair[1][0].token1[0].toString()] &&
+                    tokenState[currentPair[1][0].token1[0].toString()]
+                      .moduleHash
+                  "
+                >
+                  {{
+                    tokenState[currentPair[1][0].token1[0].toString()]
+                      .moduleHash
+                  }}
+                </span>
               </div>
             </div>
           </div>
@@ -1176,7 +1321,7 @@ import { TokenInfo, TokenStd } from '@/ic/common/icType';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { TokenLiquidity } from '@/ic/ICSwap/model';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
-import { principalToAccountIdentifier } from '@/ic/converter';
+import { principalToAccountIdentifier, toHexString } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import {
   Ambassador,
@@ -1190,6 +1335,7 @@ import {
 import { getCompetitionsBalance } from '@/ic/getTokenBalance';
 import { validateCanisterOrAccount } from '@/utils/validate';
 import { namespace } from 'vuex-class';
+import { readState } from '@/ic/readState';
 
 const commonModule = namespace('common');
 
@@ -1229,7 +1375,11 @@ const commonModule = namespace('common');
     },
     filterStd(std: TokenStd): string {
       if (std) {
-        return Object.keys(std)[0];
+        let res = Object.keys(std)[0];
+        if (res.toLocaleLowerCase() === 'icrc2') {
+          res = 'icrc1';
+        }
+        return res;
       }
       return '';
     }
@@ -1249,6 +1399,9 @@ export default class extends Vue {
   private hasMoreArrow = false;
   private showMore = false;
   private dexInfo: PairInfo = null;
+  private tokenState: {
+    [key: string]: { controllers?: Array<string>; moduleHash?: string };
+  } = {};
   private ambassador: Ambassador = null;
   private totalSupply: bigint = null;
   private maxSupply: bigint = null;
@@ -1825,7 +1978,7 @@ export default class extends Vue {
     const tokenId = this.currentPair[1][0].token0[0].toString();
     const std = Object.keys(this.currentPair[1][0].token0[2])[0];
     if (std.toLocaleLowerCase() === 'drc20') {
-      this.maxSupply = await DRC20Token.ictokens_maxSupply(tokenId);
+      this.maxSupply = await DRC20Token.getMaxSupply(tokenId);
     }
   }
   private async getTotalSupplyToken1(): Promise<void> {
@@ -1850,7 +2003,7 @@ export default class extends Vue {
     const tokenId = this.currentPair[1][0].token1[0].toString();
     const std = Object.keys(this.currentPair[1][0].token1[2])[0];
     if (std.toLocaleLowerCase() === 'drc20') {
-      this.maxSupplyToken1 = await DRC20Token.ictokens_maxSupply(tokenId);
+      this.maxSupplyToken1 = await DRC20Token.getMaxSupply(tokenId);
     }
   }
   private async getInfo(pairId: string): Promise<void> {
@@ -1858,8 +2011,70 @@ export default class extends Vue {
     const res = await currentICDexService.info(pairId);
     if (res && res.pairId === pairId) {
       this.dexInfo = res.pairInfo;
+      this.getTokenState(this.dexInfo.token0[0].toString());
+      this.getTokenState(this.dexInfo.token1[0].toString());
+      this.getPairControllers(pairId);
+      this.ictc_getAdmins(pairId);
+      this.IDOFunder(pairId);
+      this.auctionMode(pairId);
+    } else {
+      this.dexInfo = null;
     }
     console.log(this.dexInfo);
+  }
+  private async getTokenState(tokenId: string): Promise<void> {
+    try {
+      readState(tokenId).then((state) => {
+        if (!this.tokenState[tokenId]) {
+          this.tokenState[tokenId] = {};
+        }
+        if (state && state.controllers && state.controllers.length) {
+          this.$set(this.tokenState[tokenId], 'controllers', state.controllers);
+        }
+        if (state && state.moduleHash) {
+          this.$set(this.tokenState[tokenId], 'moduleHash', state.moduleHash);
+        }
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  private async auctionMode(pairId: string): Promise<void> {
+    const currentICDexService = new ICDexService();
+    const res = await currentICDexService.getAuctionMode(pairId);
+    if (res && res[1]) {
+      this.$set(this.dexInfo, 'auctionMode', res[0]);
+    }
+  }
+  private async IDOFunder(pairId: string): Promise<void> {
+    const currentICDexService = new ICDexService();
+    const res = await currentICDexService.IDO_getConfig(pairId);
+    if (res && res[0]) {
+      this.$set(this.dexInfo, 'IDOFunder', res[0]);
+    }
+  }
+  private async ictc_getAdmins(pairId: string): Promise<void> {
+    const currentICDexService = new ICDexService();
+    const res = await currentICDexService.ictc_getAdmins(pairId);
+    if (res) {
+      this.$set(this.dexInfo, 'admins', res);
+    }
+  }
+  private async getPairControllers(pairId: string): Promise<void> {
+    try {
+      const state = await readState(pairId);
+      if (state && state.controllers && state.controllers.length) {
+        this.$set(this.dexInfo, 'controllers', state.controllers);
+      }
+      if (state && state.moduleHash) {
+        this.$set(this.dexInfo, 'moduleHash', state.moduleHash);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  private arrayToString(val: Array<number>): string {
+    return toHexString(new Uint8Array(val));
   }
   private onCopy(): void {
     this.$message.success('Copied');
@@ -1885,8 +2100,8 @@ export default class extends Vue {
 }
 .trade-competitions-info {
   max-width: 1000px;
-  line-height: 2;
-  font-size: 16px;
+  line-height: 1.5;
+  font-size: 14px;
   margin: 50px auto 0;
 }
 .trade-competitions-info-container {
@@ -1913,6 +2128,7 @@ export default class extends Vue {
   align-items: center;
   flex-wrap: wrap;
   .trade-competitions-info-main {
+    margin-bottom: 10px;
     &:first-child {
       margin-right: 50px;
     }
@@ -2134,7 +2350,8 @@ export default class extends Vue {
   }
   .trade-competitions-info {
     margin-top: 0;
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 1.5;
     .trade-competitions-info-item {
       span {
         &:first-child {

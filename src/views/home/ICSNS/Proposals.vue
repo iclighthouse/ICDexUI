@@ -569,7 +569,7 @@ export default class extends Vue {
   ): Promise<void> {
     console.log(listDeployedSnses);
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
-    const MAX_COCURRENCY = 10;
+    const MAX_COCURRENCY = 20;
     let snsTokensAll = [];
     let snsTokens = [];
     listDeployedSnses.forEach((item, index) => {

@@ -7,7 +7,7 @@ export const getTokenLogo = async (
   tokenStd: TokenStd
 ): Promise<string> => {
   let logo = '';
-  const std = Object.keys(tokenStd)[0];
+  const std = Object.keys(tokenStd)[0].toLocaleLowerCase();
   const DRC20Token = new DRC20TokenService();
   if (std === 'drc20') {
     const metadata = await DRC20Token.metadata(tokenId.toString());

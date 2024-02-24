@@ -71,12 +71,12 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
 import { validateCanisterOrAccount, validateData } from '@/utils/validate';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
 import { checkAuth } from '@/ic/CheckAuth';
 import BigNumber from 'bignumber.js';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { hexToBytes } from '@/ic/converter';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 
 @Component({
   name: 'Index',
@@ -92,7 +92,7 @@ export default class extends Vue {
   tokenId!: string;
   @Prop({ type: Boolean, default: false })
   isICLToken!: boolean;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
+  private DRC20TokenService: DRC20TokenService;
   private visible = false;
   private form = {
     to: '',
@@ -154,7 +154,7 @@ export default class extends Vue {
     }
   }
   created(): void {
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
+    this.DRC20TokenService = new DRC20TokenService();
   }
   private afterClose(): void {
     this.$refs.form.resetFields();
@@ -174,7 +174,7 @@ export default class extends Vue {
         });
         try {
           const principal = localStorage.getItem('principal');
-          const nonceRes = await this.ICLighthouseTokenService.txnQuery(
+          const nonceRes = await this.DRC20TokenService.txnQuery(
             {
               txnCount: { owner: principal }
             },
@@ -194,7 +194,7 @@ export default class extends Vue {
             decider = [this.form.decider];
           }
           const timeout = BigInt(new BigNumber(this.form.timeout).times(60));
-          const res = await this.ICLighthouseTokenService.lockTransfer(
+          const res = await this.DRC20TokenService.lockTransfer(
             this.form.to,
             amount,
             timeout,

@@ -269,10 +269,9 @@ export default class extends Vue {
     listDeployedSnses: Array<DeployedSns>
   ): Promise<void> {
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
-    const MAX_COCURRENCY = 10;
+    const MAX_COCURRENCY = 20;
     let promiseAll = [];
     let snsTokens = [];
-    console.time('1');
     for (let i = 0; i < listDeployedSnses.length; i++) {
       promiseAll.push(this.getSNSTokenInfo(listDeployedSnses[i]));
       if (promiseAll.length === MAX_COCURRENCY) {
@@ -294,7 +293,6 @@ export default class extends Vue {
         SNSToken.lifecycle.length === 0
       );
     });
-    console.timeEnd('1');
     this.getSNSTokenBalance();
   }
   private async getLifecycle(tokenId: string): Promise<Array<bigint>> {

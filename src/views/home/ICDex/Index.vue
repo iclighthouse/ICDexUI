@@ -41,7 +41,18 @@
           >
         </li>-->
       </ul>
-      <account-info :menu-list="menuList"></account-info>
+      <div class="flex-center margin-left-auto">
+        <span
+          v-if="getPrincipalId"
+          @click="showLaunch"
+          class="base-font-title pointer pc-show"
+          style="font-size: 15px"
+          >+Launch</span
+        >
+        <div class="home-header-right-info">
+          <account-info :menu-list="menuList"></account-info>
+        </div>
+      </div>
     </div>
     <div
       class="de-swap-main"
@@ -55,22 +66,102 @@
           class="de-swap-list pc-show"
           :class="{
             'has-register-competition': showKeepBalance,
-            'show-stop-loss': orderType === 'Stop-loss'
+            'show-stop-limit': orderType === 'Stop-limit'
           }"
         >
           <div class="de-swap-list-item">
+            <div class="de-swap-list-item-search base-font-title">
+              <a-tooltip placement="top">
+                <template slot="title">
+                  <div class="base-font-title">
+                    <div>
+                      Listing on ICDex is non-censored, anyone can list a token
+                      on ICDex, the security and value of the tokens needs to be
+                      assessed by you and you bear all the consequences.
+                    </div>
+                    <div>
+                      Pair Score is an automatic evaluation mechanism of ICDex
+                      for trading pairs, which is based on the comprehensive
+                      evaluation of the number of sponsors, liquidity, volume,
+                      etc. It is for your reference only, and is not considered
+                      as investment advice. The list of trading pairs is divided
+                      into three boards according to the Pair Score.
+                    </div>
+                    <div>
+                      <span class="dots"></span> MAIN (STAGE2) Board means that
+                      more traders are involved and need to keep track of the
+                      risks.
+                    </div>
+                    <div>
+                      <span class="dots"></span> SECOND (STAGE1) Board means
+                      that some traders are involved and need to keep track of
+                      the risks.
+                    </div>
+                    <div>
+                      <span class="dots"></span> THIRD (STAGE0) Board means that
+                      fewer traders are involved and there are many unknown
+                      risks.
+                    </div>
+                  </div>
+                </template>
+                <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
+                  >About boards
+                  <a-icon type="question-circle" />
+                </span>
+              </a-tooltip>
+              <a-input
+                allowClear
+                autocomplete="off"
+                type="text"
+                placeholder="Search"
+                v-model="pairSearch"
+                @change="pairSearchChange"
+              >
+                <a-icon style="color: #adb3c4" slot="prefix" type="search" />
+              </a-input>
+            </div>
             <ul class="trade-market-sort">
               <li
-                :class="{
-                  active: item.name === currentTradeMarketSort,
-                  'trade-market-old': item.name === 'Old'
-                }"
+                :class="[
+                  pairSearch ? 'disabled' : '',
+                  item.value === currentTradeMarketSort ? 'active' : '',
+                  item.value === 'Old' ? 'trade-market-old' : '',
+                  item.value
+                ]"
                 v-for="item in tradeMarketSort"
                 :key="item.value"
                 @click="changeTradeMarketSort(item)"
               >
-                {{ item.name }}
-                <span v-if="item.name === 'USDT'" class="base-red">TEST</span>
+                <a-icon
+                  v-show="item.value === 'Star'"
+                  type="star"
+                  theme="filled"
+                />
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span>{{ item.value }} Board Market</span>
+                  </template>
+                  <span
+                    :class="{ 'trade-market-old-main': item.value === 'Main' }"
+                    v-show="item.value !== 'Star' && item.value !== 'Old'"
+                  >
+                    <span
+                      class="circle"
+                      :class="[
+                        item.value === 'Main'
+                          ? 'STAGE2'
+                          : item.value === 'Second'
+                          ? 'STAGE1'
+                          : 'STAGE0'
+                      ]"
+                    ></span>
+                    {{ item.name }}
+                  </span>
+                </a-tooltip>
+                <span v-if="item.value === 'Old'">
+                  {{ item.name }}
+                </span>
+                <span v-if="item.value === 'USDT'" class="base-red">TEST</span>
               </li>
             </ul>
             <table>
@@ -85,14 +176,28 @@
                 class="de-swap-list-item-pair de-swap-list-item-pair-market"
                 ref="deSwapListItemPair"
               >
+                <tr v-if="currentTradeMarketSort === 'Third' && !showThird">
+                  <td colspan="3" style="line-height: 1.5; padding-left: 10px">
+                    The trading pairs on the THIRD board mean that very few
+                    traders are involved and there may be a higher risk. Sure
+                    you want to show the list?
+                    <button class="mt20 w100" @click="showThird = true">
+                      Confirm
+                    </button>
+                  </td>
+                </tr>
                 <tr
                   v-for="(pair, index) in tradePairs[currentTradeMarketSort]"
                   :key="index"
                   @click="changePair(pair, index)"
                   :class="{
                     active:
+                      !(currentTradeMarketSort === 'Third' && !showThird) &&
+                      currentPairIndex !== null &&
+                      pairs[currentPairIndex] &&
+                      currentPair[3] === currentTradeMarketSort &&
                       pair[1][0].canisterId.toString() ===
-                      pairs[currentPairIndex][1][0].canisterId.toString()
+                        currentPair[1][0].canisterId.toString()
                   }"
                 >
                   <a-tooltip placement="right">
@@ -144,6 +249,7 @@
                     </template>
                     <div
                       style="display: table; width: 100%; table-layout: fixed"
+                      v-if="!(currentTradeMarketSort === 'Third' && !showThird)"
                     >
                       <td style="width: 100px">
                         <dl>
@@ -152,12 +258,66 @@
                               'usdt-test-dt': currentTradeMarketSort === 'USDT'
                             }"
                           >
-                            {{ pair[1][0].token0[1]
-                            }}<span class="pair-icp"
-                              >/{{ pair[1][0].token1[1] }}</span
+                            <a-tooltip placement="right">
+                              <template slot="title">
+                                <span v-if="showReminder2(pair)">
+                                  REMINDER: This trading pair with a score below
+                                  the MAIN board requirement for
+                                  {{ getMainDay(pair) }} days may be downgraded
+                                  to the SECOND board.
+                                </span>
+                                <span v-if="showReminder1(pair)">
+                                  REMINDER: This trading pair with a score below
+                                  the SECOND board requirement for
+                                  {{ getSecondDay(pair) }} days may be
+                                  downgraded to the THIRD board.
+                                </span>
+                              </template>
+                              <span
+                                v-if="
+                                  (pair && showReminder1(pair)) ||
+                                  showReminder2(pair)
+                                "
+                                style="opacity: 0.8"
+                                class="pair-name"
+                              >
+                                * {{ pair[1][0].token0[1]
+                                }}<span class="pair-icp"
+                                  >/{{ pair[1][0].token1[1] }}</span
+                                >
+                              </span>
+                            </a-tooltip>
+                            <span
+                              v-if="
+                                pair &&
+                                !showReminder1(pair) &&
+                                !showReminder2(pair)
+                              "
+                              class="pair-name"
                             >
+                              {{ pair[1][0].token0[1]
+                              }}<span class="pair-icp"
+                                >/{{ pair[1][0].token1[1] }}</span
+                              >
+                            </span>
                           </dt>
                           <dd>
+                            <a-icon
+                              v-show="
+                                !oldPairs.includes(pair[0].toString()) &&
+                                pair[1][0].marketBoard
+                              "
+                              :theme="
+                                star.includes(pair[0].toString())
+                                  ? 'filled'
+                                  : 'outlined'
+                              "
+                              @click.stop="onStar(pair)"
+                              type="star"
+                              :class="{
+                                'main-color': star.includes(pair[0].toString())
+                              }"
+                            />
                             <span v-show="oldPairs.includes(pair[0].toString())"
                               >(Old)</span
                             >
@@ -362,6 +522,56 @@
                     tokens[currentPair[1][0].token0[0].toString()].symbol
                   }}</a-tooltip
                 >/{{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <div class="base-font-title">
+                      <div>
+                        Listing on ICDex is non-censored, anyone can list a
+                        token on ICDex, the security and value of the tokens
+                        needs to be assessed by you and you bear all the
+                        consequences.
+                      </div>
+                      <div>
+                        Pair Score is an automatic evaluation mechanism of ICDex
+                        for trading pairs, which is based on the comprehensive
+                        evaluation of the number of sponsors, liquidity, volume,
+                        etc. It is for your reference only, and is not
+                        considered as investment advice. The list of trading
+                        pairs is divided into three boards according to the Pair
+                        Score.
+                      </div>
+                      <div>
+                        <span class="dots"></span> MAIN (STAGE2) Board means
+                        that more traders are involved and need to keep track of
+                        the risks.
+                      </div>
+                      <div>
+                        <span class="dots"></span> SECOND (STAGE1) Board means
+                        that some traders are involved and need to keep track of
+                        the risks.
+                      </div>
+                      <div>
+                        <span class="dots"></span> THIRD (STAGE0) Board means
+                        that fewer traders are involved and there are many
+                        unknown risks.
+                      </div>
+                    </div>
+                  </template>
+                  <span
+                    class="pair-stage"
+                    :class="Object.keys(currentPair[1][0].marketBoard)[0]"
+                    v-if="currentPair && currentPair[1][0].marketBoard"
+                  >
+                    {{
+                      Object.keys(currentPair[1][0].marketBoard)[0] === 'STAGE2'
+                        ? 'M'
+                        : Object.keys(currentPair[1][0].marketBoard)[0] ===
+                          'STAGE1'
+                        ? 'S'
+                        : 'T'
+                    }}
+                  </span>
+                </a-tooltip>
               </span>
               <ul class="k-interval-time">
                 <li
@@ -385,7 +595,16 @@
                   v-for="(item, index) in tradeCompetitionsEnum"
                   :key="index"
                 >
-                  <span>{{ item }}</span>
+                  <span
+                    v-if="
+                      !(
+                        item === 'Pools' &&
+                        currentPair &&
+                        prePairs.includes(currentPair[0].toString())
+                      )
+                    "
+                    >{{ item }}</span
+                  >
                 </li>
               </ul>
             </div>
@@ -405,6 +624,20 @@
                     tokens[currentPair[1][0].token1[0].toString()].symbol
                   }}
                   <span
+                    class="pair-stage"
+                    :class="Object.keys(currentPair[1][0].marketBoard)[0]"
+                    v-if="currentPair && currentPair[1][0].marketBoard"
+                  >
+                    {{
+                      Object.keys(currentPair[1][0].marketBoard)[0] === 'STAGE2'
+                        ? 'M'
+                        : Object.keys(currentPair[1][0].marketBoard)[0] ===
+                          'STAGE1'
+                        ? 'S'
+                        : 'T'
+                    }}
+                  </span>
+                  <span
                     style="color: #929aa5; font-size: 12px; padding-right: 5px"
                     v-show="oldPairs.includes(currentPair[0].toString())"
                     >(Old)</span
@@ -415,7 +648,6 @@
                   <span class="token-price" :class="tokenPriceStatus">
                     {{ currentTokenPrice }}
                   </span>
-                  <!--<span v-show="icpPrice">${{ token0Price }}</span>-->
                 </div>
               </div>
               <div class="k-interval-main-header-h5-right margin-left-auto">
@@ -498,14 +730,23 @@
                   v-for="(item, index) in tradeCompetitionsEnum"
                   :key="index"
                 >
-                  <span>{{ item }}</span>
+                  <span
+                    v-if="
+                      !(
+                        item === 'Pools' &&
+                        currentPair &&
+                        prePairs.includes(currentPair[0].toString())
+                      )
+                    "
+                    >{{ item }}</span
+                  >
                 </li>
-                <li
+                <!--<li
                   @click="changeTradeCompetitionsMenu('Competitions')"
                   :class="{ active: tradeCompetitionsMenu === 'Competitions' }"
                 >
                   <span>Competitions</span>
-                </li>
+                </li>-->
               </ul>
               <!--<trading-mining
                 class="margin-left-auto trading-mining"
@@ -1021,22 +1262,47 @@
                     filled for the total quantity at the specified price or
                     better.</span
                   >
-                  <span v-if="item === orderTypeEnum['Stop-loss']"
-                    >When the price reaches the stop price, the stop-loss order
+                  <span v-if="item === orderTypeEnum['Stop-limit']"
+                    >When the price reaches the stop price, the stop-limit order
                     is executed to buy or sell at the limit price.</span
                   >
                 </template>
-                {{ item }}
+                <span
+                  v-if="
+                    !(
+                      item === 'Stop-limit' &&
+                      currentPair &&
+                      prePairs.includes(currentPair[0].toString())
+                    )
+                  "
+                >
+                  {{ item }}
+                </span>
               </a-tooltip>
             </div>
-            <div :class="{ active: 'Pro' === orderType }">
-              <a-dropdown placement="bottomCenter">
+            <div
+              v-if="
+                currentPair && !prePairs.includes(currentPair[0].toString())
+              "
+              :class="{ active: 'Pro' === orderType }"
+            >
+              <a-tooltip placement="top">
+                <template slot="title">
+                  Professional orders are an advanced way of placing orders. It
+                  is only recommended for professional traders.
+                </template>
+                <span @click="showProOrderMenu"> Pro-order </span>
+              </a-tooltip>
+              <!--<a-dropdown placement="bottomCenter">
                 <a-tooltip placement="top">
                   <template slot="title">
                     Professional orders are an advanced way of placing orders.
                     It is only recommended for professional traders.
                   </template>
-                  <span>Pro <a-icon type="caret-down" /></span>
+                  <span
+                    >{{ orderType === 'Pro' ? currentProOrderMenu : 'Pro' }}
+                    <a-icon type="caret-down"
+                  /></span>
                 </a-tooltip>
                 <a-menu slot="overlay" class="strat-list">
                   <a-menu-item
@@ -1049,7 +1315,7 @@
                     {{ item }}
                   </a-menu-item>
                 </a-menu>
-              </a-dropdown>
+              </a-dropdown>-->
             </div>
             <trading-mining
               style="padding: 0 5px 0 0 !important; border: none"
@@ -1059,8 +1325,11 @@
               :pair-id="currentPair[0].toString()"
             ></trading-mining>
             <a-icon
-              v-if="currentPair"
+              v-show="
+                currentPair && !prePairs.includes(currentPair[0].toString())
+              "
               class="set-pool"
+              :class="{ disabled: orderType === 'Pro' }"
               type="setting"
               @click="showPoolVisible"
             />
@@ -1069,12 +1338,16 @@
             class="trade-item pc-show"
             :class="{
               'has-register-competition': showKeepBalance,
-              'show-stop-loss': orderType === 'Stop-loss'
+              'show-stop-limit': orderType === 'Stop-limit'
             }"
           >
             <div v-show="orderType !== 'Pro'" class="trade-main-buy">
               <div class="trade-item-header">
-                <span class="balance-label">Wallet</span>
+                <span
+                  class="balance-label"
+                  :class="{ 'balance-label-wallet': !showKeepBalance }"
+                  >Wallet:</span
+                >
                 <span
                   v-if="
                     getPrincipalId &&
@@ -1094,7 +1367,10 @@
                       v-if="
                         currentPair[1][0].token1[1]
                           .toLocaleLowerCase()
-                          .includes('usdt')
+                          .includes('usdt') ||
+                        currentPair[1][0].token1[1]
+                          .toLocaleLowerCase()
+                          .includes('test')
                       "
                       :to="`/account?type=mint&token=${currentPair[1][0].token1[0].toString()}`"
                       >{{
@@ -1116,7 +1392,10 @@
                     v-if="
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
-                        .includes('usdt')
+                        .includes('usdt') &&
+                      !currentPair[1][0].token1[1]
+                        .toLocaleLowerCase()
+                        .includes('test')
                     "
                   >
                     {{
@@ -1154,7 +1433,26 @@
                 v-show="showKeepBalance"
                 class="trade-item-header"
               >
-                <span class="balance-label">TraderAcct</span>
+                <span class="balance-label"
+                  >TraderAcct&nbsp;
+                  <a-tooltip placement="top">
+                    <template slot="title">
+                      <div>
+                        TraderAccount: In general trading with "Keeping balance
+                        in TraderAccount" enabled, the Trader deposits funds in
+                        the TraderAccount of the pair for faster trading. The
+                        relationship between the "Accounts" is shown in the
+                        diagram:
+                        <img
+                          style="margin-top: 10px"
+                          src="@/assets/img/account.png"
+                          alt=""
+                          class="w100"
+                        />
+                      </div> </template
+                    ><a-icon type="info-circle" /></a-tooltip
+                  >:</span
+                >
                 <a-tooltip placement="top">
                   <template slot="title">
                     The balance is kept in the trading pair, you can deposit and
@@ -1169,14 +1467,11 @@
                   >
                     {{
                       keepingBalance[currentPair[1][0].token1[0].toString()]
-                        | bigintToFloat(
-                          Math.min(
-                            tokens[currentPair[1][0].token1[0].toString()]
-                              .decimals,
-                            8
-                          ),
+                        | filterKeepingBalance(
+                          stopLimitNeed.token1,
                           tokens[currentPair[1][0].token1[0].toString()]
-                            .decimals
+                            .decimals,
+                          8
                         )
                         | formatNum
                     }}&nbsp;{{ currentPair[1][0].token1[1] }}
@@ -1192,7 +1487,7 @@
                   "
                   >-</span
                 >
-                <a-tooltip placement="top">
+                <!--<a-tooltip placement="top">
                   <template slot="title">
                     <span
                       v-if="
@@ -1201,9 +1496,9 @@
                         tokens[currentPair[1][0].token1[0].toString()]
                       "
                     >
-                      Stop-loss orders:
+                      Stop-limit orders:
                       {{
-                        stopLossNeed.token1
+                        stopLimitNeed.token1
                           | bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token1[0].toString()]
@@ -1220,10 +1515,10 @@
                   </template>
                   <a-icon
                     style="margin-left: 5px"
-                    v-if="stopLossNeed.token1"
+                    v-if="stopLimitNeed.token1"
                     type="info-circle"
                   />
-                </a-tooltip>
+                </a-tooltip>-->
                 <a-tooltip placement="top">
                   <template slot="title">
                     Notes: Settlement is async after order has been filled,
@@ -1272,7 +1567,7 @@
                   trigger="click"
                 >
                   <template slot="title">
-                    <span v-if="icpPrice"
+                    <span v-if="currentMarketPrice['']"
                       >≈ ${{
                         stopBuyPrice
                           | filterBuyPrice(token0Price, currentTokenPrice)
@@ -1281,7 +1576,7 @@
                     >
                   </template>
                   <a-input-group
-                    v-if="orderType === 'Stop-loss'"
+                    v-if="orderType === 'Stop-limit'"
                     :class="{
                       'swap-item-group-error':
                         isToBuy && (!stopBuyPrice || Number(stopBuyPrice) === 0)
@@ -1289,7 +1584,7 @@
                     class="swap-item-group"
                     compact
                   >
-                    <span class="suffix">Stop</span>
+                    <span class="suffix">Stop limit</span>
                     <a-input
                       :key="buyUnit"
                       v-model="stopBuyPrice"
@@ -1319,7 +1614,7 @@
                   trigger="click"
                 >
                   <template slot="title">
-                    <span v-if="icpPrice"
+                    <span
                       >≈ ${{
                         buyPrice
                           | filterBuyPrice(token0Price, currentTokenPrice)
@@ -1335,7 +1630,7 @@
                     class="swap-item-group"
                     compact
                   >
-                    <span class="suffix">Price</span>
+                    <span class="suffix">Order price</span>
                     <a-input
                       :key="buyUnit"
                       v-model="buyPrice"
@@ -1379,7 +1674,7 @@
                     class="swap-item-group"
                     compact
                   >
-                    <span class="suffix">Quantity</span>
+                    <span class="suffix">Order quantity</span>
                     <a-input
                       :key="tokenMinUnit"
                       v-model="buyAmount"
@@ -1415,7 +1710,7 @@
                   trigger="click"
                 >
                   <template slot="title">
-                    <span v-if="icpPrice"
+                    <span
                       >≈ ${{
                         buyTotal
                           | filterBuyPrice(token0Price, currentTokenPrice)
@@ -1449,29 +1744,53 @@
                     </span>
                   </a-input-group>
                 </a-tooltip>
-                <div class="taker-fee">
+                <div
+                  class="taker-fee"
+                  :class="{ 'taker-fee-stop': orderType === 'Stop-limit' }"
+                >
                   <span
                     v-if="
-                      orderType === 'Stop-loss' &&
+                      orderType === 'Stop-limit' &&
                       currentPair &&
+                      sysConfig &&
                       tokens &&
-                      tokens[currentPair[1][0].token1[0].toString()] &&
-                      stoConfig
+                      tokens[sysConfig.sysToken.toString()] &&
+                      stoConfig &&
+                      dexRole
                     "
                   >
-                    Fee:
-                    {{
-                      stoConfig.sloFee1
-                        | bigintToFloat(
-                          tokens[currentPair[1][0].token1[0].toString()]
-                            .decimals,
-                          tokens[currentPair[1][0].token1[0].toString()]
-                            .decimals
-                        )
-                    }}
-                    {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                    <span>Fee: (Create)</span>
+                    <span v-show="dexRole.vipMaker"> 0 </span>
+                    <span v-show="!dexRole.vipMaker">
+                      {{
+                        stoConfig.sloFee1
+                          | bigintToFloat(
+                            tokens[sysConfig.sysToken.toString()].decimals,
+                            tokens[sysConfig.sysToken.toString()].decimals
+                          )
+                      }}
+                    </span>
+                    <span
+                      >{{ tokens[sysConfig.sysToken].symbol }}, (Update)</span
+                    >
+                    <span v-show="dexRole.vipMaker"> 0 </span>
+                    <span v-show="!dexRole.vipMaker">
+                      {{
+                        stoConfig.sloFee1
+                          | stoUpdateFee(
+                            tokens[sysConfig.sysToken.toString()].decimals
+                          )
+                      }}
+                    </span>
+                    <span>
+                      {{ tokens[sysConfig.sysToken.toString()].symbol }},
+                      (Order) {{ stoConfig.sloFee2 | stoOrderFee }} + taker
+                      {{ currentPair | filterFee }}
+                      or maker
+                      {{ feeRebate | filterFeeSellRebate }}.
+                    </span>
                   </span>
-                  <span v-show="orderType !== 'Stop-loss'"
+                  <span v-show="orderType !== 'Stop-limit'"
                     >Taker fee: {{ currentPair | filterBuyFee }}</span
                   >
                   <span v-show="orderType === 'LMT'" class="margin-left-auto"
@@ -1482,17 +1801,32 @@
                   <button
                     v-if="getPrincipalId && currentPair"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'FOK'))) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      (orderType === 'Stop-limit' &&
+                        !(isKeeping && isPoolMode)) ||
+                      currentPair[3] === 'Old'
                     "
                     class="buy-button w100 mt20"
+                    :class="{
+                      'taker-fee-stop-button': orderType === 'Stop-limit'
+                    }"
                     @click="onBuy"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -1586,7 +1920,7 @@
                     <span v-show="buyTotalMKTError"
                       >Max Total {{ maxBuyMKTTotal }}
                     </span>
-                    <span v-show="!buyTotalMKTError && icpPrice"
+                    <span v-show="!buyTotalMKTError"
                       >≈ ${{
                         buyTotalMKT
                           | filterBuyPrice(token0Price, currentTokenPrice)
@@ -1641,12 +1975,19 @@
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      currentPair[3] === 'Old'
                     "
                     class="buy-button w100 mt20"
                     @click="onBuyMKT"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -1683,7 +2024,11 @@
             </div>
             <div v-show="orderType !== 'Pro'" class="trade-main-sell">
               <div class="trade-item-header">
-                <span class="balance-label">Wallet</span>
+                <span
+                  class="balance-label"
+                  :class="{ 'balance-label-wallet': !showKeepBalance }"
+                  >Wallet:</span
+                >
                 <span
                   v-if="
                     getPrincipalId &&
@@ -1703,7 +2048,10 @@
                       v-if="
                         currentPair[1][0].token0[1]
                           .toLocaleLowerCase()
-                          .includes('usdt')
+                          .includes('usdt') ||
+                        currentPair[1][0].token0[1]
+                          .toLocaleLowerCase()
+                          .includes('test')
                       "
                       :to="`/account?type=mint&token=${currentPair[1][0].token0[0].toString()}`"
                     >
@@ -1726,7 +2074,10 @@
                     v-if="
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
-                        .includes('usdt')
+                        .includes('usdt') &&
+                      !currentPair[1][0].token0[1]
+                        .toLocaleLowerCase()
+                        .includes('test')
                     "
                   >
                     {{
@@ -1764,7 +2115,26 @@
                 v-show="showKeepBalance"
                 class="trade-item-header"
               >
-                <span class="balance-label">TraderAcct</span>
+                <span class="balance-label"
+                  >TraderAcct&nbsp;
+                  <a-tooltip placement="top">
+                    <template slot="title">
+                      <div>
+                        TraderAccount: In general trading with "Keeping balance
+                        in TraderAccount" enabled, the Trader deposits funds in
+                        the TraderAccount of the pair for faster trading. The
+                        relationship between the "Accounts" is shown in the
+                        diagram:
+                        <img
+                          style="margin-top: 10px"
+                          src="@/assets/img/account.png"
+                          alt=""
+                          class="w100"
+                        />
+                      </div> </template
+                    ><a-icon type="info-circle" /></a-tooltip
+                  >:</span
+                >
                 <a-tooltip placement="top">
                   <template slot="title">
                     The balance is kept in the trading pair, you can deposit and
@@ -1779,14 +2149,11 @@
                   >
                     {{
                       keepingBalance[currentPair[1][0].token0[0].toString()]
-                        | bigintToFloat(
-                          Math.min(
-                            tokens[currentPair[1][0].token0[0].toString()]
-                              .decimals,
-                            8
-                          ),
+                        | filterKeepingBalance(
+                          stopLimitNeed.token0,
                           tokens[currentPair[1][0].token0[0].toString()]
-                            .decimals
+                            .decimals,
+                          8
                         )
                         | formatNum
                     }}&nbsp;{{ currentPair[1][0].token0[1] }}
@@ -1802,7 +2169,7 @@
                   "
                   >-</span
                 >
-                <a-tooltip placement="top">
+                <!--<a-tooltip placement="top">
                   <template slot="title">
                     <span
                       v-if="
@@ -1811,9 +2178,9 @@
                         tokens[currentPair[1][0].token0[0].toString()]
                       "
                     >
-                      Stop-loss orders:
+                      Stop-limit orders:
                       {{
-                        stopLossNeed.token0
+                        stopLimitNeed.token0
                           | bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token0[0].toString()]
@@ -1830,10 +2197,10 @@
                   </template>
                   <a-icon
                     style="margin-left: 5px"
-                    v-if="stopLossNeed.token0"
+                    v-if="stopLimitNeed.token0"
                     type="info-circle"
                   />
-                </a-tooltip>
+                </a-tooltip>-->
                 <a-tooltip placement="top">
                   <template slot="title">
                     Notes: Settlement is async after order has been filled,
@@ -1880,7 +2247,7 @@
                   trigger="click"
                 >
                   <template slot="title">
-                    <span v-if="icpPrice"
+                    <span
                       >≈ ${{
                         stopSellPrice
                           | filterBuyPrice(token0Price, currentTokenPrice)
@@ -1889,7 +2256,7 @@
                     >
                   </template>
                   <a-input-group
-                    v-if="orderType === 'Stop-loss'"
+                    v-if="orderType === 'Stop-limit'"
                     :class="{
                       'swap-item-group-error':
                         isToSell &&
@@ -1898,7 +2265,7 @@
                     class="swap-item-group"
                     compact
                   >
-                    <span class="suffix">Stop</span>
+                    <span class="suffix">Stop limit</span>
                     <a-input
                       :key="buyUnit"
                       v-model="stopSellPrice"
@@ -1928,7 +2295,7 @@
                   trigger="click"
                 >
                   <template slot="title">
-                    <span v-if="icpPrice"
+                    <span
                       >≈ ${{
                         sellPrice
                           | filterBuyPrice(token0Price, currentTokenPrice)
@@ -1944,7 +2311,7 @@
                     class="swap-item-group"
                     compact
                   >
-                    <span class="suffix">Price</span>
+                    <span class="suffix">Order price</span>
                     <a-input
                       :key="buyUnit"
                       v-model="sellPrice"
@@ -1989,7 +2356,7 @@
                     class="swap-item-group"
                     compact
                   >
-                    <span class="suffix">Quantity</span>
+                    <span class="suffix">Order quantity</span>
                     <a-input
                       :key="tokenMinUnit"
                       v-model="sellAmount"
@@ -2029,7 +2396,7 @@
                   trigger="click"
                 >
                   <template slot="title">
-                    <span v-if="icpPrice"
+                    <span
                       >≈ ${{
                         sellTotal
                           | filterBuyPrice(token0Price, currentTokenPrice)
@@ -2063,29 +2430,49 @@
                     </span>
                   </a-input-group>
                 </a-tooltip>
-                <div class="taker-fee">
+                <div
+                  class="taker-fee"
+                  :class="{ 'taker-fee-stop': orderType === 'Stop-limit' }"
+                >
                   <span
                     v-if="
-                      orderType === 'Stop-loss' &&
+                      orderType === 'Stop-limit' &&
                       currentPair &&
+                      sysConfig &&
                       tokens &&
-                      tokens[currentPair[1][0].token1[0].toString()] &&
-                      stoConfig
+                      tokens[sysConfig.sysToken.toString()] &&
+                      stoConfig &&
+                      dexRole
                     "
                   >
-                    Fee:
-                    {{
-                      stoConfig.sloFee1
-                        | bigintToFloat(
-                          tokens[currentPair[1][0].token1[0].toString()]
-                            .decimals,
-                          tokens[currentPair[1][0].token1[0].toString()]
-                            .decimals
-                        )
-                    }}
-                    {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                    Fee: (Create)
+                    <span v-show="dexRole.vipMaker"> 0 </span>
+                    <span v-show="!dexRole.vipMaker">
+                      {{
+                        stoConfig.sloFee1
+                          | bigintToFloat(
+                            tokens[sysConfig.sysToken.toString()].decimals,
+                            tokens[sysConfig.sysToken.toString()].decimals
+                          )
+                      }}
+                    </span>
+                    {{ tokens[sysConfig.sysToken].symbol }}, (Update)
+                    <span v-show="dexRole.vipMaker"> 0 </span>
+                    <span v-show="!dexRole.vipMaker">
+                      {{
+                        stoConfig.sloFee1
+                          | stoUpdateFee(
+                            tokens[sysConfig.sysToken.toString()].decimals
+                          )
+                      }}
+                    </span>
+                    {{ tokens[sysConfig.sysToken.toString()].symbol }}, (Order)
+                    {{ stoConfig.sloFee2 | stoOrderFee }} + taker
+                    {{ currentPair | filterFee }}
+                    or maker
+                    {{ feeRebate | filterFeeSellRebate }}.
                   </span>
-                  <span v-show="orderType !== 'Stop-loss'"
+                  <span v-show="orderType !== 'Stop-limit'"
                     >Taker fee: {{ currentPair | filterFee }}</span
                   >
                   <span v-show="orderType === 'LMT'" class="margin-left-auto"
@@ -2096,17 +2483,31 @@
                   <button
                     v-if="getPrincipalId && currentPair"
                     class="sell-button w100 mt20"
+                    :class="{
+                      'taker-fee-stop-button': orderType === 'Stop-limit'
+                    }"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        (isPaused || (!isPaused && orderType !== 'LMT'))) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      (orderType === 'Stop-limit' &&
+                        !(isKeeping && isPoolMode)) ||
+                      currentPair[3] === 'Old'
                     "
                     @click="onSell"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        (isPaused || (!isPaused && orderType !== 'LMT'))
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -2242,7 +2643,8 @@
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      currentPair[3] === 'Old'
                     "
                     @click="onSellMKT"
                   >
@@ -2281,8 +2683,19 @@
                 </div>
               </div>
             </div>
-            <div v-show="orderType === 'Pro'" class="trade-item-pro">
-              <div class="base-font-title trade-item-pro-title">
+            <div
+              v-show="orderType === 'Pro'"
+              class="trade-item-pro"
+              style="background: #181f29; border: 2px solid #10151c"
+            >
+              <div
+                style="
+                  background: #10151c;
+                  margin: -10px -10px 0 -10px;
+                  padding: 0 10px;
+                "
+                class="base-font-title trade-item-pro-title"
+              >
                 <span style="white-space: nowrap"
                   >Pro-Wallet Account:&nbsp;</span
                 >
@@ -2298,39 +2711,39 @@
                 ></copy-account>
               </div>
               <div
-                class="trade-item-pro-fee"
-                v-if="
-                  stoConfig &&
-                  currentPair &&
-                  tokens &&
-                  tokens[currentPair[1][0].token1[0].toString()]
+                class="base-tip-size base-font"
+                style="
+                  line-height: 1;
+                  background: #10151c;
+                  margin: 0 -10px;
+                  padding: 0 10px;
                 "
               >
-                <span style="font-weight: bold">Fee:</span> (Create)
-                {{
-                  stoConfig.poFee1
-                    | bigintToFloat(
-                      tokens[currentPair[1][0].token1[0].toString()].decimals,
-                      tokens[currentPair[1][0].token1[0].toString()].decimals
-                    )
-                }}
-                {{ tokens[currentPair[1][0].token1[0].toString()].symbol }},
-                (Update)
-                {{
-                  stoConfig.poFee1
-                    | stoUpdateFee(
-                      tokens[currentPair[1][0].token1[0].toString()].decimals
-                    )
-                }}
-                {{ tokens[currentPair[1][0].token1[0].toString()].symbol }},
-                (Order) {{ stoConfig.poFee2 | stoOrderFee }}.
+                The Pro-Wallet account is a separate sub-account, please
+                transfer tokens to this account before you can create strategy
+                orders.
               </div>
-              <div class="mt20">Balance:</div>
-              <div class="trade-item-pro-balance">
+              <div
+                style="
+                  background: #10151c;
+                  margin: 0 -10px;
+                  padding: 5px 10px 0 10px;
+                "
+              >
+                Balance:
+              </div>
+              <div
+                style="
+                  background: #10151c;
+                  margin: 0 -10px;
+                  padding: 0 10px 5px;
+                "
+                class="trade-item-pro-balance"
+              >
                 <div class="trade-item-pro-balance-left">
                   <div>
                     <span class="trade-item-pro-balance-label"
-                      >Pro-wallet:</span
+                      >Pro-Wallet:</span
                     >
                     <span
                       v-if="
@@ -2341,6 +2754,7 @@
                         tokens &&
                         tokens[currentPair[1][0].token1[0].toString()]
                       "
+                      style="line-height: 14px"
                     >
                       {{
                         tokensBalanceSto[currentPair[1][0].token1[0].toString()]
@@ -2371,8 +2785,78 @@
                   </div>
                   <div>
                     <span class="trade-item-pro-balance-label"
-                      >Pro-TraderAcct:</span
+                      >Pro-Wallet:</span
                     >
+                    <span
+                      v-if="
+                        currentPair &&
+                        tokensBalanceSto[
+                          currentPair[1][0].token0[0].toString()
+                        ] &&
+                        tokens &&
+                        tokens[currentPair[1][0].token0[0].toString()]
+                      "
+                      style="line-height: 14px"
+                    >
+                      {{
+                        tokensBalanceSto[currentPair[1][0].token0[0].toString()]
+                          | bigintToFloat(
+                            Math.min(
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              4
+                            ),
+                            tokens[currentPair[1][0].token0[0].toString()]
+                              .decimals
+                          )
+                          | formatNum
+                      }}
+                      {{
+                        tokens[currentPair[1][0].token0[0].toString()].symbol
+                      }}
+                    </span>
+                    &nbsp;
+                    <span
+                      @click="
+                        swapWallet(currentPair[1][0].token0[0].toString())
+                      "
+                      class="trade-item-pro-icon"
+                    >
+                      <a-icon type="swap" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="trade-item-pro-balance">
+                <div>Strategy worktop:</div>
+                <div
+                  style="margin-top: 5px"
+                  class="trade-item-pro-balance-right"
+                >
+                  <div>
+                    <span class="trade-item-pro-balance-label"
+                      >Pro-TraderAcct
+                      <a-tooltip placement="top">
+                        <template slot="title">
+                          <div>
+                            Pro-TraderAccount: In order to realize fast trading
+                            with Pro-Orders, Pro-Trader must deposit and keep
+                            funds in the account on trading pair. You can
+                            withdraw funds from Pro-TraderAccount back to
+                            Pro-Wallet. In pro-trading, the Pro-Trader deposits
+                            funds in the Pro-TraderAccount of the pair for
+                            faster trading. The relationship between the
+                            "Accounts" is shown in the diagram:
+                            <img
+                              style="margin-top: 10px"
+                              src="@/assets/img/account.png"
+                              alt=""
+                              class="w100"
+                            />
+                          </div> </template
+                        ><a-icon type="info-circle" /></a-tooltip
+                      >:
+                    </span>
                     <span
                       v-if="
                         currentPair &&
@@ -2382,6 +2866,7 @@
                         tokens &&
                         tokens[currentPair[1][0].token1[0].toString()]
                       "
+                      style="line-height: 14px"
                     >
                       <a-tooltip placement="top">
                         <template slot="title">
@@ -2434,53 +2919,30 @@
                       />
                     </a-tooltip>
                   </div>
-                </div>
-                <div class="trade-item-pro-balance-right">
                   <div>
                     <span class="trade-item-pro-balance-label"
-                      >Pro-wallet:</span
-                    >
-                    <span
-                      v-if="
-                        currentPair &&
-                        tokensBalanceSto[
-                          currentPair[1][0].token0[0].toString()
-                        ] &&
-                        tokens &&
-                        tokens[currentPair[1][0].token0[0].toString()]
-                      "
-                    >
-                      {{
-                        tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
-                            Math.min(
-                              tokens[currentPair[1][0].token0[0].toString()]
-                                .decimals,
-                              4
-                            ),
-                            tokens[currentPair[1][0].token0[0].toString()]
-                              .decimals
-                          )
-                          | formatNum
-                      }}
-                      {{
-                        tokens[currentPair[1][0].token0[0].toString()].symbol
-                      }}
+                      >Pro-TraderAcct
+                      <a-tooltip placement="top">
+                        <template slot="title">
+                          <div>
+                            Pro-TraderAccount: In order to realize fast trading
+                            with Pro-Orders, Pro-Trader must deposit and keep
+                            funds in the account on trading pair. You can
+                            withdraw funds from Pro-TraderAccount back to
+                            Pro-Wallet. In pro-trading, the Pro-Trader deposits
+                            funds in the Pro-TraderAccount of the pair for
+                            faster trading. The relationship between the
+                            "Accounts" is shown in the diagram:
+                            <img
+                              style="margin-top: 10px"
+                              src="@/assets/img/account.png"
+                              alt=""
+                              class="w100"
+                            />
+                          </div> </template
+                        ><a-icon type="info-circle" /></a-tooltip
+                      >:
                     </span>
-                    &nbsp;
-                    <span
-                      @click="
-                        swapWallet(currentPair[1][0].token0[0].toString())
-                      "
-                      class="trade-item-pro-icon"
-                    >
-                      <a-icon type="swap" />
-                    </span>
-                  </div>
-                  <div>
-                    <span class="trade-item-pro-balance-label"
-                      >Pro-TraderAcct:</span
-                    >
                     <span
                       v-if="
                         currentPair &&
@@ -2490,6 +2952,7 @@
                         tokens &&
                         tokens[currentPair[1][0].token0[0].toString()]
                       "
+                      style="line-height: 14px"
                     >
                       <a-tooltip placement="top">
                         <template slot="title">
@@ -2543,25 +3006,41 @@
                     </a-tooltip>
                   </div>
                 </div>
+                <p class="base-font base-tip-size" style="line-height: 1.2">
+                  Pro-orders only use the balance of traderAccount and multiple
+                  pro-orders share this balance.
+                </p>
               </div>
               <div class="trade-item-pro-submit">
-                <p>
-                  The Pro-Wallet account is a separate sub-account, please
-                  transfer tokens to this account before you can create strategy
-                  orders.
+                <div class="pro-order-button">
+                  <button
+                    v-if="pairInfo && pairInfo.paused"
+                    type="button"
+                    disabled
+                  >
+                    Paused
+                  </button>
+                  <button
+                    v-else
+                    v-for="item in proOrderEnum"
+                    :key="item"
+                    type="button"
+                    class="primary"
+                    :disabled="pairInfo && pairInfo.paused"
+                    @click="onCreateProOrder(item)"
+                  >
+                    Create {{ item }} Order
+                  </button>
+                </div>
+                <p class="base-font base-tip-size pro-orders-note">
+                  Note: Pro-orders do not always fully execute the strategy when
+                  prices fluctuate dramatically, or during busy times.
                 </p>
-                <button
-                  type="button"
-                  class="large-primary primary w100"
-                  @click="onCreateProOrder"
-                >
-                  Create a {{ currentProOrderMenu }} order
-                </button>
               </div>
             </div>
           </div>
           <div class="order-expire pc-show" v-if="orderExpirationDuration">
-            <span v-show="orderType !== 'Pro' && orderType !== 'Stop-loss'">
+            <span v-show="orderType !== 'Pro' && orderType !== 'Stop-limit'">
               The pending order will expire after
               {{ orderExpirationDuration | filterMaxCache }} days.
             </span>
@@ -2571,7 +3050,7 @@
           class="de-swap-level-10 pc-show"
           :class="{
             'has-register-competition': showKeepBalance,
-            'show-stop-loss': orderType === 'Stop-loss'
+            'show-stop-limit': orderType === 'Stop-limit'
           }"
         >
           <div class="order-book-type-list">
@@ -2653,6 +3132,7 @@
                     :class="{
                       'usdt-test': currentTradeMarketSort === 'USDT'
                     }"
+                    class="font-10"
                   >
                     Price<span
                       v-if="
@@ -2669,6 +3149,7 @@
                     :class="{
                       'usdt-test': currentTradeMarketSort === 'USDT'
                     }"
+                    class="font-10"
                   >
                     Quantity<span
                       v-if="
@@ -2777,7 +3258,7 @@
             </tbody>
             <tbody>
               <tr>
-                <td colspan="3">
+                <td style="padding-left: 10px" colspan="3">
                   <div class="current-icp-price">
                     <span class="token-price" :class="tokenPriceStatus">
                       {{ currentTokenPrice
@@ -2789,7 +3270,7 @@
                         type="arrow-down"
                       />
                     </span>
-                    <span v-if="icpPrice">≈ ${{ token0Price }}</span>
+                    <span>≈ ${{ token0Price }}</span>
                     <span
                       :class="{
                         'bid-price': Number(currentPair[2].change24h) > 0,
@@ -2904,8 +3385,67 @@
       </div>
       <div class="swap-transfer-list">
         <div
-          class="swap-transfer-list-header swap-transfer-list-header-fallback"
+          class="
+            swap-transfer-list-header
+            swap-transfer-list-header-fallback
+            swap-transfer-list-header-fallback-trades
+          "
         >
+          <ul>
+            <li
+              :class="{ active: item.value === currentTradesMenu }"
+              v-for="(item, index) in tradesMenu"
+              :key="index"
+              @click="changeTradesMenu(item.value)"
+            >
+              <span
+                v-if="
+                  !(
+                    item.value === 'pro' &&
+                    currentPair &&
+                    prePairs.includes(currentPair[0].toString())
+                  )
+                "
+              >
+                {{ item.name }}
+              </span>
+            </li>
+          </ul>
+          <button
+            type="button"
+            class="swap-transfer-list-header-fallback-click"
+            @click="showFallback"
+          >
+            Fallback
+          </button>
+          <span class="pc-show">
+            <span v-show="currentTradesMenu === 'std'"
+              >Notes: Settlement is async after order has been filled, check
+              your balance later.</span
+            >
+            <span v-show="currentTradesMenu === 'pro'"
+              >Notes: Pro-orders do not always fully execute the strategy when
+              prices fluctuate dramatically, or during busy times.</span
+            >
+          </span>
+          <span class="h5-show swap-transfer-list-header-fallback-span">
+            <a-tooltip placement="top">
+              <template slot="title">
+                <span v-show="currentTradesMenu === 'std'"
+                  >Notes: Settlement is async after order has been filled, check
+                  your balance later.</span
+                >
+                <span v-show="currentTradesMenu === 'pro'"
+                  >Notes: Pro-orders do not always fully execute the strategy
+                  when prices fluctuate dramatically, or during busy
+                  times.</span
+                >
+              </template>
+              <a-icon type="exclamation-circle" />
+            </a-tooltip>
+          </span>
+        </div>
+        <div class="std-lint-menu" v-show="currentTradesMenu === 'std'">
           <ul>
             <li
               :class="{ active: menu.value === currentTradeMenu }"
@@ -2913,44 +3453,27 @@
               :key="index"
               @click="changeTradeMenu(menu.value)"
             >
-              {{ menu.name }}
+              <span
+                v-if="
+                  !(
+                    menu.value === 'stop' &&
+                    currentPair &&
+                    prePairs.includes(currentPair[0].toString())
+                  )
+                "
+              >
+                {{ menu.name }}
+                <span v-if="menu.value === 'stop'"
+                  >({{ stopOrders.length }})</span
+                >
+              </span>
             </li>
           </ul>
-          <button
-            type="button"
-            class="pc-show swap-transfer-list-header-fallback-click primary"
-            @click="showFallback"
-          >
-            Fallback
-          </button>
-          <span class="pc-show">
-            Notes: Settlement is async after order has been filled, check your
-            balance later.
-          </span>
-          <span class="h5-show swap-transfer-list-header-fallback-span">
-            <a-tooltip placement="top">
-              <template slot="title">
-                Notes: Settlement is async after order has been filled, check
-                your balance later.
-              </template>
-              <a-icon type="exclamation-circle" />
-            </a-tooltip>
-          </span>
         </div>
-        <button
-          type="button"
-          class="
-            h5-show
-            margin-left-auto
-            swap-transfer-list-header-fallback-click
-            primary
-          "
-          style="margin-top: 10px"
-          @click="showFallback"
+        <div
+          class="base-font vol-h5"
+          v-show="currentTradesMenu === 'std' && currentTradeMenu === 'pending'"
         >
-          Fallback
-        </button>
-        <div class="base-font vol-h5" v-show="currentTradeMenu === 'pending'">
           Stats:
           <span
             v-if="
@@ -3005,7 +3528,10 @@
           </span>
           <span>Pending</span>
         </div>
-        <div class="base-font vol-h5" v-show="currentTradeMenu === 'history'">
+        <div
+          class="base-font vol-h5"
+          v-show="currentTradesMenu === 'std' && currentTradeMenu === 'history'"
+        >
           Vol:
           <span
             v-if="
@@ -3049,8 +3575,11 @@
             {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
           </span>
         </div>
-        <div v-show="!isH5 && currentTradeMenu === 'pro'">
-          <ul style="margin: -15px 0 0 5px">
+        <div
+          class="std-lint-menu"
+          v-show="!isH5 && currentTradesMenu === 'pro'"
+        >
+          <ul>
             <li
               :class="{ active: menu.value === currentTradeMenuPro }"
               v-for="(menu, index) in tradeMenuPro"
@@ -3058,11 +3587,16 @@
               @click="changeTradeMenuPro(menu.value)"
             >
               {{ menu.name }}
+              <span v-if="menu.value === 'orders'"
+                >({{ proOrders.length }})</span
+              >
             </li>
           </ul>
           <div
             class="overflow-scroll"
-            v-show="currentTradeMenuPro === 'orders'"
+            v-show="
+              currentTradesMenu === 'pro' && currentTradeMenuPro === 'orders'
+            "
           >
             <table>
               <thead>
@@ -3071,9 +3605,9 @@
                   <th>Soid</th>
                   <th>Type</th>
                   <th>Strategy</th>
-                  <th>Stats</th>
+                  <th>Triggered trades</th>
                   <th>Status</th>
-                  <th>Last trigger time</th>
+                  <th>Last trigger</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -3103,10 +3637,10 @@
                   <td>
                     {{ Object.keys(item.stType)[0] }}
                   </td>
-                  <td style="line-height: 1.2">
+                  <td style="line-height: 1.5">
                     <div v-if="Object.keys(item.stType)[0] === 'GridOrder'">
                       <div>
-                        lowerLimit:
+                        Price range:
                         <span
                           v-if="
                             currentPair &&
@@ -3129,9 +3663,7 @@
                             )
                           }}
                         </span>
-                      </div>
-                      <div>
-                        upperLimit:
+                        ~
                         <span
                           v-if="
                             currentPair &&
@@ -3156,11 +3688,7 @@
                         </span>
                       </div>
                       <div>
-                        gridCountPerSide:
-                        {{ item.strategy.GridOrder.setting.gridCountPerSide }}
-                      </div>
-                      <div>
-                        spread:
+                        Grid spread:
                         <span
                           v-if="
                             Object.keys(
@@ -3168,12 +3696,10 @@
                             )[0] === 'Geom'
                           "
                         >
-                          { Geometric:
                           {{
                             item.strategy.GridOrder.setting.spread.Geom
                               | filterPpm
                           }}
-                          }
                         </span>
                         <span
                           v-if="
@@ -3188,7 +3714,6 @@
                             buyUnit
                           "
                         >
-                          { Arithmetic:
                           {{
                             filterLevelPrice(
                               item.strategy.GridOrder.setting.spread.Arith,
@@ -3200,11 +3725,14 @@
                               buyUnit
                             )
                           }}
-                          }
+                          <span>{{
+                            tokens[currentPair[1][0].token1[0].toString()]
+                              .symbol
+                          }}</span>
                         </span>
                       </div>
-                      <div>
-                        Amount:
+                      <div class="base-font-title">
+                        Grid order quantity:
                         <span
                           v-if="
                             Object.keys(
@@ -3212,7 +3740,6 @@
                             )[0] === 'Percent'
                           "
                         >
-                          { Percent:
                           <span
                             v-if="
                               item.strategy.GridOrder.setting.amount.Percent
@@ -3221,9 +3748,16 @@
                             >{{
                               item.strategy.GridOrder.setting.amount.Percent[0]
                                 | filterPpm
-                            }}</span
-                          >
-                          <span v-else>-</span> }
+                            }}
+                            <a-tooltip placement="top">
+                              <template slot="title">
+                                Percentage of available balance in TradeAccount
+                                for pro-trader.
+                              </template>
+                              <a-icon type="info-circle" />
+                            </a-tooltip>
+                          </span>
+                          <span v-else>-</span>
                         </span>
                         <span
                           v-if="
@@ -3274,6 +3808,35 @@
                           }}
                         </span>
                       </div>
+                      <div
+                        v-if="
+                          unit &&
+                          buyUnit &&
+                          currentPair &&
+                          tokens &&
+                          tokens[currentPair[1][0].token0[0].toString()]
+                        "
+                      >
+                        Middle grid:
+                        <span
+                          v-if="
+                            item.strategy.GridOrder.gridPrices.midPrice.length
+                          "
+                        >
+                          {{
+                            filterLevelPrice(
+                              item.strategy.GridOrder.gridPrices.midPrice[0],
+                              unit,
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokens[currentPair[1][0].token1[0].toString()]
+                                .decimals,
+                              buyUnit
+                            )
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </div>
                     </div>
                     <div v-if="Object.keys(item.stType)[0] === 'IcebergOrder'">
                       <div>
@@ -3285,37 +3848,36 @@
                         }}</span>
                       </div>
                       <div>
-                        Price:
-                        <span
-                          v-if="
-                            currentPair &&
-                            tokens &&
-                            tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokens[currentPair[1][0].token1[0].toString()] &&
-                            unit &&
-                            buyUnit
-                          "
-                        >
+                        Period:
+                        <span>
                           {{
-                            filterLevelPrice(
-                              item.strategy.IcebergOrder.setting.order.price,
-                              unit,
-                              tokens[currentPair[1][0].token0[0].toString()]
-                                .decimals,
-                              tokens[currentPair[1][0].token1[0].toString()]
-                                .decimals,
-                              buyUnit,
-                              Object.keys(
-                                item.strategy.IcebergOrder.setting.order.side
-                              )[0] === 'Buy'
-                                ? 'bid'
-                                : 'ask'
-                            )
+                            item.strategy.IcebergOrder.setting.startingTime
+                              | formatDateToMinuteFilter
+                          }}
+                          ~
+                          {{
+                            item.strategy.IcebergOrder.setting.endTime
+                              | formatDateToMinuteFilter
                           }}
                         </span>
                       </div>
                       <div>
-                        Quantity:
+                        <span
+                          v-show="
+                            Object.keys(
+                              item.strategy.IcebergOrder.setting.totalLimit
+                            )[0] === 'Token0'
+                          "
+                          >Total quantity:</span
+                        >
+                        <span
+                          v-show="
+                            Object.keys(
+                              item.strategy.IcebergOrder.setting.totalLimit
+                            )[0] === 'Token1'
+                          "
+                          >Total amount:</span
+                        >
                         <span
                           v-if="
                             currentPair &&
@@ -3334,10 +3896,26 @@
                               tokenMinUnit
                             )
                           }}
+                          (Filed:
+                          {{
+                            filterFiledPro(
+                              item,
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokens[currentPair[1][0].token1[0].toString()]
+                                .decimals,
+                              tokenMinUnit,
+                              buyUnit
+                            )
+                          }})
+                          {{
+                            tokens[currentPair[1][0].token0[0].toString()]
+                              .symbol
+                          }}
                         </span>
                       </div>
-                      <div>
-                        Total:
+                      <!-- <div>
+                        Total amount:
                         <span
                           v-if="
                             currentPair &&
@@ -3380,9 +3958,39 @@
                               .symbol
                           }}
                         </span>
+                      </div>-->
+                      <div class="base-font-title">
+                        order price:
+                        <span
+                          v-if="
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token0[0].toString()] &&
+                            tokens[currentPair[1][0].token1[0].toString()] &&
+                            unit &&
+                            buyUnit
+                          "
+                        >
+                          {{
+                            filterLevelPrice(
+                              item.strategy.IcebergOrder.setting.order.price,
+                              unit,
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokens[currentPair[1][0].token1[0].toString()]
+                                .decimals,
+                              buyUnit,
+                              Object.keys(
+                                item.strategy.IcebergOrder.setting.order.side
+                              )[0] === 'Buy'
+                                ? 'bid'
+                                : 'ask'
+                            )
+                          }}
+                        </span>
                       </div>
-                      <div>
-                        Display quantity:
+                      <div class="base-font-title">
+                        order quantity:
                         <span
                           v-if="
                             currentPair &&
@@ -3405,10 +4013,347 @@
                         </span>
                       </div>
                     </div>
+                    <div
+                      v-if="
+                        Object.keys(item.stType)[0] === 'TWAP' ||
+                        Object.keys(item.stType)[0] === 'VWAP'
+                      "
+                    >
+                      <div>
+                        Side:
+                        <span>
+                          {{
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting.order.side
+                            )[0]
+                          }}
+                        </span>
+                      </div>
+                      <div>
+                        Period:
+                        <span>
+                          {{
+                            Object.values(item.strategy)[0].setting.startingTime
+                              | formatDateToMinuteFilter
+                          }}
+                          ~
+                          {{
+                            Object.values(item.strategy)[0].setting.endTime
+                              | formatDateToMinuteFilter
+                          }}
+                        </span>
+                      </div>
+                      <div v-if="Object.keys(item.stType)[0] === 'TWAP'">
+                        Trigger interval:
+                        <span>
+                          {{
+                            getDuration(
+                              item.strategy.TWAP.setting.triggerInterval
+                            )
+                          }}
+                        </span>
+                      </div>
+                      <div v-if="Object.keys(item.stType)[0] === 'VWAP'">
+                        trigger vol change:
+                        <span
+                          v-if="
+                            Object.keys(
+                              item.strategy.VWAP.setting.triggerVol
+                            )[0] === 'Geom'
+                          "
+                        >
+                          {{
+                            item.strategy.VWAP.setting.triggerVol.Geom
+                              | filterPpm
+                          }}
+                          <a-tooltip placement="top">
+                            <template slot="title">
+                              {{
+                                item.strategy.VWAP.setting.triggerVol.Geom
+                                  | filterPpm
+                              }}
+                              of volume in the last 24 hours.
+                            </template>
+                            <a-icon type="info-circle" />
+                          </a-tooltip>
+                        </span>
+                        <span
+                          v-if="
+                            Object.keys(
+                              item.strategy.VWAP.setting.triggerVol
+                            )[0] === 'Arith' &&
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token1[0].toString()]
+                              .decimals &&
+                            buyUnit
+                          "
+                        >
+                          {{
+                            Object.values(
+                              item.strategy.VWAP.setting.triggerVol
+                            )[0]
+                              | bigintToFloat(
+                                buyUnit,
+                                tokens[currentPair[1][0].token1[0].toString()]
+                                  .decimals
+                              )
+                          }}
+                          {{
+                            tokens[currentPair[1][0].token1[0].toString()]
+                              .symbol
+                          }}
+                        </span>
+                      </div>
+                      <div>
+                        <span
+                          v-show="
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting.totalLimit
+                            )[0] === 'Token0'
+                          "
+                          >Total quantity:</span
+                        >
+                        <span
+                          v-show="
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting.totalLimit
+                            )[0] === 'Token1'
+                          "
+                          >Total amount:</span
+                        >
+                        <span
+                          v-if="
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token0[0].toString()] &&
+                            tokenMinUnit &&
+                            buyUnit &&
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting.totalLimit
+                            )[0] === 'Token0'
+                          "
+                        >
+                          {{
+                            filterQuantity(
+                              Object.values(
+                                Object.values(item.strategy)[0].setting
+                                  .totalLimit
+                              )[0],
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokenMinUnit
+                            )
+                          }}
+                          (Filed:
+                          {{
+                            filterFiledPro(
+                              item,
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokens[currentPair[1][0].token1[0].toString()]
+                                .decimals,
+                              tokenMinUnit,
+                              buyUnit
+                            )
+                          }})
+                          {{
+                            tokens[currentPair[1][0].token0[0].toString()]
+                              .symbol
+                          }}
+                        </span>
+                        <span
+                          v-if="
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token1[0].toString()] &&
+                            tokenMinUnit &&
+                            buyUnit &&
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting.totalLimit
+                            )[0] === 'Token1'
+                          "
+                        >
+                          {{
+                            Object.values(
+                              Object.values(item.strategy)[0].setting.totalLimit
+                            )[0]
+                              | bigintToFloat(
+                                buyUnit,
+                                tokens[currentPair[1][0].token1[0].toString()]
+                                  .decimals
+                              )
+                          }}
+                          (Filed:
+                          {{
+                            filterFiledPro(
+                              item,
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokens[currentPair[1][0].token1[0].toString()]
+                                .decimals,
+                              tokenMinUnit,
+                              buyUnit
+                            )
+                          }})
+                          {{
+                            tokens[currentPair[1][0].token1[0].toString()]
+                              .symbol
+                          }}
+                        </span>
+                      </div>
+                      <div class="base-font-title">
+                        <span
+                          v-if="
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting.order.side
+                            )[0] === 'Buy'
+                          "
+                        >
+                          Highest price:
+                        </span>
+                        <span v-else>Lowest price:</span>
+                        <span
+                          v-if="
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token0[0].toString()] &&
+                            tokens[currentPair[1][0].token1[0].toString()] &&
+                            unit &&
+                            buyUnit
+                          "
+                        >
+                          {{
+                            filterLevelPrice(
+                              Object.values(item.strategy)[0].setting.order
+                                .priceLimit,
+                              unit,
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokens[currentPair[1][0].token1[0].toString()]
+                                .decimals,
+                              buyUnit,
+                              Object.keys(
+                                Object.values(item.strategy)[0].setting.order
+                                  .side
+                              )[0] === 'Buy'
+                                ? 'bid'
+                                : 'ask'
+                            )
+                          }}
+                        </span>
+                      </div>
+                      <div class="base-font-title">
+                        Slippage:
+                        <span
+                          v-if="
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token0[0].toString()] &&
+                            tokens[currentPair[1][0].token1[0].toString()] &&
+                            unit &&
+                            buyUnit
+                          "
+                        >
+                          {{
+                            filterLevelPrice(
+                              Object.values(item.strategy)[0].setting.order
+                                .priceSpread,
+                              unit,
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokens[currentPair[1][0].token1[0].toString()]
+                                .decimals,
+                              buyUnit,
+                              Object.keys(
+                                Object.values(item.strategy)[0].setting.order
+                                  .side
+                              )[0] === 'Buy'
+                                ? 'bid'
+                                : 'ask'
+                            )
+                          }}
+                        </span>
+                      </div>
+                      <div class="base-font-title">
+                        Order quantity:
+                        <span
+                          v-if="
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token0[0].toString()] &&
+                            tokenMinUnit &&
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting
+                                .amountPerTrigger
+                            )[0] === 'Token0'
+                          "
+                        >
+                          {{
+                            filterQuantity(
+                              Object.values(
+                                Object.values(item.strategy)[0].setting
+                                  .amountPerTrigger
+                              )[0],
+                              tokens[currentPair[1][0].token0[0].toString()]
+                                .decimals,
+                              tokenMinUnit
+                            )
+                          }}
+                          {{
+                            tokens[currentPair[1][0].token0[0].toString()]
+                              .symbol
+                          }}
+                        </span>
+                        <span
+                          v-if="
+                            currentPair &&
+                            tokens &&
+                            tokens[currentPair[1][0].token1[0].toString()] &&
+                            buyUnit &&
+                            Object.keys(
+                              Object.values(item.strategy)[0].setting
+                                .amountPerTrigger
+                            )[0] === 'Token1'
+                          "
+                        >
+                          {{
+                            Object.values(
+                              Object.values(item.strategy)[0].setting
+                                .amountPerTrigger
+                            )[0]
+                              | bigintToFloat(
+                                buyUnit,
+                                tokens[currentPair[1][0].token1[0].toString()]
+                                  .decimals
+                              )
+                          }}
+                          {{
+                            tokens[currentPair[1][0].token1[0].toString()]
+                              .symbol
+                          }}
+                        </span>
+                      </div>
+                    </div>
                   </td>
-                  <td>
-                    <div>orderCount: {{ item.stats.orderCount }}</div>
-                    <div>errorCount: {{ item.stats.errorCount }}</div>
+                  <td style="line-height: 1.5">
+                    <div
+                      class="pointer"
+                      :class="{
+                        'main-color':
+                          item.pendingOrders.buy.length +
+                            item.pendingOrders.sell.length >
+                          0
+                      }"
+                      @click="showPendingOrders(item.pendingOrders)"
+                    >
+                      pending({{
+                        item.pendingOrders.buy.length +
+                        item.pendingOrders.sell.length
+                      }})
+                    </div>
+                    <div>orders({{ item.stats.orderCount }})</div>
+                    <div>errors({{ item.stats.errorCount }})</div>
                   </td>
                   <td>
                     {{ Object.keys(item.status)[0] }}
@@ -3430,7 +4375,7 @@
                     <span
                       class="cancel-pending"
                       v-if="Object.keys(item.status)[0] === 'Stopped'"
-                      @click="onRunningProOrder(item.soid, item.stType)"
+                      @click="onRunningProOrder(item.soid, item.stType, item)"
                     >
                       Run
                     </span>
@@ -3459,7 +4404,10 @@
           <a-pagination
             class="pagination"
             v-show="
-              !isH5 && currentTradeMenuPro === 'orders' && proOrders.length > 10
+              !isH5 &&
+              currentTradesMenu === 'pro' &&
+              currentTradeMenuPro === 'orders' &&
+              proOrders.length > 10
             "
             :current="currentProOrdersPage"
             :defaultPageSize="10"
@@ -3467,7 +4415,13 @@
             @change="changeProOrders"
           />
           <div class="overflow-scroll">
-            <table v-show="!isH5 && currentTradeMenuPro === 'pending'">
+            <table
+              v-show="
+                !isH5 &&
+                currentTradesMenu === 'pro' &&
+                currentTradeMenuPro === 'pending'
+              "
+            >
               <thead>
                 <tr>
                   <th>Time</th>
@@ -3741,6 +4695,7 @@
                       <span
                         v-show="
                           getPendingStatus(item[1]) === 'Prepared' ||
+                          getPendingStatus(item[1]) === 'Trading' ||
                           Object.keys(item[1].status)[0] === 'Todo' ||
                           (toStatus &&
                             (getOrderStatus(item[1].toids) === 'Doing' ||
@@ -3787,6 +4742,7 @@
             class="pagination"
             v-show="
               !isH5 &&
+              currentTradesMenu === 'pro' &&
               currentTradeMenuPro === 'pending' &&
               pendingListPro.length > 10
             "
@@ -3796,7 +4752,13 @@
             @change="changePendingPro"
           />
           <div class="overflow-scroll">
-            <table v-show="!isH5 && currentTradeMenuPro === 'history'">
+            <table
+              v-show="
+                !isH5 &&
+                currentTradesMenu === 'pro' &&
+                currentTradeMenuPro === 'history'
+              "
+            >
               <thead>
                 <tr>
                   <th>Time</th>
@@ -4796,6 +5758,7 @@
             class="pagination"
             v-show="
               !isH5 &&
+              currentTradesMenu === 'pro' &&
               currentTradeMenuPro === 'history' &&
               userRecordPro.length > 10
             "
@@ -4806,7 +5769,13 @@
           />
         </div>
         <div class="overflow-scroll">
-          <table v-show="!isH5 && currentTradeMenu === 'history'">
+          <table
+            v-show="
+              !isH5 &&
+              currentTradesMenu === 'std' &&
+              currentTradeMenu === 'history'
+            "
+          >
             <thead>
               <tr>
                 <th>Time</th>
@@ -5775,7 +6744,10 @@
         <a-pagination
           class="pagination"
           v-show="
-            !isH5 && currentTradeMenu === 'history' && userRecord.length > 10
+            !isH5 &&
+            currentTradesMenu === 'std' &&
+            currentTradeMenu === 'history' &&
+            userRecord.length > 10
           "
           :current="currentHistoryPage"
           :defaultPageSize="10"
@@ -5783,7 +6755,13 @@
           @change="changeHistory"
         />
         <div class="overflow-scroll">
-          <table v-show="!isH5 && currentTradeMenu === 'pending'">
+          <table
+            v-show="
+              !isH5 &&
+              currentTradesMenu === 'std' &&
+              currentTradeMenu === 'pending'
+            "
+          >
             <thead>
               <tr>
                 <th>Time</th>
@@ -6055,6 +7033,7 @@
                     <span
                       v-show="
                         getPendingStatus(item[1]) === 'Prepared' ||
+                        getPendingStatus(item[1]) === 'Trading' ||
                         Object.keys(item[1].status)[0] === 'Todo' ||
                         (toStatus &&
                           (getOrderStatus(item[1].toids) === 'Doing' ||
@@ -6106,14 +7085,25 @@
         </div>
         <a-pagination
           class="pagination"
-          v-show="!isH5 && currentTradeMenu === 'pending' && totalPending > 10"
+          v-show="
+            !isH5 &&
+            currentTradesMenu === 'std' &&
+            currentTradeMenu === 'pending' &&
+            totalPending > 10
+          "
           :current="currentPendingPage"
           :defaultPageSize="10"
           :total="totalPending"
           @change="changePending"
         />
         <div class="overflow-scroll">
-          <table v-show="!isH5 && currentTradeMenu === 'stop'">
+          <table
+            v-show="
+              !isH5 &&
+              currentTradesMenu === 'std' &&
+              currentTradeMenu === 'stop'
+            "
+          >
             <thead>
               <tr>
                 <th>Time</th>
@@ -6209,7 +7199,7 @@
                 </td>
                 <td>
                   <span>
-                    {{ filterStopLossFilled(item) }}
+                    {{ filterStopLimitFilled(item) }}
                   </span>
                 </td>
                 <td>
@@ -6336,6 +7326,10 @@
                               filterTxid(item.pendingOrders.buy[0][0][0])
                             "
                             copyText="Txid"
+                            :href="`https://ic.house/swap/${currentPair[0].toString()}/${filterTxid(
+                              item.pendingOrders.buy[0][0][0]
+                            )}`"
+                            :is-copy="false"
                           ></copy-account>
                         </div>
                         <div
@@ -6357,6 +7351,10 @@
                               filterTxid(item.pendingOrders.sell[0][0][0])
                             "
                             copyText="Txid"
+                            :href="`https://ic.house/swap/${currentPair[0].toString()}/${filterTxid(
+                              item.pendingOrders.sell[0][0][0]
+                            )}`"
+                            :is-copy="false"
                           ></copy-account>
                         </div>
                         <div>
@@ -6374,7 +7372,7 @@
                   <span
                     v-if="Object.keys(item.status)[0] === 'Running'"
                     class="cancel-pending"
-                    @click="onDeleteStopLoss(item.soid)"
+                    @click="onDeleteStopLimit(item.soid)"
                     >Cancel</span
                   >
                 </td>
@@ -6382,7 +7380,14 @@
             </tbody>
           </table>
         </div>
-        <div class="pending-h5" v-show="isH5 && currentTradeMenu === 'pending'">
+        <div
+          class="pending-h5"
+          v-show="
+            isH5 &&
+            currentTradesMenu === 'std' &&
+            currentTradeMenu === 'pending'
+          "
+        >
           <ul>
             <li v-for="(item, index) in pendingList" :key="index">
               <div class="pending-header-h5">
@@ -6436,6 +7441,7 @@
                     <span
                       v-show="
                         getPendingStatus(item[1]) === 'Prepared' ||
+                        getPendingStatus(item[1]) === 'Trading' ||
                         Object.keys(item[1].status)[0] === 'Todo' ||
                         (toStatus &&
                           (getOrderStatus(item[1].toids) === 'Doing' ||
@@ -6701,7 +7707,12 @@
             <li v-if="!pendingList.length" class="text-center">No Orders</li>
           </ul>
         </div>
-        <div class="pending-h5" v-show="isH5 && currentTradeMenu === 'stop'">
+        <div
+          class="pending-h5"
+          v-show="
+            isH5 && currentTradesMenu === 'std' && currentTradeMenu === 'stop'
+          "
+        >
           <ul>
             <li v-for="(item, index) in stopOrders" :key="index">
               <div class="pending-header-h5">
@@ -6744,7 +7755,7 @@
                   <span
                     v-if="Object.keys(item.status)[0] === 'Running'"
                     class="cancel-pending"
-                    @click="onDeleteStopLoss(item.soid)"
+                    @click="onDeleteStopLimit(item.soid)"
                     >Cancel</span
                   >
                 </div>
@@ -6901,7 +7912,7 @@
               <div class="pending-item">
                 <span class="pending-item-left">Filled</span>
                 <span class="pending-item-right">
-                  {{ filterStopLossFilled(item) }}
+                  {{ filterStopLimitFilled(item) }}
                 </span>
               </div>
               <div class="pending-item">
@@ -6920,7 +7931,14 @@
             <li v-if="!stopOrders.length" class="text-center">No Orders</li>
           </ul>
         </div>
-        <div class="pending-h5" v-show="isH5 && currentTradeMenu === 'history'">
+        <div
+          class="pending-h5"
+          v-show="
+            isH5 &&
+            currentTradesMenu === 'std' &&
+            currentTradeMenu === 'history'
+          "
+        >
           <ul>
             <li v-for="(item, index) in userRecord" :key="index">
               <div class="pending-header-h5">
@@ -7501,7 +8519,7 @@
             <li v-if="!userRecord.length" class="text-center">No Trades</li>
           </ul>
         </div>
-        <div class="pending-h5" v-show="isH5 && currentTradeMenu === 'pro'">
+        <div class="pending-h5" v-show="isH5 && currentTradesMenu === 'pro'">
           <ul class="flex-center pending-h5-pro" style="flex-direction: row">
             <li
               :class="{ active: menu.value === currentTradeMenuPro }"
@@ -7512,7 +8530,14 @@
               {{ menu.name }}
             </li>
           </ul>
-          <ul v-show="currentTradeMenuPro === 'orders'">
+          <ul
+            v-loading="proOrdersLoading"
+            element-loading-background="rgba(0, 0, 0, 0)"
+            v-show="
+              currentTradesMenu === 'pro' && currentTradeMenuPro === 'orders'
+            "
+            style="min-height: 100px"
+          >
             <li v-for="(item, index) in proOrders" :key="index">
               <div class="pending-header-h5">
                 <div
@@ -7531,9 +8556,31 @@
                       tokens[currentPair[1][0].token1[0].toString()].symbol
                     }}
                   </span>
-                  <span>
+                  <span class="base-font-title">
                     {{ Object.keys(item.stType)[0] }}
                   </span>
+                  <span
+                    v-if="
+                      Object.keys(item.stType)[0] === 'TWAP' ||
+                      Object.keys(item.stType)[0] === 'VWAP' ||
+                      Object.keys(item.stType)[0] === 'IcebergOrder'
+                    "
+                    :class="{
+                      'ask-price':
+                        Object.keys(
+                          Object.values(item.strategy)[0].setting.order.side
+                        )[0] === 'Sell',
+                      'bid-price':
+                        Object.keys(
+                          Object.values(item.strategy)[0].setting.order.side
+                        )[0] === 'Buy'
+                    }"
+                    >{{
+                      Object.keys(
+                        Object.values(item.strategy)[0].setting.order.side
+                      )[0]
+                    }}</span
+                  >
                 </div>
                 <div class="margin-left-auto">
                   <span
@@ -7548,6 +8595,13 @@
                   </span>
                   <span
                     class="cancel-pending"
+                    v-if="Object.keys(item.status)[0] === 'Stopped'"
+                    @click="onRunningProOrder(item.soid, item.stType, item)"
+                  >
+                    Run
+                  </span>
+                  <span
+                    class="cancel-pending"
                     v-if="Object.keys(item.status)[0] === 'Running'"
                     @click="onStopProOrder(item.soid, item.stType)"
                   >
@@ -7556,8 +8610,8 @@
                   <span
                     class="cancel-pending"
                     v-if="
-                      Object.keys(item.status)[0] === 'Running' ||
-                      Object.keys(item.status)[0] === 'Stopped'
+                      Object.keys(item.status)[0] === 'Stopped' ||
+                      Object.keys(item.status)[0] === 'Deleted'
                     "
                     @click="onDeleteProOrder(item.soid, item.stType)"
                   >
@@ -7571,79 +8625,196 @@
                   {{ Object.keys(item.status)[0] }}
                 </span>
               </div>
-              <div class="pending-item pending-item-pro">
-                <span class="pending-item-left">Strategy</span>
+              <div
+                class="pending-item"
+                v-if="
+                  Object.keys(item.stType)[0] === 'TWAP' ||
+                  Object.keys(item.stType)[0] === 'VWAP' ||
+                  Object.keys(item.stType)[0] === 'IcebergOrder'
+                "
+              >
+                <span class="pending-item-left">Period</span>
+                <span class="pending-item-right">
+                  {{
+                    Object.values(item.strategy)[0].setting.startingTime
+                      | formatDateToMinuteFilter
+                  }}
+                  ~
+                  {{
+                    Object.values(item.strategy)[0].setting.endTime
+                      | formatDateToMinuteFilter
+                  }}
+                </span>
               </div>
               <div
-                v-if="Object.keys(item.stType)[0] === 'GridOrder'"
-                class="pending-item pending-item-pro-item"
+                class="pending-item"
+                v-if="Object.keys(item.stType)[0] === 'TWAP'"
               >
-                <span class="pending-item-left">lowerLimit</span>
+                <span class="pending-item-left">Trigger interval</span>
                 <span class="pending-item-right">
-                  <span
-                    v-if="
-                      currentPair &&
-                      tokens &&
-                      tokens[currentPair[1][0].token0[0].toString()] &&
-                      tokens[currentPair[1][0].token1[0].toString()] &&
-                      unit &&
-                      buyUnit
-                    "
-                  >
-                    {{
-                      filterLevelPrice(
-                        item.strategy.GridOrder.setting.lowerLimit,
-                        unit,
-                        tokens[currentPair[1][0].token0[0].toString()].decimals,
-                        tokens[currentPair[1][0].token1[0].toString()].decimals,
-                        buyUnit
+                  {{ getDuration(item.strategy.TWAP.setting.triggerInterval) }}
+                </span>
+              </div>
+              <div
+                class="pending-item"
+                v-if="Object.keys(item.stType)[0] === 'VWAP'"
+              >
+                <span class="pending-item-left">Trigger vol change</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    Object.keys(item.strategy.VWAP.setting.triggerVol)[0] ===
+                    'Geom'
+                  "
+                >
+                  {{ item.strategy.VWAP.setting.triggerVol.Geom | filterPpm }}
+                  <a-tooltip placement="top">
+                    <template slot="title">
+                      {{
+                        item.strategy.VWAP.setting.triggerVol.Geom | filterPpm
+                      }}
+                      of volume in the last 24 hours.
+                    </template>
+                    <a-icon type="info-circle" />
+                  </a-tooltip>
+                </span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    Object.keys(item.strategy.VWAP.setting.triggerVol)[0] ===
+                      'Arith' &&
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token1[0].toString()].decimals &&
+                    buyUnit
+                  "
+                >
+                  {{
+                    Object.values(item.strategy.VWAP.setting.triggerVol)[0]
+                      | bigintToFloat(
+                        buyUnit,
+                        tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
-                    }}
-                  </span>
+                  }}
+                  {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
                 </span>
               </div>
               <div
-                v-if="Object.keys(item.stType)[0] === 'GridOrder'"
-                class="pending-item pending-item-pro-item"
+                class="pending-item"
+                v-if="
+                  Object.keys(item.stType)[0] === 'TWAP' ||
+                  Object.keys(item.stType)[0] === 'VWAP'
+                "
               >
-                <span class="pending-item-left">upperLimit</span>
-                <span class="pending-item-right">
-                  <span
-                    v-if="
-                      currentPair &&
-                      tokens &&
-                      tokens[currentPair[1][0].token0[0].toString()] &&
-                      tokens[currentPair[1][0].token1[0].toString()] &&
-                      unit &&
+                <span class="pending-item-left">Total amount</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()] &&
+                    tokenMinUnit &&
+                    Object.keys(
+                      Object.values(item.strategy)[0].setting.totalLimit
+                    )[0] === 'Token0'
+                  "
+                >
+                  {{
+                    filterQuantity(
+                      Object.values(
+                        Object.values(item.strategy)[0].setting.totalLimit
+                      )[0],
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokenMinUnit
+                    )
+                  }}
+                  (Filed:
+                  {{
+                    filterFiledPro(
+                      item,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals,
+                      tokenMinUnit,
                       buyUnit
-                    "
-                  >
-                    {{
-                      filterLevelPrice(
-                        item.strategy.GridOrder.setting.upperLimit,
-                        unit,
-                        tokens[currentPair[1][0].token0[0].toString()].decimals,
-                        tokens[currentPair[1][0].token1[0].toString()].decimals,
-                        buyUnit
+                    )
+                  }})
+                  {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
+                </span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token1[0].toString()] &&
+                    buyUnit &&
+                    Object.keys(
+                      Object.values(item.strategy)[0].setting.totalLimit
+                    )[0] === 'Token1'
+                  "
+                >
+                  {{
+                    Object.values(
+                      Object.values(item.strategy)[0].setting.totalLimit
+                    )[0]
+                      | bigintToFloat(
+                        buyUnit,
+                        tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
-                    }}
-                  </span>
+                  }}
+                  (Filed:
+                  {{
+                    filterFiledPro(
+                      item,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals,
+                      tokenMinUnit,
+                      buyUnit
+                    )
+                  }})
+                  {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                </span>
+              </div>
+              <div
+                class="pending-item"
+                v-if="Object.keys(item.stType)[0] === 'IcebergOrder'"
+              >
+                <span class="pending-item-left">Total amount</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()] &&
+                    tokenMinUnit
+                  "
+                >
+                  {{
+                    filterQuantity(
+                      Object.values(
+                        item.strategy.IcebergOrder.setting.totalLimit
+                      )[0],
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokenMinUnit
+                    )
+                  }}
+                  (Filed:
+                  {{
+                    filterFiledPro(
+                      item,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals,
+                      tokenMinUnit,
+                      buyUnit
+                    )
+                  }})
+                  {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
                 </span>
               </div>
               <div
                 v-if="Object.keys(item.stType)[0] === 'GridOrder'"
-                class="pending-item pending-item-pro-item"
+                class="pending-item"
               >
-                <span class="pending-item-left">gridCountPerSide</span>
-                <span class="pending-item-right">
-                  {{ item.strategy.GridOrder.setting.gridCountPerSide }}
-                </span>
-              </div>
-              <div
-                v-if="Object.keys(item.stType)[0] === 'GridOrder'"
-                class="pending-item pending-item-pro-item"
-              >
-                <span class="pending-item-left">spread</span>
+                <span class="pending-item-left">Grid spread</span>
                 <span class="pending-item-right">
                   <span
                     v-if="
@@ -7651,7 +8822,6 @@
                       'Geom'
                     "
                   >
-                    Geometric:
                     {{
                       item.strategy.GridOrder.setting.spread.Geom | filterPpm
                     }}
@@ -7667,7 +8837,6 @@
                       buyUnit
                     "
                   >
-                    Arithmetic:
                     {{
                       filterLevelPrice(
                         item.strategy.GridOrder.setting.spread.Arith,
@@ -7681,71 +8850,275 @@
                 </span>
               </div>
               <div
-                v-if="Object.keys(item.stType)[0] === 'GridOrder'"
-                class="pending-item pending-item-pro-item"
+                v-if="
+                  Object.keys(item.stType)[0] === 'TWAP' ||
+                  Object.keys(item.stType)[0] === 'VWAP'
+                "
+                class="pending-item"
               >
-                <span class="pending-item-left">Amount</span>
-                <span class="pending-item-right">
+                <span
+                  v-if="
+                    Object.keys(
+                      Object.values(item.strategy)[0].setting.order.side
+                    )[0] === 'Buy'
+                  "
+                  class="pending-item-left"
+                >
+                  Highest price
+                </span>
+                <span v-else class="pending-item-left">Lowest price</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()] &&
+                    tokens[currentPair[1][0].token1[0].toString()] &&
+                    unit &&
+                    buyUnit
+                  "
+                >
+                  {{
+                    filterLevelPrice(
+                      Object.values(item.strategy)[0].setting.order.priceLimit,
+                      unit,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals,
+                      buyUnit,
+                      Object.keys(
+                        Object.values(item.strategy)[0].setting.order.side
+                      )[0] === 'Buy'
+                        ? 'bid'
+                        : 'ask'
+                    )
+                  }}
+                </span>
+              </div>
+              <div
+                v-if="
+                  Object.keys(item.stType)[0] === 'TWAP' ||
+                  Object.keys(item.stType)[0] === 'VWAP'
+                "
+                class="pending-item"
+              >
+                <span class="pending-item-left">Slippage</span>
+                <span
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()] &&
+                    tokens[currentPair[1][0].token1[0].toString()] &&
+                    unit &&
+                    buyUnit
+                  "
+                  class="pending-item-right"
+                >
+                  {{
+                    filterLevelPrice(
+                      Object.values(item.strategy)[0].setting.order.priceSpread,
+                      unit,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals,
+                      buyUnit,
+                      Object.keys(
+                        Object.values(item.strategy)[0].setting.order.side
+                      )[0] === 'Buy'
+                        ? 'bid'
+                        : 'ask'
+                    )
+                  }}
+                </span>
+              </div>
+              <div
+                v-if="
+                  Object.keys(item.stType)[0] === 'TWAP' ||
+                  Object.keys(item.stType)[0] === 'VWAP'
+                "
+                class="pending-item"
+              >
+                <span class="pending-item-left">order quantity</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()] &&
+                    tokenMinUnit &&
+                    Object.keys(
+                      Object.values(item.strategy)[0].setting.amountPerTrigger
+                    )[0] === 'Token0'
+                  "
+                >
+                  {{
+                    filterQuantity(
+                      Object.values(
+                        Object.values(item.strategy)[0].setting.amountPerTrigger
+                      )[0],
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokenMinUnit
+                    )
+                  }}
+                  {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
+                </span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token1[0].toString()] &&
+                    buyUnit &&
+                    Object.keys(
+                      Object.values(item.strategy)[0].setting.amountPerTrigger
+                    )[0] === 'Token1'
+                  "
+                >
+                  {{
+                    Object.values(
+                      Object.values(item.strategy)[0].setting.amountPerTrigger
+                    )[0]
+                      | bigintToFloat(
+                        buyUnit,
+                        tokens[currentPair[1][0].token1[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                </span>
+              </div>
+              <div
+                class="pending-item"
+                v-if="Object.keys(item.stType)[0] === 'IcebergOrder'"
+              >
+                <span class="pending-item-left">Order price</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()] &&
+                    tokens[currentPair[1][0].token1[0].toString()] &&
+                    unit &&
+                    buyUnit
+                  "
+                >
+                  {{
+                    filterLevelPrice(
+                      item.strategy.IcebergOrder.setting.order.price,
+                      unit,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals,
+                      buyUnit,
+                      Object.keys(
+                        item.strategy.IcebergOrder.setting.order.side
+                      )[0] === 'Buy'
+                        ? 'bid'
+                        : 'ask'
+                    )
+                  }}
+                </span>
+              </div>
+              <div
+                class="pending-item"
+                v-if="Object.keys(item.stType)[0] === 'IcebergOrder'"
+              >
+                <span class="pending-item-left">Order quantity</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()] &&
+                    tokenMinUnit
+                  "
+                >
+                  {{
+                    filterQuantity(
+                      Object.values(
+                        item.strategy.IcebergOrder.setting.amountPerTrigger
+                      )[0],
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokenMinUnit
+                    )
+                  }}
+                </span>
+              </div>
+              <div
+                v-if="Object.keys(item.stType)[0] === 'GridOrder'"
+                class="pending-item"
+              >
+                <span class="pending-item-left">Trigger order</span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    Object.keys(item.strategy.GridOrder.setting.amount)[0] ===
+                    'Percent'
+                  "
+                >
                   <span
-                    v-if="
-                      Object.keys(item.strategy.GridOrder.setting.amount)[0] ===
-                      'Percent'
-                    "
-                  >
-                    Percent:
-                    <span
-                      v-if="
-                        item.strategy.GridOrder.setting.amount.Percent.length
-                      "
-                      >{{
-                        item.strategy.GridOrder.setting.amount.Percent[0]
-                          | filterPpm
-                      }}</span
-                    >
-                    <span v-else>-</span>
-                  </span>
-                  <span
-                    v-if="
-                      Object.keys(item.strategy.GridOrder.setting.amount)[0] ===
-                        'Token0' &&
-                      currentPair &&
-                      tokens &&
-                      tokens[currentPair[1][0].token0[0].toString()].decimals
-                    "
-                  >
-                    {{
-                      item.strategy.GridOrder.setting.amount.Token0
-                        | bigintToFloat(
-                          tokenMinUnit,
-                          tokens[currentPair[1][0].token0[0].toString()]
-                            .decimals
-                        )
+                    v-if="item.strategy.GridOrder.setting.amount.Percent.length"
+                    >{{
+                      item.strategy.GridOrder.setting.amount.Percent[0]
+                        | filterPpm
                     }}
-                    {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
+                    <a-tooltip placement="top">
+                      <template slot="title">
+                        Percentage of available balance in TradeAccount for
+                        pro-trader.
+                      </template>
+                      <a-icon type="info-circle" />
+                    </a-tooltip>
                   </span>
-                  <span
-                    v-if="
-                      Object.keys(item.strategy.GridOrder.setting.amount)[0] ===
-                        'Token1' &&
-                      currentPair &&
-                      tokens &&
-                      tokens[currentPair[1][0].token1[0].toString()].decimals
-                    "
-                  >
-                    {{
-                      item.strategy.GridOrder.setting.amount.Token1
-                        | bigintToFloat(
-                          buyUnit,
-                          tokens[currentPair[1][0].token1[0].toString()]
-                            .decimals
-                        )
-                    }}
-                    {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
-                  </span>
+                  <span v-else>-</span>
+                </span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    Object.keys(item.strategy.GridOrder.setting.amount)[0] ===
+                      'Token0' &&
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token0[0].toString()].decimals
+                  "
+                >
+                  {{
+                    item.strategy.GridOrder.setting.amount.Token0
+                      | bigintToFloat(
+                        tokenMinUnit,
+                        tokens[currentPair[1][0].token0[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
+                </span>
+                <span
+                  class="pending-item-right"
+                  v-if="
+                    Object.keys(item.strategy.GridOrder.setting.amount)[0] ===
+                      'Token1' &&
+                    currentPair &&
+                    tokens &&
+                    tokens[currentPair[1][0].token1[0].toString()].decimals
+                  "
+                >
+                  {{
+                    item.strategy.GridOrder.setting.amount.Token1
+                      | bigintToFloat(
+                        buyUnit,
+                        tokens[currentPair[1][0].token1[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
                 </span>
               </div>
               <div class="pending-item pending-item-pro">
-                <span class="pending-item-left">Stats</span>
+                <span class="pending-item-left">Triggered trades</span>
+              </div>
+              <div class="pending-item pending-item-pro-item">
+                <span class="pending-item-left">pending</span>
+                <span class="pending-item-right">
+                  {{
+                    item.pendingOrders.buy.length +
+                    item.pendingOrders.sell.length
+                  }}
+                </span>
               </div>
               <div class="pending-item pending-item-pro-item">
                 <span class="pending-item-left">orderCount</span>
@@ -7775,15 +9148,27 @@
                 </span>
               </div>
               <div class="pending-item">
-                <span class="pending-item-left">Last trigger time</span>
+                <span class="pending-item-left">Last trigger</span>
                 <span class="pending-item-right">
                   {{ item.triggerTime | formatDateFromSecondUTC }}
                 </span>
               </div>
             </li>
-            <li v-if="!proOrders.length" class="text-center">No Orders</li>
+            <li
+              v-if="!proOrdersLoading && !proOrders.length"
+              class="text-center"
+            >
+              No Orders
+            </li>
           </ul>
-          <ul v-show="currentTradeMenuPro === 'pending'">
+          <ul
+            v-loading="proOrdersPendingLoading"
+            element-loading-background="rgba(0, 0, 0, 0)"
+            v-show="
+              currentTradesMenu === 'pro' && currentTradeMenuPro === 'pending'
+            "
+            style="min-height: 100px"
+          >
             <li v-for="(item, index) in pendingListPro" :key="index">
               <div class="pending-header-h5">
                 <div
@@ -7836,6 +9221,7 @@
                     <span
                       v-show="
                         getPendingStatus(item[1]) === 'Prepared' ||
+                        getPendingStatus(item[1]) === 'Trading' ||
                         Object.keys(item[1].status)[0] === 'Todo' ||
                         (toStatus &&
                           (getOrderStatus(item[1].toids) === 'Doing' ||
@@ -8098,9 +9484,21 @@
                 </span>
               </div>
             </li>
-            <li v-if="!pendingListPro.length" class="text-center">No Orders</li>
+            <li
+              v-if="!proOrdersPendingLoading && !pendingListPro.length"
+              class="text-center"
+            >
+              No Orders
+            </li>
           </ul>
-          <ul v-show="currentTradeMenuPro === 'history'">
+          <ul
+            v-loading="userRecordProLoading"
+            element-loading-background="rgba(0, 0, 0, 0)"
+            v-show="
+              currentTradesMenu === 'pro' && currentTradeMenuPro === 'history'
+            "
+            style="min-height: 100px"
+          >
             <li v-for="(item, index) in userRecordPro" :key="index">
               <div class="pending-header-h5">
                 <div
@@ -8678,7 +10076,12 @@
                 </span>
               </div>
             </li>
-            <li v-if="!userRecordPro.length" class="text-center">No Trades</li>
+            <li
+              v-if="!userRecordProLoading && !userRecordPro.length"
+              class="text-center"
+            >
+              No Trades
+            </li>
           </ul>
         </div>
       </div>
@@ -8693,15 +10096,75 @@
               type="close-circle"
             />
           </div>
+          <div class="de-swap-list-item-search base-font-title">
+            <a-tooltip placement="top">
+              <template slot="title">
+                <div class="base-font-title">
+                  <div>
+                    Listing on ICDex is non-censored, anyone can list a token on
+                    ICDex, the security and value of the tokens needs to be
+                    assessed by you and you bear all the consequences.
+                  </div>
+                  <div>
+                    Pair Score is an automatic evaluation mechanism of ICDex for
+                    trading pairs, which is based on the comprehensive
+                    evaluation of the number of sponsors, liquidity, volume,
+                    etc. It is for your reference only, and is not considered as
+                    investment advice. The list of trading pairs is divided into
+                    three boards according to the Pair Score.
+                  </div>
+                  <div>
+                    <span class="dots"></span> MAIN (STAGE2) Board means that
+                    more traders are involved and need to keep track of the
+                    risks.
+                  </div>
+                  <div>
+                    <span class="dots"></span> SECOND (STAGE1) Board means that
+                    some traders are involved and need to keep track of the
+                    risks.
+                  </div>
+                  <div>
+                    <span class="dots"></span> THIRD (STAGE0) Board means that
+                    fewer traders are involved and there are many unknown risks.
+                  </div>
+                </div>
+              </template>
+              <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
+                >About boards
+                <a-icon type="question-circle" />
+              </span>
+            </a-tooltip>
+            <a-input
+              allowClear
+              autocomplete="off"
+              type="text"
+              placeholder="Search"
+              v-model="pairSearch"
+              @change="pairSearchChange"
+            >
+              <a-icon style="color: #adb3c4" slot="prefix" type="search" />
+            </a-input>
+          </div>
           <ul class="trade-market-sort">
             <li
-              :class="{ active: item.name === currentTradeMarketSort }"
+              :class="[
+                pairSearch ? 'disabled' : '',
+                item.value === currentTradeMarketSort ? 'active' : '',
+                item.value
+              ]"
               v-for="item in tradeMarketSort"
               :key="item.value"
               @click="changeTradeMarketSort(item)"
             >
-              {{ item.name }}
-              <span v-if="item.name === 'USDT'" class="base-red">TEST</span>
+              <a-icon
+                v-show="item.value === 'Star'"
+                type="star"
+                theme="filled"
+              />
+              <span v-show="item.value !== 'Star'">
+                {{ item.name }}
+                <span v-if="item.value === 'USDT'" class="base-red">TEST</span>
+              </span>
             </li>
           </ul>
           <table>
@@ -8713,19 +10176,56 @@
               </tr>
             </thead>
             <tbody class="de-swap-list-item-pair" ref="deSwapListItemPairH5">
+              <tr v-if="currentTradeMarketSort === 'Third' && !showThird">
+                <td
+                  colspan="3"
+                  style="
+                    line-height: 1.5;
+                    text-wrap: normal;
+                    padding-left: 10px;
+                  "
+                >
+                  The trading pairs on the THIRD board mean that very few
+                  traders are involved and there may be a higher risk. Sure you
+                  want to show the list?
+                  <button class="mt20 w100" @click="showThird = true">
+                    Confirm
+                  </button>
+                </td>
+              </tr>
               <tr
                 v-for="(pair, index) in tradePairs[currentTradeMarketSort]"
                 :key="index"
                 @click="changePair(pair, index)"
                 :class="{
                   active:
+                    !(currentTradeMarketSort === 'Third' && !showThird) &&
+                    currentPairIndex !== null &&
+                    pairs[currentPairIndex] &&
+                    currentPair[3] === currentTradeMarketSort &&
                     pair[1][0].canisterId.toString() ===
-                    pairs[currentPairIndex][1][0].canisterId.toString()
+                      currentPair[1][0].canisterId.toString()
                 }"
               >
-                <td>
+                <td v-if="!(currentTradeMarketSort === 'Third' && !showThird)">
                   <dl>
                     <dt>
+                      <a-icon
+                        v-show="
+                          !oldPairs.includes(pair[0].toString()) &&
+                          pair[1][0].marketBoard
+                        "
+                        :theme="
+                          star.includes(pair[0].toString())
+                            ? 'filled'
+                            : 'outlined'
+                        "
+                        @click.stop="onStar(pair)"
+                        type="star"
+                        :class="{
+                          'main-color': star.includes(pair[0].toString())
+                        }"
+                      />
                       {{ pair[1][0].token0[1]
                       }}<span class="pair-icp"
                         >/{{ pair[1][0].token1[1] }}</span
@@ -8738,7 +10238,7 @@
                     </dd>
                   </dl>
                 </td>
-                <td>
+                <td v-if="!(currentTradeMarketSort === 'Third' && !showThird)">
                   <dl>
                     <dt>
                       <span
@@ -8773,7 +10273,10 @@
                     </dd>
                   </dl>
                 </td>
-                <td class="text-right">
+                <td
+                  v-if="!(currentTradeMarketSort === 'Third' && !showThird)"
+                  class="text-right"
+                >
                   <dl>
                     <dt>
                       <span
@@ -8829,7 +10332,15 @@
         <div class="trade-h5-content">
           <div class="pairs-h5-header">
             <span>Place Order</span>
-            <a-icon class="set-pool" type="setting" @click="showPoolVisible" />
+            <a-icon
+              v-if="
+                currentPair && !prePairs.includes(currentPair[0].toString())
+              "
+              class="set-pool"
+              :class="{ disabled: orderType === 'Pro' }"
+              type="setting"
+              @click="showPoolVisible"
+            />
             <a-icon
               @click="showTrade = false"
               class="margin-left-auto"
@@ -8864,7 +10375,17 @@
                     v-for="(item, index) in orderTypeEnum"
                     :key="index"
                   >
-                    {{ item }}
+                    <span
+                      v-if="
+                        !(
+                          item === 'Stop-limit' &&
+                          currentPair &&
+                          prePairs.includes(currentPair[0].toString())
+                        )
+                      "
+                    >
+                      {{ item }}
+                    </span>
                   </a-select-option>
                 </a-select>
                 <!--<div
@@ -8877,7 +10398,7 @@
 								</div>-->
               </div>
               <div v-show="tradeType === 'Buy'" class="trade-main-buy">
-                <div v-show="orderType !== 'MKT' && orderType !== 'Stop-loss'">
+                <div v-show="orderType !== 'MKT' && orderType !== 'Stop-limit'">
                   <a-tooltip
                     placement="topRight"
                     :overlayClassName="
@@ -8893,7 +10414,7 @@
                     trigger="click"
                   >
                     <template slot="title">
-                      <span v-if="icpPrice"
+                      <span
                         >≈ ${{
                           buyPrice
                             | filterBuyPrice(token0Price, currentTokenPrice)
@@ -8992,7 +10513,7 @@
                     trigger="click"
                   >
                     <template slot="title">
-                      <span v-if="icpPrice"
+                      <span
                         >≈ ${{
                           buyTotal
                             | filterBuyPrice(token0Price, currentTokenPrice)
@@ -9083,7 +10604,7 @@
                       <span v-show="buyTotalMKTError"
                         >Max Total {{ maxBuyMKTTotal }}
                       </span>
-                      <span v-show="!buyTotalMKTError && icpPrice"
+                      <span v-show="!buyTotalMKTError"
                         >≈ ${{
                           buyTotalMKT
                             | filterBuyPrice(token0Price, currentTokenPrice)
@@ -9129,7 +10650,11 @@
                   </a-tooltip>
                 </div>
                 <div class="trade-item-header">
-                  <span class="balance-label">Wallet</span>
+                  <span
+                    class="balance-label"
+                    :class="{ 'balance-label-wallet': !showKeepBalance }"
+                    >Wallet:</span
+                  >
                   <span class="margin-left-auto trade-item-header-pair-h5">
                     <span
                       v-if="
@@ -9186,10 +10711,11 @@
                     >
                       {{
                         keepingBalance[currentPair[1][0].token1[0].toString()]
-                          | bigintToFloat(
-                            4,
+                          | filterKeepingBalance(
+                            stopLimitNeed.token1,
                             tokens[currentPair[1][0].token1[0].toString()]
-                              .decimals
+                              .decimals,
+                            4
                           )
                           | formatNum
                       }}&nbsp;{{ currentPair[1][0].token1[1] }}
@@ -9217,21 +10743,33 @@
                     />
                   </span>
                 </div>
-                <div v-show="orderType !== 'MKT' && orderType !== 'Stop-loss'">
+                <div v-show="orderType !== 'MKT' && orderType !== 'Stop-limit'">
                   <button
                     v-if="getPrincipalId && currentPair"
                     class="buy-button w100 mt20"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'FOK'))) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      (orderType === 'Stop-limit' &&
+                        !(isKeeping && isPoolMode)) ||
+                      currentPair[3] === 'Old'
                     "
                     @click="onBuy"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -9276,12 +10814,19 @@
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      currentPair[3] === 'Old'
                     "
                     class="buy-button w100 mt20"
                     @click="onBuyMKT"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -9316,7 +10861,7 @@
                 </div>
               </div>
               <div v-show="tradeType === 'Sell'" class="trade-main-sell">
-                <div v-show="orderType !== 'MKT' && orderType !== 'Stop-loss'">
+                <div v-show="orderType !== 'MKT' && orderType !== 'Stop-limit'">
                   <a-tooltip
                     placement="topRight"
                     :overlayClassName="
@@ -9332,7 +10877,7 @@
                     trigger="click"
                   >
                     <template slot="title">
-                      <span v-if="icpPrice"
+                      <span
                         >≈ ${{
                           sellPrice
                             | filterBuyPrice(token0Price, currentTokenPrice)
@@ -9436,7 +10981,7 @@
                     trigger="click"
                   >
                     <template slot="title">
-                      <span v-if="icpPrice"
+                      <span
                         >≈ ${{
                           sellTotal
                             | filterBuyPrice(token0Price, currentTokenPrice)
@@ -9556,7 +11101,11 @@
                   </a-input-group>
                 </div>
                 <div class="trade-item-header">
-                  <span class="balance-label">Wallet</span>
+                  <span
+                    class="balance-label"
+                    :class="{ 'balance-label-wallet': !showKeepBalance }"
+                    >Wallet:</span
+                  >
                   <span class="margin-left-auto trade-item-header-pair-h5">
                     <span
                       v-if="
@@ -9613,10 +11162,11 @@
                     >
                       {{
                         keepingBalance[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
-                            4,
+                          | filterKeepingBalance(
+                            stopLimitNeed.token0,
                             tokens[currentPair[1][0].token0[0].toString()]
-                              .decimals
+                              .decimals,
+                            4
                           )
                           | formatNum
                       }}&nbsp;{{ currentPair[1][0].token0[1] }}
@@ -9646,23 +11196,34 @@
                   </span>
                 </div>
                 <div
-                  v-show="orderType !== 'MKT' && orderType !== 'Stop-loss'"
+                  v-show="orderType !== 'MKT' && orderType !== 'Stop-limit'"
                   class="trade-h5-button"
                 >
                   <button
                     v-if="getPrincipalId && currentPair"
                     class="sell-button w100 mt20"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        (isPaused || (!isPaused && orderType !== 'LMT'))) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      (orderType === 'Stop-limit' &&
+                        !(isKeeping && isPoolMode)) ||
+                      currentPair[3] === 'Old'
                     "
                     @click="onSell"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        (isPaused || (!isPaused && orderType !== 'LMT'))
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -9707,7 +11268,8 @@
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
                           orderLoading[currentPair[0].toString()] ||
-                          plugLoading[currentPair[0].toString()]))
+                          plugLoading[currentPair[0].toString()])) ||
+                      currentPair[3] === 'Old'
                     "
                     @click="onSellMKT"
                   >
@@ -9839,7 +11401,7 @@
                       type="arrow-down"
                     />
                   </span>
-                  <span v-if="icpPrice">≈ ${{ token0Price }}</span>
+                  <span>≈ ${{ token0Price }}</span>
                 </div>
                 <ul
                   v-for="(item, index) in bidTrade"
@@ -9934,7 +11496,10 @@
         </div>
       </div>
       <div class="h5-show to-trade" v-show="!tradeCompetitionsMenu">
-        <dl @click="showProOrder('Grid')">
+        <dl
+          v-if="currentPair && !prePairs.includes(currentPair[0].toString())"
+          @click="showProOrderMenu"
+        >
           <dt>
             <img src="@/assets/img/grid.svg" alt="" />
           </dt>
@@ -9975,61 +11540,71 @@
       <a-modal
         v-model="proVisible"
         width="500px"
-        title="Pro Order"
         centered
         :footer="null"
         :keyboard="false"
         :maskClosable="false"
         class="trade-item-pro-h5"
       >
-        <div class="trade-item-pro">
-          <div class="base-font-title trade-item-pro-title">
-            <span style="white-space: nowrap">Pro-Wallet Account:&nbsp;</span>
-            <copy-account
-              :account="getPrincipalId"
-              copyText="Principal"
-            ></copy-account>
-            &nbsp;&nbsp;&nbsp;
-            <span style="white-space: nowrap">Subaccount:&nbsp;</span>
-            <copy-account
-              account="0000000000000000000000000000000000000000000000000000000000000001"
-              copyText="Subaccount"
-            ></copy-account>
+        <a-dropdown placement="bottomCenter">
+          <div class="trade-item-pro-h5-item">
+            {{ currentProOrderMenu }} Order&nbsp;<a-icon type="caret-down" />
           </div>
-          <div
-            class="trade-item-pro-fee"
-            v-if="
-              stoConfig &&
-              currentPair &&
-              tokens &&
-              tokens[currentPair[1][0].token1[0].toString()]
-            "
-          >
-            <span style="font-weight: bold">Fee:</span> (Create)
-            {{
-              stoConfig.poFee1
-                | bigintToFloat(
-                  tokens[currentPair[1][0].token1[0].toString()].decimals,
-                  tokens[currentPair[1][0].token1[0].toString()].decimals
-                )
-            }}
-            {{ tokens[currentPair[1][0].token1[0].toString()].symbol }},
-            (Update)
-            {{
-              stoConfig.poFee1
-                | stoUpdateFee(
-                  tokens[currentPair[1][0].token1[0].toString()].decimals
-                )
-            }}
-            {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}, (Order)
-            {{ stoConfig.poFee2 | stoOrderFee }}.
+          <a-menu slot="overlay" class="strat-list">
+            <a-menu-item
+              v-for="item in proOrderEnum"
+              :key="item"
+              class="trade-item-pro-h5-list-item"
+              :class="{ active: item === currentProOrderMenu }"
+              @click="changeProOrderMenu(item)"
+            >
+              {{ item }} Order
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+        <div class="trade-item-pro">
+          <div class="base-font-title">
+            <div class="flex-center">
+              <span style="white-space: nowrap">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <div>
+                      Pro-TraderAccount: In order to realize fast trading with
+                      Pro-Orders, Pro-Trader must deposit and keep funds in the
+                      account on trading pair. You can withdraw funds from
+                      Pro-TraderAccount back to Pro-Wallet. In pro-trading, the
+                      Pro-Trader deposits funds in the Pro-TraderAccount of the
+                      pair for faster trading. The relationship between the
+                      "Accounts" is shown in the diagram:
+                      <img src="@/assets/img/account.png" alt="" />
+                    </div>
+                  </template>
+                  Pro-Wallet Account&nbsp;<a-icon type="info-circle" />:
+                </a-tooltip>
+              </span>
+              <copy-account
+                :account="getPrincipalId"
+                copyText="Principal"
+              ></copy-account>
+            </div>
+            <div class="flex-center">
+              <span style="white-space: nowrap">Subaccount:&nbsp;</span>
+              <copy-account
+                account="0000000000000000000000000000000000000000000000000000000000000001"
+                copyText="Subaccount"
+              ></copy-account>
+            </div>
+          </div>
+          <div class="base-font base-tip-size">
+            The Pro-Wallet account is a separate sub-account, please transfer
+            tokens to this account before you can create strategy orders.
           </div>
           <div class="mt20">Balance:</div>
           <div class="trade-item-pro-balance">
             <div class="trade-item-pro-balance-left">
               <div>
                 <span class="trade-item-pro-balance-label"
-                  >Pro-wallet:&nbsp;</span
+                  >Pro-Wallet:&nbsp;</span
                 >
                 <span
                   v-if="
@@ -10063,8 +11638,28 @@
               </div>
               <div>
                 <span class="trade-item-pro-balance-label"
-                  >Pro-TraderAcct:&nbsp;</span
-                >
+                  >Pro-TraderAcct
+                  <a-tooltip placement="top">
+                    <template slot="title">
+                      <div>
+                        Pro-TraderAccount: In order to realize fast trading with
+                        Pro-Orders, Pro-Trader must deposit and keep funds in
+                        the account on trading pair. You can withdraw funds from
+                        Pro-TraderAccount back to Pro-Wallet. In pro-trading,
+                        the Pro-Trader deposits funds in the Pro-TraderAccount
+                        of the pair for faster trading. The relationship between
+                        the "Accounts" is shown in the diagram:
+                        <img
+                          style="margin-top: 10px"
+                          src="@/assets/img/account.png"
+                          alt=""
+                          class="w100"
+                        />
+                      </div>
+                    </template>
+                    <a-icon type="info-circle" /> </a-tooltip
+                  >:
+                </span>
                 <span
                   v-if="
                     currentPair &&
@@ -10117,7 +11712,7 @@
             <div class="trade-item-pro-balance-right">
               <div>
                 <span class="trade-item-pro-balance-label"
-                  >Pro-wallet:&nbsp;</span
+                  >Pro-Wallet:&nbsp;</span
                 >
                 <span
                   v-if="
@@ -10151,8 +11746,28 @@
               </div>
               <div>
                 <span class="trade-item-pro-balance-label"
-                  >Pro-TraderAcct:&nbsp;</span
-                >
+                  >Pro-TraderAcct
+                  <a-tooltip placement="top">
+                    <template slot="title">
+                      <div>
+                        Pro-TraderAccount: In order to realize fast trading with
+                        Pro-Orders, Pro-Trader must deposit and keep funds in
+                        the account on trading pair. You can withdraw funds from
+                        Pro-TraderAccount back to Pro-Wallet. In pro-trading,
+                        the Pro-Trader deposits funds in the Pro-TraderAccount
+                        of the pair for faster trading. The relationship between
+                        the "Accounts" is shown in the diagram:
+                        <img
+                          style="margin-top: 10px"
+                          src="@/assets/img/account.png"
+                          alt=""
+                          class="w100"
+                        />
+                      </div>
+                    </template>
+                    <a-icon type="info-circle" /></a-tooltip
+                  >:
+                </span>
                 <span
                   v-if="
                     currentPair &&
@@ -10204,16 +11819,18 @@
             </div>
           </div>
           <div class="trade-item-pro-submit">
-            <p>
-              The Pro-Wallet account is a separate sub-account, please transfer
-              tokens to this account before you can create strategy orders.
+            <p class="base-font" style="line-height: 1.2">
+              Pro-orders only use the balance of traderAccount and multiple
+              pro-orders share this balance.
             </p>
             <button
               type="button"
-              class="large-primary primary w100"
-              @click="onCreateProOrder"
+              class="primary w100 mt20"
+              @click="onCreateProOrder(currentProOrderMenu)"
+              :disabled="pairInfo && pairInfo.paused"
             >
-              Create a {{ currentProOrderMenu }} order
+              <span v-if="pairInfo && pairInfo.paused">Paused</span>
+              <span v-else>Create {{ currentProOrderMenu }} Order</span>
             </button>
           </div>
         </div>
@@ -10461,6 +12078,149 @@
         </div>
       </div>
     </a-modal>
+    <a-modal
+      v-model="proPendingOrdersModel"
+      width="600px"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="delete-modal"
+    >
+      <table class="mt20">
+        <thead>
+          <tr>
+            <th>Txid</th>
+            <th>Side</th>
+            <th>Price</th>
+            <th>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(item, index) in proPendingOrders.sell"
+            :key="proPendingOrders.buy.length + index"
+          >
+            <td>
+              <copy-account
+                v-if="currentPair && item[0] && item[0][0]"
+                :front="10"
+                :is-copy="false"
+                :href="`https://ic.house/swap/${currentPair[0].toString()}/${filterTxid(
+                  item[0][0]
+                )}`"
+                :account="filterTxid(item[0][0])"
+                copyText="Txid"
+              ></copy-account>
+              <span v-else class="base-font"
+                >Triggered and not yet ordered</span
+              >
+            </td>
+            <td class="ask-price">Sell</td>
+            <td>
+              <span
+                v-if="
+                  unit &&
+                  buyUnit &&
+                  tokens &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token0[0].toString()] &&
+                  tokens[currentPair[1][0].token1[0].toString()]
+                "
+              >
+                {{
+                  filterLevelPrice(
+                    item[1],
+                    unit,
+                    tokens[currentPair[1][0].token0[0].toString()].decimals,
+                    tokens[currentPair[1][0].token1[0].toString()].decimals,
+                    buyUnit,
+                    'ask'
+                  )
+                }}
+              </span>
+            </td>
+            <td>
+              <span
+                v-if="
+                  tokenMinUnit &&
+                  tokens &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token0[0].toString()]
+                "
+              >
+                {{
+                  filterQuantity(
+                    item[2],
+                    tokens[currentPair[1][0].token0[0].toString()].decimals,
+                    tokenMinUnit
+                  )
+                }}
+              </span>
+            </td>
+          </tr>
+          <tr v-for="(item, index) in proPendingOrders.buy" :key="index">
+            <td>
+              <copy-account
+                v-if="currentPair && item[0] && item[0][0]"
+                :front="10"
+                :is-copy="false"
+                :href="`https://ic.house/swap/${currentPair[0].toString()}/${filterTxid(
+                  item[0][0]
+                )}`"
+                :account="filterTxid(item[0][0])"
+                copyText="Txid"
+              ></copy-account>
+              <span v-else class="base-font"
+                >Triggered and not yet ordered</span
+              >
+            </td>
+            <td class="bid-price">Buy</td>
+            <td>
+              <span
+                v-if="
+                  unit &&
+                  buyUnit &&
+                  tokens &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token0[0].toString()] &&
+                  tokens[currentPair[1][0].token1[0].toString()]
+                "
+              >
+                {{
+                  filterLevelPrice(
+                    item[1],
+                    unit,
+                    tokens[currentPair[1][0].token0[0].toString()].decimals,
+                    tokens[currentPair[1][0].token1[0].toString()].decimals,
+                    buyUnit,
+                    'bid'
+                  )
+                }}
+              </span>
+            </td>
+            <td>
+              <span
+                v-if="
+                  tokenMinUnit &&
+                  tokens &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token0[0].toString()]
+                "
+              >
+                {{
+                  filterQuantity(
+                    item[2],
+                    tokens[currentPair[1][0].token0[0].toString()].decimals,
+                    tokenMinUnit
+                  )
+                }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </a-modal>
     <transfer-icp
       ref="transferIcp"
       :balance="balance"
@@ -10486,7 +12246,11 @@
       :token-min-unit="tokenMinUnit"
       :unit="unit"
       :tokens="tokens"
-      :pro-type="currentProOrderMenu"
+      :sto-config="stoConfig"
+      :sys-config="sysConfig"
+      :current-token-price="currentTokenPrice"
+      :dex-role="dexRole"
+      :feeRebate="feeRebate"
       @createProOrderSuccess="createProOrderSuccess"
       @proOrderDepositKeepingBalance="proOrderDepositKeepingBalance"
       @gridTransferToken="gridTransferToken"
@@ -10500,10 +12264,30 @@
       ref="proWalletSwap"
       @proWalletSwapSuccess="proWalletSwapSuccess"
     ></pro-wallet-swap>
+    <withdraw-token
+      ref="withdrawToken"
+      :current-pair="currentPair"
+      @withdrawSuccess="withdrawSuccess"
+    >
+    </withdraw-token>
+    <launch
+      :tokens="tokens"
+      ref="launch"
+      @launchSuccess="launchSuccess"
+    ></launch>
     <v-tour
       name="myTour"
       :steps="steps"
-      :options="{ highlight: true }"
+      :options="{
+        highlight: true,
+        labels: {
+          buttonSkip: 'Skip tour',
+          buttonPrevious: 'Previous',
+          buttonNext: 'Next',
+          buttonStop: 'Confirm'
+        }
+      }"
+      :callbacks="myCallbacks"
     ></v-tour>
   </div>
 </template>
@@ -10541,7 +12325,9 @@ import { TokenLiquidity } from '@/ic/ICSwap/model';
 import {
   BalanceChange,
   DexRole,
+  IcebergOrder,
   icpPrice,
+  IDOConfig,
   KBar,
   KeepingBalance,
   LatestFilledRecord,
@@ -10551,10 +12337,12 @@ import {
   OrderStatus,
   OrderType,
   PairInfo,
+  Participant,
   PendingList,
   PriceResponse,
   StopLossOrder,
   STOrder,
+  STOrderPendingOrders,
   StoSetting,
   STType,
   SysMode,
@@ -10582,13 +12370,22 @@ import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
-import { SwapTokenInfo } from '@/ic/ICSwapRouter/model';
+import {
+  SwapConfig,
+  SwapTokenInfo,
+  TrieListData1,
+  TrieListData1SwapPair
+} from '@/ic/ICSwapRouter/model';
 import { getFee } from '@/ic/getTokenFee';
 import { getTokenBalance } from '@/ic/getTokenBalance';
 import { namespace } from 'vuex-class';
 import { AstroXWebViewHandler } from '@astrox/sdk-webview';
 import { connectIcx, initIcx } from '@/ic/connectIcx';
-import { buildMemo, LEDGER_CANISTER_ID } from '@/ic/utils';
+import {
+  CK_BTC_CANISTER_ID,
+  CK_ETH_LEDGER_CANISTER_ID,
+  LEDGER_CANISTER_ID
+} from '@/ic/utils';
 import TradingMining from '@/views/home/ICDex/components/TradingMining.vue';
 import TradingCompetitions from '@/views/home/ICDex/components/TradingCompetitions.vue';
 import Fallback from '@/views/home/ICDex/components/Fallback.vue';
@@ -10609,9 +12406,24 @@ import ProOrder from '@/views/home/ICDex/components/ProOrder.vue';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import { toHttpRejectError } from '@/ic/httpError';
+import { SysConfig } from '@/ic/ICDexRouter/model';
+import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
+import WithdrawToken from '@/components/withdrawToken/Index.vue';
+import Launch from '@/views/home/ICDex/components/Launch.vue';
+import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
+import { NftService } from '@/ic/nft/Service';
+import { TokenExt, TokensExt } from '@/ic/nft/model';
 
 const commonModule = namespace('common');
 const ProSubaccountId = 1;
+const dayjs = require('dayjs');
+let lastCallTime = null;
+const interval = 10 * 1000;
+const ICRC2Token = [
+  CK_BTC_CANISTER_ID,
+  CK_ETH_LEDGER_CANISTER_ID,
+  LEDGER_CANISTER_ID
+];
 
 @Component({
   name: 'Index',
@@ -10624,7 +12436,9 @@ const ProSubaccountId = 1;
     TransferIcp,
     TransferToken,
     ProOrder,
-    ProWalletSwap
+    ProWalletSwap,
+    WithdrawToken,
+    Launch
   },
   filters: {
     stoUpdateFee(poFee1: bigint, decimals: number): string {
@@ -10653,8 +12467,16 @@ const ProSubaccountId = 1;
       let price = '';
       if (token1 && token1.toLocaleLowerCase() === 'icp') {
         price = currentMarketPrice['icp'];
-      } else if (token1 && token1.toLocaleLowerCase().includes('usdt')) {
+      } else if (
+        token1 &&
+        (token1.toLocaleLowerCase().includes('usdt') ||
+          token1.toLocaleLowerCase().includes('test'))
+      ) {
         price = currentMarketPrice['usdt'];
+      } else if (token1 && token1.toLocaleLowerCase().includes('btc')) {
+        price = currentMarketPrice['btc'];
+      } else if (token1 && token1.toLocaleLowerCase().includes('eth')) {
+        price = currentMarketPrice['eth'];
       }
       if (price) {
         return new BigNumber(val.toString(10))
@@ -10904,6 +12726,23 @@ const ProSubaccountId = 1;
         );
       }
       return '';
+    },
+    filterKeepingBalance(
+      keepingBalance: string,
+      stopBalance: bigint,
+      decimals: number,
+      max: number
+    ): string {
+      const n = new BigNumber(keepingBalance)
+        .plus(stopBalance.toString(10))
+        .div(10 ** decimals);
+      if (n.gt(10 ** 7)) {
+        return n.decimalPlaces(0, 1).toString(10);
+      } else if (n.gt(10 ** 5)) {
+        return n.decimalPlaces(Math.min(2, decimals), 1).toString(10);
+      } else {
+        return n.decimalPlaces(Math.min(decimals, max), 1).toString(10);
+      }
     }
   }
 })
@@ -10911,6 +12750,8 @@ export default class extends Vue {
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
   @commonModule.Getter('getIcx') getIcx?: AstroXWebViewHandler;
   @commonModule.Getter('getCheckAuth') getCheckAuth?: boolean;
+  @commonModule.Getter('getIdentity') getIdentity?: boolean;
+
   private poolVisible = false;
   private showPrepareOrder = false;
   private preparing = [];
@@ -10922,6 +12763,10 @@ export default class extends Vue {
   private currentICDexService: ICDexService;
   private astroXUserService: AstroXUserService;
   private ledgerService: LedgerService | undefined;
+  private ICDexRouterService: ICDexRouterService = null;
+  private ICLighthouseService: ICLighthouseService = null;
+  private NftService: NftService = null;
+  private NFTsExt: Array<TokenExt> = [];
   private tokensBalance: { [key: string]: string } = {};
   private tokensBalanceSto: { [key: string]: string } = {};
   private pairs: Array<DePairs> = [];
@@ -10932,6 +12777,7 @@ export default class extends Vue {
   private timer = null;
   private compEndTimer = null;
   private timerOrderBook = null;
+  private timerAccount = null;
   private time = 10;
   private latestFilledRecordChangeTimer = null;
   private timerQuotes = null;
@@ -10960,10 +12806,11 @@ export default class extends Vue {
       key: OrderBookType.Sell
     }
   ];
-  private icpPrice = '';
-  private currentMarketPrice: { [key: string]: number } = { usdt: 1 };
+  private currentMarketPrice: { [key: string]: string } = {
+    usdt: '1'
+  };
   private orderTypeEnum = OrderTypeEnum;
-  private orderType: OrderTypeMenu | 'Pro' | 'Stop-loss' = OrderTypeEnum.LMT;
+  private orderType: OrderTypeMenu | 'Pro' | 'Stop-limit' = OrderTypeEnum.LMT;
   private proOrderEnum = ProOrderEnum;
   private currentProOrderMenu: ProOrderMenu = null;
   private buyPrice = '';
@@ -10984,7 +12831,7 @@ export default class extends Vue {
   private pendingList: Array<PendingList> = [];
   private pendingListPro: Array<PendingList> = [];
   private stopOrders: Array<STOrder> = [];
-  private stopLossNeed: { token0: bigint; token1: bigint } = {
+  private stopLimitNeed: { token0: bigint; token1: bigint } = {
     token0: BigInt(0),
     token1: BigInt(0)
   };
@@ -11009,30 +12856,38 @@ export default class extends Vue {
   private userRecordPro: Array<TxnRecord> = [];
   private currentHistoryPagePro = 1;
   private latestFilledRecord: LatestFilledRecord = [];
+  private tradesMenu = [
+    {
+      value: 'std',
+      name: 'Std-trades'
+    },
+    {
+      value: 'pro',
+      name: 'Pro-trades'
+    }
+  ];
+  private currentTradesMenu = 'std';
   private tradeMenu = [
     {
       value: 'pending',
       name: 'Open Orders'
     },
     {
-      value: 'stop',
-      name: 'Stop-loss Orders'
-    },
-    {
       value: 'history',
       name: 'Trade History'
     },
     {
-      value: 'pro',
-      name: 'Pro'
+      value: 'stop',
+      name: 'Stop-limit Orders'
     }
+    // ,
+    // {
+    //   value: 'pro',
+    //   name: 'Pro'
+    // }
   ];
   private currentTradeMenu = 'pending';
   private tradeMenuPro = [
-    {
-      value: 'orders',
-      name: 'Orders'
-    },
     {
       value: 'pending',
       name: 'Open Orders'
@@ -11040,9 +12895,14 @@ export default class extends Vue {
     {
       value: 'history',
       name: 'Trade History'
+    },
+    {
+      value: 'orders',
+      name: 'Pro Orders'
     }
   ];
   private currentTradeMenuPro = 'orders';
+  private proTimer = null;
   private tokenPriceStatus = 'par';
   private buyTotalMKT = '';
   // private currentTokenPrice: string = null;
@@ -11146,20 +13006,25 @@ export default class extends Vue {
       path: '/icdex/market'
     },
     {
-      value: 'Pool',
+      value: 'Pools',
       path: '/icdex/pools'
     },
     {
       value: 'Competitions',
       path: '/icdex/competitions'
-    },
-    {
-      value: 'Mining',
-      path: '/icl/tradingMining'
     }
+    // ,
+    // {
+    //   value: 'Mining',
+    //   path: '/icl/tradingMining'
+    // }
   ];
   private pairInfo: PairInfo = null;
   private sysMode: { mode: SysMode; openingTime: Time } = null;
+  private isPaused = false;
+  private isIDOPaused = false;
+  private IDOConfig: IDOConfig = null;
+  private qualification: Participant = null;
   private preparedLoading = false;
   private cancelId = null;
   private prepare: { [key: string]: TxAccount } = {};
@@ -11168,31 +13033,55 @@ export default class extends Vue {
   private tradeCompetitionsEnum = TradeCompetitionsEnum;
   private tradeCompetitionsMenu: TradeCompetitionsMenu = null;
   private isToSetReferrer = false;
+  private proPendingOrdersModel = false;
+  private proPendingOrders: STOrderPendingOrders = {
+    buy: [],
+    sell: []
+  };
   private oldPairs = [
     'scjza-fiaaa-aaaak-ac2kq-cai',
     'ig3ej-haaaa-aaaak-adrva-cai',
     'oru4a-nqaaa-aaaak-acufa-cai'
   ];
+  private prePairs: Array<string> = [];
+  private star: Array<string> = [];
   private tradePairs = {
-    ICP: [],
+    // ICP: [],
     // Old: [],
-    USDT: []
+    // USDT: []
+    Star: [],
+    Main: [],
+    Second: [],
+    Third: [],
+    Old: [],
+    Search: []
   };
   private tradeMarketSort = [
     {
-      name: 'ICP',
-      value: 'ICP'
+      name: 'Star',
+      value: 'Star'
     },
-    // {
-    //   name: 'Old',
-    //   value: 'Old'
-    // },
     {
-      name: 'USDT',
-      value: 'USDT'
+      name: 'MAIN',
+      value: 'Main'
+    },
+    {
+      name: 'SECOND',
+      value: 'Second'
+    },
+    {
+      name: 'THIRD',
+      value: 'Third'
+    },
+    {
+      name: 'Pre-ver',
+      value: 'Old'
     }
   ];
+  private swapConfig: SwapConfig = null;
   private currentTradeMarketSort: string = null;
+  private pairSearch = '';
+  private showThird = true;
   private hostname = '';
   private hostHref = '';
   private keepingBalance: { [key: string]: string } = {};
@@ -11207,8 +13096,10 @@ export default class extends Vue {
   private isToken0: boolean = null;
   private dexRole: DexRole = null;
   private stoConfig: StoSetting = null;
+  private sysConfig: SysConfig = null;
   // Tour
   private steps = [];
+  private myCallbacks = {};
   @Watch('buyTotal')
   private onBuyTotalChange() {
     if (Number(this.buyTotal)) {
@@ -11286,24 +13177,17 @@ export default class extends Vue {
     return false;
   }
   get token0Price(): string {
-    // only icp pair
     if (
       this.currentTokenPrice &&
       this.currentTokenPrice !== '-' &&
-      this.icpPrice &&
       this.currentPair
     ) {
-      const token0Std = Object.keys(this.currentPair[1][0].token0[2])[0];
       let price = '';
-      if (token0Std.toLocaleLowerCase() === 'icp') {
-        // todo no tokenPrice
-        price = new BigNumber(this.icpPrice).decimalPlaces(8).toString(10);
-      } else {
-        price = new BigNumber(this.currentTokenPrice)
-          .times(this.icpPrice)
-          .decimalPlaces(8)
-          .toString(10);
-      }
+      const basePrice = this.getBasePrice(this.currentPair[1][0].token1[1]);
+      price = new BigNumber(this.currentTokenPrice)
+        .times(basePrice)
+        .decimalPlaces(8)
+        .toString(10);
       if (new BigNumber(price).lt(1)) {
         price = new BigNumber(price).toFixed(8);
       } else {
@@ -11427,8 +13311,8 @@ export default class extends Vue {
             .toString(10);
         }
         let fee = '0';
-        if (this.orderType === 'Stop-loss' && this.stoConfig) {
-          fee = this.stoConfig.sloFee1.toString(10);
+        if (this.orderType === 'Stop-limit' && this.stoConfig) {
+          // fee = this.stoConfig.sloFee1.toString(10);
         } else {
           fee = '0';
         }
@@ -11436,7 +13320,7 @@ export default class extends Vue {
           .plus(keepingBalance)
           .minus(tokenFee.toString(10))
           .minus(tokenFee.toString(10))
-          // .minus(this.stopLossNeed.token1.toString(10))
+          // .minus(this.stopLimitNeed.token1.toString(10))
           .minus(fee)
           .div(10 ** this.tokens[token1Id].decimals)
           .div(this.buyPrice)
@@ -11501,7 +13385,7 @@ export default class extends Vue {
           .plus(keepingBalance)
           .minus(tokenFee.toString(10)) // approve
           .minus(tokenFee.toString(10))
-          // .minus(this.stopLossNeed.token0.toString(10))
+          // .minus(this.stopLimitNeed.token0.toString(10))
           .div(10 ** this.tokens[token0Id].decimals)
           .decimalPlaces(this.tokenMinUnit, 1)
           .toString(10);
@@ -11565,7 +13449,7 @@ export default class extends Vue {
         const status = item[1].status;
         if (status) {
           const type = Object.keys(status)[0];
-          return type === 'Prepared' || type === 'Todo';
+          return type === 'Prepared' || type === 'Trading' || type === 'Todo';
         }
       });
     }
@@ -11597,14 +13481,21 @@ export default class extends Vue {
     this.iCSwapRouterService = new ICSwapRouterService();
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.currentICDexService = new ICDexService();
+    this.ICDexRouterService = new ICDexRouterService();
+    this.ICLighthouseService = new ICLighthouseService();
+    this.NftService = new NftService();
     window.addEventListener('resize', this.setFocusin);
     const width = document.documentElement.clientWidth;
     this.isH5 = width <= 768;
     try {
+      this.getSysConfig();
       this.getDexPairs('icdex').then(() => {
-        // this.$nextTick(() => {
-        //   this.$tours['myTour'].start();
-        // });
+        const tour = localStorage.getItem('confirmOldTrade');
+        if (!tour) {
+          this.$nextTick(() => {
+            this.$tours['myTour'].start();
+          });
+        }
       });
       this.getIcpPrice();
       this.initFallbackInfo();
@@ -11613,6 +13504,7 @@ export default class extends Vue {
       if (principal) {
         const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
         this.tokensBalance = currentInfo.tokensBalance || {};
+        this.getNTFs();
       }
     } catch (e) {
       console.error(e);
@@ -11620,14 +13512,73 @@ export default class extends Vue {
     this.steps = [
       {
         target: '.trade-market-old',
-        content: 'Old trade pair',
+        content:
+          'These are trading pairs from the previous version and will be closed after one month, please cancel all unfilled orders.',
         params: {
           enableScrolling: false
+          // placement: 'right'
         }
       }
     ];
+    this.myCallbacks = {
+      onFinish: this.stepCallbacks
+    };
   }
-  private getStopLossNeed(): { token0: bigint; token1: bigint } {
+  private getBasePrice(tokenSymbol: string): string {
+    let price = this.currentMarketPrice['usdt'];
+    if (
+      tokenSymbol.toLocaleLowerCase().includes('icp') &&
+      this.currentMarketPrice['icp']
+    ) {
+      price = this.currentMarketPrice['icp'];
+    } else if (
+      tokenSymbol.toLocaleLowerCase().includes('btc') &&
+      this.currentMarketPrice['btc']
+    ) {
+      price = this.currentMarketPrice['btc'];
+    } else if (
+      tokenSymbol.toLocaleLowerCase().includes('eth') &&
+      this.currentMarketPrice['eth']
+    ) {
+      price = this.currentMarketPrice['eth'];
+    }
+    return price;
+  }
+  private async getNTFs(): Promise<void> {
+    const res = await this.NftService.tokens_ext();
+    console.log(res);
+    const tokensExt = (
+      res as {
+        ok: TokensExt;
+      }
+    ).ok;
+    if (tokensExt && tokensExt.length) {
+      this.NFTsExt = tokensExt;
+    } else {
+      this.NFTsExt = [];
+    }
+    console.log(this.NFTsExt);
+  }
+  private getDuration(val: bigint): string {
+    const duration = require('dayjs/plugin/duration');
+    dayjs.extend(duration);
+    const interval = dayjs.duration(Number(val), 'seconds');
+    const d = interval.asDays();
+    const h = interval.hours();
+    const m = interval.minutes();
+    const s = interval.seconds();
+    if (d >= 1) {
+      const day = Math.floor(d);
+      return `${day}d ${h}h ${m}m ${s}s`;
+    } else {
+      return `${h}h ${m}m ${s}s`;
+    }
+  }
+  private stepCallbacks(): void {
+    console.log('stepCallbacks');
+    localStorage.setItem('confirmOldTrade', 'true');
+  }
+  private getStopLimitNeed(): { token0: bigint; token1: bigint } {
     let token0 = '0';
     let token1 = '0';
     if (this.stopOrders.length) {
@@ -11696,9 +13647,14 @@ export default class extends Vue {
     }
   }
   private changeTradeCompetitionsMenu(menu: TradeCompetitionsMenu): void {
-    this.tradeCompetitionsMenu = menu;
-    (this.$refs.tradeCompetitions as any).init(menu);
-    console.log(this.tradeCompetitionsMenu);
+    if (menu === TradeCompetitionsEnum.Pools) {
+      this.$router.push(`/ICDex/pools/?pair=${this.currentPair[0].toString()}`);
+      this.tradeCompetitionsMenu = menu;
+    } else {
+      this.tradeCompetitionsMenu = menu;
+      (this.$refs.tradeCompetitions as any).init(menu);
+      console.log(this.tradeCompetitionsMenu);
+    }
   }
   private infoBack(): void {
     this.tradeCompetitionsMenu = null;
@@ -11706,7 +13662,9 @@ export default class extends Vue {
   private setFocusin(): void {
     const width = document.documentElement.clientWidth;
     this.isH5 = width <= 768;
-    this.getLevel100(this.currentPair[0].toString());
+    if (this.currentPair) {
+      this.getLevel100(this.currentPair[0].toString());
+    }
   }
   private async pushUser(): Promise<void> {
     const icxPrincipals =
@@ -11837,25 +13795,25 @@ export default class extends Vue {
     const token1Id = this.currentPair[1][0].token1[0].toString();
     let fee = '0';
     if (
-      this.orderType === 'Stop-loss' &&
+      this.orderType === 'Stop-limit' &&
       this.stoConfig &&
       tokenId === token1Id
     ) {
-      fee = this.stoConfig.sloFee1.toString(10);
+      // fee = this.stoConfig.sloFee1.toString(10);
     } else {
       fee = '0';
     }
-    let stopLossNeed = '0';
+    let stopLimitNeed = '0';
     if (tokenId === token1Id) {
-      // stopLossNeed = this.stopLossNeed.token1.toString(10);
+      // stopLimitNeed = this.stopLimitNeed.token1.toString(10);
     } else {
-      // stopLossNeed = this.stopLossNeed.token0.toString(10);
+      // stopLimitNeed = this.stopLimitNeed.token0.toString(10);
     }
     return new BigNumber(this.tokensBalance[tokenId])
       .plus(keepingBalance)
       .minus(tokenFee.toString(10))
       .minus(fee)
-      .minus(stopLossNeed)
+      .minus(stopLimitNeed)
       .toString(10);
   }
   private changeBuyMktSlider(buyMktSlider: number): void {
@@ -12142,6 +14100,9 @@ export default class extends Vue {
     this.timerQuotes = null;
     window.clearInterval(this.timerOrderBook);
     this.timerOrderBook = null;
+    this.clearIntervalPro();
+    window.clearInterval(this.timerAccount);
+    this.timerAccount = null;
     try {
       dispose('kInterval-chart');
     } catch (e) {
@@ -12299,56 +14260,58 @@ export default class extends Vue {
     }
   }
   private init24(data: KBar[]): void {
-    const currentData = data[0];
-    const token0Decimals =
-      this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
-    const token1Decimals =
-      this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
-    const lowest = this.filterLevelPrice(
-      currentData.low,
-      this.unit,
-      token0Decimals,
-      token1Decimals,
-      this.buyUnit
-    );
-    const highest = this.filterLevelPrice(
-      currentData.high,
-      this.unit,
-      token0Decimals,
-      token1Decimals,
-      this.buyUnit
-    );
-    const vol = new BigNumber(currentData.vol.value0.toString(10))
-      .div(10 ** token0Decimals)
-      .toFixed(this.tokenMinUnit);
-    let change = '0.00';
-    if (data.length > 1) {
-      const close = this.filterLevelPrice(
-        currentData.close,
+    if (data && data.length) {
+      const currentData = data[0];
+      const token0Decimals =
+        this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
+      const token1Decimals =
+        this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
+      const lowest = this.filterLevelPrice(
+        currentData.low,
         this.unit,
         token0Decimals,
         token1Decimals,
         this.buyUnit
       );
-      const preClose = this.filterLevelPrice(
-        data[1].close,
+      const highest = this.filterLevelPrice(
+        currentData.high,
         this.unit,
         token0Decimals,
         token1Decimals,
         this.buyUnit
       );
-      change = new BigNumber(close)
-        .minus(preClose)
-        .div(preClose)
-        .times(100)
-        .toFixed(2);
+      const vol = new BigNumber(currentData.vol.value0.toString(10))
+        .div(10 ** token0Decimals)
+        .toFixed(this.tokenMinUnit);
+      let change = '0.00';
+      if (data.length > 1) {
+        const close = this.filterLevelPrice(
+          currentData.close,
+          this.unit,
+          token0Decimals,
+          token1Decimals,
+          this.buyUnit
+        );
+        const preClose = this.filterLevelPrice(
+          data[1].close,
+          this.unit,
+          token0Decimals,
+          token1Decimals,
+          this.buyUnit
+        );
+        change = new BigNumber(close)
+          .minus(preClose)
+          .div(preClose)
+          .times(100)
+          .toFixed(2);
+      }
+      this.dayInfo = {
+        lowest: lowest,
+        highest: highest,
+        vol: vol,
+        change: change
+      };
     }
-    this.dayInfo = {
-      lowest: lowest,
-      highest: highest,
-      vol: vol,
-      change: change
-    };
   }
   private async getQuotes(swapId: string, isInit = false): Promise<void> {
     if (isInit) {
@@ -12397,7 +14360,7 @@ export default class extends Vue {
     return false;
   }
   private setTradePrice(val: PriceResponse, type: string): void {
-    if (this.orderType !== 'MKT' && this.orderType !== 'Stop-loss') {
+    if (this.orderType !== 'MKT' && this.orderType !== 'Stop-limit') {
       const price = this.filterLevelPrice(
         val.price,
         this.unit,
@@ -12501,25 +14464,58 @@ export default class extends Vue {
       }
     }
   }
-  private changeTradeMenu(value: string) {
-    this.currentTradeMenu = value;
+  private changeTradesMenu(value: string) {
+    this.currentTradesMenu = value;
+    this.clearIntervalPro();
     if (value === 'pro') {
-      this.currentTradeMenuPro = 'orders';
-      this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
-    }
-  }
-  private changeTradeMenuPro(value: string) {
-    this.currentTradeMenuPro = value;
-    if (value === 'orders') {
-      this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
-    } else if (value === 'pending') {
+      this.currentTradeMenuPro = 'pending';
       this.getPendingListPro();
-    } else if (value === 'history') {
+      this.proTimer = window.setInterval(() => {
+        this.getPendingListPro(false);
+      }, 10 * 1000);
+      this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
       const address = principalToAccountIdentifier(
         Principal.fromText(this.getPrincipalId),
         new Uint8Array(fromSubAccountId(ProSubaccountId))
       );
       this.getTradeList(this.currentPair[0].toString(), address, true);
+    }
+  }
+  private changeTradeMenu(value: string) {
+    this.currentTradeMenu = value;
+  }
+  private changeTradeMenuPro(value: string) {
+    if (value === this.currentTradeMenuPro) {
+      return;
+    }
+    this.currentTradeMenuPro = value;
+    this.clearIntervalPro();
+    if (value === 'orders') {
+      this.proTimer = window.setInterval(() => {
+        this.getProOrders(
+          this.currentPair[0].toString(),
+          this.getPrincipalId,
+          false
+        );
+      }, 10 * 1000);
+    } else if (value === 'pending') {
+      this.proTimer = window.setInterval(() => {
+        this.getPendingListPro(false);
+      }, 10 * 1000);
+    } else if (value === 'history') {
+      const address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(ProSubaccountId))
+      );
+      this.proTimer = window.setInterval(() => {
+        this.getTradeList(this.currentPair[0].toString(), address, true, false);
+      }, 10 * 1000);
+    }
+  }
+  private clearIntervalPro(): void {
+    if (this.proTimer) {
+      window.clearInterval(this.proTimer);
+      this.proTimer = null;
     }
   }
   private getOrderPrice(txnRecord: TxnRecord, buyUnit: number): string {
@@ -12629,7 +14625,10 @@ export default class extends Vue {
     swapId: string,
     principal: string
   ): Promise<void> {
-    const res = await this.currentICDexService.sto_getAccountStopLossOrders(
+    if (this.prePairs.includes(this.currentPair[0].toString())) {
+      return;
+    }
+    const res = await this.currentICDexService.sto_getAccountStopLimitOrders(
       swapId,
       principalToAccountIdentifier(Principal.fromText(principal))
     );
@@ -12638,10 +14637,23 @@ export default class extends Vue {
     } else {
       this.stopOrders = [];
     }
-    this.stopLossNeed = this.getStopLossNeed();
+    this.stopLimitNeed = this.getStopLimitNeed();
   }
-  private async getProOrders(swapId: string, principal: string): Promise<void> {
-    this.proOrdersLoading = true;
+  private async getProOrders(
+    swapId: string,
+    principal: string,
+    isInit = true
+  ): Promise<void> {
+    if (!principal) {
+      return;
+    }
+    const currentTime = Date.now();
+    if (!isInit && lastCallTime && currentTime - lastCallTime < interval) {
+      return;
+    }
+    if (isInit) {
+      this.proOrdersLoading = true;
+    }
     const res = await this.currentICDexService.sto_getAccountProOrders(
       swapId,
       principalToAccountIdentifier(
@@ -12663,9 +14675,19 @@ export default class extends Vue {
   private async getTradeList(
     swapId: string,
     account: string,
-    isPro = false
+    isPro = false,
+    isInit = true
   ): Promise<void> {
-    if (isPro) {
+    if (!this.getPrincipalId) {
+      return;
+    }
+    if (isPro && !isInit) {
+      const currentTime = Date.now();
+      if (lastCallTime && currentTime - lastCallTime < interval) {
+        return;
+      }
+    }
+    if (isPro && isInit) {
       this.userRecordProLoading = true;
     }
     let res;
@@ -12697,9 +14719,9 @@ export default class extends Vue {
           return arr;
         };
         if (isPro) {
-          this.userRecordPro = removeDuplicateObj(res.records).slice(0, 100);
+          this.userRecordPro = removeDuplicateObj(res.records).slice(0, 50);
         } else {
-          this.userRecord = removeDuplicateObj(res.records).slice(0, 100);
+          this.userRecord = removeDuplicateObj(res.records).slice(0, 50);
         }
       }
     }
@@ -12718,6 +14740,7 @@ export default class extends Vue {
       const _that = this;
       const side = this.filterSide(order.orderPrice);
       let minimum = '';
+      let maximum = '';
       if (side === 'Buy') {
         const tokenInfo =
           this.tokens[this.currentPair[1][0].token1[0].toString()];
@@ -12726,6 +14749,13 @@ export default class extends Vue {
         minimum =
           new BigNumber(tokenFee)
             .times(2)
+            .div(10 ** tokenInfo.decimals)
+            .toString(10) +
+          ' ' +
+          tokenInfo.symbol;
+        maximum =
+          new BigNumber(tokenFee)
+            .times(1000)
             .div(10 ** tokenInfo.decimals)
             .toString(10) +
           ' ' +
@@ -12742,13 +14772,20 @@ export default class extends Vue {
             .toString(10) +
           ' ' +
           tokenInfo.symbol;
+        maximum =
+          new BigNumber(tokenFee)
+            .times(1000)
+            .div(10 ** tokenInfo.decimals)
+            .toString(10) +
+          ' ' +
+          tokenInfo.symbol;
       }
       const fee = new BigNumber(this.currentPair[1][0].feeRate.toString())
         .times(100)
         .times(20 / 100) // 20%
         .toString(10);
       this.$confirm({
-        content: `The order not filled will be charged a ${fee}% (minimum ${minimum}) cancellation fee if cancelled within 1h of being placed.`,
+        content: `The order not filled will be charged a ${fee}% (minimum ${minimum} and maximum ${maximum}) cancellation fee if cancelled within 1h of being placed.`,
         class: 'connect-plug',
         icon: 'connect-plug',
         centered: true,
@@ -12767,15 +14804,141 @@ export default class extends Vue {
     (this.$refs as any).proWalletSwap.showSwap = showSwap;
     (this.$refs as any).proWalletSwap.visible = true;
   }
-  private onCreateProOrder(): void {
+  private canRun(item: STOrder = null): boolean {
+    if (
+      this.currentPair &&
+      this.tokens &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()].decimals &&
+      this.tokens[this.currentPair[1][0].token1[0].toString()].decimals
+    ) {
+      const token0Id = this.currentPair[1][0].token0[0].toString();
+      const token1Id = this.currentPair[1][0].token1[0].toString();
+      const unitSize100 = new BigNumber(this.unit.toString(10))
+        .times(100)
+        .toString(10);
+      const unitSize100Token1 = new BigNumber(unitSize100)
+        .times(this.currentTokenPrice)
+        .toString(10);
+      if (
+        !item &&
+        new BigNumber(this.tokensBalanceSto[token0Id]).lt(unitSize100) &&
+        new BigNumber(this.tokensBalanceSto[token1Id]).lt(unitSize100Token1) &&
+        new BigNumber(this.keepingBalanceSto[token0Id]).lt(unitSize100) &&
+        new BigNumber(this.keepingBalanceSto[token1Id]).lt(unitSize100Token1)
+      ) {
+        const value = new BigNumber(unitSize100)
+          .div(10 ** this.tokens[token0Id].decimals)
+          .toString(10);
+        this.$message.error(
+          `Pro-orders require that the Trader Account's ${this.tokens[token0Id].symbol} or ${this.tokens[token1Id].symbol} balance is not less than the value of ${value} ${this.tokens[token0Id].symbol}.`
+        );
+        return false;
+      } else if (item) {
+        const type = Object.keys(
+          (item.strategy as { IcebergOrder: IcebergOrder }).IcebergOrder.setting
+            .order.side
+        )[0];
+        if (type === 'Buy') {
+          if (
+            new BigNumber(this.keepingBalanceSto[token1Id]).lt(
+              unitSize100Token1
+            )
+          ) {
+            const value = new BigNumber(unitSize100Token1)
+              .div(10 ** this.tokens[token1Id].decimals)
+              .toString(10);
+            this.$message.error(
+              `The Trader Account's ${this.tokens[token1Id].symbol} balance is not less than the value of ${value} ${this.tokens[token1Id].symbol}.`
+            );
+            return false;
+          } else {
+            return true;
+          }
+        } else if (type === 'Sell') {
+          if (new BigNumber(this.keepingBalanceSto[token0Id]).lt(unitSize100)) {
+            const value = new BigNumber(unitSize100)
+              .div(10 ** this.tokens[token0Id].decimals)
+              .toString(10);
+            this.$message.error(
+              `The Trader Account's ${this.tokens[token0Id].symbol} balance is not less than the value of ${value} ${this.tokens[token0Id].symbol}.`
+            );
+            return false;
+          } else {
+            return true;
+          }
+        }
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+  private onCreateProOrder(item): void {
+    this.orderType = 'Pro';
+    this.currentProOrderMenu = item;
+    console.log(this.currentProOrderMenu);
+    if (!this.NFTsExt.length) {
+      this.$info({
+        content:
+          'This feature is currently in the experimental stage and is for ICLighthouse Planet Cards NFT holders to experience and use only.',
+        class: 'connect-plug',
+        icon: 'connect-plug',
+        centered: true,
+        okText: 'Close'
+      });
+      return;
+    }
+    if (this.currentProOrderMenu === 'Iceberg') {
+      const flag = this.canRun();
+      if (!flag) {
+        return;
+      }
+    }
     (this.$refs as any).proOrder.init(this.currentProOrderMenu);
+  }
+  private showProOrderMenu(): void {
+    const hasGrid = localStorage.getItem('GridWarn');
+    if (hasGrid) {
+      this.orderType = 'Pro';
+      // this.currentTradesMenu = 'pro';
+      this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
+      if (this.isH5) {
+        this.currentProOrderMenu = ProOrderEnum.Grid;
+        this.proVisible = true;
+      }
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const _that = this;
+      this.$confirm({
+        content:
+          'Strategy orders require you to have knowledge related to financial trading and are only recommended for professional traders.\n' +
+          'The new feature is still in beta status and may have unforeseen technical flaws.\n' +
+          'In order to save the computing power of smart contracts, Strategy Orders will charge an additional fee.\n' +
+          'If you use this feature, you need to bear all the risks associated with it.',
+        class: 'connect-plug confirm-swap-button',
+        icon: 'connect-plug',
+        okText: 'Confirm',
+        centered: true,
+        onOk() {
+          localStorage.setItem('GridWarn', 'true');
+          _that.orderType = 'Pro';
+          _that.currentTradesMenu = 'pro';
+          if (_that.isH5) {
+            _that.proVisible = true;
+          }
+        }
+      });
+    }
+  }
+  private changeProOrderMenu(item): void {
+    this.currentProOrderMenu = item;
   }
   private showProOrder(type: ProOrderMenu): void {
     this.currentProOrderMenu = type;
     const hasGrid = localStorage.getItem('GridWarn');
     if (hasGrid) {
       this.orderType = 'Pro';
-      this.currentTradeMenu = 'pro';
+      this.currentTradesMenu = 'pro';
       this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
       if (this.isH5) {
         this.proVisible = true;
@@ -12796,7 +14959,7 @@ export default class extends Vue {
         onOk() {
           localStorage.setItem('GridWarn', 'true');
           _that.orderType = 'Pro';
-          _that.currentTradeMenu = 'pro';
+          _that.currentTradesMenu = 'pro';
           if (_that.isH5) {
             _that.proVisible = true;
           }
@@ -12815,16 +14978,18 @@ export default class extends Vue {
       type = stType;
     }
     this.currentProOrderMenu = type;
-    (this.$refs as any).proOrder.step = 3;
-    (this.$refs as any).proOrder.update(item);
+    this.$nextTick(() => {
+      (this.$refs as any).proOrder.step = 2;
+      (this.$refs as any).proOrder.update(item, this.currentProOrderMenu);
+    });
   }
-  private async onDeleteStopLoss(soid: bigint): Promise<void> {
+  private async toDeleteStopLimit(soid: bigint): Promise<void> {
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
-      await this.currentICDexService.sto_updateStopLossOrder(
+      await this.currentICDexService.sto_updateStopLimitOrder(
         this.currentPair[0].toString(),
         soid,
         {
@@ -12849,7 +15014,22 @@ export default class extends Vue {
     }
     loading.close();
   }
-  private async onDeleteProOrder(soid: bigint, type: STType): Promise<void> {
+  private onDeleteStopLimit(soid: bigint): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const _that = this;
+    this.$confirm({
+      content: 'Are you sure you want to cancel this stop limit order?',
+      class: 'connect-plug register-mining-confirm',
+      icon: 'connect-plug',
+      okText: 'Yes',
+      cancelText: 'No',
+      centered: true,
+      onOk() {
+        _that.toDeleteStopLimit(soid);
+      }
+    });
+  }
+  private async toDeleteProOrder(soid: bigint, type: STType): Promise<void> {
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -12882,17 +15062,82 @@ export default class extends Vue {
         },
         ProSubaccountId
       );
+    } else if (stType === 'TWAP') {
+      await this.currentICDexService.sto_updateProOrder(
+        this.currentPair[0].toString(),
+        soid,
+        {
+          TWAP: {
+            status: [{ Deleted: null }],
+            setting: []
+          }
+        },
+        ProSubaccountId
+      );
+    } else if (stType === 'VWAP') {
+      await this.currentICDexService.sto_updateProOrder(
+        this.currentPair[0].toString(),
+        soid,
+        {
+          VWAP: {
+            status: [{ Deleted: null }],
+            setting: []
+          }
+        },
+        ProSubaccountId
+      );
     }
     loading.close();
     this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
     this.$message.success('Success');
   }
-  private async onRunningProOrder(soid: bigint, type: STType): Promise<void> {
+  private async onDeleteProOrder(soid: bigint, type: STType): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const _that = this;
+    this.$confirm({
+      content: 'Are you sure you want to delete this order?',
+      class: 'connect-plug register-mining-confirm',
+      icon: 'connect-plug',
+      okText: 'Yes',
+      cancelText: 'No',
+      centered: true,
+      onOk() {
+        _that.toDeleteProOrder(soid, type);
+      }
+    });
+  }
+  private async onRunningProOrder(
+    soid: bigint,
+    type: STType,
+    item: STOrder
+  ): Promise<void> {
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
     const stType = Object.keys(type)[0];
+    if (stType !== 'GridOrder') {
+      const end = new BigNumber(
+        item.strategy[Object.keys(item.strategy)[0]].setting.endTime.toString(
+          10
+        )
+      ).times(1000);
+      const now = new Date().getTime();
+      if (end.lte(now)) {
+        this.$message.error('The end time must be set to a future time.');
+        loading.close();
+        return;
+      }
+    }
+    (this.$refs as any).proOrder.type = 'update';
+    if (!this.dexRole.vipMaker) {
+      const flag = await (this.$refs as any).proOrder.stoFee();
+      console.log(flag);
+      if (!flag) {
+        loading.close();
+        return;
+      }
+    }
     if (stType === 'GridOrder') {
       await this.currentICDexService.sto_updateProOrder(
         this.currentPair[0].toString(),
@@ -12909,11 +15154,40 @@ export default class extends Vue {
         ProSubaccountId
       );
     } else if (stType === 'IcebergOrder') {
+      const canRun = this.canRun(item);
+      if (!canRun) {
+        loading.close();
+        return;
+      }
       await this.currentICDexService.sto_updateProOrder(
         this.currentPair[0].toString(),
         soid,
         {
           IcebergOrder: {
+            status: [{ Running: null }],
+            setting: []
+          }
+        },
+        ProSubaccountId
+      );
+    } else if (stType === 'TWAP') {
+      await this.currentICDexService.sto_updateProOrder(
+        this.currentPair[0].toString(),
+        soid,
+        {
+          TWAP: {
+            status: [{ Running: null }],
+            setting: []
+          }
+        },
+        ProSubaccountId
+      );
+    } else if (stType === 'VWAP') {
+      await this.currentICDexService.sto_updateProOrder(
+        this.currentPair[0].toString(),
+        soid,
+        {
+          VWAP: {
             status: [{ Running: null }],
             setting: []
           }
@@ -12958,10 +15232,55 @@ export default class extends Vue {
         },
         ProSubaccountId
       );
+    } else if (stType === 'TWAP') {
+      await this.currentICDexService.sto_updateProOrder(
+        this.currentPair[0].toString(),
+        soid,
+        {
+          TWAP: {
+            status: [{ Stopped: null }],
+            setting: []
+          }
+        },
+        ProSubaccountId
+      );
+    } else if (stType === 'VWAP') {
+      await this.currentICDexService.sto_updateProOrder(
+        this.currentPair[0].toString(),
+        soid,
+        {
+          VWAP: {
+            status: [{ Stopped: null }],
+            setting: []
+          }
+        },
+        ProSubaccountId
+      );
     }
     loading.close();
     this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
     this.$message.success('Success');
+  }
+  private showPendingOrders(value: STOrderPendingOrders): void {
+    if (!value.buy.length && !value.sell.length) {
+      return;
+    }
+    value.buy.sort((a, b) => {
+      if (new BigNumber(b[1].toString(10)).lt(a[1].toString(10))) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    value.sell.sort((a, b) => {
+      if (new BigNumber(b[1].toString(10)).lt(a[1].toString(10))) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    this.proPendingOrders = value;
+    this.proPendingOrdersModel = true;
   }
   private async onCancel(order: TradingOrder, isPro: boolean): Promise<void> {
     await checkAuth();
@@ -13133,8 +15452,17 @@ export default class extends Vue {
       }
     }
   }
-  private async getPendingListPro(): Promise<void> {
-    this.proOrdersPendingLoading = true;
+  private async getPendingListPro(isInit = true): Promise<void> {
+    if (!this.getPrincipalId) {
+      return;
+    }
+    const currentTime = Date.now();
+    if (!isInit && lastCallTime && currentTime - lastCallTime < interval) {
+      return;
+    }
+    if (isInit) {
+      this.proOrdersPendingLoading = true;
+    }
     let pendingList: Array<PendingList> = [];
     const currentPendingPage = 1;
     const res = await this.getMorePending(
@@ -13164,12 +15492,12 @@ export default class extends Vue {
       let pendingList: Array<PendingList> = [];
       const currentPendingPage = 1;
       const res = await this.getMorePending(currentPendingPage, pendingList);
+      const pendingTxIds = [];
+      let maxNonce = BigInt('0');
       if (res && res.length) {
         this.pendingList = res.sort(
           (a, b) => Number(b[1].time) - Number(a[1].time)
         );
-        const pendingTxIds = [];
-        let maxNonce = BigInt('0');
         this.pendingList.forEach((pendingList) => {
           if (
             new BigNumber(pendingList[1].nonce.toString(10)).gt(
@@ -13180,52 +15508,45 @@ export default class extends Vue {
           }
           pendingTxIds.push(toHexString(new Uint8Array(pendingList[0])));
         });
-        const currentPairId = this.currentPair[0].toString();
-        if (
-          this.preparedList[currentPairId] &&
-          this.preparedList[currentPairId].length
-        ) {
-          for (let i = 0; i < this.preparedList[currentPairId].length; i++) {
-            const preparedList = this.preparedList[currentPairId][i];
+      } else {
+        this.pendingList = [];
+      }
+      const currentPairId = this.currentPair[0].toString();
+      if (
+        this.preparedList[currentPairId] &&
+        this.preparedList[currentPairId].length
+      ) {
+        for (let i = 0; i < this.preparedList[currentPairId].length; i++) {
+          const preparedList = this.preparedList[currentPairId][i];
+          if (
+            pendingTxIds.includes(
+              toHexString(new Uint8Array(preparedList[0]))
+            ) ||
+            new BigNumber(maxNonce.toString(10)).gt(
+              preparedList[1].nonce.toString(10)
+            )
+          ) {
+            console.log(toHexString(new Uint8Array(preparedList[0])));
+            this.preparedList[currentPairId].splice(i, 1);
+            this.deletePrepare(currentPairId, preparedList[1].nonce);
+            i--;
+          } else {
             if (
-              pendingTxIds.includes(
-                toHexString(new Uint8Array(preparedList[0]))
-              ) ||
-              new BigNumber(maxNonce.toString(10)).gt(
-                preparedList[1].nonce.toString(10)
-              )
+              (this.prepareOrder[currentPairId] &&
+                !this.prepareOrder[currentPairId].includes(
+                  Number(preparedList[1].nonce)
+                )) ||
+              !this.prepareOrder[currentPairId]
             ) {
-              console.log(toHexString(new Uint8Array(preparedList[0])));
-              this.preparedList[currentPairId].splice(i, 1);
-              this.deletePrepare(currentPairId, preparedList[1].nonce);
-              i--;
-            } else {
-              if (
-                (this.prepareOrder[currentPairId] &&
-                  !this.prepareOrder[currentPairId].includes(
-                    Number(preparedList[1].nonce)
-                  )) ||
-                !this.prepareOrder[currentPairId]
-              ) {
-                if (i > 0) {
-                  const status = Object.keys(
-                    this.preparedList[currentPairId][i - 1][1].status
-                  )[0];
-                  if (status !== 'Prepared') {
-                    this.statusByTxid(currentPairId, preparedList);
-                  }
-                } else {
-                  this.statusByTxid(currentPairId, preparedList);
-                }
-              }
-              this.pendingList.unshift(preparedList);
+              this.statusByTxid(currentPairId, preparedList);
             }
+            this.pendingList.unshift(preparedList);
           }
         }
-        this.totalPending = this.pendingList.length;
-        if (this.totalPending <= 10) {
-          this.currentPendingPage = 1;
-        }
+      }
+      this.totalPending = this.pendingList.length;
+      if (this.totalPending <= 10) {
+        this.currentPendingPage = 1;
       }
     } catch (e) {
       console.log(e);
@@ -13235,7 +15556,12 @@ export default class extends Vue {
   }
   private statusByTxid(currentPairId: string, preparedList: PendingList): void {
     const status = Object.keys(preparedList[1].status)[0];
-    if (status !== 'Prepared' && status !== 'Todo' && status !== 'Pending') {
+    if (
+      status !== 'Prepared' &&
+      status !== 'Trading' &&
+      status !== 'Todo' &&
+      status !== 'Pending'
+    ) {
       return;
     }
     this.currentICDexService
@@ -13252,11 +15578,13 @@ export default class extends Vue {
             if (this.currentPair[0].toString() === currentPairId) {
               console.log(orderStatus);
               if (orderStatus === 'Pending' || orderStatus === 'Failed') {
-                this.$set(
-                  preparedList,
-                  1,
-                  Object.values(res.orderStatusResponse)[0]
-                );
+                const current = Object.values(res.orderStatusResponse)[0];
+                if (orderStatus === 'Failed') {
+                  current.status = {
+                    Fail: null
+                  };
+                }
+                this.$set(preparedList, 1, current);
               }
               if (orderStatus === 'Completed') {
                 const value: TxnRecord = Object.values(
@@ -13275,7 +15603,7 @@ export default class extends Vue {
   }
   private async getToStatusPro(swapId: string): Promise<void> {
     if (
-      this.currentTradeMenu === 'pro' &&
+      this.currentTradesMenu === 'pro' &&
       this.currentTradeMenuPro === 'pending'
     ) {
       // let pending = true;
@@ -13319,13 +15647,11 @@ export default class extends Vue {
             this.getOrderStatus(res[1].toids) === 'Doing' ||
             this.getOrderStatus(res[1].toids) === 'Todo' ||
             tradingOrderStatus === 'Todo' ||
-            tradingOrderStatus === 'Prepared'
+            tradingOrderStatus === 'Prepared' ||
+            tradingOrderStatus === 'Trading'
           );
         });
         if (isTodo) {
-          window.setTimeout(() => {
-            this.getPendingListPro();
-          }, 6 * 1000);
           this.TTRun();
         } else {
           //
@@ -13378,7 +15704,8 @@ export default class extends Vue {
           this.getOrderStatus(res[1].toids) === 'Doing' ||
           this.getOrderStatus(res[1].toids) === 'Todo' ||
           tradingOrderStatus === 'Todo' ||
-          tradingOrderStatus === 'Prepared'
+          tradingOrderStatus === 'Prepared' ||
+          tradingOrderStatus === 'Trading'
         );
       });
       if (
@@ -13419,6 +15746,9 @@ export default class extends Vue {
     const tradingOrderStatus = Object.keys(tradingOrder.status)[0];
     if (tradingOrderStatus === 'Prepared') {
       status = 'Prepared';
+    }
+    if (tradingOrderStatus === 'Trading') {
+      status = 'Trading';
     }
     if (tradingOrderStatus === 'Todo') {
       status = 'Pending';
@@ -13684,6 +16014,12 @@ export default class extends Vue {
             .times(10 ** this.tokens[tokenId].decimals)
             .toString(10)
         );
+      } else if (tokenId === LEDGER_CANISTER_ID) {
+        approve = BigInt(
+          new BigNumber(1000)
+            .times(10 ** this.tokens[tokenId].decimals)
+            .toString(10)
+        );
       } else {
         if (currentPair[1][0].token1[0].toString() === LEDGER_CANISTER_ID) {
           approve = BigInt(
@@ -13738,6 +16074,35 @@ export default class extends Vue {
       BigInt(nonce),
       txid
     ];
+  }
+  private setStatusTrading(currentPairId: string, nonce: bigint): void {
+    console.log('setStatusTrading');
+    if (
+      this.preparedList[currentPairId] &&
+      this.preparedList[currentPairId].length
+    ) {
+      for (let i = 0; i < this.preparedList[currentPairId].length; i++) {
+        const status = Object.keys(
+          this.preparedList[currentPairId][i][1].status
+        )[0];
+        console.log(i);
+        if (
+          Number(this.preparedList[currentPairId][i][1].nonce) === Number(nonce)
+        ) {
+          if (status === 'Prepared') {
+            this.preparedList[currentPairId][i][1].status = {
+              Trading: null
+            };
+            this.$set(
+              this.preparedList[currentPairId],
+              i,
+              this.preparedList[currentPairId][i]
+            );
+          }
+          break;
+        }
+      }
+    }
   }
   private deletePrepare(currentPairId: string, nonce: bigint): void {
     if (this.prepareOrder[currentPairId]) {
@@ -14163,10 +16528,26 @@ export default class extends Vue {
           console.log(e);
           this.initPending(currentPair, prepare, address);
           this.$message.error('Order fail');
+        })
+        .finally(() => {
+          if (this.IDOConfig && this.IDOConfig[0] && this.IDOConfig[1]) {
+            const now = new Date().getTime();
+            if (
+              new BigNumber(this.IDOConfig[1].IDOOpeningTime.toString(10))
+                .div(10 ** 6)
+                .lt(now) &&
+              new BigNumber(this.IDOConfig[1].IDOClosingTime.toString(10))
+                .div(10 ** 6)
+                .gt(now)
+            ) {
+              this.IDO_qualification(currentPair);
+            }
+          }
         });
       setTimeout(() => {
         this.executionQueue(currentPair, address);
       }, 3000);
+      this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
       this.getIntervalPrice(6);
     } catch (e) {
@@ -14198,10 +16579,10 @@ export default class extends Vue {
         new BigNumber(tokenAmount).times(10 ** tokenInfo.decimals).toString(10)
       );
       // create fee
-      if (type === 'buy' && this.orderType === 'Stop-loss' && this.stoConfig) {
+      if (type === 'buy' && this.orderType === 'Stop-limit' && this.stoConfig) {
         total = BigInt(
           new BigNumber(total.toString())
-            .plus(this.stoConfig.sloFee1.toString(10))
+            // .plus(this.stoConfig.sloFee1.toString(10))
             .toString(10)
         );
       }
@@ -14210,15 +16591,15 @@ export default class extends Vue {
       let keepingBalance = '0';
       let needTransfer = total.toString(10);
       let needDeposit = '0';
-      let stopLossBalance = '0';
+      let stopLimitBalance = '0';
       if (type === 'buy') {
-        // stopLossBalance = this.stopLossNeed.token1.toString(10);
+        // stopLimitBalance = this.stopLimitNeed.token1.toString(10);
       }
       if (type === 'sell') {
-        // stopLossBalance = this.stopLossNeed.token0.toString(10);
+        // stopLimitBalance = this.stopLimitNeed.token0.toString(10);
       }
       keepingBalance = new BigNumber(this.keepingBalance[tokenId])
-        .minus(stopLossBalance)
+        .minus(stopLimitBalance)
         .toString(10);
       console.log(type, total, keepingBalance);
       if (this.tokens && !this.isKeeping) {
@@ -14242,18 +16623,10 @@ export default class extends Vue {
           const newKeepingBalance = new BigNumber(keepingBalance)
             .minus(total.toString(10))
             .toString(10);
-          if (this.orderType !== 'Stop-loss') {
+          if (this.orderType !== 'Stop-limit') {
             this.$set(this.keepingBalance, tokenId, newKeepingBalance);
           }
           return true;
-        }
-        // need transfer token to txAccount/depositAccount
-        if (tokenStd === 'icp' || tokenStd === 'icrc1') {
-          total = BigInt(
-            new BigNumber(total.toString(10))
-              .plus(getFee(this.tokens[tokenId]).toString(10))
-              .toString(10)
-          );
         }
         needDeposit = new BigNumber(total.toString(10))
           .minus(keepingBalance)
@@ -14268,12 +16641,18 @@ export default class extends Vue {
             .toString(10);
         }
         needTransfer = needDeposit;
+        // need transfer token to txAccount/depositAccount
+        if (tokenStd === 'icp' || tokenStd === 'icrc1') {
+          needTransfer = new BigNumber(needDeposit)
+            .plus(getFee(this.tokens[tokenId]).toString(10))
+            .toString(10);
+        }
         balance = new BigNumber(this.tokensBalance[tokenId])
           .minus(needTransfer)
           .minus(getFee(this.tokens[tokenId]).toString(10))
           .toString(10);
         console.log(keepingBalance, total, balance);
-        if (this.orderType !== 'Stop-loss') {
+        if (this.orderType !== 'Stop-limit') {
           this.$set(this.keepingBalance, tokenId, '0');
         }
       }
@@ -14294,7 +16673,7 @@ export default class extends Vue {
             .minus(getFee(this.tokens[tokenId]).toString(10))
             .toString(10);
         }
-        if (this.orderType !== 'Stop-loss') {
+        if (this.orderType !== 'Stop-limit') {
           this.$set(this.tokensBalance, tokenId, balance);
         }
       }
@@ -14437,6 +16816,7 @@ export default class extends Vue {
           this.initPending(currentPair, prepare, address);
           this.$message.error('Order fail');
         });
+      this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       setTimeout(() => {
         this.executionQueue(currentPair, address);
       }, 3000);
@@ -14481,7 +16861,7 @@ export default class extends Vue {
                       toHexString(new Uint8Array(txid)) ===
                       toHexString(new Uint8Array(this.pendingList[i][0]))
                     ) {
-                      if (status === 'Prepared') {
+                      if (status === 'Prepared' || status === 'Trading') {
                         console.log(orderStatus);
                         if (
                           orderStatus === 'Pending' ||
@@ -14533,7 +16913,7 @@ export default class extends Vue {
                           )
                         )
                       ) {
-                        if (status === 'Prepared') {
+                        if (status === 'Prepared' || status === 'Trading') {
                           console.log(orderStatus);
                           if (
                             orderStatus === 'Pending' ||
@@ -14676,11 +17056,17 @@ export default class extends Vue {
     }
   }
   private async onSell(): Promise<void> {
-    if (this.pairInfo && this.pairInfo.paused) {
+    if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
+      (this.isPaused || (!this.isPaused && this.orderType !== 'LMT'))
+    ) {
       this.$message.warning('Trading pair has been paused.');
       return;
     }
     this.isToSell = true;
+    const token0Id = this.currentPair[1][0].token0[0].toString();
+    const token1Id = this.currentPair[1][0].token1[0].toString();
     if (
       this.sellPrice &&
       this.sellAmount &&
@@ -14692,6 +17078,64 @@ export default class extends Vue {
           `Quantity must be an integral multiple of ${this.unitSize}`
         );
         return;
+      }
+      if (this.orderType === 'LMT' && !this.isPaused) {
+        if (this.IDOConfig[1].IDOSupplies.length) {
+          let flag = false;
+          let IDOPrice = '';
+          const hasPrice = [];
+          this.level100[1].ask.forEach((item) => {
+            const price = new BigNumber(item.price.toString(10))
+              .div(10 ** this.tokens[token1Id].decimals)
+              .div(
+                new BigNumber(this.unit.toString(10)).div(
+                  10 ** this.tokens[token0Id].decimals
+                )
+              )
+              .toString(10);
+            hasPrice.push(price);
+          });
+          if (hasPrice.length === this.IDOConfig[1].IDOSupplies.length) {
+            this.$message.warning('IDO has completed the pending order');
+            return;
+          }
+          for (let i = 0; i < this.IDOConfig[1].IDOSupplies.length; i++) {
+            const IDOSupplies = this.IDOConfig[1].IDOSupplies[i];
+            const price = new BigNumber(IDOSupplies.price.toString(10))
+              .div(10 ** this.tokens[token1Id].decimals)
+              .div(
+                new BigNumber(this.unit.toString(10)).div(
+                  10 ** this.tokens[token0Id].decimals
+                )
+              )
+              .toString(10);
+            if (!hasPrice.includes(price)) {
+              if (i === 0) {
+                IDOPrice = price;
+              } else {
+                IDOPrice = IDOPrice + ' or ' + price;
+              }
+              if (price === this.sellPrice) {
+                const quantity = new BigNumber(IDOSupplies.supply.toString(10))
+                  .div(10 ** this.tokens[token0Id].decimals)
+                  .toString(10);
+                if (quantity === this.sellAmount) {
+                  flag = true;
+                } else {
+                  IDOPrice = '';
+                  this.$message.warning(`Quantity must be ${quantity}.`);
+                }
+                break;
+              }
+            }
+          }
+          if (!flag) {
+            if (IDOPrice) {
+              this.$message.warning(`Price must be ${IDOPrice}.`);
+            }
+            return;
+          }
+        }
       }
       if (this.pairTotalPending > 30000) {
         if (
@@ -14727,8 +17171,6 @@ export default class extends Vue {
         this.$message.error(`Total cannot be less than ${min}`);
         return;
       }
-      const token0Id = this.currentPair[1][0].token0[0].toString();
-      const token1Id = this.currentPair[1][0].token1[0].toString();
       const amount = BigInt(
         new BigNumber(this.sellAmount)
           .times(10 ** this.tokens[token0Id].decimals)
@@ -14754,7 +17196,7 @@ export default class extends Vue {
       }
       const principal = localStorage.getItem('principal');
       const address = principalToAccountIdentifier(Principal.from(principal));
-      if (this.orderType === 'Stop-loss') {
+      if (this.orderType === 'Stop-limit') {
         const order = {
           side: { Sell: null },
           quantity: amount,
@@ -14764,10 +17206,33 @@ export default class extends Vue {
           .times(10 ** this.tokens[token1Id].decimals)
           .times(new BigNumber(this.unit.toString(10)).div(10 ** tokenDecimals))
           .toString(10);
-        this.onStopLoss(
+        const min = new BigNumber(this.unit.toString(10))
+          .div(10 ** tokenDecimals)
+          .times(100)
+          .toString(10);
+        let totalAmount = this.sellAmount;
+        if (new BigNumber(totalAmount).lt(min)) {
+          totalAmount = min;
+        }
+        console.log(min, totalAmount);
+        const token0Id = this.currentPair[1][0].token0[0].toString();
+        if (
+          new BigNumber(this.keepingBalance[token0Id])
+            .plus(this.tokensBalance[token0Id])
+            .minus(getFee(this.tokens[token0Id]).toString(10))
+            .minus(getFee(this.tokens[token0Id]).toString(10))
+            .div(10 ** tokenDecimals)
+            .lt(totalAmount)
+        ) {
+          this.$message.error(
+            `You should make a deposit first (Minimum amount: ${min} ${this.tokens[token0Id].symbol})`
+          );
+          return;
+        }
+        this.onStopLimit(
           order,
           BigInt(triggerPrice),
-          this.sellAmount,
+          totalAmount,
           this.prepare[currentPairId],
           this.currentPair,
           address,
@@ -14806,9 +17271,22 @@ export default class extends Vue {
     this.getQuotes(currentPair[0].toString(), isInit);
     this.initAccount();
   }
+  private async getSysConfig(): Promise<void> {
+    this.sysConfig = await this.ICDexRouterService.sys_getConfig();
+    const sysToken = this.sysConfig.sysToken;
+    if (!this.tokens[sysToken.toString()]) {
+      getTokenInfo(sysToken, { icrc2: null }).then((res) => {
+        this.$set(this.tokens, sysToken.toString(), res);
+      });
+    }
+  }
   private async getStoConfig(): Promise<void> {
+    if (this.prePairs.includes(this.currentPair[0].toString())) {
+      return;
+    }
     const currentPair = this.currentPair[0].toString();
     const res = await this.currentICDexService.sto_getConfig(currentPair);
+    console.log(res);
     if (res && res.pairId === this.currentPair[0].toString()) {
       this.stoConfig = res.stoSetting;
     }
@@ -14885,11 +17363,17 @@ export default class extends Vue {
         ];
     }
     const std = Object.keys(tokenInfo[2])[0];
-    const needApprove = new BigNumber(amount)
+    let needApprove = new BigNumber(amount)
+      .plus(getFee(this.tokens[tokenInfo[0].toString()]).toString(10))
+      .toString(10);
+    // todo approve
+    needApprove = new BigNumber(amount)
+      .plus(getFee(this.tokens[tokenInfo[0].toString()]).toString(10))
       .plus(getFee(this.tokens[tokenInfo[0].toString()]).toString(10))
       .toString(10);
     if (
-      std.toLocaleLowerCase() === 'drc20' &&
+      (std.toLocaleLowerCase() === 'drc20' ||
+        std.toLocaleLowerCase() === 'icrc2') &&
       new BigNumber(allowance.toString(10)).lt(needApprove)
     ) {
       const address = principalToAccountIdentifier(
@@ -14986,7 +17470,7 @@ export default class extends Vue {
           .toString(10);
         (this.$refs as any).transferIcp.subaccountId = 0;
       }
-      (this.$refs as any).transferIcp.transferButton = 'Deposit';
+      // (this.$refs as any).transferIcp.transferButton = 'Deposit';
       (this.$refs as any).transferIcp.transferForm.to =
         this.currentPair[0] + '.' + currentAddress;
       (this.$refs as any).transferIcp.visibleTransfer = true;
@@ -15030,52 +17514,105 @@ export default class extends Vue {
       }
     }
   }
+  private async withdrawSuccess(): Promise<void> {
+    this.getDepositBalance();
+  }
   private async onKeepingBalance(
     pair: DePairs,
     isToken0 = true,
     isPro = false
   ): Promise<void> {
-    const loading = this.$loading({
-      lock: true,
-      background: 'rgba(0, 0, 0, 0.5)'
-    });
-    let res;
-    console.log(isPro);
+    this.isToken0 = isToken0;
+    this.currentToken = null;
+    let subaccountId = 0;
     if (isPro) {
-      // pro subaccount
-      res = await this.currentICDexService.withdraw(
-        pair[0].toString(),
-        isToken0 ? [] : [BigInt(0)],
-        isToken0 ? [BigInt(0)] : [],
-        1
-      );
-    } else {
-      res = await this.currentICDexService.withdraw(
-        pair[0].toString(),
-        isToken0
-          ? [
-              BigInt(
-                this.keepingBalance[this.currentPair[1][0].token0[0].toString()]
-              )
-            ]
-          : [BigInt(0)],
-        isToken0
-          ? [BigInt(0)]
-          : [
-              BigInt(
-                this.keepingBalance[this.currentPair[1][0].token1[0].toString()]
-              )
-            ]
-      );
+      subaccountId = 1;
     }
-    console.log(res);
-    if (res && res.length) {
-      this.$message.success('Success');
-    } else {
-      this.$message.success('Error');
+    let token = pair[1][0].token0;
+    if (!isToken0) {
+      token = pair[1][0].token1;
     }
-    this.getDepositBalance();
-    loading.close();
+    const std = Object.keys(token[2])[0];
+    console.log(isPro);
+    let balance;
+    let standard;
+    const currentToken = new AddTokenItemClass();
+    if (std.toLocaleLowerCase() === 'icp') {
+      standard = 'ICP';
+    } else if (std.toLocaleLowerCase() === 'drc20') {
+      standard = 'DRC20';
+    } else if (std.toLocaleLowerCase() === 'icrc1') {
+      standard = 'ICRC-1';
+    } else if (std.toLocaleLowerCase() === 'icrc2') {
+      standard = 'ICRC-2';
+    } else {
+      return;
+    }
+    const decimals = this.tokens[token[0].toString()].decimals;
+    if (isPro) {
+      balance = new BigNumber(this.keepingBalanceSto[token[0].toString()])
+        .div(10 ** decimals)
+        .toString(10);
+    } else {
+      balance = new BigNumber(this.keepingBalance[token[0].toString()])
+        .div(10 ** decimals)
+        .toString(10);
+    }
+    this.currentToken = Object.assign(currentToken, {
+      balance: balance,
+      canisterId: token[0].toString(),
+      decimals: decimals,
+      name: this.tokens[token[0].toString()].name,
+      symbol: this.tokens[token[0].toString()].symbol,
+      standard: standard
+    });
+    (this.$refs as any).withdrawToken.init(
+      this.currentToken,
+      isToken0,
+      subaccountId
+    );
+
+    // const loading = this.$loading({
+    //   lock: true,
+    //   background: 'rgba(0, 0, 0, 0.5)'
+    // });
+    // let res;
+    // console.log(isPro);
+    // if (isPro) {
+    //   // pro subaccount
+    //   res = await this.currentICDexService.withdraw(
+    //     pair[0].toString(),
+    //     isToken0 ? [] : [BigInt(0)],
+    //     isToken0 ? [BigInt(0)] : [],
+    //     1
+    //   );
+    // } else {
+    //   res = await this.currentICDexService.withdraw(
+    //     pair[0].toString(),
+    //     isToken0
+    //       ? [
+    //           BigInt(
+    //             this.keepingBalance[this.currentPair[1][0].token0[0].toString()]
+    //           )
+    //         ]
+    //       : [BigInt(0)],
+    //     isToken0
+    //       ? [BigInt(0)]
+    //       : [
+    //           BigInt(
+    //             this.keepingBalance[this.currentPair[1][0].token1[0].toString()]
+    //           )
+    //         ]
+    //   );
+    // }
+    // console.log(res);
+    // if (res && res.length) {
+    //   this.$message.success('Success');
+    // } else {
+    //   this.$message.success('Error');
+    // }
+    // this.getDepositBalance();
+    // loading.close();
   }
   private async getKeepingBalanceSto(pair: DePairs): Promise<KeepingBalance> {
     // sto subaccount = 1
@@ -15097,9 +17634,17 @@ export default class extends Vue {
     }
     return null;
   }
-  private showPoolVisible(): void {
-    this.isPoolModeSetting = this.isPoolMode;
-    this.isKeepingSetting = this.isKeeping;
+  private showPoolVisible(isValid = true): void {
+    if (this.orderType === 'Pro') {
+      return;
+    }
+    if (isValid) {
+      this.isPoolModeSetting = this.isPoolMode;
+      this.isKeepingSetting = this.isKeeping;
+    } else {
+      this.isPoolModeSetting = true;
+      this.isKeepingSetting = true;
+    }
     this.poolVisible = true;
   }
   private onChange(type: boolean, key: string): void {
@@ -15107,6 +17652,9 @@ export default class extends Vue {
   }
   private async getRole(currentPair: DePairs): Promise<void> {
     this.dexRole = null;
+    if (this.prePairs.includes(this.currentPair[0].toString())) {
+      return;
+    }
     if (this.getPrincipalId) {
       const res = await this.currentICDexService.getRole(
         currentPair[0].toString(),
@@ -15163,6 +17711,9 @@ export default class extends Vue {
     this.poolVisible = false;
   }
   private async getDepositBalance(): Promise<void> {
+    if (this.prePairs.includes(this.currentPair[0].toString())) {
+      return;
+    }
     const token0Id = this.currentPair[1][0].token0[0].toString();
     const token1Id = this.currentPair[1][0].token1[0].toString();
     const currentPair = this.currentPair[0].toString();
@@ -15220,7 +17771,7 @@ export default class extends Vue {
     const token0Id = this.currentPair[1][0].token0[0].toString();
     const token1Id = this.currentPair[1][0].token1[0].toString();
     const available0 = new BigNumber(token0KeepingBalance).minus(
-      this.stopLossNeed.token0.toString(10)
+      this.stopLimitNeed.token0.toString(10)
     );
     this.$set(
       this.keepingBalance,
@@ -15228,7 +17779,7 @@ export default class extends Vue {
       available0.lt(0) ? '0' : available0.toString(10)
     );
     const available1 = new BigNumber(token1KeepingBalance).minus(
-      this.stopLossNeed.token1.toString(10)
+      this.stopLimitNeed.token1.toString(10)
     );
     this.$set(
       this.keepingBalance,
@@ -15237,6 +17788,9 @@ export default class extends Vue {
     );
   }
   private async getAccountSetting(): Promise<void> {
+    if (this.prePairs.includes(this.currentPair[0].toString())) {
+      return;
+    }
     const currentPair = this.currentPair[0].toString();
     const res = await this.currentICDexService.accountSetting(
       currentPair,
@@ -15344,7 +17898,12 @@ export default class extends Vue {
     }
   }
   private async onBuy(): Promise<void> {
-    if (this.pairInfo && this.pairInfo.paused) {
+    if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
+      (this.isIDOPaused ||
+        (!this.isIDOPaused && this.orderType !== OrderTypeEnum.FOK))
+    ) {
       this.$message.warning('Trading pair has been paused.');
       return;
     }
@@ -15355,7 +17914,42 @@ export default class extends Vue {
       this.buyTotal &&
       !this.buyAmountError
     ) {
-      if (this.orderType === 'Stop-loss' && !this.stopBuyPrice) {
+      if (this.orderType === OrderTypeEnum.FOK && !this.isIDOPaused) {
+        if (
+          this.qualification &&
+          new BigNumber(this.qualification.limit.toString(10)).lte(0)
+        ) {
+          this.$message.warning('You are not eligible for IDO.');
+          return;
+        }
+        if (
+          this.qualification &&
+          new BigNumber(this.qualification.used.toString(10)).gte(
+            this.qualification.limit.toString(10)
+          )
+        ) {
+          const limit = new BigNumber(this.qualification.limit.toString(10))
+            .div(
+              10 **
+                this.tokens[this.currentPair[1][0].token0[0].toString()]
+                  .decimals
+            )
+            .toString(10);
+          this.$message.warning(`You have reached the IDO limit(${limit}).`);
+          return;
+        }
+        const max = new BigNumber(this.qualification.limit.toString(10))
+          .minus(this.qualification.used.toString(10))
+          .div(
+            10 **
+              this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+          );
+        if (max.lt(this.buyAmount)) {
+          this.$message.warning(`Max quantity ${max.toString()}.`);
+          return;
+        }
+      }
+      if (this.orderType === 'Stop-limit' && !this.stopBuyPrice) {
         return;
       }
       if (this.buyAmountErrorUNIT) {
@@ -15431,7 +18025,7 @@ export default class extends Vue {
       }
       const principal = localStorage.getItem('principal');
       const address = principalToAccountIdentifier(Principal.from(principal));
-      if (this.orderType === 'Stop-loss') {
+      if (this.orderType === 'Stop-limit') {
         const order = {
           side: { Buy: null },
           quantity: amount,
@@ -15441,10 +18035,42 @@ export default class extends Vue {
           .times(10 ** token1Info.decimals)
           .times(new BigNumber(this.unit.toString(10)).div(10 ** tokenDecimals))
           .toString(10);
-        this.onStopLoss(
+        const min = new BigNumber(this.currentPair[2].price)
+          .times(
+            10 **
+              this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+          )
+          .times(new BigNumber(this.unit.toString(10)).div(10 ** tokenDecimals))
+          .times(100)
+          .div(
+            10 **
+              this.tokens[this.currentPair[1][0].token1[0].toString()].decimals
+          )
+          .decimalPlaces(8, 2)
+          .toString(10);
+        let totalAmount = this.buyTotal;
+        if (new BigNumber(totalAmount).lt(min)) {
+          totalAmount = min;
+        }
+        console.log(min, totalAmount);
+        const token1Id = this.currentPair[1][0].token1[0].toString();
+        if (
+          new BigNumber(this.keepingBalance[token1Id])
+            .plus(this.tokensBalance[token1Id])
+            .minus(getFee(this.tokens[token1Id]).toString(10))
+            .minus(getFee(this.tokens[token1Id]).toString(10))
+            .div(10 ** token1Info.decimals)
+            .lt(totalAmount)
+        ) {
+          this.$message.error(
+            `You should make a deposit first (Minimum amount: ${min} ${token1Info.symbol})`
+          );
+          return;
+        }
+        this.onStopLimit(
           order,
           BigInt(triggerPrice),
-          this.buyTotal,
+          totalAmount,
           this.prepare[currentPairId],
           this.currentPair,
           address,
@@ -15463,7 +18089,77 @@ export default class extends Vue {
       }
     }
   }
-  private async onStopLoss(
+  private async stopFee(currentPair: DePairs, type: string): Promise<boolean> {
+    if (this.dexRole && this.dexRole.vipMaker) {
+      return true;
+    }
+    // fee
+    const sysToken = this.sysConfig.sysToken.toString();
+    console.log(this.sysConfig);
+    if (!this.stoConfig.sloFee1) {
+      return true;
+    }
+    const currentDrc20Token = new DRC20TokenService();
+    const res = await currentDrc20Token.icrc2_allowance(sysToken, {
+      account: {
+        owner: Principal.fromText(this.getPrincipalId),
+        subaccount: []
+      },
+      spender: {
+        owner: currentPair[0],
+        subaccount: []
+      }
+    });
+    console.log(res.allowance);
+    let sloFee = new BigNumber(this.stoConfig.sloFee1.toString(10))
+      .div(10 ** this.tokens[sysToken].decimals)
+      .toString(10);
+    if (type === 'update') {
+      sloFee = new BigNumber(this.stoConfig.sloFee1.toString(10))
+        .div(5)
+        .div(10 ** this.tokens[sysToken].decimals)
+        .toString(10);
+    }
+    let fee = new BigNumber(this.stoConfig.sloFee1.toString(10));
+    if (type === 'update') {
+      fee = new BigNumber(this.stoConfig.sloFee1.toString(10)).div(5);
+    }
+    console.log(fee.toString(10));
+    const ICLBalance = await getTokenBalance({ icrc1: null }, sysToken);
+    let tokenFee = getFee(this.tokens[sysToken]).toString(10);
+    if (
+      new BigNumber(res.allowance.toString(10)).lt(
+        this.stoConfig.sloFee1.toString(10)
+      )
+    ) {
+      // approve fee
+      tokenFee = new BigNumber(tokenFee).plus(tokenFee).toString(10);
+    }
+    const balance = new BigNumber(ICLBalance).minus(tokenFee);
+    console.log(balance.toString(10));
+    let createdFee = fee.plus(tokenFee);
+    if (balance.lt(fee)) {
+      this.$message.error(
+        `Insufficient ${this.tokens[sysToken].symbol}: Create a stop-limit order need ${sloFee} ${this.tokens[sysToken].symbol}.`
+      );
+      return false;
+    }
+    if (new BigNumber(res.allowance.toString(10)).lt(createdFee)) {
+      const approve = new BigNumber(10000).times(
+        10 ** this.tokens[sysToken].decimals
+      );
+      await currentDrc20Token.icrc2_approve(
+        sysToken,
+        {
+          owner: currentPair[0],
+          subaccount: []
+        },
+        BigInt(approve)
+      );
+    }
+    return true;
+  }
+  private async onStopLimit(
     order: TriggeredOrderInfo,
     triggerPrice: bigint,
     totalAmount: string,
@@ -15472,12 +18168,23 @@ export default class extends Vue {
     address: string,
     type: string
   ): Promise<void> {
+    if (!this.NFTsExt.length) {
+      this.$info({
+        content:
+          'This feature is currently in the experimental stage and is for ICLighthouse Planet Cards NFT holders to experience and use only.',
+        class: 'connect-plug confirm-swap-button',
+        icon: 'connect-plug',
+        centered: true,
+        okText: 'Close'
+      });
+      return;
+    }
     if (
       type === 'buy' &&
       new BigNumber(this.stopBuyPrice).lte(this.currentTokenPrice)
     ) {
       this.$message.error(
-        'The stop price of a stop-loss order with a Buy side should be greater than the current price.'
+        'The stop price of a stop-limit order with a Buy side should be greater than the current price.'
       );
       return;
     }
@@ -15486,7 +18193,7 @@ export default class extends Vue {
       new BigNumber(this.stopSellPrice).gte(this.currentTokenPrice)
     ) {
       this.$message.error(
-        'The stop price of a stop-loss order with a Sell side should be lower than the current price.'
+        'The stop price of a stop-limit order with a Sell side should be lower than the current price.'
       );
       return;
     }
@@ -15494,52 +18201,23 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    // create fee
-    if (type === 'sell' && this.stoConfig) {
-      const token1Id = this.currentPair[1][0].token1[0].toString();
-      const sloFee = new BigNumber(
-        this.stoConfig.sloFee1.toString(10)
-      ).toString(10);
-      // if (
-      //   new BigNumber(this.tokensBalance[token1Id]).lt(
-      //     this.stoConfig.sloFee1.toString(10)
-      //   )
-      // ) {
-      //   loading.close();
-      //   this.$message.error(
-      //     `You should deposit ${sloFee} ${this.tokens[token1Id].symbol} first.`
-      //   );
-      //   return;
-      // }
-      const fee = new BigNumber(this.stoConfig.sloFee1.toString(10));
-      // .plus(this.stopLossNeed.token1.toString(10));
-      console.log(fee.toString(10));
-      const balance = new BigNumber(this.tokensBalance[token1Id])
-        .minus(getFee(this.tokens[token1Id]).toString(10))
-        .plus(this.keepingBalance[token1Id]);
-      console.log(balance.toString(10));
-      if (balance.lt(fee)) {
-        this.$message.error(
-          `Insufficient ${this.tokens[token1Id].symbol}: Create a stop-loss order need ${sloFee} ${this.tokens[token1Id].symbol}.`
-        );
-        loading.close();
-        return;
-      }
-      const canPrepare = await this.onPrepare(
-        '0',
-        prepare,
-        currentPair,
-        this.currentTokenPrice,
-        address,
-        'buy'
+    if (!this.isKeeping || !this.isPoolMode) {
+      this.$message.warning(
+        'Stop-limit orders are only valid for TraderAccount. It is required to enable "PoolMode" and "Keeping balance in TraderAccount" and to transfer funds to the TraderAccount.'
       );
-      console.log(canPrepare);
-      if (!canPrepare) {
-        loading.close();
-        return;
-      }
+      return;
+      // await this.currentICDexService.accountConfig(
+      //   currentPair[0].toString(),
+      //   { PoolMode: null },
+      //   true
+      // );
     }
-    // await this.getAccountSetting();
+    await this.getAccountSetting();
+    const flag = await this.stopFee(currentPair, 'create');
+    if (!flag) {
+      loading.close();
+      return;
+    }
     const canStop = await this.onPrepare(
       totalAmount,
       prepare,
@@ -15554,7 +18232,7 @@ export default class extends Vue {
       return;
     }
     try {
-      const res = await this.currentICDexService.sto_createStopLossOrder(
+      const res = await this.currentICDexService.sto_createStopLimitOrder(
         currentPair[0].toString(),
         {
           order: order,
@@ -15663,64 +18341,25 @@ export default class extends Vue {
       }
     }
   }
-  private async transferIcp(
-    needTransfer: string,
-    to: string,
-    nonce: bigint,
-    isValue0 = true,
-    decimals: number,
-    needDeposit: string,
-    address: string,
-    currentPair: DePairs
-  ): Promise<void | string> {
-    needTransfer = new BigNumber(needTransfer).div(10 ** decimals).toString(10);
-    const principal = localStorage.getItem('principal');
-    let currentAddress;
-    if (principal) {
-      currentAddress = principalToAccountIdentifier(
-        Principal.fromText(principal)
-      );
-      if (currentAddress !== address) {
-        return 'ErrAddress';
-      }
-    } else {
-      return 'ErrAddress';
-    }
-    await this.getAccountSetting();
-    const depositAccount = {
-      owner: currentPair[0],
-      subaccount: hexToBytes(currentAddress)
-    };
-    if (this.isKeeping) {
-      await this.ledgerService.sendIcp(
-        needTransfer,
-        principalToAccountIdentifier(
-          depositAccount.owner,
-          new Uint8Array(depositAccount.subaccount)
-        ),
-        buildMemo(nonce)
-      );
-      let token;
-      if (isValue0) {
-        token = { token0: null };
-      } else {
-        token = { token1: null };
-      }
-      const depositRes = await this.deposit(
-        address,
-        currentPair,
-        token,
-        BigInt(needDeposit)
-      );
-      if (depositRes === 'ErrAddress') {
-        return 'ErrAddress';
-      }
-    } else {
-      try {
-        await this.ledgerService.sendIcp(needTransfer, to, buildMemo(nonce));
-      } catch (e) {
-        return 'err';
-      }
+  private InitTxAccount(currentPair: string): void {
+    if (
+      !this.modeDisabled &&
+      !this.isToBuy &&
+      !this.isToSell &&
+      !this.isToBuyMKT
+    ) {
+      this.getTxAccount(currentPair).then((prepare) => {
+        if (
+          !this.modeDisabled &&
+          !this.isToBuy &&
+          !this.isToSell &&
+          !this.isToBuyMKT &&
+          prepare &&
+          prepare.pairId === this.currentPair[0].toString()
+        ) {
+          this.prepare[this.currentPair[0].toString()] = prepare.txAccount;
+        }
+      });
     }
   }
   private async getTxAccount(currentPair: string): Promise<{
@@ -15887,10 +18526,19 @@ export default class extends Vue {
   }
   private buyTotalChange(): void {
     if (this.buyPrice && Number(this.buyPrice) !== 0 && this.buyTotal) {
-      this.buyAmount = new BigNumber(this.buyTotal)
-        .div(this.buyPrice)
-        .decimalPlaces(this.tokenMinUnit, 1)
-        .toString(10);
+      if (new BigNumber(this.unitSize).gt(1)) {
+        this.buyAmount = new BigNumber(this.buyTotal)
+          .div(this.buyPrice)
+          .div(this.unitSize)
+          .decimalPlaces(0, 1)
+          .times(this.unitSize)
+          .toString(10);
+      } else {
+        this.buyAmount = new BigNumber(this.buyTotal)
+          .div(this.buyPrice)
+          .decimalPlaces(this.tokenMinUnit, 1)
+          .toString(10);
+      }
     } else if (
       this.buyAmount &&
       Number(this.buyAmount) !== 0 &&
@@ -15937,10 +18585,19 @@ export default class extends Vue {
   }
   private sellTotalChange(): void {
     if (this.sellPrice && Number(this.sellPrice) !== 0 && this.sellTotal) {
-      this.sellAmount = new BigNumber(this.sellTotal)
-        .div(this.sellPrice)
-        .decimalPlaces(this.tokenMinUnit, 1)
-        .toString(10);
+      if (new BigNumber(this.unitSize).gt(1)) {
+        this.sellAmount = new BigNumber(this.sellTotal)
+          .div(this.sellPrice)
+          .div(this.unitSize)
+          .decimalPlaces(0, 1)
+          .times(this.unitSize)
+          .toString(10);
+      } else {
+        this.sellAmount = new BigNumber(this.sellTotal)
+          .div(this.sellPrice)
+          .decimalPlaces(this.tokenMinUnit, 1)
+          .toString(10);
+      }
     } else if (
       this.sellAmount &&
       Number(this.sellAmount) !== 0 &&
@@ -15982,21 +18639,29 @@ export default class extends Vue {
   }
   private getIcpPrice(): void {
     try {
-      let token1;
-      if (this.currentPair && this.currentPair[1] && this.currentPair[1][0]) {
-        token1 = this.currentPair[1][0].token1[1];
-      }
-      if (token1 && token1.toLocaleLowerCase().includes('usdt')) {
-        this.icpPrice = '1';
-      }
       axios
         .get('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/2')
         .then((res) => {
-          const icpPrice = (res as any).data.success[0].rate;
-          if ((token1 && token1.toLocaleLowerCase() === 'icp') || !token1) {
-            this.icpPrice = icpPrice;
-            this.currentMarketPrice['icp'] = icpPrice;
-          }
+          const price = (res as any).data.success[0].rate;
+          this.currentMarketPrice['icp'] = price;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+      axios
+        .get('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12')
+        .then((res) => {
+          const price = (res as any).data.success[0].rate;
+          this.currentMarketPrice['btc'] = price;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+      axios
+        .get('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16')
+        .then((res) => {
+          const price = (res as any).data.success[0].rate;
+          this.currentMarketPrice['eth'] = price;
         })
         .catch((e) => {
           console.log(e);
@@ -16018,13 +18683,31 @@ export default class extends Vue {
     console.log(item);
     this.orderType = item;
     this.currentMark = 0;
-    if (item === 'Stop-loss') {
-      this.currentTradeMenu = 'stop';
-    } else {
-      this.currentTradeMenu = 'pending';
-    }
+    // this.currentTradesMenu = 'std';
+    // if (item === 'Stop-limit') {
+    //   this.currentTradeMenu = 'stop';
+    // } else {
+    //   this.currentTradeMenu = 'pending';
+    // }
     this.currentProOrderMenu = null;
     this.init();
+    if (this.getPrincipalId && item === 'Stop-limit') {
+      if (!(this.isKeeping && this.isPoolMode)) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const _that = this;
+        this.$confirm({
+          content:
+            'Stop-limit orders are only valid for TraderAccount. It is required to enable "PoolMode" and "Keeping balance in TraderAccount" and to transfer funds to the TraderAccount.',
+          class: 'connect-plug',
+          icon: 'connect-plug',
+          okText: 'Confirm',
+          centered: true,
+          onOk() {
+            _that.showPoolVisible(false);
+          }
+        });
+      }
+    }
   }
   private tradeH5(type: string): void {
     this.showTrade = true;
@@ -16086,29 +18769,63 @@ export default class extends Vue {
     }
     this.getMaxTotal();
   }
+  private async initPairsPrice(): Promise<void> {
+    let promiseAllValue = [];
+    const MAX_CONCURRENCY = 20;
+    const pairs = [
+      { type: 'Main', value: this.tradePairs.Main },
+      { type: 'Second', value: this.tradePairs.Second },
+      { type: 'Third', value: this.tradePairs.Third },
+      { type: 'Old', value: this.tradePairs.Old }
+    ];
+    for (let i = 0; i < pairs.length; i++) {
+      for (let j = 0; j < pairs[i].value.length; j++) {
+        promiseAllValue.push(
+          this.getLiquidity(pairs[i].value[j][0].toString(), j, pairs[i].type)
+        );
+        if (promiseAllValue.length === MAX_CONCURRENCY) {
+          await Promise.all(promiseAllValue);
+          promiseAllValue = [];
+        }
+      }
+      if (i === pairs.length - 1 && promiseAllValue.length) {
+        await Promise.all(promiseAllValue);
+        promiseAllValue = [];
+      }
+    }
+    const allPairs = []
+      .concat(this.tradePairs.Main)
+      .concat(this.tradePairs.Second)
+      .concat(this.tradePairs.Third);
+    this.tradePairs.Star.forEach((star) => {
+      const pairId = star[0].toString();
+      for (let i = 0; i < allPairs.length; i++) {
+        const pairId1 = allPairs[i][0].toString();
+        if (pairId === pairId1) {
+          star[2] = allPairs[i][2];
+          break;
+        }
+      }
+    });
+    console.log(this.tradePairs);
+  }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
     const MAX_CONCURRENCY = 20;
-    for (
-      let i = 0;
-      i < this.tradePairs[this.currentTradeMarketSort].length;
-      i++
-    ) {
+    let pairs = this.tradePairs[this.currentTradeMarketSort];
+    if (this.pairSearch) {
+      pairs = this.pairs;
+    }
+    const currentTradeMarketSort = this.currentTradeMarketSort;
+    for (let i = 0; i < pairs.length; i++) {
       promiseAllValue.push(
-        this.getLiquidity(
-          this.tradePairs[this.currentTradeMarketSort][i][0].toString(),
-          i,
-          this.currentTradeMarketSort
-        )
+        this.getLiquidity(pairs[i][0].toString(), i, currentTradeMarketSort)
       );
       if (promiseAllValue.length === MAX_CONCURRENCY) {
         await Promise.all(promiseAllValue);
         promiseAllValue = [];
       }
-      if (
-        i === this.tradePairs[this.currentTradeMarketSort].length - 1 &&
-        promiseAllValue.length
-      ) {
+      if (i === pairs.length - 1 && promiseAllValue.length) {
         await Promise.all(promiseAllValue);
         promiseAllValue = [];
       }
@@ -16157,6 +18874,8 @@ export default class extends Vue {
       this.timer = null;
       window.clearInterval(this.timerOrderBook);
       this.timerOrderBook = null;
+      window.clearInterval(this.timerAccount);
+      this.timerAccount = null;
       this.timer = window.setInterval(async () => {
         if (!this.getCheckAuth) {
           setTimeout(async () => {
@@ -16177,6 +18896,13 @@ export default class extends Vue {
           }, 0);
         }
       }, 1000);
+      this.timerAccount = window.setInterval(async () => {
+        if (!this.getCheckAuth) {
+          setTimeout(async () => {
+            this.InitTxAccount(this.currentPair[0].toString());
+          }, 0);
+        }
+      }, 15 * 1000);
     } catch (e) {
       console.error(e);
     }
@@ -16209,9 +18935,9 @@ export default class extends Vue {
       );
       if (tokenStd === 'drc20') {
         const allowance = await currentDrc20Token.drc20_allowance(
-          tokenId,
           account,
-          spender
+          spender,
+          tokenId
         );
         if (this.time !== 6) {
           if (!this.tokenAllowance[currentPairId]) {
@@ -16252,15 +18978,24 @@ export default class extends Vue {
   private async getTokens(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.getTokens(['icdex']);
     let canisterIds: Array<string> = [];
-    this.tradePairs.ICP.forEach((pair) => {
+    this.tradePairs.Main.forEach((pair) => {
       canisterIds.push(pair[0].toString());
     });
-    this.tradePairs.USDT.forEach((pair) => {
+    this.tradePairs.Second.forEach((pair) => {
       canisterIds.push(pair[0].toString());
     });
-    // this.tradePairs.Old.forEach((pair) => {
+    this.tradePairs.Third.forEach((pair) => {
+      canisterIds.push(pair[0].toString());
+    });
+    // this.tradePairs.ICP.forEach((pair) => {
     //   canisterIds.push(pair[0].toString());
     // });
+    // this.tradePairs.USDT.forEach((pair) => {
+    //   canisterIds.push(pair[0].toString());
+    // });
+    this.tradePairs.Old.forEach((pair) => {
+      canisterIds.push(pair[0].toString());
+    });
     res.forEach((item) => {
       if (item[0].toString() !== LEDGER_CANISTER_ID) {
         canisterIds.push(item[0].toString());
@@ -16413,9 +19148,19 @@ export default class extends Vue {
       );
     }
   }
+  private launchSuccess(token0: string, token1: string): void {
+    this.$router.push(`/ICDex/${token0}/${token1}`).then(() => {
+      this.getDexPairs('icdex');
+    });
+  }
+  private showLaunch(): void {
+    (this.$refs.launch as any).init();
+  }
   private changeTradeMarketSort(val): void {
-    this.currentTradeMarketSort = val.name;
-    this.getAllLiquidity();
+    if (!this.pairSearch) {
+      this.currentTradeMarketSort = val.value;
+      // this.showThird = false;
+    }
   }
   private initFallbackInfo(): void {
     if (this.getPrincipalId) {
@@ -16435,7 +19180,8 @@ export default class extends Vue {
       if (
         this.currentPair &&
         this.currentPair[0] &&
-        pair[0].toString() === this.currentPair[0].toString()
+        pair[0].toString() === this.currentPair[0].toString() &&
+        pair[3] === this.currentPair[3]
       ) {
         return;
       }
@@ -16475,23 +19221,47 @@ export default class extends Vue {
       this.tickSizes = [];
       this.currentSize = null;
       this.stopOrders = [];
-      this.stopLossNeed = {
+      this.stopLimitNeed = {
         token0: BigInt(0),
         token1: BigInt(0)
       };
+      this.IDOConfig = null;
+      this.qualification = null;
       console.log(pair[0].toString());
-      if (pair[1][0].token1[1].toLocaleLowerCase() === 'icp') {
-        console.log(this.currentTradeMarketSort);
-        if (this.currentTradeMarketSort === 'ICP') {
-          this.pairs = this.tradePairs.ICP;
-        } else {
-          // this.pairs = this.tradePairs.Old;
-        }
+      const stage = pair[1][0].marketBoard || {};
+      const stageType = Object.keys(stage)[0];
+      if (this.currentTradeMarketSort === 'Search') {
+        this.pairs = this.tradePairs.Search;
+      } else if (this.currentTradeMarketSort === 'Star') {
+        this.pairs = this.tradePairs.Star;
+      } else if (stageType && stageType === 'STAGE2') {
+        this.currentTradeMarketSort = 'Main';
+        this.pairs = this.tradePairs.Main;
+      } else if (stageType && stageType === 'STAGE1') {
+        this.currentTradeMarketSort = 'Second';
+        this.pairs = this.tradePairs.Second;
+      } else if (stageType && stageType === 'STAGE0') {
+        this.currentTradeMarketSort = 'Third';
+        this.pairs = this.tradePairs.Third;
+      } else {
+        this.currentTradeMarketSort = 'Old';
+        this.pairs = this.tradePairs.Old;
       }
-      if (pair[1][0].token1[1].toLocaleLowerCase().includes('usdt')) {
-        this.currentTradeMarketSort = 'USDT';
-        this.pairs = this.tradePairs.USDT;
-      }
+      // if (pair[1][0].token1[1].toLocaleLowerCase() === 'icp') {
+      //   console.log(this.currentTradeMarketSort);
+      //   if (this.currentTradeMarketSort === 'ICP') {
+      //     this.pairs = this.tradePairs.ICP;
+      //   } else {
+      //     this.pairs = this.tradePairs.Old;
+      //   }
+      // }
+      // if (
+      //   pair[1][0].token1[1].toLocaleLowerCase().includes('usdt') ||
+      //   pair[1][0].token1[1].toLocaleLowerCase().includes('test')
+      // ) {
+      //   this.currentTradeMarketSort = 'USDT';
+      //   this.pairs = this.tradePairs.USDT;
+      // }
       this.currentPair = pair;
       localStorage.setItem(
         'icdexpair',
@@ -16513,6 +19283,7 @@ export default class extends Vue {
         this.initPrice();
       });
       this.getConfig();
+      this.currentProOrderMenu = null;
       this.proOrders = [];
       this.pendingList = [];
       this.userRecord = [];
@@ -16610,8 +19381,12 @@ export default class extends Vue {
       this.pairInfo = res.pairInfo;
       console.log(this.pairInfo);
       if (this.pairInfo.paused) {
-        this.getSysMode(currentPair);
+        await this.getSysMode(currentPair);
+      } else {
+        this.isPaused = false;
+        this.isIDOPaused = false;
       }
+      this.getIDOInfo(currentPair);
     }
   }
   private async getSysMode(currentPair: DePairs): Promise<void> {
@@ -16642,56 +19417,328 @@ export default class extends Vue {
   private onFinish(): void {
     this.getPairInfo(this.currentPair);
   }
+  private getMainDay(pair: DePairs): string {
+    const now = new Date().getTime() / 1000;
+    return new BigNumber(3 * 30 * 86400)
+      .minus(now)
+      .plus(pair[1][0].startingBelowG2[0].toString(10))
+      .div(86400)
+      .decimalPlaces(0, 3)
+      .toString(10);
+  }
+  private getSecondDay(pair: DePairs): string {
+    const now = new Date().getTime() / 1000;
+    return new BigNumber(3 * 30 * 86400)
+      .minus(now)
+      .plus(pair[1][0].startingBelowG4[0].toString(10))
+      .div(86400)
+      .decimalPlaces(0, 3)
+      .toString(10);
+  }
+  private showReminder2(pair: DePairs): boolean {
+    const stage = pair[1][0].marketBoard;
+    if (stage) {
+      const type = Object.keys(stage)[0];
+      if (
+        type === 'STAGE2' &&
+        pair[1][0].startingBelowG2 &&
+        pair[1][0].startingBelowG2.length
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+  private showReminder1(pair: DePairs): boolean {
+    const stage = pair[1][0].marketBoard;
+    if (stage) {
+      const type = Object.keys(stage)[0];
+      if (
+        type === 'STAGE1' &&
+        pair[1][0].startingBelowG4 &&
+        pair[1][0].startingBelowG4.length
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+  private onStar(pair: DePairs): void {
+    const pairId = pair[0].toString();
+    const index = this.star.indexOf(pairId);
+    if (index === -1) {
+      let currentPair = [].concat(pair);
+      currentPair[3] = 'Star';
+      this.star.unshift(pairId);
+      this.tradePairs.Star.unshift(currentPair);
+      if (this.getIdentity) {
+        this.addFavorites(pair[0]);
+      }
+    } else {
+      this.star.splice(index, 1);
+      this.tradePairs.Star.some((item, pairIndex) => {
+        if (item[0].toString() === pairId) {
+          this.tradePairs.Star.splice(pairIndex, 1);
+          return true;
+        }
+      });
+      if (this.getIdentity) {
+        this.removeFavorites(pair[0]);
+      }
+    }
+    if (this.currentPair[3] && this.currentPair[3] === 'Star') {
+      this.pairs = this.tradePairs.Star;
+      this.currentPairIndex = null;
+      for (let i = 0; i < this.pairs.length; i++) {
+        if (this.currentPair[0].toString() === this.pairs[i][0].toString()) {
+          this.currentPairIndex = i;
+          break;
+        }
+      }
+    }
+    localStorage.setItem('star', JSON.stringify(this.star));
+  }
+  private async getFavorites(): Promise<Array<string>> {
+    const res = await this.ICLighthouseService.getFavorites();
+    console.log(res);
+    return res.map((item) => item.toString());
+  }
+  private async addFavorites(pairId: Principal): Promise<void> {
+    const res = await this.ICLighthouseService.addFavorites(pairId);
+    console.log(res);
+  }
+  private async removeFavorites(pairId: Principal): Promise<void> {
+    const res = await this.ICLighthouseService.removeFavorites(pairId);
+    console.log(res);
+  }
+  private async getAccountFavorites(): Promise<void> {
+    const star: Array<string> = JSON.parse(localStorage.getItem('star')) || [];
+    if (!this.getPrincipalId) {
+      this.star = star;
+    } else {
+      const res = await checkAuth(false);
+      console.log(res);
+      if (res) {
+        const favorites = await this.getFavorites();
+        console.log(favorites);
+        this.star = [].concat(favorites);
+        for (let i = 0; i < star.length; i++) {
+          if (!favorites.includes(star[i])) {
+            this.star.push(star[i]);
+            this.addFavorites(Principal.fromText(star[i]));
+          }
+        }
+        localStorage.setItem('star', JSON.stringify(this.star));
+      } else {
+        this.star = star;
+      }
+    }
+    console.log(this.star);
+  }
+  private pairSearchChange(): void {
+    console.log(this.pairSearch);
+    if (this.pairSearch) {
+      const allPairs = []
+        .concat(this.tradePairs.Main)
+        .concat(this.tradePairs.Second)
+        .concat(this.tradePairs.Third);
+      const sort = localStorage.getItem('sort');
+      if (!sort && this.currentTradeMarketSort) {
+        localStorage.setItem('sort', this.currentTradeMarketSort);
+      }
+      this.currentTradeMarketSort = 'Search';
+      const pairs = [];
+      allPairs.forEach((pair: DePairs) => {
+        if (
+          pair[1][0].token0[1]
+            .toLocaleLowerCase()
+            .includes(this.pairSearch.toLocaleLowerCase()) ||
+          pair[1][0].token1[1]
+            .toLocaleLowerCase()
+            .includes(this.pairSearch.toLocaleLowerCase())
+        ) {
+          const currentPair = [].concat(pair);
+          currentPair[3] = 'Search';
+          pairs.push(currentPair);
+        }
+      });
+      this.pairs = this.tradePairs.Search = pairs;
+    } else {
+      this.currentTradeMarketSort = localStorage.getItem('sort');
+      this.pairs = this.tradePairs[this.currentTradeMarketSort];
+      localStorage.removeItem('sort');
+    }
+    console.log(this.tradePairs);
+    console.log(this.pairs);
+  }
   private async getDexPairs(dexName: DexNameType): Promise<void> {
     try {
-      const res = await this.iCSwapRouterService.getPairs([dexName], [], []);
+      this.ICSwapRouterFiduciaryService.getConfig().then((config) => {
+        this.swapConfig = config;
+      });
+      await this.getAccountFavorites();
+      const res = await this.ICSwapRouterFiduciaryService.getPairs(
+        [dexName],
+        [],
+        []
+      );
+      this.tradePairs = {
+        Star: [],
+        Main: [],
+        Second: [],
+        Third: [],
+        Old: [],
+        Search: []
+      };
+      console.log(res);
       if (res.data && res.data.length) {
-        const pairs = res.data.sort(
-          (a, b) => Number(b[1][1]) - Number(a[1][1])
+        const pairs = res.data.sort((a: TrieListData1, b: TrieListData1) =>
+          new BigNumber(b[1].score1.toString(10))
+            .plus(b[1].score2.toString(10))
+            .plus(b[1].score3.toString(10))
+            .minus(a[1].score1.toString(10))
+            .minus(a[1].score2.toString(10))
+            .minus(a[1].score3.toString(10))
+            .toNumber()
         );
         pairs.forEach((pair) => {
-          const token1Symbol = pair[1][0].token1[1].toLocaleLowerCase();
-          if (token1Symbol === 'icp') {
-            this.tradePairs.ICP.push(pair);
+          const swapPair = pair[1] as TrieListData1SwapPair;
+          const score = BigInt(
+            new BigNumber(swapPair.score1.toString(10))
+              .plus(swapPair.score2.toString(10))
+              .plus(swapPair.score3.toString(10))
+              .toString(10)
+          );
+          const newPair = Object.assign(
+            {},
+            { ...swapPair },
+            { ...swapPair.pair }
+          );
+          delete newPair.pair;
+          console.log(newPair);
+          const currentPair = [pair[0], [newPair, score], null, ''];
+          // todo ICRC-2
+          if (ICRC2Token.includes(currentPair[1][0].token0[0].toString())) {
+            currentPair[1][0].token0[2] = { icrc2: null };
           }
+          if (ICRC2Token.includes(currentPair[1][0].token1[0].toString())) {
+            currentPair[1][0].token1[2] = { icrc2: null };
+          }
+          console.log(currentPair);
+          const marketBoard = newPair.marketBoard;
+          let stage: string;
+          if (marketBoard) {
+            stage = Object.keys(marketBoard)[0];
+          }
+          if (stage === 'STAGE2') {
+            currentPair[3] = 'Main';
+            this.tradePairs.Main.push(currentPair);
+          } else if (stage === 'STAGE1') {
+            currentPair[3] = 'Second';
+            this.tradePairs.Second.push(currentPair);
+          } else if (stage === 'STAGE0') {
+            currentPair[3] = 'Third';
+            this.tradePairs.Third.push(currentPair);
+          }
+          if (this.star.includes(currentPair[0].toString())) {
+            let pair = [].concat(currentPair);
+            pair[3] = 'Star';
+            this.tradePairs.Star.unshift(pair);
+          }
+          console.log(this.tradePairs.Star);
+          // const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
+          // if (token1Symbol === 'icp') {
+          //   this.tradePairs.ICP.push(currentPair);
+          // }
+          // if (currentPair[1][0].token0[1].toLocaleLowerCase().includes('itest')) {
+          //   currentPair[1][0].token0[2] = { icrc2: null };
+          // }
           // todo usdt test
-          if (token1Symbol.toLocaleLowerCase().includes('usdt')) {
-            this.tradePairs.USDT.push(pair);
-          }
+          // if (
+          //   token1Symbol.toLocaleLowerCase().includes('usdt') ||
+          //   token1Symbol.toLocaleLowerCase().includes('test')
+          // ) {
+          //   this.tradePairs.USDT.push(currentPair);
+          // }
+        });
+        this.tradePairs.Star.sort((a, b) => {
+          return (
+            this.star.indexOf(b[0].toString()) -
+            this.star.indexOf(a[0].toString())
+          );
         });
         let token0 = this.$route.params.token0;
         let token1 = this.$route.params.token1;
+        let currentStage: string;
+        let currentPairId = '';
         if (token0 && token1) {
-          if (
-            token1.toLocaleLowerCase() !== 'icp' &&
-            !token1.toLocaleLowerCase().includes('usdt')
-          ) {
-            for (let i = 0; i < pairs.length; i++) {
-              if (
-                (pairs[i][1][0].token0[1] === token0 ||
-                  pairs[i][1][0].token0[0].toString() === token0) &&
-                (pairs[i][1][0].token1[1] === token1 ||
-                  pairs[i][1][0].token1[0].toString() === token1)
-              ) {
-                token0 = pairs[i][1][0].token0[1];
-                token1 = pairs[i][1][0].token1[1];
-                break;
-              }
+          console.log(token0, token1);
+          for (let i = 0; i < pairs.length; i++) {
+            const currentPair = pairs[i][1] as TrieListData1SwapPair;
+            if (
+              (currentPair.pair.token0[1].toLocaleLowerCase() ===
+                token0.toLocaleLowerCase() ||
+                currentPair.pair.token0[0].toString() === token0) &&
+              (currentPair.pair.token1[1].toLocaleLowerCase() ===
+                token1.toLocaleLowerCase() ||
+                currentPair.pair.token1[0].toString() === token1)
+            ) {
+              currentPairId = pairs[i][0].toString();
+              currentStage = Object.keys(currentPair.marketBoard)[0];
+              break;
             }
           }
-          if (token1.toLocaleLowerCase() === 'icp') {
-            this.currentTradeMarketSort = 'ICP';
-            this.pairs = this.tradePairs.ICP;
+          console.log(currentPairId, currentStage, this.star);
+          if (currentPairId && this.star.includes(currentPairId)) {
+            this.currentTradeMarketSort = 'Star';
+            this.pairs = this.tradePairs.Star;
+          } else if (currentStage === 'STAGE2') {
+            this.currentTradeMarketSort = 'Main';
+            this.pairs = this.tradePairs.Main;
+          } else if (currentStage === 'STAGE1') {
+            this.currentTradeMarketSort = 'Second';
+            this.pairs = this.tradePairs.Second;
+          } else if (currentStage === 'STAGE0') {
+            this.currentTradeMarketSort = 'Third';
+            this.pairs = this.tradePairs.Third;
           }
-          if (token1.toLocaleLowerCase().includes('usdt')) {
-            this.currentTradeMarketSort = 'USDT';
-            this.pairs = this.tradePairs.USDT;
-          }
+          // if (
+          //   token1.toLocaleLowerCase() !== 'icp' &&
+          //   !token1.toLocaleLowerCase().includes('usdt') &&
+          //   !token1.toLocaleLowerCase().includes('test')
+          // ) {
+          //   for (let i = 0; i < pairs.length; i++) {
+          //     const currentPair = pairs[i][1] as TrieListData1SwapPair;
+          //     if (
+          //       (currentPair.pair.token0[1] === token0 ||
+          //         currentPair.pair.token0[0].toString() === token0) &&
+          //       (currentPair.pair.token1[1] === token1 ||
+          //         currentPair.pair.token1[0].toString() === token1)
+          //     ) {
+          //       token0 = currentPair.pair.token0[1];
+          //       token1 = currentPair.pair.token1[1];
+          //       break;
+          //     }
+          //   }
+          // }
+          // if (token1.toLocaleLowerCase() === 'icp') {
+          //   this.currentTradeMarketSort = 'ICP';
+          //   this.pairs = this.tradePairs.ICP;
+          // }
+          // if (
+          //   token1.toLocaleLowerCase().includes('usdt') ||
+          //   token1.toLocaleLowerCase().includes('test')
+          // ) {
+          //   this.currentTradeMarketSort = 'USDT';
+          //   this.pairs = this.tradePairs.USDT;
+          // }
           for (let i = 0; i < this.pairs.length; i++) {
             if (
-              (this.pairs[i][1][0].token0[1] === token0 ||
+              (this.pairs[i][1][0].token0[1].toLocaleLowerCase() ===
+                token0.toLocaleLowerCase() ||
                 this.pairs[i][1][0].token0[0].toString() === token0) &&
-              (this.pairs[i][1][0].token1[1] === token1 ||
+              (this.pairs[i][1][0].token1[1].toLocaleLowerCase() ===
+                token1.toLocaleLowerCase() ||
                 this.pairs[i][1][0].token1[0].toString() === token1)
             ) {
               this.currentPairIndex = i;
@@ -16700,8 +19747,16 @@ export default class extends Vue {
             }
           }
           if (!this.currentPair && this.$route.name === 'ICDex') {
-            this.currentTradeMarketSort = 'ICP';
-            this.pairs = this.tradePairs.ICP;
+            if (this.tradePairs.Main.length) {
+              this.currentTradeMarketSort = 'Main';
+              this.pairs = this.tradePairs.Main;
+            } else if (this.tradePairs.Second.length) {
+              this.currentTradeMarketSort = 'Second';
+              this.pairs = this.tradePairs.Second;
+            } else if (this.tradePairs.Third.length) {
+              this.currentTradeMarketSort = 'Third';
+              this.pairs = this.tradePairs.Third;
+            }
             this.currentPair = this.pairs[this.currentPairIndex];
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
@@ -16732,8 +19787,16 @@ export default class extends Vue {
           }
         } else {
           if (this.$route.name === 'ICDex') {
-            this.currentTradeMarketSort = 'ICP';
-            this.pairs = this.tradePairs.ICP;
+            if (this.tradePairs.Main.length) {
+              this.currentTradeMarketSort = 'Main';
+              this.pairs = this.tradePairs.Main;
+            } else if (this.tradePairs.Second.length) {
+              this.currentTradeMarketSort = 'Second';
+              this.pairs = this.tradePairs.Second;
+            } else if (this.tradePairs.Third.length) {
+              this.currentTradeMarketSort = 'Third';
+              this.pairs = this.tradePairs.Third;
+            }
             this.currentPair = this.pairs[this.currentPairIndex];
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
@@ -16763,52 +19826,150 @@ export default class extends Vue {
             }
           }
         }
-        const type = this.$route.query.type;
-        if (type && type === 'referrer') {
-          this.tradeCompetitionsMenu = TradeCompetitionsEnum.Referral;
-          setTimeout(() => {
-            (this.$refs.tradeCompetitions as any).init(
-              this.tradeCompetitionsMenu
-            );
-          }, 20);
-        }
-        this.getRole(this.currentPair);
-        this.setReferral();
-        this.getMakerRebate();
-        this.getAllowance(this.currentPair);
-        this.initAccount();
-        this.getStoConfig();
-        this.$nextTick(() => {
-          this.resetChart();
-          const height = (this.$refs.deSwapListItemPair as any).clientHeight;
-          let top = (this.currentPairIndex + 1) * 50 - height;
-          if (top < 0) {
-            top = 0;
+      }
+      const res1 = await this.iCSwapRouterService.getPairs2([dexName], [], []);
+      if (res1.data && res1.data.length) {
+        const pairs = res1.data.sort(
+          (a, b) => Number(b[1].score) - Number(a[1].score)
+        );
+        pairs.forEach((pair) => {
+          const currentPair = [
+            pair[0],
+            [pair[1].pair, pair[1].score],
+            null,
+            'Old'
+          ];
+          this.prePairs.push(pair[0].toString());
+          const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
+          if (token1Symbol === 'icp') {
+            this.tradePairs.Old.push(currentPair);
           }
-          (this.$refs.deSwapListItemPair as any).scrollTop = top;
         });
       }
-      // const res1 = await this.iCSwapRouterService.getPairs([dexName], [], []);
-      // if (res1.data && res1.data.length) {
-      //   const pairs = res1.data.sort(
-      //     (a, b) => Number(b[1][1]) - Number(a[1][1])
-      //   );
-      //   pairs.forEach((pair) => {
-      //     const token1Symbol = pair[1][0].token1[1].toLocaleLowerCase();
-      //     if (token1Symbol === 'icp') {
-      //       this.tradePairs.Old.push(pair);
-      //     }
-      //   });
-      // }
-      // if (!this.pairs.length) {
-      //   this.pairs = this.tradePairs.Old;
-      // }
+      if (!this.pairs.length) {
+        this.pairs = this.tradePairs.Old;
+      }
+      const type = this.$route.query.type;
+      if (type && type === 'referrer') {
+        this.tradeCompetitionsMenu = TradeCompetitionsEnum.Referral;
+        setTimeout(() => {
+          (this.$refs.tradeCompetitions as any).init(
+            this.tradeCompetitionsMenu
+          );
+        }, 20);
+      }
+      this.initPairsPrice();
+      this.getRole(this.currentPair);
+      this.setReferral();
+      this.getMakerRebate();
+      this.getAllowance(this.currentPair);
+      this.initAccount();
+      this.getStoConfig();
+      this.$nextTick(() => {
+        try {
+          dispose('kInterval-chart');
+        } catch (e) {
+          console.error(e);
+        }
+        this.resetChart();
+        const height = (this.$refs.deSwapListItemPair as any).clientHeight;
+        let top = (this.currentPairIndex + 1) * 50 - height;
+        if (top < 0) {
+          top = 0;
+        }
+        (this.$refs.deSwapListItemPair as any).scrollTop = top;
+      });
       this.getTokens();
+      console.log(this.prePairs);
       console.log(this.pairs);
+      console.log(this.tradePairs);
     } catch (e) {
       console.log(e);
     }
     // this.loading.close();
+  }
+  private async IDO_qualification(currentPair: DePairs): Promise<void> {
+    if (this.getPrincipalId) {
+      const res = await this.currentICDexService.IDO_qualification(
+        currentPair[0].toString(),
+        [this.getPrincipalId]
+      );
+      if (res && res.length) {
+        this.qualification = res[0][1];
+      } else {
+        this.qualification = null;
+      }
+      if (
+        !this.qualification ||
+        (this.qualification && !this.qualification.limit)
+      ) {
+        await this.currentICDexService.IDO_updateQualification(
+          currentPair[0].toString()
+        );
+        const res = await this.currentICDexService.IDO_qualification(
+          currentPair[0].toString(),
+          [this.getPrincipalId]
+        );
+        if (res && res.length) {
+          this.qualification = res[0][1];
+        } else {
+          this.qualification = null;
+        }
+      }
+    }
+    console.log(this.qualification);
+  }
+  private async getIDOInfo(currentPair: DePairs): Promise<void> {
+    this.isPaused = true;
+    this.isIDOPaused = true;
+    if (this.getPrincipalId) {
+      const res = await this.currentICDexService.IDO_getConfig(
+        currentPair[0].toString()
+      );
+      if (res && res.length) {
+        this.IDOConfig = res;
+        const now = new Date().getTime();
+        if (this.IDOConfig[0] && this.IDOConfig[1]) {
+          if (
+            new BigNumber(this.IDOConfig[1].IDOOpeningTime.toString(10))
+              .div(10 ** 6)
+              .lt(now) &&
+            new BigNumber(this.IDOConfig[1].IDOClosingTime.toString(10))
+              .div(10 ** 6)
+              .gt(now)
+          ) {
+            this.IDO_qualification(currentPair);
+            this.orderType = OrderTypeEnum.FOK;
+            this.$set(this.pairInfo, 'paused', true);
+            this.isIDOPaused = false;
+          }
+          if (
+            this.IDOConfig[0] &&
+            this.IDOConfig[0][0] &&
+            this.IDOConfig[0][0].toString() === this.getPrincipalId &&
+            new BigNumber(this.IDOConfig[1].IDOOpeningTime.toString(10))
+              .div(10 ** 6)
+              .gt(now)
+          ) {
+            this.isPaused = false;
+          }
+        }
+      }
+    }
+    console.log(this.isPaused);
+    console.log(this.IDOConfig);
+  }
+  private async getIDOLiquidity(
+    swapId: string,
+    token1ToUsdRatio: string
+  ): Promise<string> {
+    const res = await this.currentICDexService.liquidity(swapId, [
+      this.getPrincipalId
+    ]);
+    if (res && res.pairId === swapId) {
+      return token1ToUsdRatio;
+      // return new BigNumber(res.tokenLiquidity.vol.value1.toString(10)).div(this.tokens[]);
+    }
   }
   private async initDex(): Promise<void> {
     const token0Info = this.currentPair[1][0].token0;
@@ -16872,7 +20033,8 @@ export default class extends Vue {
               standard = 'ICRC-1';
             }
             if (standard.toLocaleLowerCase() === 'icrc2') {
-              standard = 'ICRC-2';
+              // todo
+              standard = 'ICRC-1';
             }
             await addToken(
               Principal.from(tokenId),
@@ -17008,10 +20170,16 @@ export default class extends Vue {
       if (!res) {
         return;
       }
+      let pairs = this.tradePairs[currentTradeMarketSort];
+      if (this.pairSearch) {
+        pairs = this.pairs;
+      }
       let newPair;
-      newPair = this.tradePairs[currentTradeMarketSort][index][0].toString();
+      if (pairs[index]) {
+        newPair = pairs[index][0].toString();
+      }
       if (res.pairId === newPair) {
-        this.$set(this.tradePairs[currentTradeMarketSort][index], 2, res.stats);
+        this.$set(pairs[index], 2, res.stats);
       }
       if (this.currentPair && this.$route.name === 'ICDex') {
         if (
@@ -17507,7 +20675,7 @@ export default class extends Vue {
     }
     return '-';
   }
-  private filterStopLossTotalFilled(
+  private filterStopLimitTotalFilled(
     item: STOrder,
     token1Decimals: number
   ): string {
@@ -17539,7 +20707,7 @@ export default class extends Vue {
         .toFixed(unit);
     }
   }
-  private filterStopLossQuantity(
+  private filterStopLimitQuantity(
     item: STOrder,
     tokenAmountUnit: number,
     token0Decimals: number
@@ -17560,7 +20728,7 @@ export default class extends Vue {
     }
     return '';
   }
-  private filterStopLossFilled(item: STOrder): string {
+  private filterStopLimitFilled(item: STOrder): string {
     let filledToken0 = '0';
     const type = Object.keys(
       (item.strategy as { StopLossOrder: StopLossOrder }).StopLossOrder
@@ -17579,7 +20747,7 @@ export default class extends Vue {
       new BigNumber(filledToken0).div(orderToken0).times(100).toFixed(2) + '%'
     );
   }
-  private filterStopLossPrice(
+  private filterStopLimitPrice(
     item: STOrder,
     token0Decimals: number,
     token1Decimals: number,
@@ -17642,6 +20810,36 @@ export default class extends Vue {
       }
     }
     return '';
+  }
+  private filterFiledPro(
+    val: STOrder,
+    token0Decimals: number,
+    token1Decimals: number,
+    tokenAmountUnit: number,
+    buyUnit: number
+  ): string {
+    try {
+      let total = '0';
+      let type = Object.keys(val.strategy)[0];
+      const side = Object.keys(val.strategy[type].setting.order.side)[0];
+      const token = Object.keys(val.strategy[type].setting.totalLimit)[0];
+      let decimalsFixed = tokenAmountUnit;
+      let decimals = token0Decimals;
+      if (token === 'Token1') {
+        decimalsFixed = buyUnit;
+        decimals = token1Decimals;
+      }
+      if (val.stats.totalInAmount[token.toLocaleLowerCase()]) {
+        total = val.stats.totalInAmount[token.toLocaleLowerCase()].toString(10);
+      } else {
+        total =
+          val.stats.totalOutAmount[token.toLocaleLowerCase()].toString(10);
+      }
+      return new BigNumber(total).div(10 ** decimals).toFixed(decimalsFixed);
+    } catch (e) {
+      console.log(e);
+      return '';
+    }
   }
   private filterQuantity(
     quantity: bigint,
@@ -17891,6 +21089,10 @@ export default class extends Vue {
   align-items: center;
   cursor: pointer;
   color: #adb3c4;
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 .icdex-mode {
   margin-top: 40px;
@@ -17912,12 +21114,15 @@ export default class extends Vue {
   align-items: center;
 }
 .balance-label {
-  display: inline-block;
-  width: 55px;
+  display: flex;
+  width: 70px;
   text-align: left;
   font-size: 20px;
   transform: scale(0.5);
   transform-origin: left;
+  &.balance-label-wallet {
+    width: 40px;
+  }
 }
 .balance-label-pro {
   width: 70px;
@@ -18022,12 +21227,24 @@ export default class extends Vue {
 }
 .home-header {
   top: 14px;
+  .home-header-right-info {
+    width: 280px;
+  }
 }
 .taker-fee {
   display: flex;
   align-items: center;
   margin-top: 10px;
   font-size: 12px;
+  &.taker-fee-stop {
+    display: block;
+    width: 200%;
+    margin-top: 10px;
+    font-size: 18px;
+    transform: scale(0.5);
+    transform-origin: left top;
+    line-height: 1.2;
+  }
 }
 .de-swap-main {
   margin: 10px auto 0;
@@ -18037,58 +21254,6 @@ export default class extends Vue {
     overflow: hidden;
     .swap-transfer-list {
       height: 20px;
-    }
-  }
-}
-.swap-transfer-list {
-  margin-top: 20px;
-  background: #141b23;
-  padding: 10px 20px;
-  table {
-    min-height: 120px;
-    font-size: 12px;
-    color: #808a94 !important;
-    thead {
-      tr {
-        background: #141b23;
-      }
-    }
-    tbody {
-      tr {
-        background: #141b23;
-        border-bottom: 1px solid #212b35;
-        &:last-child {
-          border-bottom: none;
-        }
-      }
-    }
-    th {
-      background: transparent !important;
-      color: #646e79 !important;
-    }
-  }
-  .swap-transfer-list-id {
-    ::v-deep a {
-      color: #3477b5 !important;
-    }
-  }
-  ul {
-    display: flex;
-    color: #8c98a5;
-    li {
-      margin-right: 20px;
-      padding: 10px 0;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-      border-bottom: 2px solid transparent;
-      &:hover {
-        color: #adb7c2;
-      }
-      &.active {
-        color: #adb7c2;
-        border-color: #51b7c3;
-      }
     }
   }
 }
@@ -18120,31 +21285,29 @@ export default class extends Vue {
   color: #8c90a1;
   .trade-item-pro-balance {
     display: flex;
-    width: 100%;
+    flex-wrap: wrap;
   }
   .trade-item-pro-balance-left,
   .trade-item-pro-balance-right {
-    width: 50%;
+    display: flex;
+    align-items: center;
+    width: 100%;
     > div {
+      width: 50%;
       display: flex;
       align-items: center;
       flex-wrap: nowrap;
       font-size: 12px;
-      line-height: 22px;
+      line-height: 24px;
+      padding-right: 5px;
     }
     .trade-item-pro-balance-label {
       display: inline-block;
       flex-shrink: 0;
-      width: 95px;
+      width: 115px;
       font-size: 12px;
       font-weight: bold;
     }
-  }
-  .trade-item-pro-balance-left {
-    padding-right: 10px;
-  }
-  .trade-item-pro-balance-right {
-    padding-left: 10px;
   }
   .trade-item-pro {
     width: 100%;
@@ -18168,12 +21331,22 @@ export default class extends Vue {
       }
     }
     .trade-item-pro-submit {
-      position: absolute;
-      bottom: 40px;
-      left: 30px;
-      right: 30px;
+      padding-top: 5px;
+      .pro-order-button {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        button {
+          width: 40%;
+          max-width: 300px;
+          min-width: 200px;
+          margin: 10px 10px 0 10px;
+          background: rgba(58, 168, 181, 0.7);
+        }
+      }
       p {
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         font-size: 12px;
         line-height: 1.2;
       }
@@ -18192,7 +21365,7 @@ export default class extends Vue {
   &.has-register-competition {
     height: 311px;
   }
-  &.show-stop-loss {
+  &.show-stop-limit {
     height: 339px;
     &.has-register-competition {
       height: 365px;
@@ -18221,6 +21394,9 @@ export default class extends Vue {
       color: #ccc;
     }
   }
+}
+.taker-fee-stop-button {
+  margin-top: 0;
 }
 .assets-wallet {
   display: flex;
@@ -18268,11 +21444,11 @@ export default class extends Vue {
 .trade-main-competitions {
   position: absolute;
   top: 0;
+  bottom: -300px;
   left: 0;
   right: 0;
   z-index: 998;
   width: 100%;
-  height: 100%;
   max-width: 1500px;
   margin: 0 auto;
   background: #0e0e11;
@@ -18292,7 +21468,7 @@ export default class extends Vue {
     .k-interval-main-header-name {
       font-size: 14px;
       color: #fff;
-      padding: 0 20px;
+      padding: 0 10px;
     }
   }
   .k-interval-time {
@@ -18333,6 +21509,32 @@ export default class extends Vue {
     padding-left: 10px;
   }
 }
+.dots {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-bottom: 1px;
+  border-radius: 3px;
+  background: #adb3c4;
+}
+.pair-stage {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  line-height: 14px;
+  font-size: 12px;
+  border-radius: 20px;
+}
+.STAGE2 {
+  background: #65aef1;
+}
+.STAGE1 {
+  background: #e1e10e;
+}
+.STAGE0 {
+  background: #df9708;
+}
 .swap-item-group {
   background: #1f2b37 !important;
   .suffix {
@@ -18343,38 +21545,62 @@ export default class extends Vue {
 .trade-market-sort {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 280px;
   height: 28px;
   margin-bottom: 5px;
-  padding: 5px 10px 5px 0;
-  color: #727a87;
+  padding: 5px 10px;
+  color: #adb3c4;
   font-size: 12px;
-  background: #0d1117;
+  .circle {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+  }
+  .trade-market-old-main {
+    font-weight: bold;
+  }
   li {
     position: relative;
     z-index: 0;
     height: 28px;
+    padding: 0 10px;
     line-height: 28px;
+    font-size: 11px;
     cursor: pointer;
-    padding: 0 15px;
     border: 1px solid #242d38;
+    border-left: none;
     transition: all 0.2s;
+    &:last-child {
+      padding: 0 8px;
+    }
     &:first-child {
+      border-left: 1px solid #242d38;
       &.active {
         z-index: 1;
         margin-right: -1px;
+        margin-left: 0;
       }
     }
-    &:nth-child(2) {
+    /*
+    &:last-child {
       &.active {
         z-index: 1;
         margin-left: -1px;
       }
-    }
+    }*/
     &:hover {
       color: #fff;
     }
     &.active {
       color: #fff;
+    }
+    &.disabled {
+      color: #adb3c4;
+      cursor: auto;
     }
     .base-red {
       position: absolute;
@@ -18400,7 +21626,7 @@ export default class extends Vue {
       }
     }
   }
-  &.show-stop-loss {
+  &.show-stop-limit {
     height: 756px;
     &.has-register-competition {
       height: 782px;
@@ -18439,7 +21665,7 @@ export default class extends Vue {
       overflow-y: auto;
       -webkit-overflow-scrolling: auto;
       &.de-swap-list-item-pair-market {
-        height: 387px;
+        height: 336px;
         tr {
           height: 50px;
         }
@@ -18503,6 +21729,35 @@ export default class extends Vue {
     }*/
   }
 }
+.pair-name {
+  display: block;
+  height: 12px;
+  font-size: 20px;
+  transform: scale(0.5);
+  transform-origin: left top;
+  white-space: nowrap;
+}
+.de-swap-list-item-search {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  padding: 0 10px;
+  ::v-deep input {
+    height: 28px !important;
+    background: #131920 !important;
+    border-radius: 3px !important;
+    border-color: #242d38 !important;
+    font-size: 12px !important;
+  }
+  ::v-deep .ant-input-clear-icon:hover {
+    color: #727a87;
+  }
+}
+.font-10 {
+  font-size: 20px;
+  transform: scale(0.5);
+  transform-origin: left center;
+}
 .de-swap-level-10 {
   width: 280px;
   height: 702px;
@@ -18512,7 +21767,7 @@ export default class extends Vue {
   &.has-register-competition {
     height: 728px;
   }
-  &.show-stop-loss {
+  &.show-stop-limit {
     height: 756px;
     &.has-register-competition {
       height: 782px;
@@ -18641,6 +21896,7 @@ export default class extends Vue {
   cursor: pointer;
   font-size: 14px;
   color: #51b7c3;
+  padding-right: 10px;
   &.disabled {
     cursor: not-allowed;
     color: #646e79;
@@ -18661,6 +21917,7 @@ table {
     th:last-child,
     td:last-child {
       padding-right: 10px;
+      padding-left: 0;
     }
   }
 }
@@ -18767,11 +22024,82 @@ table {
   display: flex;
   width: 100%;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
+  &.swap-transfer-list-header-fallback-trades {
+    ul {
+      li {
+        color: #5e6170;
+        border-bottom: 1px solid transparent;
+        &.active {
+          color: #8795a3;
+          border-bottom-color: #51b7c3;
+        }
+      }
+    }
+  }
   span {
     margin-left: auto;
     font-size: 12px;
     color: #8c90a1;
+  }
+}
+.std-lint-menu {
+  ul {
+    li {
+      &:last-child {
+        padding-left: 20px;
+      }
+    }
+  }
+}
+.swap-transfer-list {
+  margin-top: 20px;
+  background: #141b23;
+  padding: 10px 20px;
+  table {
+    min-height: 120px;
+    font-size: 12px;
+    color: #808a94 !important;
+    thead {
+      tr {
+        background: #141b23;
+      }
+    }
+    tbody {
+      tr {
+        background: #141b23;
+        border-bottom: 1px solid #212b35;
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+    th {
+      background: transparent !important;
+      color: #646e79 !important;
+    }
+  }
+  .swap-transfer-list-id {
+    ::v-deep a {
+      color: #3477b5 !important;
+    }
+  }
+  ul {
+    display: flex;
+    color: #8c98a5;
+    li {
+      margin-right: 20px;
+      padding: 10px 0;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      &:hover {
+        color: #afbac5;
+      }
+      &.active {
+        color: #afbac5;
+      }
+    }
   }
 }
 table {
@@ -18801,11 +22129,12 @@ table {
   color: #2b8cb0 !important;
 }
 .swap-transfer-list-header-fallback-click {
-  width: 76px;
+  width: 60px;
   height: 28px;
   margin-right: 10px;
 }
 .vol-h5 {
+  margin-top: 20px;
   font-size: 12px;
   padding: 0 0 10px 0;
   border-bottom: 1px solid #000;
@@ -18820,12 +22149,23 @@ div.kInterval-chart-h5 {
 .withdraw-balance {
   margin-left: auto;
 }
+.pro-orders-note {
+  line-height: 1.5;
+  text-align: center;
+  padding-top: 10px;
+}
 @media screen and (max-width: 1200px) {
+  .pro-orders-note {
+    line-height: 1;
+    padding-top: 5px;
+  }
   .trade-item {
     .trade-item-pro-balance-left,
     .trade-item-pro-balance-right {
+      width: 100%;
+      padding-left: 0;
       .trade-item-pro-balance-label {
-        width: 70px;
+        width: 95px;
         white-space: nowrap;
         transform: scale(0.5);
         transform-origin: left;
@@ -18833,9 +22173,57 @@ div.kInterval-chart-h5 {
       }
     }
   }
+  .trade-main .k-interval-main-header .k-interval-main-header-name {
+    font-size: 12px;
+    padding: 0 3px;
+  }
+  .trade-main .k-interval-time li {
+    padding: 0 4px;
+  }
+  .trade-competitions-enum li {
+    font-size: 12px;
+    padding: 0 5px;
+  }
 }
 @media screen and (max-width: 768px) {
+  .std-lint-menu {
+    ul {
+      li {
+        &:last-child {
+          padding-left: 10px;
+        }
+      }
+    }
+  }
+  .cancel-pending {
+    padding-right: 0;
+    padding-left: 10px;
+  }
+  .trade-item-pro-h5-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    padding: 8px 15px !important;
+    border-bottom: 1px solid #383e4e;
+    cursor: pointer;
+    &.active {
+      color: #51b7c3;
+    }
+    &:last-child {
+      border-bottom: none;
+    }
+  }
   .trade-item-pro-h5 {
+    .trade-item-pro-h5-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 160px;
+      margin: 20px auto;
+      font-size: 16px;
+      color: #fff;
+    }
     .trade-item-pro-submit {
       margin-top: 20px;
       p {
@@ -18858,7 +22246,7 @@ div.kInterval-chart-h5 {
     }
     .trade-item-pro {
       width: 100%;
-      padding: 10px;
+      padding: 0;
       background: #0f141a;
       border-radius: 5px;
       line-height: 1.5;
@@ -18882,10 +22270,6 @@ div.kInterval-chart-h5 {
     .trade-item-pro-fee {
       margin-top: 10px;
     }
-    .trade-item-pro-title {
-      flex-direction: column;
-      word-break: break-word;
-    }
   }
   .trade-item-header {
     flex-wrap: wrap;
@@ -18905,6 +22289,9 @@ div.kInterval-chart-h5 {
   .home-header {
     ul {
       display: none;
+    }
+    .home-header-right-info {
+      width: auto;
     }
   }
   .vol-h5 {
@@ -19438,16 +22825,17 @@ div.kInterval-chart-h5 {
       }
       &.pending-h5-pro {
         flex-direction: row;
+        background: #06080b;
         li {
           width: auto;
-          padding-bottom: 5px;
+          padding-bottom: 10px;
           margin-right: 10px;
-          border-bottom: 1px solid transparent;
+          border-bottom: 2px solid transparent;
           &.active {
             border-color: #51b7c3;
           }
           &:last-child {
-            border-bottom: 1px solid transparent;
+            border-bottom: 2px solid transparent;
           }
         }
       }
@@ -19455,6 +22843,7 @@ div.kInterval-chart-h5 {
   }
   .pending-header-h5 {
     display: flex;
+    flex-wrap: wrap;
     color: #8c98a5;
   }
   .pending-item {

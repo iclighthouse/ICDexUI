@@ -234,9 +234,9 @@
           </span>
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
-              >ICDex Canister v0.9.28 beta
+              >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.1
             </span>
-            <span>Web v1.9.1 beta</span>
           </span>
           <a
             class="old-version"
@@ -432,6 +432,7 @@ import { Route } from 'vue-router/types/router';
 import { connectIcx } from '@/ic/connectIcx';
 import EventBus from '@/utils/Event';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
+import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 
 const commonModule = namespace('common');
 
@@ -461,6 +462,12 @@ export default class extends Vue {
   private icdexIcxMenu: Menu[] = [];
   private hostname = '';
   private hostHref = '';
+  private ICDexRouterService: ICDexRouterService = null;
+  private version = {
+    router: '',
+    pair: '',
+    maker: ''
+  };
   @Watch('$route')
   private onRouteChange(route: Route, lastRoute: Route) {
     this.hasSubMenu =
@@ -521,6 +528,23 @@ export default class extends Vue {
     const path = this.$route.name;
     this.defaultSelectedKeys = path.toLocaleLowerCase();
     this.getAccountInfo();
+    this.ICDexRouterService = new ICDexRouterService();
+    this.getVersion();
+  }
+  private getVersion(): void {
+    this.ICDexRouterService.version()
+      .then((res) => {
+        this.$set(this.version, 'router', res);
+      })
+      .catch(() => {
+        this.$set(this.version, 'router', '0.12.26');
+      });
+    this.ICDexRouterService.getICDexPairWasmVersion().then((res) => {
+      this.$set(this.version, 'pair', res[0]);
+    });
+    this.ICDexRouterService.getICDexMakerWasmVersion().then((res) => {
+      this.$set(this.version, 'maker', res[0]);
+    });
   }
   private async connectWallet(): Promise<void> {
     if ((window as any).icx) {
@@ -886,11 +910,6 @@ export default class extends Vue {
   transform-origin: left;
   transform: scale(0.6);
   color: #646e79;
-  span {
-    &:last-child {
-      margin-left: 15px;
-    }
-  }
 }
 .old-version {
   color: #575d67 !important;

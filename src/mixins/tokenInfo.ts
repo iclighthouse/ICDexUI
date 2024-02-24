@@ -1,7 +1,7 @@
 import { Component, Vue } from 'vue-property-decorator';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { Gas, Token } from '@/ic/ICTokens/model';
 import BigNumber from 'bignumber.js';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 
 @Component({
   filters: {
@@ -24,9 +24,9 @@ import BigNumber from 'bignumber.js';
   }
 })
 export class TokenInfoMixin extends Vue {
-  private ICLighthouseTokenService: ICLighthouseTokenService;
+  private DRC20TokenService: DRC20TokenService;
   created(): void {
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
+    this.DRC20TokenService = new DRC20TokenService();
   }
   public getTokenInfo(token: Token): void {
     this.getMetadata(token).then();
@@ -39,7 +39,7 @@ export class TokenInfoMixin extends Vue {
   }
   public async maxSupply(token: Token): Promise<void> {
     try {
-      const maxSupply = await this.ICLighthouseTokenService.getMaxSupply(
+      const maxSupply = await this.DRC20TokenService.getMaxSupply(
         token.tokenId.toString()
       );
       if (maxSupply && maxSupply[0]) {
@@ -57,36 +57,36 @@ export class TokenInfoMixin extends Vue {
     //     new BigNumber(10).pow(decimals.toString())
     //   )
     // );
-    token.totalSupply = await this.ICLighthouseTokenService.totalSupply(
+    token.totalSupply = await this.DRC20TokenService.totalSupply(
       token.tokenId.toString()
     );
     this.$forceUpdate();
   }
   public async getDecimals(token: Token): Promise<number> {
-    token.decimals = await this.ICLighthouseTokenService.getDecimals(
+    token.decimals = await this.DRC20TokenService.decimals(
       token.tokenId.toString()
     );
     return token.decimals;
   }
   public async getSymbol(token: Token): Promise<void> {
-    token.symbol = await this.ICLighthouseTokenService.getSymbol(
+    token.symbol = await this.DRC20TokenService.symbol(
       token.tokenId.toString()
     );
     this.$forceUpdate();
   }
   public async getName(token: Token): Promise<void> {
-    token.name = await this.ICLighthouseTokenService.getName(
+    token.name = await this.DRC20TokenService.name(
       token.tokenId.toString()
     );
     this.$forceUpdate();
   }
   public async getGas(token: Token): Promise<void> {
-    token.gas = await this.ICLighthouseTokenService.gas(
+    token.gas = await this.DRC20TokenService.gas(
       token.tokenId.toString()
     );
   }
   public async getMetadata(token: Token): Promise<void> {
-    const metadata = await this.ICLighthouseTokenService.metadata(
+    const metadata = await this.DRC20TokenService.metadata(
       token.tokenId.toString()
     );
     token.metadata = metadata;

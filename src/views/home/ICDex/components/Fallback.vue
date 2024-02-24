@@ -80,7 +80,7 @@
             </tr>
             <tr v-show="currentPage === 1">
               <td>-</td>
-              <td>Deposit Account</td>
+              <td>Pro-trade Deposit Account</td>
               <td>
                 <span
                   v-if="
@@ -469,6 +469,7 @@ export default class extends Vue {
     } catch (e) {
       loading.close();
       console.error(e);
+      this.$message.error(e);
     }
   }
   private canFallback(balance: string, token: TokenInfo): boolean {

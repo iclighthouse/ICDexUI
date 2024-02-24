@@ -14,7 +14,8 @@
             active:
               $route.fullPath.toLocaleLowerCase() ===
                 menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex')
+              (menu.value === 'Trade' && $route.name === 'ICDex') ||
+              (menu.value === 'Pools' && $route.name === 'Pool')
           }"
           v-for="(menu, index) in menuList"
           :key="index"
@@ -22,7 +23,18 @@
           <router-link :to="menu.path">{{ menu.value }}</router-link>
         </li>
       </ul>
-      <account-info :menu-list="menuList"></account-info>
+      <div class="flex-center margin-left-auto">
+        <span
+          v-if="getPrincipalId"
+          @click="showLaunch"
+          class="base-font-title pointer pc-show"
+          style="font-size: 15px"
+          >+Launch</span
+        >
+        <div class="home-header-right-info">
+          <account-info :menu-list="menuList"></account-info>
+        </div>
+      </div>
     </div>
     <div class="pool-info container-width">
       <div class="proposal-main-title">
@@ -31,9 +43,25 @@
       <div class="pool-item">
         <div class="pool-header">
           <span class="pc-show">Name:&nbsp;</span
-          ><span v-if="pool[1]" class="base-color-w pc-show">{{
-            pool[1].name
-          }}</span>
+          ><span v-if="pool[1]" class="base-color-w pc-show">
+            {{ pool[1].name }}
+          </span>
+          <router-link
+            v-if="
+              pool[1] &&
+              tokens[pool[1].pairInfo.token0[0].toString()] &&
+              tokens[pool[1].pairInfo.token1[0].toString()]
+            "
+            :to="`/ICDex/${
+              tokens[pool[1].pairInfo.token0[0].toString()].symbol
+            }/${tokens[pool[1].pairInfo.token1[0].toString()].symbol}`"
+            style="margin-left: 10px"
+            class="pc-show link"
+          >
+            {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}/{{
+              tokens[pool[1].pairInfo.token1[0].toString()].symbol
+            }}
+          </router-link>
           <button
             class="margin-left-auto"
             type="button"
@@ -57,6 +85,21 @@
             ><span v-if="pool[1]" class="base-color-w">
               {{ pool[1].name }}
             </span>
+            <router-link
+              v-if="
+                pool[1] &&
+                tokens[pool[1].pairInfo.token0[0].toString()] &&
+                tokens[pool[1].pairInfo.token1[0].toString()]
+              "
+              :to="`/ICDex/${
+                tokens[pool[1].pairInfo.token0[0].toString()].symbol
+              }/${tokens[pool[1].pairInfo.token1[0].toString()].symbol}`"
+              class="link"
+            >
+              {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}/{{
+                tokens[pool[1].pairInfo.token1[0].toString()].symbol
+              }}
+            </router-link>
           </div>
         </div>
         <div class="pool-item-l">
@@ -68,7 +111,7 @@
               tokens[pool[1].pairInfo.token1[0].toString()]
             "
           >
-            <span>UnitNet:</span>
+            <span>NAV:</span>
             <span v-if="pool[2]" class="base-color-w">
               {{
                 pool[2].latestUnitNetValue.token0
@@ -94,7 +137,8 @@
                 {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
               </span>
             </span>
-            <span v-else>-</span>
+            <span class="loading-spinner" v-if="!pool[2] && isBusy"> </span>
+            <span v-if="!pool[2] && !isBusy">-</span>
           </div>
         </div>
         <div class="pool-item-l">
@@ -106,7 +150,7 @@
               tokens[pool[1].pairInfo.token1[0].toString()]
             "
           >
-            <span> Balance: </span>
+            <span> Pool Balance: </span>
             <span v-if="pool[2]" class="base-color-w">
               {{
                 pool[2].poolBalance.balance0
@@ -138,7 +182,8 @@
                 {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
               </span>
             </span>
-            <span v-else>0</span>
+            <span v-if="!pool[2] && isBusy" class="loading-spinner"> </span>
+            <span v-if="!pool[2] && !isBusy">0</span>
           </div>
         </div>
         <div class="pool-item-l pool-item-l-shares">
@@ -151,7 +196,9 @@
                   | formatNum
               }}
             </span>
-            <span v-else>0</span>
+            <span v-if="!pool[2] && !pool[1] && isBusy" class="loading-spinner">
+            </span>
+            <span v-if="!pool[2] && !pool[1] && !isBusy">-</span>
           </div>
           <div>
             <span>Your Shares: </span>
@@ -162,12 +209,14 @@
                   | formatNum
               }}
             </span>
-            <span v-else>-</span>
+            <span v-if="!pool[3] && !pool[1] && isBusy" class="loading-spinner">
+            </span>
+            <span v-if="!pool[3] && !pool[1] && !isBusy">-</span>
           </div>
         </div>
         <div class="pool-apy">
-          <span>APY:&nbsp;&nbsp;</span>
-          <span class="pool-apy-item">
+          <span>APY (Estimated):&nbsp;&nbsp;</span>
+          <span class="pool-apy-item base-font-title">
             <span
               v-if="
                 pool[2] &&
@@ -177,12 +226,15 @@
               "
             >
               <span
-                >{{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
-                {{ pool[2].apy24h.token0 | filterAPY }},</span
+                >{{
+                  tokens[pool[1].pairInfo.token0[0].toString()].symbol
+                }}-based {{ pool[2].apy24h.token0 | filterAPY }},</span
               >
               <span
-                >{{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
-                {{ pool[2].apy24h.token1 | filterAPY }}(24-Hour APY)</span
+                >{{
+                  tokens[pool[1].pairInfo.token1[0].toString()].symbol
+                }}-based {{ pool[2].apy24h.token1 | filterAPY }}(24-Hour
+                APY)</span
               >
             </span>
             <span
@@ -194,15 +246,19 @@
               "
             >
               <span
-                >{{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
-                {{ pool[2].apy7d.token0 | filterAPY }},</span
+                >{{
+                  tokens[pool[1].pairInfo.token0[0].toString()].symbol
+                }}-based {{ pool[2].apy7d.token0 | filterAPY }},</span
               >
               <span
-                >{{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
-                {{ pool[2].apy7d.token1 | filterAPY }}(7-Day APY)</span
+                >{{
+                  tokens[pool[1].pairInfo.token1[0].toString()].symbol
+                }}-based {{ pool[2].apy7d.token1 | filterAPY }}(7-Day APY)</span
               >
             </span>
-            <span v-else>-</span>
+            <span v-if="!pool[2] && !pool[1] && isBusy" class="loading-spinner">
+            </span>
+            <span v-if="!pool[2] && !pool[1] && !isBusy">-</span>
           </span>
         </div>
         <div
@@ -211,19 +267,35 @@
             pool[1] &&
             tokens[pool[1].pairInfo.token1[0].toString()]
           "
+          style="margin-top: 10px"
         >
-          <span>Cap threshold: </span>
-          <span>
-            {{
-              pool[1].poolThreshold
-                | bigintToFloat(
-                  tokens[pool[1].pairInfo.token1[0].toString()].decimals,
-                  tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                )
-                | formatNum
-            }}
-            {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+          <span>Threshold: </span>
+          <span v-if="pool[1]">
+            <a-tooltip placement="top">
+              <template slot="title">
+                After the
+                {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                balance of total liquidity reaches threshold, the liquidity
+                limit rule will be activated and the user's liquidity limit
+                (measured in
+                {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}) =
+                the user's
+                {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                volume in the current pair *
+                {{ pool[1].volFactor.toString(10) }}.
+              </template>
+              {{
+                pool[1].poolThreshold
+                  | bigintToFloat(
+                    tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                    tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                  )
+                  | formatNum
+              }}
+              {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+            </a-tooltip>
           </span>
+          <span v-if="!pool[1] && isBusy" class="loading-spinner"></span>
         </div>
         <div
           v-if="
@@ -232,379 +304,626 @@
             pool[2] &&
             pool[3] &&
             tokens[pool[1].pairInfo.token1[0].toString()] &&
-            pairVol
+            pairVol &&
+            volUsed
           "
           style="margin-top: 10px"
         >
-          <span
-            >Available limit: {{ getAvailable(pool) }}
+          <span>
+            Your liquidity limit: total {{ getAvailable(pool) | formatNum }}
+            {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }};
+            available
+            <span class="base-green">
+              {{
+                getVolAvailable(pool, volUsed)
+                  | bigintToFloat(
+                    8,
+                    tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                  )
+                  | formatNum
+              }}
+            </span>
             {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}</span
           >
+          <span v-if="!pool[1] && isBusy" class="loading-spinner"></span>
+        </div>
+        <div
+          v-if="makerConfigure && makerConfigure.controllers"
+          style="
+            display: flex;
+            align-items: flex-start;
+            margin-top: 10px;
+            font-size: 12px;
+          "
+        >
+          <span>Controllers:&nbsp;</span>
+          <div>
+            <span
+              v-for="(item, index) in makerConfigure.controllers"
+              :key="index"
+            >
+              {{ item
+              }}<span v-if="index !== makerConfigure.controllers.length"
+                >;</span
+              >
+            </span>
+          </div>
+        </div>
+        <div
+          v-if="makerConfigure && makerConfigure.ICTCAdmins"
+          style="
+            display: flex;
+            align-items: flex-start;
+            margin-top: 10px;
+            font-size: 12px;
+          "
+        >
+          <span>ICTC Admins:&nbsp;</span>
+          <div>
+            <span
+              v-for="(item, index) in makerConfigure.ICTCAdmins"
+              :key="index"
+            >
+              {{ item.toString()
+              }}<span v-if="index !== makerConfigure.ICTCAdmins.length">;</span>
+            </span>
+          </div>
+          <span v-if="!makerConfigure.ICTCAdmins.length">-</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px">
+          <span>Creator: </span>
+          <span v-if="pool[1]">{{ arrayToString(pool[1].creator) }}</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px">
+          <span>Module Hash: </span>
+          <span v-if="makerConfigure && makerConfigure.moduleHash">{{
+            makerConfigure.moduleHash
+          }}</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px">
+          <span>Version: </span>
+          <span v-if="pool[1]">{{ pool[1].version }}</span>
         </div>
         <div
           v-if="
-            !showCapThreshold(pool) &&
+            pool[4] &&
+            !pool[4].vipMaker &&
             pool[1] &&
-            tokens[pool[1].pairInfo.token1[0].toString()] &&
-            volUsed
+            pool[1].initialized &&
+            poolICLBalance
           "
+          style="margin-top: 10px"
         >
-          <span
-            >Utilized amount:
-            {{
-              volUsed
-                | bigintToFloat(
-                  8,
-                  tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                )
-                | formatNum
-            }}
-            {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}</span
-          >
+          <span>
+            ICL Balance:
+            <span :class="{ 'base-red': Number(poolICLBalance) < 100 }">
+              {{ poolICLBalance }}
+              ICL
+              <a-tooltip placement="top">
+                <template slot="title">
+                  <span v-if="stoConfig">
+                    Update grid order fee is
+                    {{ stoConfig.poFee1 | stoUpdateFee(8) }}
+                    ICL.
+                  </span>
+                  <div v-if="getPrincipalId && pool && pool[1]">
+                    This ICDexMaker should be granted vip-maker status or this
+                    canister ({{ pool[0] }}) needs a sufficient(100) ICL balance
+                    for grid order fees.
+                  </div>
+                </template>
+                <a-icon
+                  v-if="stoConfig && Number(poolICLBalance) < 100"
+                  type="info-circle"
+                />
+              </a-tooltip>
+              <button
+                style="
+                  display: inline-block;
+                  width: 70px;
+                  height: 28px;
+                  margin-left: 10px;
+                "
+                v-if="
+                  stoConfig &&
+                  Number(poolICLBalance) < 100 &&
+                  getPrincipalId &&
+                  pool &&
+                  pool[1]
+                "
+                class="primary"
+                @click="onTopUp"
+              >
+                Top up
+              </button>
+            </span>
+          </span>
         </div>
       </div>
       <div v-show="type === 'Remove'">
-        <div class="pool-item mt20">
-          <div class="exchange-swap-item-top">
-            <div>Burn Shares</div>
-            <a-input
-              v-if="pool[1]"
-              class="margin-left-auto text-right"
-              :disabled="!pool[3]"
-              v-model="removeShares"
-              autocomplete="off"
-              v-only-float="pool[1].shareDecimals"
-              :key="pool[1].shareDecimals"
-              min="0"
-              placeholder="0"
-              type="text"
-              @input="sharesChange"
-            />
+        <div
+          v-show="
+            pool[1] &&
+            (pool[1].initialized ||
+              (!pool[1].initialized && pool[4] && pool[4].vipMaker) ||
+              (!pool[1].initialized &&
+                pool[4] &&
+                !pool[4].vipMaker &&
+                Number(poolICLBalance) >= 10))
+          "
+        >
+          <div class="pool-item mt20">
+            <div class="exchange-swap-item-top">
+              <div>Burn Shares</div>
+              <a-input
+                v-if="pool[1]"
+                class="margin-left-auto text-right"
+                :disabled="!pool[3]"
+                v-model="removeShares"
+                autocomplete="off"
+                v-only-float="pool[1].shareDecimals"
+                :key="pool[1].shareDecimals"
+                min="0"
+                placeholder="0"
+                type="text"
+                @input="sharesChange"
+              />
+            </div>
+            <div class="exchange-swap-item-bottom">
+              <span
+                class="margin-left-auto exchange-swap-item-bottom-fee-share"
+                @click="setMaxShares"
+                >Max</span
+              >
+            </div>
           </div>
-          <div class="exchange-swap-item-bottom">
-            <span
-              class="margin-left-auto exchange-swap-item-bottom-fee-share"
-              @click="setMaxShares"
-              >Max</span
-            >
+          <div class="exchange-swap-icon">
+            <a-icon type="arrow-down" class="exchange-swap-icon-plus" />
           </div>
-        </div>
-        <div class="exchange-swap-icon">
-          <a-icon type="arrow-down" class="exchange-swap-icon-plus" />
-        </div>
-        <div class="pool-item">
-          <div class="swap-item-top">
-            <div class="ic-swap-item-top-left">
-              <div class="swap-item-top-left">
-                <span class="img-content">
-                  <img
-                    v-if="
-                      pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]
-                    "
-                    :src="tokens[pool[1].pairInfo.token0[0].toString()].logo"
-                    alt=""
-                  />
-                  <span v-else class="empty-pic"></span>
-                </span>
-                <span class="swap-item-top-left-name" v-if="pool[1]">
+          <div class="pool-item">
+            <div class="swap-item-top">
+              <div class="ic-swap-item-top-left">
+                <div class="swap-item-top-left">
+                  <span class="img-content">
+                    <img
+                      v-if="
+                        pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]
+                      "
+                      :src="tokens[pool[1].pairInfo.token0[0].toString()].logo"
+                      alt=""
+                    />
+                    <span v-else class="empty-pic"></span>
+                  </span>
+                  <span class="swap-item-top-left-name" v-if="pool[1]">
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  </span>
+                </div>
+              </div>
+              <div
+                v-if="pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]"
+                class="swap-item-top-right-remove"
+              >
+                <span>
+                  <span class="base-color-w">{{ sharesValue0 }}</span>
                   {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
                 </span>
               </div>
             </div>
-            <div
-              v-if="pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]"
-              class="swap-item-top-right-remove"
-            >
-              <span>
-                <span class="base-color-w">{{ sharesValue0 }}</span>
-                {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
-              </span>
+            <div class="swap-item-top" style="margin-top: 5px">
+              <div
+                v-if="pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]"
+                class="swap-item-top-right-remove"
+              >
+                <span class="base-font"
+                  >Withdrawal fee:
+                  <span class="base-font-title">{{ sharesFee0 }}</span>
+                  {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="exchange-swap-icon">
-          <a-icon type="plus" class="exchange-swap-icon-plus" />
-        </div>
-        <div class="pool-item">
-          <div class="swap-item-top">
-            <div class="ic-swap-item-top-left">
-              <div class="swap-item-top-left">
-                <span class="img-content">
-                  <img
-                    v-if="
-                      pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]
-                    "
-                    :src="tokens[pool[1].pairInfo.token1[0].toString()].logo"
-                    alt=""
-                  />
-                  <span v-else class="empty-pic"></span>
-                </span>
-                <span class="swap-item-top-left-name" v-if="pool[1]">
+          <div class="exchange-swap-icon">
+            <a-icon type="plus" class="exchange-swap-icon-plus" />
+          </div>
+          <div class="pool-item">
+            <div class="swap-item-top">
+              <div class="ic-swap-item-top-left">
+                <div class="swap-item-top-left">
+                  <span class="img-content">
+                    <img
+                      v-if="
+                        pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]
+                      "
+                      :src="tokens[pool[1].pairInfo.token1[0].toString()].logo"
+                      alt=""
+                    />
+                    <span v-else class="empty-pic"></span>
+                  </span>
+                  <span class="swap-item-top-left-name" v-if="pool[1]">
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </span>
+                </div>
+              </div>
+              <div
+                v-if="pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]"
+                class="swap-item-top-right-remove"
+              >
+                <span>
+                  <span class="base-color-w">{{ sharesValue1 }}</span>
                   {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
                 </span>
               </div>
             </div>
-            <div
-              v-if="pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]"
-              class="swap-item-top-right-remove"
-            >
-              <span>
-                <span class="base-color-w">{{ sharesValue1 }}</span>
-                {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
-              </span>
+            <div class="swap-item-top" style="margin-top: 5px">
+              <div
+                v-if="pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]"
+                class="swap-item-top-right-remove"
+              >
+                <span class="base-font"
+                  >Withdrawal fee:
+                  <span class="base-font-title">{{ sharesFee1 }}</span>
+                  {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                </span>
+              </div>
             </div>
           </div>
+          <div class="swap-button w100">
+            <button
+              v-if="getPrincipalId"
+              :disabled="buttonDisabledRemove"
+              class="primary large-primary w100"
+              @click="onRemove"
+            >
+              {{ buttonNameRemove }}
+            </button>
+            <button
+              v-else
+              class="primary large-primary w100"
+              @click="connectWallet"
+            >
+              Connect Wallet
+            </button>
+          </div>
         </div>
-        <div class="swap-button w100">
-          <button
-            v-if="getPrincipalId"
-            :disabled="buttonDisabledRemove"
-            class="primary large-primary w100"
-            @click="onRemove"
-          >
-            {{ buttonNameRemove }}
-          </button>
-          <button
-            v-else
-            class="primary large-primary w100"
-            @click="connectWallet"
-          >
-            Connect Wallet
-          </button>
+        <div
+          v-show="
+            pool[4] &&
+            !pool[4].vipMaker &&
+            pool[1] &&
+            !pool[1].initialized &&
+            Number(poolICLBalance) < 10
+          "
+          class="base-font-title pool-item mt20"
+          style="line-height: 1.5; font-size: 16px"
+        >
+          <span v-if="stoConfig">
+            Grid order fee: (Create)
+            {{ stoConfig.poFee1 | bigintToFloat(8, 8) }} ICL, (Update)
+            {{ stoConfig.poFee1 | stoUpdateFee(8) }} ICL.
+          </span>
+          <div>
+            <span
+              @click.stop="
+                onBindMaker(pool[1].pairInfo.pairPrincipal.toString(), pool[0])
+              "
+              class="link pointer"
+              >Become vip-maker(free)</span
+            >
+            or
+            <span class="link pointer" @click="onTopUp"
+              >top up at least 100 ICL</span
+            >.
+          </div>
         </div>
       </div>
       <div v-show="type === 'Add'">
-        <div class="pool-item-title">Deposit amounts</div>
-        <div class="pool-item">
-          <div class="swap-item-top">
-            <div class="ic-swap-item-top-left">
-              <div class="swap-item-top-left">
-                <span class="img-content">
-                  <img
-                    v-if="
-                      pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]
-                    "
-                    :src="tokens[pool[1].pairInfo.token0[0].toString()].logo"
-                    alt=""
-                  />
-                  <span v-else class="empty-pic"></span>
-                </span>
-                <span class="swap-item-top-left-name" v-if="pool[1]">
-                  {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
-                </span>
+        <div
+          v-show="
+            pool[1] &&
+            (pool[1].initialized ||
+              (!pool[1].initialized && pool[4] && pool[4].vipMaker) ||
+              (!pool[1].initialized &&
+                pool[4] &&
+                !pool[4].vipMaker &&
+                Number(poolICLBalance) >= 10))
+          "
+        >
+          <div class="pool-item-title">Deposit amounts</div>
+          <div class="pool-item">
+            <div class="swap-item-top">
+              <div class="ic-swap-item-top-left">
+                <div class="swap-item-top-left">
+                  <span class="img-content">
+                    <img
+                      v-if="
+                        pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]
+                      "
+                      :src="tokens[pool[1].pairInfo.token0[0].toString()].logo"
+                      alt=""
+                    />
+                    <span v-else class="empty-pic"></span>
+                  </span>
+                  <span class="swap-item-top-left-name" v-if="pool[1]">
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div class="swap-item-top-right">
-              <a-input-group
-                class="swap-item-group"
-                compact
-                v-if="pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]"
-              >
+              <div class="swap-item-top-right">
+                <a-input-group
+                  class="swap-item-group"
+                  compact
+                  v-if="
+                    pool[1] && tokens[pool[1].pairInfo.token0[0].toString()]
+                  "
+                >
+                  <a-input
+                    :key="
+                      tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                    "
+                    class="input-icp-suffix text-right"
+                    autocomplete="off"
+                    type="text"
+                    v-model="token0Amount"
+                    v-only-float="
+                      tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                    "
+                    placeholder="0.0"
+                    @input="token0AmountChange"
+                  /><span class="suffix">{{
+                    tokens[pool[1].pairInfo.token0[0].toString()].symbol
+                  }}</span>
+                </a-input-group>
                 <a-input
-                  :key="tokens[pool[1].pairInfo.token0[0].toString()].decimals"
+                  v-else
                   class="input-icp-suffix text-right"
                   autocomplete="off"
                   type="text"
-                  v-model="token0Amount"
-                  v-only-float="
-                    tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                  "
+                  disabled
                   placeholder="0.0"
-                  @input="token0AmountChange"
-                /><span class="suffix">{{
-                  tokens[pool[1].pairInfo.token0[0].toString()].symbol
-                }}</span>
-              </a-input-group>
-              <a-input
-                v-else
-                class="input-icp-suffix text-right"
-                autocomplete="off"
-                type="text"
-                disabled
-                placeholder="0.0"
-              />
+                />
+              </div>
             </div>
-          </div>
-          <div class="add-liquidity-item-bottom swap-item-bottom">
-            <div
-              v-if="
-                pool[1] &&
-                tokens &&
-                tokens[pool[1].pairInfo.token0[0].toString()]
-              "
-            >
-              Balance:
-              <a-tooltip placement="bottom">
-                <template slot="title">
-                  <span>{{
+            <div class="add-liquidity-item-bottom swap-item-bottom">
+              <div
+                v-if="
+                  pool[1] &&
+                  tokens &&
+                  tokens[pool[1].pairInfo.token0[0].toString()]
+                "
+              >
+                Balance:
+                <a-tooltip placement="bottom">
+                  <template slot="title">
+                    <span>{{
+                      tokensBalance[pool[1].pairInfo.token0[0].toString()]
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                        | formatNum
+                    }}</span>
+                  </template>
+                  {{
                     tokensBalance[pool[1].pairInfo.token0[0].toString()]
                       | bigintToFloat(
-                        tokens[pool[1].pairInfo.token0[0].toString()].decimals,
+                        8,
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals
                       )
-                      | formatNum
-                  }}</span>
-                </template>
-                {{
-                  tokensBalance[pool[1].pairInfo.token0[0].toString()]
-                    | bigintToFloat(
-                      8,
-                      tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                      | formatAmount(8)
+                  }}
+                </a-tooltip>
+                {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+              </div>
+              <div class="margin-left-auto">
+                <span
+                  class="max-amount"
+                  @click="
+                    setMaxAmount(
+                      pool[1].pairInfo.token0[0].toString(),
+                      'token0'
                     )
-                    | formatAmount(8)
-                }}
-              </a-tooltip>
-              {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
-            </div>
-            <div class="margin-left-auto">
-              <span
-                class="max-amount"
-                @click="
-                  setMaxAmount(pool[1].pairInfo.token0[0].toString(), 'token0')
-                "
-                >Max</span
-              >
-            </div>
-          </div>
-        </div>
-        <div class="exchange-swap-icon">
-          <a-icon class="swap-icon" type="plus" />
-        </div>
-        <div class="pool-item">
-          <div class="swap-item-top">
-            <div class="ic-swap-item-top-left">
-              <div class="swap-item-top-left">
-                <span class="img-content">
-                  <img
-                    v-if="
-                      pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]
-                    "
-                    :src="tokens[pool[1].pairInfo.token1[0].toString()].logo"
-                    alt=""
-                  />
-                  <span v-else class="empty-pic"></span>
-                </span>
-                <span class="swap-item-top-left-name" v-if="pool[1]">
-                  {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
-                </span>
+                  "
+                  >Max</span
+                >
               </div>
             </div>
-            <div class="swap-item-top-right">
-              <a-input-group
-                class="swap-item-group"
-                compact
-                v-if="pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]"
-              >
-                <span
-                  v-show="token0Amount"
-                  class="prefix"
-                  style="padding-left: 5px"
+          </div>
+          <div class="exchange-swap-icon">
+            <a-icon class="swap-icon" type="plus" />
+          </div>
+          <div class="pool-item">
+            <div class="swap-item-top">
+              <div class="ic-swap-item-top-left">
+                <div class="swap-item-top-left">
+                  <span class="img-content">
+                    <img
+                      v-if="
+                        pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]
+                      "
+                      :src="tokens[pool[1].pairInfo.token1[0].toString()].logo"
+                      alt=""
+                    />
+                    <span v-else class="empty-pic"></span>
+                  </span>
+                  <span class="swap-item-top-left-name" v-if="pool[1]">
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </span>
+                </div>
+              </div>
+              <div class="swap-item-top-right">
+                <a-input-group
+                  class="swap-item-group"
+                  compact
+                  v-if="
+                    pool[1] && tokens[pool[1].pairInfo.token1[0].toString()]
+                  "
                 >
-                  ≈
-                </span>
+                  <span
+                    v-show="token0Amount"
+                    class="prefix"
+                    style="padding-left: 5px"
+                  >
+                    ≈
+                  </span>
+                  <a-input
+                    :key="
+                      tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                    "
+                    class="input-icp-suffix text-right"
+                    autocomplete="off"
+                    type="text"
+                    v-model="token1Amount"
+                    v-only-float="
+                      tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                    "
+                    placeholder="0.0"
+                    @input="token1AmountChange"
+                  /><span class="suffix">{{
+                    tokens[pool[1].pairInfo.token1[0].toString()].symbol
+                  }}</span>
+                </a-input-group>
                 <a-input
-                  :key="tokens[pool[1].pairInfo.token1[0].toString()].decimals"
+                  v-else
                   class="input-icp-suffix text-right"
                   autocomplete="off"
                   type="text"
-                  v-model="token1Amount"
-                  v-only-float="
-                    tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                  "
+                  disabled
                   placeholder="0.0"
-                  @input="token1AmountChange"
-                /><span class="suffix">{{
-                  tokens[pool[1].pairInfo.token1[0].toString()].symbol
-                }}</span>
-              </a-input-group>
-              <a-input
-                v-else
-                class="input-icp-suffix text-right"
-                autocomplete="off"
-                type="text"
-                disabled
-                placeholder="0.0"
-              />
+                />
+              </div>
             </div>
-          </div>
-          <div class="add-liquidity-item-bottom swap-item-bottom">
-            <div
-              v-if="
-                pool[1] &&
-                tokens &&
-                tokens[pool[1].pairInfo.token1[0].toString()]
-              "
-            >
-              Balance:
-              <a-tooltip placement="bottom">
-                <template slot="title">
-                  <span>{{
+            <div class="add-liquidity-item-bottom swap-item-bottom">
+              <div
+                v-if="
+                  pool[1] &&
+                  tokens &&
+                  tokens[pool[1].pairInfo.token1[0].toString()]
+                "
+              >
+                Balance:
+                <a-tooltip placement="bottom">
+                  <template slot="title">
+                    <span>{{
+                      tokensBalance[pool[1].pairInfo.token1[0].toString()]
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                        | formatNum
+                    }}</span>
+                  </template>
+                  {{
                     tokensBalance[pool[1].pairInfo.token1[0].toString()]
                       | bigintToFloat(
-                        tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                        8,
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals
                       )
-                      | formatNum
-                  }}</span>
-                </template>
-                {{
-                  tokensBalance[pool[1].pairInfo.token1[0].toString()]
-                    | bigintToFloat(
-                      8,
-                      tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                    )
-                    | formatAmount(8)
-                }}
-              </a-tooltip>
-              {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
-            </div>
-            <div class="margin-left-auto">
-              <span
-                class="max-amount"
-                @click="
-                  setMaxAmount(pool[1].pairInfo.token1[0].toString(), 'token1')
-                "
-                >Max</span
-              >
-            </div>
-          </div>
-        </div>
-        <div v-show="pool[2] && pool[2].poolShares">
-          <div class="exchange-swap-icon add-liquidity-icon">
-            <a-icon class="swap-icon" type="arrow-down" />
-          </div>
-          <div class="pool-item exchange-swap-item exchange-swap-item-shares">
-            <div class="exchange-swap-item-top">
-              <div>You will get</div>
-              <div class="you-get-shares">
-                &nbsp;<span class="base-color-w">{{
-                  shares | bigintToFloat(4, 0) | formatNum
-                }}</span
-                >&nbsp;
+                      | formatAmount(8)
+                  }}
+                </a-tooltip>
+                {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
               </div>
-              <div>Shares</div>
+              <div class="margin-left-auto">
+                <span
+                  class="max-amount"
+                  @click="
+                    setMaxAmount(
+                      pool[1].pairInfo.token1[0].toString(),
+                      'token1'
+                    )
+                  "
+                  >Max</span
+                >
+              </div>
             </div>
           </div>
+          <div v-show="pool[2] && pool[2].poolShares">
+            <div class="exchange-swap-icon add-liquidity-icon">
+              <a-icon class="swap-icon" type="arrow-down" />
+            </div>
+            <div class="pool-item exchange-swap-item exchange-swap-item-shares">
+              <div class="exchange-swap-item-top">
+                <div>You will get</div>
+                <div class="you-get-shares">
+                  &nbsp;<span class="base-color-w">{{
+                    shares | bigintToFloat(4, 0) | formatNum
+                  }}</span
+                  >&nbsp;
+                </div>
+                <div>Shares</div>
+              </div>
+            </div>
+          </div>
+          <div class="swap-button w100">
+            <button
+              v-if="getPrincipalId"
+              class="primary large-primary w100"
+              :disabled="buttonDisabled"
+              @click="onAdd"
+            >
+              <span>{{ buttonName }}</span>
+            </button>
+            <button
+              v-else
+              class="primary large-primary w100"
+              @click="connectWallet"
+            >
+              Connect Wallet
+            </button>
+          </div>
         </div>
-        <div class="swap-button w100">
-          <button
-            v-if="getPrincipalId"
-            class="primary large-primary w100"
-            :disabled="buttonDisabled"
-            @click="onAdd"
-          >
-            <span>{{ buttonName }}</span>
-          </button>
-          <button
-            v-else
-            class="primary large-primary w100"
-            @click="connectWallet"
-          >
-            Connect Wallet
-          </button>
+        <div
+          class="base-font-title pool-item mt20"
+          style="line-height: 1.5; font-size: 16px"
+          v-show="
+            pool[4] &&
+            !pool[4].vipMaker &&
+            pool[1] &&
+            !pool[1].initialized &&
+            Number(poolICLBalance) < 10
+          "
+        >
+          <span v-if="stoConfig">
+            Grid order fee: (Create)
+            {{ stoConfig.poFee1 | bigintToFloat(8, 8) }} ICL, (Update)
+            {{ stoConfig.poFee1 | stoUpdateFee(8) }} ICL.
+          </span>
+          <div>
+            <span
+              class="link pointer"
+              @click.stop="
+                onBindMaker(pool[1].pairInfo.pairPrincipal.toString(), pool[0])
+              "
+              >Become vip-maker(free)</span
+            >
+            or
+            <span class="link pointer" @click="onTopUp"
+              >top up at least 100 ICL</span
+            >.
+          </div>
         </div>
       </div>
     </div>
+    <transfer-token
+      ref="transferToken"
+      :identity="getIdentity"
+      :current-token="currentToken"
+      @transferTokenSuccess="transferTokenSuccess"
+    ></transfer-token>
+    <nft-balance
+      ref="nftBalance"
+      :nft-balance="nftBalance"
+      :nfts="nfts"
+      :tokens="tokens"
+      :pairs-maker="pairsMaker"
+      type="BecomeVipMaker"
+      @depositSuccess="depositSuccess"
+      @bindSuccess="bindSuccess"
+      @NFTWithdrawSuccess="NFTWithdrawSuccess"
+    ></nft-balance>
+    <launch :tokens="tokens" ref="launch"></launch>
   </div>
 </template>
 
@@ -613,7 +932,12 @@ import { Component, Vue } from 'vue-property-decorator';
 import { Menu } from '@/components/menu/model';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { Icrc1Account, TokenInfo, TokenStd } from '@/ic/common/icType';
-import { PoolInfo, PoolStats, ShareWeighted } from '@/ic/makerPool/model';
+import {
+  MakerConfigure,
+  PoolInfo,
+  PoolStats,
+  ShareWeighted
+} from '@/ic/makerPool/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import { namespace } from 'vuex-class';
 import BigNumber from 'bignumber.js';
@@ -627,16 +951,41 @@ import { toHttpRejectError } from '@/ic/httpError';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { principalToAccountIdentifier, toHexString } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
-import { PairInfo } from '@/ic/ICDex/model';
+import { DexRole, PairInfo, StoSetting } from '@/ic/ICDex/model';
 import { getTokenLogo } from '@/ic/getTokenLogo';
 import { ApproveError } from '@/ic/DRC20Token/model';
+import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
+import TransferToken from '@/components/transferToken/Index.vue';
+import { AddTokenItem, AddTokenItemClass } from '@/views/home/account/model';
+import { Ed25519KeyIdentity } from '@dfinity/identity';
+import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
+import { NFT } from '@/ic/ICDexRouter/model';
+import NftBalance from '@/views/home/ICDex/components/NFTBalance.vue';
+import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
+import { TokensExt } from '@/ic/nft/model';
+import { NftService } from '@/ic/nft/Service';
+import { PairTrie } from '@/ic/ICSwapRouter/model';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
+import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
+import {
+  currentPageConnectInfinity,
+  needConnectInfinity
+} from '@/ic/ConnectInfinity';
+import Launch from '@/views/home/ICDex/components/Launch.vue';
+import { readState } from '@/ic/readState';
 
 const commonModule = namespace('common');
 
 @Component({
   name: 'Pool',
-  components: { AccountInfo },
+  components: { AccountInfo, TransferToken, NftBalance, Launch },
   filters: {
+    stoUpdateFee(poFee1: bigint, decimals: number): string {
+      return new BigNumber(poFee1.toString(10))
+        .times(0.2)
+        .div(10 ** decimals)
+        .toString(10);
+    },
     filterAPY(val: string): string {
       if (val || Number(val) === 0) {
         return (
@@ -649,6 +998,9 @@ const commonModule = namespace('common');
 })
 export default class extends Vue {
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
+  @commonModule.Getter('getIdentity') getIdentity?:
+    | Secp256k1KeyIdentity
+    | Ed25519KeyIdentity;
   private makerPoolService: makerPoolService;
   private ICDexService: ICDexService;
   private tokens: { [key: string]: TokenInfo } = {};
@@ -662,19 +1014,26 @@ export default class extends Vue {
       path: '/ICDex/market'
     },
     {
-      value: 'Pool',
+      value: 'Pools',
       path: '/ICDex/pools'
     },
     {
       value: 'Competitions',
       path: '/ICDex/competitions'
-    },
-    {
-      value: 'Mining',
-      path: '/icl/tradingMining'
     }
+    // ,
+    // {
+    //   value: 'Mining',
+    //   path: '/icl/tradingMining'
+    // }
   ];
-  private pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?] = [];
+  private pool: [
+    string?,
+    PoolInfo?,
+    PoolStats?,
+    [bigint, ShareWeighted]?,
+    DexRole?
+  ] = [];
   private token0Amount = '';
   private token1Amount = '';
   private pairVol = '';
@@ -688,15 +1047,42 @@ export default class extends Vue {
   private removeShares = '';
   private sharesValue0 = '0';
   private sharesValue1 = '0';
+  private sharesFee0 = '0';
+  private sharesFee1 = '0';
   private token0fee = '';
   private token1fee = '';
   private depositAccount: [Icrc1Account, string] = null;
   private ledgerService: LedgerService | undefined = null;
   private timer = null;
   private type: 'Add' | 'Remove' = 'Add';
+  private poolICLBalance = '';
+  private ICLBalance = '';
+  private stoConfig: StoSetting = null;
+  private currentToken: AddTokenItem = new AddTokenItemClass();
+  private isBusy = false;
+  private nfts: TokensExt = [];
+  private nftBalance: Array<NFT> = [];
+  private pairsMaker: Array<PairTrie> = [];
+  private isPublic = true;
+  private NftService: NftService = null;
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService = null;
+  private ICDexRouterService: ICDexRouterService = null;
+  private makerConfigure: MakerConfigure = {};
+
   get buttonDisabledRemove(): boolean {
     let flag = false;
-    if (this.pool[1] && this.pool[1].paused) {
+    if (this.pool[1] && this.pool[1].sysTransactionLock) {
+      flag = true;
+      this.buttonNameRemove = 'Waiting for transactions to complete.';
+    } else if (
+      this.pool[1] &&
+      this.pool[1].sysGlobalLock &&
+      this.pool[1].sysGlobalLock.length &&
+      this.pool[1].sysGlobalLock[0]
+    ) {
+      flag = true;
+      this.buttonNameRemove = 'Liquidity is being added or removed';
+    } else if (this.pool[1] && this.pool[1].paused) {
       flag = true;
       this.buttonNameRemove = 'Paused';
     } else if (this.pairInfo && this.pairInfo.paused) {
@@ -721,7 +1107,20 @@ export default class extends Vue {
           this.buttonNameRemove = 'Insufficient Shares';
           flag = true;
         } else {
-          this.buttonNameRemove = 'Remove';
+          // todo
+          let minShares = '100';
+          let maxCanShares = new BigNumber(this.pool[3][0].toString(10))
+            .div(10 ** this.pool[1].shareDecimals)
+            .toString(10);
+          if (new BigNumber(maxCanShares).lt(minShares)) {
+            minShares = maxCanShares;
+          }
+          if (new BigNumber(this.removeShares).lt(minShares)) {
+            this.buttonNameRemove = `The shares entered must not be less than ${minShares}.`;
+            flag = true;
+          } else {
+            this.buttonNameRemove = 'Remove';
+          }
         }
       } else {
         flag = true;
@@ -733,7 +1132,18 @@ export default class extends Vue {
   }
   get buttonDisabled(): boolean {
     let flag = false;
-    if (this.pool[1] && this.pool[1].paused) {
+    if (this.pool[1] && this.pool[1].sysTransactionLock) {
+      flag = true;
+      this.buttonName = 'Waiting for transactions to complete.';
+    } else if (
+      this.pool[1] &&
+      this.pool[1].sysGlobalLock &&
+      this.pool[1].sysGlobalLock.length &&
+      this.pool[1].sysGlobalLock[0]
+    ) {
+      flag = true;
+      this.buttonName = 'Liquidity is being added or removed';
+    } else if (this.pool[1] && this.pool[1].paused) {
       flag = true;
       this.buttonName = 'Paused';
     } else if (this.pairInfo && this.pairInfo.paused) {
@@ -773,8 +1183,12 @@ export default class extends Vue {
           this.buttonName = 'Please enter amount';
           flag = true;
         } else {
-          let minToken0 = new BigNumber(this.token0fee).times(100).toString(10);
-          let minToken1 = new BigNumber(this.token1fee).times(100).toString(10);
+          let minToken0 = new BigNumber(this.token0fee)
+            .times(1000)
+            .toString(10);
+          let minToken1 = new BigNumber(this.token1fee)
+            .times(1000)
+            .toString(10);
           if (!this.pool[1].initialized) {
             minToken0 = new BigNumber(this.token0fee)
               .times(100000)
@@ -832,6 +1246,11 @@ export default class extends Vue {
     }
     return flag;
   }
+  deactivated(): void {
+    window.clearInterval(this.timer);
+    this.timer = null;
+    console.log(this.timer);
+  }
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
@@ -841,24 +1260,204 @@ export default class extends Vue {
     this.makerPoolService = new makerPoolService();
     this.ledgerService = new LedgerService();
     this.ICDexService = new ICDexService();
+    this.ICDexRouterService = new ICDexRouterService();
+    this.NftService = new NftService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    const poolId = this.$route.params.poolId;
+    console.log(this.$route.query);
     if (this.$route.params.type) {
       this.type = this.$route.params.type as 'Add' | 'Remove';
     } else {
       this.type = 'Add';
     }
-    if (poolId) {
-      this.$set(this.pool, 0, poolId);
-      this.getPool(poolId);
+    if (this.$route.query) {
+      if (Object.keys(this.$route.query).includes('private')) {
+        this.isPublic = false;
+      }
     }
+    this.getPairs();
     if (this.getPrincipalId) {
       const currentInfo =
         JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
       this.tokensBalance = currentInfo.tokensBalance || {};
       this.getDepositAccount();
       this.getUnitNetValues();
+      this.getTokensExt();
+      this.NFTBalance();
     }
+  }
+  private onBindMaker(pair?: string, pool?: string): void {
+    (this.$refs.nftBalance as any).bindMMPoolInit(pair, pool);
+  }
+  private async bindSuccess(pair: string, pool: string): Promise<void> {
+    const res = await this.ICDexService.getRole(pair, pool);
+    if (res && res.dexRole) {
+      this.$set(this.pool, 4, res.dexRole);
+    }
+  }
+  private depositSuccess(): void {
+    this.getTokensExt();
+    this.NFTBalance();
+  }
+  private NFTWithdrawSuccess(): void {
+    this.getTokensExt();
+    this.NFTBalance();
+  }
+  private async getPairs(): Promise<void> {
+    const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
+    console.log(res);
+    if (res && res.data && res.data.length) {
+      this.pairsMaker = res.data.sort((a, b) => {
+        return a[1].pair.token0[1].localeCompare(b[1].pair.token0[1]);
+      });
+      this.connectPlug();
+    } else {
+      this.pairsMaker = [];
+    }
+  }
+  private async connectPlug(): Promise<void> {
+    const poolId = this.$route.params.poolId;
+    const ids = [poolId];
+    this.pairsMaker.forEach((pair) => {
+      ids.push(pair[1].pair.canisterId.toString());
+      ids.push(pair[1].pair.token0[0].toString());
+      ids.push(pair[1].pair.token1[0].toString());
+    });
+    console.log(ids);
+    const flag = needConnectPlug(ids);
+    const connectInfinity = await needConnectInfinity(ids);
+    const principal = localStorage.getItem('principal');
+    const priList = JSON.parse(localStorage.getItem('priList')) || {};
+    if (priList[principal] === 'Plug' && flag) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const _that = this;
+      this.$info({
+        content: 'Pool need to be connected to the plug.',
+        class: 'connect-plug',
+        icon: 'connect-plug',
+        okText: 'Confirm',
+        onOk() {
+          currentPageConnectPlug(ids).then(async () => {
+            if (poolId) {
+              _that.$set(_that.pool, 0, poolId);
+              _that.getPool(poolId);
+            }
+          });
+        }
+      });
+    } else if (priList[principal] === 'Infinity' && connectInfinity) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const _that = this;
+      this.$info({
+        content: 'Pool need to be connected to the Infinity.',
+        class: 'connect-plug',
+        icon: 'connect-plug',
+        okText: 'Confirm',
+        onOk() {
+          currentPageConnectInfinity(ids).then(async () => {
+            if (poolId) {
+              _that.$set(_that.pool, 0, poolId);
+              _that.getPool(poolId);
+            }
+          });
+        }
+      });
+    } else {
+      if (poolId) {
+        this.$set(this.pool, 0, poolId);
+        this.getPool(poolId);
+      }
+    }
+  }
+  private async NFTBalance(): Promise<void> {
+    this.nftBalance = await this.ICDexRouterService.NFTBalance(
+      this.getPrincipalId
+    );
+  }
+  private async getTokensExt(): Promise<void> {
+    try {
+      const res = await this.NftService.tokens_ext();
+      console.log(res);
+      const tokensExt = (
+        res as {
+          ok: TokensExt;
+        }
+      ).ok;
+      console.log(tokensExt);
+      if (tokensExt && tokensExt.length) {
+        this.nfts = tokensExt;
+      } else {
+        this.nfts = [];
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  private async getRole(pair: string, pool: string): Promise<void> {
+    if (this.getPrincipalId) {
+      const res = await this.ICDexService.getRole(pair, pool);
+      if (res && res.dexRole) {
+        this.$set(this.pool, 4, res.dexRole);
+      }
+    }
+  }
+  private transferTokenSuccess(): void {
+    const poolId = this.$route.params.poolId;
+    this.getPoolICLBalance(poolId);
+  }
+  private onTopUp(): void {
+    this.currentToken = {
+      canisterId: Principal.fromText(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
+      balance: this.ICLBalance,
+      decimals: 8,
+      name: '',
+      symbol: 'ICL',
+      logo: '',
+      standard: 'ICRC-1',
+      lockedTxns: {
+        txns: [],
+        lockedBalance: '0'
+      },
+      approvals: 0,
+      transactions: '0',
+      coinSeconds: null
+    };
+    (this.$refs.transferToken as any).transferForm.to =
+      this.$route.params.poolId;
+    (this.$refs.transferToken as any).init(this.currentToken);
+  }
+  private isCreator(account: Array<number>): boolean {
+    return (
+      principalToAccountIdentifier(Principal.fromText(this.getPrincipalId)) ===
+      toHexString(new Uint8Array(account))
+    );
+  }
+  private async getStoConfig(pair: string): Promise<void> {
+    const res = await this.ICDexService.sto_getConfig(pair);
+    this.stoConfig = res.stoSetting;
+  }
+  private arrayToString(val: Array<number>): string {
+    return toHexString(new Uint8Array(val));
+  }
+  private async getPoolICLBalance(poolId: string): Promise<void> {
+    if (!this.getPrincipalId) {
+      return;
+    }
+    const currentDrc20Token = new DRC20TokenService();
+    const res = await currentDrc20Token.icrc1_balance_of(
+      IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+      { owner: Principal.fromText(poolId), subaccount: [] }
+    );
+    const res1 = await currentDrc20Token.icrc1_balance_of(
+      IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+      { owner: Principal.fromText(this.getPrincipalId), subaccount: [] }
+    );
+    this.poolICLBalance = new BigNumber(res.toString(10))
+      .div(10 ** 8)
+      .toString(10);
+    this.ICLBalance = new BigNumber(res1.toString(10))
+      .div(10 ** 8)
+      .toString(10);
   }
   private async getUnitNetValues(): Promise<void> {
     const poolId = this.$route.params.poolId;
@@ -888,137 +1487,6 @@ export default class extends Vue {
       }
     } catch (e) {
       console.log(e);
-      if (toHttpRejectError(e).includes('414')) {
-        this.$message.error('Please lower the shares.');
-      } else if (toHttpRejectError(e).includes('401')) {
-        this.$message.error(
-          'The system is processing, please try again later.'
-        );
-      } else {
-        this.$message.error('Error');
-      }
-      this.getPoolInfo(poolId);
-    }
-    loading.close();
-  }
-  private async onAdd(): Promise<void> {
-    const loading = this.$loading({
-      lock: true,
-      background: 'rgba(0, 0, 0, 0.5)'
-    });
-    const poolId = this.$route.params.poolId;
-    const token0Id = this.pool[1].pairInfo.token0[0].toString();
-    const token0Std = this.pool[1].pairInfo.token0[2];
-    const token0StdString = Object.keys(token0Std)[0];
-    const token1Id = this.pool[1].pairInfo.token1[0].toString();
-    const token1Std = this.pool[1].pairInfo.token1[2];
-    const token1StdString = Object.keys(token1Std)[0];
-    const token0Amount = new BigNumber(this.token0Amount)
-      .times(10 ** this.tokens[token0Id].decimals)
-      .toString(10);
-    const token1Amount = new BigNumber(this.token1Amount)
-      .times(10 ** this.tokens[token1Id].decimals)
-      .toString(10);
-    const needTransferToken0 = new BigNumber(this.token0Amount)
-      .plus(this.token0fee)
-      .plus(this.token0fee)
-      .times(10 ** this.tokens[token0Id].decimals)
-      .toString(10);
-    const needTransferToken1 = new BigNumber(this.token1Amount)
-      .plus(this.token1fee)
-      .plus(this.token1fee)
-      .times(10 ** this.tokens[token1Id].decimals)
-      .toString(10);
-    if (
-      token0StdString.toLocaleLowerCase() === 'drc20' ||
-      token0StdString.toLocaleLowerCase() === 'icrc2'
-    ) {
-      const approveToken0 = await this.approve(
-        token0Id,
-        token0StdString,
-        BigInt(needTransferToken0)
-      );
-      if (!approveToken0) {
-        loading.close();
-        return;
-      }
-    } else if (token0StdString.toLocaleLowerCase() === 'icrc1') {
-      const transferIcrc1Token0 = await this.transferIcrc1(
-        token0Id,
-        BigInt(needTransferToken0),
-        this.depositAccount[0]
-      );
-      if (!transferIcrc1Token0) {
-        loading.close();
-        return;
-      }
-    } else if (token0StdString.toLocaleLowerCase() === 'icp') {
-      const block = await this.ledgerService.sendIcp(
-        new BigNumber(needTransferToken0)
-          .div(10 ** this.tokens[token0Id].decimals)
-          .toString(10),
-        this.depositAccount[1]
-      );
-      if (!block) {
-        this.$message.error('Error');
-        loading.close();
-        return;
-      }
-    }
-    if (
-      token1StdString.toLocaleLowerCase() === 'drc20' ||
-      token1StdString.toLocaleLowerCase() === 'icrc2'
-    ) {
-      const approveToken1 = await this.approve(
-        token1Id,
-        token1StdString,
-        BigInt(needTransferToken1)
-      );
-      if (!approveToken1) {
-        loading.close();
-        return;
-      }
-    } else if (token1StdString.toLocaleLowerCase() === 'icrc1') {
-      const transferIcrc1Token1 = await this.transferIcrc1(
-        token1Id,
-        BigInt(needTransferToken1),
-        this.depositAccount[0]
-      );
-      if (!transferIcrc1Token1) {
-        loading.close();
-        return;
-      }
-    } else if (token1StdString.toLocaleLowerCase() === 'icp') {
-      const block = await this.ledgerService.sendIcp(
-        new BigNumber(needTransferToken1)
-          .div(10 ** this.tokens[token1Id].decimals)
-          .toString(10),
-        this.depositAccount[1]
-      );
-      if (!block) {
-        this.$message.error('Error');
-        loading.close();
-        return;
-      }
-    }
-    try {
-      const res = await this.makerPoolService.add(
-        poolId,
-        BigInt(token0Amount),
-        BigInt(token1Amount)
-      );
-      if (res) {
-        this.$message.success('Success');
-        this.initAdd();
-        this.getPoolInfo(poolId);
-        this.poolStats(poolId);
-        this.getAccountShares(poolId);
-      } else {
-        this.getPoolInfo(poolId);
-        this.$message.error('Error');
-      }
-    } catch (e) {
-      console.log(e);
       if (toHttpRejectError(e).includes('401')) {
         this.$message.error(
           'The system is processing, please try again later.'
@@ -1027,11 +1495,208 @@ export default class extends Vue {
         this.$message.error(toHttpRejectError(e));
       } else if (toHttpRejectError(e).includes('411')) {
         this.$message.error(toHttpRejectError(e));
+      } else if (toHttpRejectError(e).includes('413')) {
+        this.$message.error(
+          'Liquidity cannot be added or removed until the pair has completed its transactions. Please try again later.'
+        );
       } else {
-        this.$message.error('Error');
+        this.$message.error(toHttpRejectError(e));
       }
+      this.getPoolInfo(poolId);
     }
+    this.getPoolICLBalance(poolId);
     loading.close();
+  }
+  private async onAdd(): Promise<void> {
+    if (!this.nfts.length) {
+      this.$info({
+        content:
+          'This feature is currently in the experimental stage and is for ICLighthouse Planet Cards NFT holders to experience and use only.',
+        class: 'connect-plug',
+        icon: 'connect-plug',
+        centered: true,
+        okText: 'Close'
+      });
+      return;
+    }
+    const poolId = this.$route.params.poolId;
+    const token0Id = this.pool[1].pairInfo.token0[0].toString();
+    const token0Std = this.pool[1].pairInfo.token0[2];
+    const token0StdString = Object.keys(token0Std)[0];
+    const token1Id = this.pool[1].pairInfo.token1[0].toString();
+    const token1Std = this.pool[1].pairInfo.token1[2];
+    const token1StdString = Object.keys(token1Std)[0];
+    let loading: any = this.$loading({
+      lock: true,
+      customClass: 'create-wallet-loading',
+      background: 'rgba(0, 0, 0, 0.6)',
+      text: `step1: Depositing ${this.tokens[token0Id].symbol} and ${this.tokens[token1Id].symbol}`
+    });
+    const token0Amount = new BigNumber(this.token0Amount)
+      .times(10 ** this.tokens[token0Id].decimals)
+      .toString(10);
+    const token1Amount = new BigNumber(this.token1Amount)
+      .times(10 ** this.tokens[token1Id].decimals)
+      .toString(10);
+    let needTransferToken0 = new BigNumber(this.token0Amount)
+      .plus(this.token0fee)
+      .times(10 ** this.tokens[token0Id].decimals)
+      .toString(10);
+    if (
+      token0StdString.toLocaleLowerCase() === 'drc20' ||
+      token0StdString.toLocaleLowerCase() === 'icrc2'
+    ) {
+      needTransferToken0 = new BigNumber(this.token0Amount)
+        .plus(this.token0fee)
+        .plus(this.token0fee)
+        .times(10 ** this.tokens[token0Id].decimals)
+        .toString(10);
+    }
+    let needTransferToken1 = new BigNumber(this.token1Amount)
+      .plus(this.token1fee)
+      .times(10 ** this.tokens[token1Id].decimals)
+      .toString(10);
+    if (
+      token1StdString.toLocaleLowerCase() === 'drc20' ||
+      token1StdString.toLocaleLowerCase() === 'icrc2'
+    ) {
+      needTransferToken1 = new BigNumber(this.token1Amount)
+        .plus(this.token1fee)
+        .plus(this.token1fee)
+        .times(10 ** this.tokens[token1Id].decimals)
+        .toString(10);
+    }
+    console.time();
+    let promiseValue = [];
+    if (
+      token0StdString.toLocaleLowerCase() === 'drc20' ||
+      token0StdString.toLocaleLowerCase() === 'icrc2'
+    ) {
+      promiseValue.push(
+        this.approve(token0Id, token0StdString, BigInt(needTransferToken0))
+      );
+    } else if (token0StdString.toLocaleLowerCase() === 'icrc1') {
+      promiseValue.push(
+        this.transferIcrc1(
+          token0Id,
+          BigInt(needTransferToken0),
+          this.depositAccount[0]
+        )
+      );
+    } else if (token0StdString.toLocaleLowerCase() === 'icp') {
+      promiseValue.push(
+        this.ledgerService.sendIcp(
+          new BigNumber(needTransferToken0)
+            .div(10 ** this.tokens[token0Id].decimals)
+            .toString(10),
+          this.depositAccount[1]
+        )
+      );
+    }
+    if (
+      token1StdString.toLocaleLowerCase() === 'drc20' ||
+      token1StdString.toLocaleLowerCase() === 'icrc2'
+    ) {
+      promiseValue.push(
+        this.approve(token1Id, token1StdString, BigInt(needTransferToken1))
+      );
+    } else if (token1StdString.toLocaleLowerCase() === 'icrc1') {
+      promiseValue.push(
+        this.transferIcrc1(
+          token1Id,
+          BigInt(needTransferToken1),
+          this.depositAccount[0]
+        )
+      );
+    } else if (token1StdString.toLocaleLowerCase() === 'icp') {
+      promiseValue.push(
+        this.ledgerService.sendIcp(
+          new BigNumber(needTransferToken1)
+            .div(10 ** this.tokens[token1Id].decimals)
+            .toString(10),
+          this.depositAccount[1]
+        )
+      );
+    }
+    const res = await Promise.all(promiseValue);
+    if (res && (!res[0] || !res[1])) {
+      this.$message.error('Error');
+      loading.close();
+      return;
+    }
+    loading.setText(
+      'step2: Adding liquidity.\n(It could take a minute. You can leave this page and the result will be updated soon.)'
+    );
+    console.timeEnd();
+    console.time();
+    let flag = false;
+    this.makerPoolService
+      .add(poolId, BigInt(token0Amount), BigInt(token1Amount))
+      .then((res) => {
+        console.timeEnd();
+        if (res) {
+          if (!flag) {
+            this.$message.success('Success');
+          }
+          this.initAdd();
+          this.getPoolInfo(poolId);
+          this.poolStats(poolId);
+          this.getAccountShares(poolId);
+        } else {
+          this.getPoolInfo(poolId);
+          if (!flag) {
+            this.$message.error('Error');
+          }
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+        this.getTokenBalance(token0Id, this.tokens[token0Id].tokenStd);
+        this.getTokenBalance(token1Id, this.tokens[token1Id].tokenStd);
+        if (!flag) {
+          if (toHttpRejectError(e).includes('401')) {
+            this.$message.error(
+              'The system is processing, please try again later.'
+            );
+          } else if (toHttpRejectError(e).includes('410')) {
+            this.$message.error(toHttpRejectError(e));
+          } else if (toHttpRejectError(e).includes('411')) {
+            this.$message.error(toHttpRejectError(e));
+          } else if (toHttpRejectError(e).includes('413')) {
+            this.$message.error(
+              'Liquidity cannot be added or removed until the pair has completed its transactions. Please try again later.'
+            );
+          } else {
+            this.$message.error(toHttpRejectError(e));
+          }
+        }
+      })
+      .finally(() => {
+        flag = true;
+        this.getPoolICLBalance(poolId);
+        loading.close();
+      });
+    window.setTimeout(() => {
+      if (!flag) {
+        flag = true;
+        loading.close();
+        this.initAdd();
+        this.getPoolInfo(poolId);
+        this.poolStats(poolId);
+        this.getAccountShares(poolId);
+        this.$info({
+          content:
+            'The transaction is being processed and the result will be updated later.',
+          class: 'connect-plug',
+          icon: 'connect-plug',
+          okText: 'Confirm',
+          centered: true,
+          onOk() {
+            //
+          }
+        });
+      }
+    }, 6 * 1000);
   }
   private initAdd(): void {
     this.token0Amount = '';
@@ -1042,6 +1707,8 @@ export default class extends Vue {
     this.removeShares = '';
     this.sharesValue0 = '0';
     this.sharesValue1 = '0';
+    this.sharesFee0 = '0';
+    this.sharesFee1 = '0';
   }
   private async transferIcrc1(
     tokenId: string,
@@ -1127,6 +1794,7 @@ export default class extends Vue {
     this.getPoolInfo(poolId);
     this.poolStats(poolId);
     this.getAccountShares(poolId);
+    this.getMakerConfig(poolId);
     console.log(this.pool);
     window.clearInterval(this.timer);
     this.timer = null;
@@ -1134,7 +1802,31 @@ export default class extends Vue {
       this.getPoolInfo(poolId);
       this.poolStats(poolId);
       this.getAccountShares(poolId);
+      this.getPoolICLBalance(poolId);
     }, 10 * 1000);
+  }
+  private async getMakerConfig(poolId: string): Promise<void> {
+    this.getPoolControllers(poolId);
+    this.ictc_getAdmins(poolId);
+  }
+  private async ictc_getAdmins(pairId: string): Promise<void> {
+    const res = await this.makerPoolService.ictc_getAdmins(pairId);
+    if (res) {
+      this.$set(this.makerConfigure, 'ICTCAdmins', res);
+    }
+  }
+  private async getPoolControllers(poolId: string): Promise<void> {
+    try {
+      const state = await readState(poolId);
+      if (state && state.controllers && state.controllers.length) {
+        this.$set(this.makerConfigure, 'controllers', state.controllers);
+      }
+      if (state && state.moduleHash) {
+        this.$set(this.makerConfigure, 'moduleHash', state.moduleHash);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
   private async getPairPrice(pair: string): Promise<void> {
     if (this.getPrincipalId) {
@@ -1185,12 +1877,18 @@ export default class extends Vue {
   }
   private async getPoolInfo(poolId: string): Promise<void> {
     const res = await this.makerPoolService.info(poolId);
+    if (!this.stoConfig) {
+      this.getStoConfig(res.pairInfo.pairPrincipal.toString());
+    }
     this.getPairVol(res.pairInfo.pairPrincipal.toString());
     this.getPairInfo(res.pairInfo.pairPrincipal.toString());
+    this.getRole(res.pairInfo.pairPrincipal.toString(), poolId);
     if (!res.initialized) {
       this.getPairPrice(res.pairInfo.pairPrincipal.toString());
     }
     this.getAccountVolUsed();
+    // todo
+    // res.initialized = false;
     this.$set(this.pool, 1, res);
     if (res) {
       const token0 = res.pairInfo.token0[0];
@@ -1243,10 +1941,24 @@ export default class extends Vue {
   }
   private async poolStats(poolId: string): Promise<void> {
     const res = await this.makerPoolService.stats2(poolId);
-    this.$set(this.pool, 2, res);
+    if (res) {
+      this.isBusy = false;
+      this.$set(this.pool, 2, res);
+    } else {
+      this.isBusy = true;
+    }
+  }
+  private getVolAvailable(
+    pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?, DexRole?],
+    used: string
+  ): string {
+    return new BigNumber(this.pairVol)
+      .times(pool[1].volFactor.toString(10))
+      .minus(used)
+      .toString(10);
   }
   private getAvailable(
-    pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?]
+    pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?, DexRole?]
   ): string {
     const token1 = this.tokens[pool[1].pairInfo.token1[0].toString()];
     // const utilized = this.getUtilized(pool);
@@ -1260,7 +1972,7 @@ export default class extends Vue {
     );
   }
   private showCapThreshold(
-    pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?]
+    pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?, DexRole?]
   ): boolean {
     if (pool && pool[1] && pool[2]) {
       return new BigNumber(pool[2].poolBalance.balance1.toString(10)).lt(
@@ -1270,11 +1982,13 @@ export default class extends Vue {
     return true;
   }
   private async getAccountShares(poolId: string): Promise<void> {
-    const res = await this.makerPoolService.getAccountShares(
-      poolId,
-      this.getPrincipalId
-    );
-    this.$set(this.pool, 3, res);
+    if (this.getPrincipalId) {
+      const res = await this.makerPoolService.getAccountShares(
+        poolId,
+        this.getPrincipalId
+      );
+      this.$set(this.pool, 3, res);
+    }
   }
   private token0AmountChange(): void {
     if (this.token0Amount) {
@@ -1360,8 +2074,8 @@ export default class extends Vue {
       const rate1 = new BigNumber(this.pool[2].poolShares.toString(10)).div(
         this.pool[2].poolBalance.balance1.toString(10)
       );
-      // Fee: 10 * tokenFee + 0.01% * Value
-      this.sharesValue0 = new BigNumber(
+      // Fee: 10 * tokenFee + withdrawalFee * Value
+      let sharesFee0 = new BigNumber(
         this.pool[2].poolBalance.balance0.toString(10)
       )
         .minus(
@@ -1371,15 +2085,35 @@ export default class extends Vue {
             .times(10 ** this.pool[1].shareDecimals)
             .div(rate0)
         )
-        .minus(new BigNumber(token0fee).times(10))
-        .times(1 - 0.01 / 100)
+        .times(this.pool[1].withdrawalFee)
+        .plus(new BigNumber(token0fee).times(10));
+      let sharesValue0 = new BigNumber(
+        this.pool[2].poolBalance.balance0.toString(10)
+      )
+        .minus(
+          new BigNumber(this.pool[2].poolShares.toString(10))
+            .div(10 ** this.pool[1].shareDecimals)
+            .minus(this.removeShares)
+            .times(10 ** this.pool[1].shareDecimals)
+            .div(rate0)
+        )
+        .minus(sharesFee0)
+        .div(10 ** decimals0);
+      let decimalPlaces = Math.min(decimals0, 8);
+      if (sharesValue0.gt(10 ** 7)) {
+        decimalPlaces = 0;
+      }
+      this.sharesValue0 = sharesValue0
+        .decimalPlaces(decimalPlaces)
+        .toString(10);
+      this.sharesFee0 = sharesFee0
         .div(10 ** decimals0)
-        .decimalPlaces(decimals0)
+        .decimalPlaces(decimalPlaces)
         .toString(10);
       if (new BigNumber(this.sharesValue0).lt(0)) {
         this.sharesValue0 = '0';
       }
-      this.sharesValue1 = new BigNumber(
+      let sharesFee1 = new BigNumber(
         this.pool[2].poolBalance.balance1.toString(10)
       )
         .minus(
@@ -1389,10 +2123,30 @@ export default class extends Vue {
             .times(10 ** this.pool[1].shareDecimals)
             .div(rate1)
         )
-        .minus(new BigNumber(token1fee).times(10))
-        .times(1 - 0.01 / 100)
+        .times(this.pool[1].withdrawalFee)
+        .plus(new BigNumber(token1fee).times(10));
+      let sharesValue1 = new BigNumber(
+        this.pool[2].poolBalance.balance1.toString(10)
+      )
+        .minus(
+          new BigNumber(this.pool[2].poolShares.toString(10))
+            .div(10 ** this.pool[1].shareDecimals)
+            .minus(this.removeShares)
+            .times(10 ** this.pool[1].shareDecimals)
+            .div(rate1)
+        )
+        .minus(sharesFee1)
+        .div(10 ** decimals1);
+      let decimalPlaces1 = Math.min(decimals1, 8);
+      if (sharesValue1.gt(10 ** 7)) {
+        decimalPlaces1 = 0;
+      }
+      this.sharesValue1 = sharesValue1
+        .decimalPlaces(decimalPlaces1)
+        .toString(10);
+      this.sharesFee1 = sharesFee1
         .div(10 ** decimals1)
-        .decimalPlaces(decimals1)
+        .decimalPlaces(decimalPlaces1)
         .toString(10);
       if (new BigNumber(this.sharesValue1).lt(0)) {
         this.sharesValue1 = '0';
@@ -1502,7 +2256,14 @@ export default class extends Vue {
   }
   private back(): void {
     const poolId = this.$route.params.poolId;
-    this.$router.replace(`/ICDex/pools?id=${poolId}`);
+    if (this.isPublic) {
+      this.$router.replace(`/ICDex/pools?id=${poolId}`);
+    } else {
+      this.$router.replace(`/ICDex/pools?id=${poolId}&private`);
+    }
+  }
+  private showLaunch(): void {
+    (this.$refs.launch as any).init();
   }
 }
 </script>
@@ -1573,6 +2334,7 @@ export default class extends Vue {
     justify-content: flex-end;
     width: 310px;
     margin-left: auto;
+    text-align: right;
   }
 }
 .max-amount {
@@ -1604,6 +2366,18 @@ export default class extends Vue {
   color: #bababa;
   font-size: 18px;
 }
+.loading-spinner {
+  display: inline-block;
+  background-image: url('../../../assets/img/loading.svg');
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  height: 14px;
+  width: 14px;
+  background-position: center;
+  animation: loading-rotate 2s linear infinite;
+  margin-left: 5px;
+  color: #fff;
+}
 .pc-show {
   display: flex;
 }
@@ -1619,8 +2393,14 @@ export default class extends Vue {
   }
   .pool-item {
     padding: 15px 10px;
+    font-size: 12px;
     .swap-item-top-right-remove {
       width: auto;
+    }
+  }
+  .ic-swap-item-top-left {
+    .img-content {
+      width: 25px;
     }
   }
   .pool-info {

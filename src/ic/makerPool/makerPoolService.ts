@@ -2,12 +2,14 @@ import Service, {
   PoolInfo,
   PoolStats,
   ShareWeighted,
+  TrieListEvents,
   UnitNetValue
 } from '@/ic/makerPool/model';
 import makerPoolIDL from './makerPool.did';
 import { createService } from '@/ic/createService';
 import { Icrc1Account } from '@/ic/common/icType';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
+import { Principal } from '@dfinity/principal';
 
 export class makerPoolService {
   public stats2 = async (canisterId: string): Promise<PoolStats> => {
@@ -127,6 +129,39 @@ export class makerPoolService {
     );
     try {
       return await service.getAccountVolUsed(address);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public get_events = async (
+    canisterId: string,
+    page: Array<bigint>,
+    size: Array<bigint>
+  ): Promise<TrieListEvents> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      false,
+      false
+    );
+    try {
+      const res = await service.get_events(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getAdmins = async (canisterId: string): Promise<Array<Principal>> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      false,
+      false
+    );
+    try {
+      return  await service.ictc_getAdmins();
     } catch (e) {
       console.log(e);
       return null;

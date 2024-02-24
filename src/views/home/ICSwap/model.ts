@@ -5,7 +5,7 @@ import {
   TokenInfo,
   Decimals
 } from '@/ic/common/icType';
-import { DexName, SwapCanister, SwapPair } from '@/ic/ICSwapRouter/model';
+import { DexName, SwapCanister, SwapPair, SwapPairInfo } from '@/ic/ICSwapRouter/model';
 import { Liquidity } from '@/ic/cyclesFinance/model';
 import { TokenLiquidity } from '@/ic/ICSwap/model';
 
@@ -55,7 +55,7 @@ export type DexNameType = keyof typeof DexNameEnum;
 
 export type Pool = [
   SwapCanister,
-  [SwapPair, bigint],
+  [SwapPairInfo, bigint],
   totalLiquidity,
   UserLiquidity,
   Decimals

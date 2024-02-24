@@ -1,10 +1,15 @@
-import Service, { MakerCreateArg, NFT, TrieList } from '@/ic/ICDexRouter/model';
+import Service, {
+  MakerCreateArg,
+  NFT,
+  SysConfig,
+  TrieList
+} from '@/ic/ICDexRouter/model';
 import { IC_DEX_ROUTER_CANISTER_ID } from '@/ic/utils';
 import ICDexRouterIDL from './ICDexRouter.did';
 import { Principal } from '@dfinity/principal';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { TokenIdentifier } from '@/ic/nft/model';
-import { AccountId } from '@/ic/common/icType';
+import { AccountId, Time } from '@/ic/common/icType';
 import { createService } from '@/ic/createService';
 
 export class ICDexRouterService {
@@ -147,5 +152,52 @@ export class ICDexRouterService {
       console.log(e);
       return null;
     }
+  };
+  public maker_getPrivateMakers = async (
+    AccountId: Array<number>,
+    page: Array<bigint>,
+    size: Array<bigint>
+  ): Promise<TrieList> => {
+    await this.check(false, false);
+    try {
+      const res = await this.service.maker_getPrivateMakers(
+        AccountId,
+        page,
+        size
+      );
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public sys_getConfig = async (): Promise<SysConfig> => {
+    await this.check(false, false);
+    try {
+      return await this.service.sys_getConfig();
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public pubCreate = async (
+    token0: Principal,
+    token1: Principal,
+    time: Time
+  ): Promise<Principal> => {
+    await this.check();
+    return await this.service.pubCreate(token0, token1, time);
+  };
+  public version = async (): Promise<string> => {
+    await this.check(false, false);
+    return await this.service.version();
+  };
+  public getICDexPairWasmVersion = async (): Promise<[string, bigint]> => {
+    await this.check(false, false);
+    return await this.service.getICDexPairWasmVersion();
+  };
+  public getICDexMakerWasmVersion = async (): Promise<[string, bigint]> => {
+    await this.check(false, false);
+    return await this.service.getICDexMakerWasmVersion();
   };
 }

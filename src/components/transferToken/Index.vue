@@ -91,7 +91,6 @@ import {
 } from '@/utils/validate';
 import BigNumber from 'bignumber.js';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import {
   AddTokenItem,
   AddTokenItemClass,
@@ -127,13 +126,14 @@ export default class extends Vue {
   public type!: string;
   public currentToken: AddTokenItem = new AddTokenItemClass();
   public subaccountId = 0;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
   private DRC20TokenService: DRC20TokenService;
   public visibleTransfer = false;
   private isIcx = false;
   private fee = '0';
+  private tokenFee = '0';
   private gas: Gas;
   private placeholder = 'Principal Or Account';
+  private isH5 = true;
   private transferForm = {
     to: '',
     amount: '',
@@ -170,6 +170,8 @@ export default class extends Vue {
   }
   mounted(): void {
     this.isIcx = !!(window as any).icx;
+    const width = document.documentElement.clientWidth;
+    this.isH5 = width <= 768;
   }
   public copyMEWallet(): void {
     if ((window as any).icx) {
@@ -191,11 +193,16 @@ export default class extends Vue {
       token.canisterId.toString() !== this.currentToken.canisterId.toString()
     ) {
       this.fee = '0';
+      this.tokenFee = '0';
     }
     this.currentToken = token;
+    if (this.isH5 && this.currentToken.decimals > 8) {
+      this.currentToken.balance = new BigNumber(this.currentToken.balance)
+        .decimalPlaces(8, 1)
+        .toString(10);
+    }
     this.subaccountId = subaccount;
     this.visibleTransfer = true;
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.DRC20TokenService = new DRC20TokenService();
     // ogy
     if (
@@ -245,10 +252,10 @@ export default class extends Vue {
     const principal = localStorage.getItem('principal');
     let res: bigint;
     if (this.currentToken.standard === TokenStandard.DRC20) {
-      res = await this.ICLighthouseTokenService.getBalance(
+      res = await this.DRC20TokenService.drc20_balanceOf(
         principal,
         this.currentToken.canisterId.toString(),
-        this.subaccountId
+        new Uint8Array(fromSubAccountId(this.subaccountId))
       );
     } else if (this.currentToken.standard === TokenStandard.DIP20) {
       res = await this.DRC20TokenService.balanceOf(
@@ -268,21 +275,27 @@ export default class extends Vue {
         to
       );
     }
+    let decimalPlaces = Number(this.currentToken.decimals);
+    if (this.isH5 && this.currentToken.decimals > 8) {
+      decimalPlaces = 8;
+    }
+    console.log(res);
     this.currentToken.balance = new BigNumber(res.toString(10))
       .div(10 ** Number(this.currentToken.decimals))
+      .decimalPlaces(decimalPlaces, 1)
       .toString(10);
   }
   private async getGas(): Promise<void> {
     let fee;
     if (this.currentToken.standard === TokenStandard.DRC20) {
       try {
-        this.gas = await this.ICLighthouseTokenService.gas(
+        this.gas = await this.DRC20TokenService.gas(
           this.currentToken.canisterId.toString()
         );
         console.log(this.gas);
         fee = (this.gas as { token: bigint }).token;
       } catch (e) {
-        fee = await this.ICLighthouseTokenService.fee(
+        fee = await this.DRC20TokenService.fee(
           this.currentToken.canisterId.toString()
         );
       }
@@ -303,9 +316,18 @@ export default class extends Vue {
       this.fee = new BigNumber(fee.toString(10))
         .div(10 ** Number(this.currentToken.decimals))
         .toString(10);
+      this.tokenFee = new BigNumber(fee.toString(10))
+        .div(10 ** Number(this.currentToken.decimals))
+        .toString(10);
       // todo approve
       if (
-        this.currentToken.standard === TokenStandard.DRC20 &&
+        (this.currentToken.standard === TokenStandard.DRC20 ||
+          this.currentToken.standard === TokenStandard['ICRC-2']) &&
+        this.type === 'Deposit'
+      ) {
+        this.fee = new BigNumber(this.fee).times(3).toString(10);
+      } else if (
+        this.currentToken.standard === TokenStandard['ICRC-1'] &&
         this.type === 'Deposit'
       ) {
         this.fee = new BigNumber(this.fee).times(2).toString(10);
@@ -313,7 +335,7 @@ export default class extends Vue {
     }
   }
   private setMaxBalance(): void {
-    const max = new BigNumber(this.currentToken.balance).minus(this.fee);
+    let max = new BigNumber(this.currentToken.balance).minus(this.fee);
     if (new BigNumber(max).gt(0)) {
       this.transferForm.amount = max.toString(10);
     } else {
@@ -331,7 +353,7 @@ export default class extends Vue {
             background: 'rgba(0, 0, 0, 0.5)'
           });
           try {
-            const amount = BigInt(
+            let amount = BigInt(
               new BigNumber(10)
                 .pow(this.currentToken.decimals.toString(10))
                 .times(this.transferForm.amount.toString())
@@ -348,7 +370,7 @@ export default class extends Vue {
                 );
                 return;
               }
-              const nonceRes = await this.ICLighthouseTokenService.txnQuery(
+              const nonceRes = await this.DRC20TokenService.txnQuery(
                 {
                   txnCount: { owner: principal }
                 },
@@ -383,7 +405,7 @@ export default class extends Vue {
                 if (principalAndAccountId.accountId) {
                   to = principalAndAccountId.accountId;
                 }
-                const res = await this.ICLighthouseTokenService.transfer(
+                const res = await this.DRC20TokenService.drc20_transfer(
                   to,
                   amount,
                   [nonce],
@@ -516,6 +538,18 @@ export default class extends Vue {
               this.currentToken.standard === TokenStandard['ICRC-1'] ||
               this.currentToken.standard === TokenStandard['ICRC-2']
             ) {
+              if (
+                this.currentToken.standard === TokenStandard['ICRC-2'] &&
+                this.type === 'Deposit'
+              ) {
+                this.$emit(
+                  'transferTokenSuccess',
+                  amount,
+                  loading,
+                  this.subaccountId
+                );
+                return;
+              }
               // todo icrc2
               const principalAndAccountId = toPrincipalAndAccountId(
                 this.transferForm.to
@@ -527,6 +561,17 @@ export default class extends Vue {
                     ? [hexToBytes(principalAndAccountId.subaccount)]
                     : []
                 };
+                if (this.type === 'Deposit') {
+                  amount = BigInt(
+                    new BigNumber(amount.toString(10))
+                      .plus(
+                        new BigNumber(this.tokenFee).times(
+                          10 ** Number(this.currentToken.decimals)
+                        )
+                      )
+                      .toString(10)
+                  );
+                }
                 const res = await this.DRC20TokenService.icrc1Transfer(
                   this.currentToken.canisterId.toString(),
                   amount,
@@ -546,9 +591,21 @@ export default class extends Vue {
                     this.$message.success('Transfer Success');
                     this.visibleTransfer = false;
                   }
+                  let deposit = amount;
+                  if (this.type === 'Deposit') {
+                    deposit = BigInt(
+                      new BigNumber(amount.toString(10))
+                        .minus(
+                          new BigNumber(this.tokenFee).times(
+                            10 ** Number(this.currentToken.decimals)
+                          )
+                        )
+                        .toString(10)
+                    );
+                  }
                   this.$emit(
                     'transferTokenSuccess',
-                    amount,
+                    deposit,
                     loading,
                     this.subaccountId
                   );
@@ -564,10 +621,21 @@ export default class extends Vue {
                   validateAccount(this.transferForm.to)
                 ) {
                   const fee = BigInt(
-                    new BigNumber(this.fee)
+                    new BigNumber(this.tokenFee)
                       .times(10 ** Number(this.currentToken.decimals))
                       .toString(10)
                   );
+                  if (this.type === 'Deposit') {
+                    amount = BigInt(
+                      new BigNumber(amount.toString(10))
+                        .plus(
+                          new BigNumber(this.tokenFee).times(
+                            10 ** Number(this.currentToken.decimals)
+                          )
+                        )
+                        .toString(10)
+                    );
+                  }
                   const res = await this.DRC20TokenService.icpStandardTransfer(
                     this.currentToken.canisterId.toString(),
                     amount,
@@ -575,9 +643,28 @@ export default class extends Vue {
                     this.transferForm.to
                   );
                   if (res) {
-                    this.$message.success('Transfer Success');
-                    this.$emit('transferTokenSuccess');
-                    this.visibleTransfer = false;
+                    if (this.type === 'Transfer') {
+                      this.$message.success('Transfer Success');
+                      this.visibleTransfer = false;
+                    }
+                    let deposit = amount;
+                    if (this.type === 'Deposit') {
+                      deposit = BigInt(
+                        new BigNumber(amount.toString(10))
+                          .minus(
+                            new BigNumber(this.tokenFee).times(
+                              10 ** Number(this.currentToken.decimals)
+                            )
+                          )
+                          .toString(10)
+                      );
+                    }
+                    this.$emit(
+                      'transferTokenSuccess',
+                      deposit,
+                      loading,
+                      this.subaccountId
+                    );
                   } else {
                     this.$message.error('Error');
                   }

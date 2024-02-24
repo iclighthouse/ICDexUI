@@ -27,11 +27,9 @@ export const getTokenBalance = async (
       balance = BigInt(await getIcpBalance(subAccountId));
     } else if (std && std === 'drc20') {
       balance = await currentDRC20TokenService.drc20_balanceOf(
+        principal,
         tokenId,
-        principalToAccountIdentifier(
-          Principal.fromText(principal),
-          new Uint8Array(fromSubAccountId(subAccountId))
-        )
+        new Uint8Array(fromSubAccountId(subAccountId))
       );
     } else if (std && std === 'dip20') {
       // deleted
@@ -47,11 +45,9 @@ export const getTokenBalance = async (
       balance = await currentDRC20TokenService.icrc1_balance_of(tokenId, to);
     } else {
       balance = await currentDRC20TokenService.drc20_balanceOf(
+        principal,
         tokenId,
-        principalToAccountIdentifier(
-          Principal.fromText(principal),
-          new Uint8Array(fromSubAccountId(subAccountId))
-        )
+        new Uint8Array(fromSubAccountId(subAccountId))
       );
     }
     if (balance || balance.toString(10)) {
@@ -97,19 +93,15 @@ const getIcpBalance = async (subAccountId = 0): Promise<string> => {
 export const getDepositing = async (
   tokenStd: TokenStd,
   tokenId: string,
-  icrc1Account: Icrc1Account | string
+  icrc1Account: Icrc1Account
 ): Promise<string> => {
   const currentDRC20TokenService = new DRC20TokenService();
   let balance = '0';
   let address: string;
-  if (typeof icrc1Account === 'string') {
-    address = icrc1Account;
-  } else {
-    address = principalToAccountIdentifier(
-      icrc1Account.owner,
-      new Uint8Array(icrc1Account.subaccount[0])
-    );
-  }
+  address = principalToAccountIdentifier(
+    icrc1Account.owner,
+    new Uint8Array(icrc1Account.subaccount[0])
+  );
   if (tokenStd && (tokenStd as { icp: null }).icp === null) {
     const ledgerService = new LedgerService();
     const balanceRes = await ledgerService.getBalances({
@@ -140,8 +132,9 @@ export const getDepositing = async (
     balance = res.toString(10);
   } else if (tokenStd && (tokenStd as { drc20: null }).drc20 === null) {
     const res = await currentDRC20TokenService.drc20_balanceOf(
+      icrc1Account.owner.toString(),
       tokenId,
-      address
+      new Uint8Array(icrc1Account.subaccount[0])
     );
     balance = res.toString(10);
   }
@@ -182,8 +175,9 @@ export const getCompetitionsBalance = async (
   }
   if (std === 'drc20') {
     const res = await currentDRC20TokenService.drc20_balanceOf(
+      account[0].owner.toString(),
       tokenId,
-      account[1]
+      new Uint8Array(account[0].subaccount[0])
     );
     balance = res.toString(10);
   }

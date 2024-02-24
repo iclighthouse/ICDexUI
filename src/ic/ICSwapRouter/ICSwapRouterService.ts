@@ -85,18 +85,11 @@ export class ICSwapRouterService {
     return SerializableIC(res);
   };
   public setListingReferrerByNft = async (
-    referrer: Principal,
     name: string,
-    nftId: string,
-    collection = 'ICLighthouse Planet Cards'
+    nftId: string
   ): Promise<void> => {
     await this.check();
-    return await this.service.setListingReferrerByNft(
-      referrer,
-      name,
-      nftId,
-      collection
-    );
+    return await this.service.setListingReferrerByNft(name, nftId);
   };
   public getCompetitions = async (
     dexName: Array<DexName>,

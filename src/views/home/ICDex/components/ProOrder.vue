@@ -12,249 +12,168 @@
       :after-close="afterClose"
     >
       <div v-show="step === 1">
-        <span style="color: #adb3c4"
-          >Step 1: Transfer tokens from Main-wallet to Pro-wallet
-          (subaccount:0000000000000000000000000000000000000000000000000000000000000001)</span
-        >
-        <div class="mt20" style="color: #adb3c4">Pro-Wallet:</div>
-        <div class="transfer-pro-wallet-main pc-show">
-          <div class="transfer-pro-wallet">
-            <span>{{ currentPair[1][0].token1[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                tokensBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token1[0].toString()]
-              "
-              >{{
-                tokensBalanceSto[currentPair[1][0].token1[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token1[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token1[0].toString()].decimals
-                  )
-                  | formatNum
-              }}</span
-            >
+        <div class="pro-order-item">
+          <div class="base-font-title">
+            1. Transfer tokens from Main-wallet to Pro-wallet.
+            <!--(subaccount:0000000000000000000000000000000000000000000000000000000000000001)-->
           </div>
-          <div class="transfer-pro-wallet">
-            <span>{{ currentPair[1][0].token0[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                tokensBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token0[0].toString()]
-              "
-            >
-              {{
-                tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token0[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token0[0].toString()].decimals
-                  )
-                  | formatNum
-              }}
-            </span>
-          </div>
-        </div>
-        <div class="transfer-pro-wallet-main pc-show">
-          <div class="transfer-pro-wallet">
-            <button class="primary" @click="gridTransferToken(false)">
-              Transfer
-            </button>
-          </div>
-          <div class="transfer-pro-wallet">
-            <button class="primary" @click="gridTransferToken(true)">
-              Transfer
-            </button>
+          <div class="mt20" style="color: #adb3c4">Pro-Wallet:</div>
+          <div class="transfer-pro-wallet-main">
+            <div class="transfer-pro-wallet">
+              <span>{{ currentPair[1][0].token1[1] }}:&nbsp;</span>
+              <span
+                v-if="
+                  tokensBalanceSto &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token1[0].toString()]
+                "
+                class="base-font-title"
+                >{{
+                  tokensBalanceSto[currentPair[1][0].token1[0].toString()]
+                    | bigintToFloat(
+                      4,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals
+                    )
+                    | formatNum
+                }}</span
+              >
+              <a-icon
+                style="margin-left: 5px"
+                type="plus-circle"
+                @click="gridTransferToken(false)"
+              />
+            </div>
+            <div class="transfer-pro-wallet">
+              <span>{{ currentPair[1][0].token0[1] }}:&nbsp;</span>
+              <span
+                v-if="
+                  tokensBalanceSto &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token0[0].toString()]
+                "
+                class="base-font-title"
+              >
+                {{
+                  tokensBalanceSto[currentPair[1][0].token0[0].toString()]
+                    | bigintToFloat(
+                      4,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals
+                    )
+                    | formatNum
+                }}
+              </span>
+              <a-icon
+                style="margin-left: 5px"
+                type="plus-circle"
+                @click="gridTransferToken(true)"
+              />
+            </div>
           </div>
         </div>
-        <div class="transfer-pro-wallet-main h5-show">
-          <div>
-            <span>{{ currentPair[1][0].token1[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                tokensBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token1[0].toString()]
-              "
-            >
-              {{
-                tokensBalanceSto[currentPair[1][0].token1[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token1[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token1[0].toString()].decimals
-                  )
-                  | formatNum
-              }}
-            </span>
+        <div>
+          <div class="transfer-pro-wallet-main" style="margin-bottom: 0">
+            <a-tooltip placement="top">
+              <template slot="title">
+                Deposit {{ currentPair[1][0].token1[1] }}
+              </template>
+              <a-icon
+                class="transfer-pro-wallet-down transfer-pro-wallet pc-show"
+                type="arrow-down"
+                @click="gridDepositKeepingBalance(false)"
+              />
+            </a-tooltip>
+            <a-tooltip placement="top">
+              <template slot="title">
+                Deposit {{ currentPair[1][0].token0[1] }}
+              </template>
+              <a-icon
+                class="transfer-pro-wallet-down transfer-pro-wallet pc-show"
+                type="arrow-down"
+                style="padding-left: 40px"
+                @click="gridDepositKeepingBalance(true)"
+              />
+            </a-tooltip>
+            <a-icon
+              class="transfer-pro-wallet-down transfer-pro-wallet h5-show"
+              type="arrow-down"
+            />
           </div>
-          <button class="primary" @click="gridTransferToken(false)">
-            Transfer
-          </button>
         </div>
-        <div class="transfer-pro-wallet-main h5-show">
-          <div>
-            <span>{{ currentPair[1][0].token0[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                tokensBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token0[0].toString()]
-              "
-            >
-              {{
-                tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token0[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token0[0].toString()].decimals
-                  )
-                  | formatNum
-              }}
-            </span>
+        <div class="pro-order-item">
+          <div class="base-font-title">
+            2. Deposit tokens from Pro-wallet to Pro-TraderAcct (Trading pair's
+            account for pro-trader)
           </div>
-          <button class="primary" @click="gridTransferToken(true)">
-            Transfer
-          </button>
+          <div class="mt20" style="color: #adb3c4">Pro-TraderAcct:</div>
+          <div class="transfer-pro-wallet-main">
+            <div class="transfer-pro-wallet">
+              <span>{{ currentPair[1][0].token1[1] }}:&nbsp;</span>
+              <span
+                v-if="
+                  keepingBalanceSto &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token1[0].toString()]
+                "
+                class="base-font-title"
+                >{{
+                  keepingBalanceSto[currentPair[1][0].token1[0].toString()]
+                    | bigintToFloat(
+                      4,
+                      tokens[currentPair[1][0].token1[0].toString()].decimals
+                    )
+                    | formatNum
+                }}</span
+              >
+              <a-tooltip placement="top">
+                <template slot="title">
+                  Deposit {{ currentPair[1][0].token1[1] }}
+                </template>
+                <a-icon
+                  style="margin-left: 5px"
+                  type="plus-circle"
+                  @click="gridDepositKeepingBalance(false)"
+                />
+              </a-tooltip>
+            </div>
+            <div class="transfer-pro-wallet">
+              <span>{{ currentPair[1][0].token0[1] }}:&nbsp;</span>
+              <span
+                v-if="
+                  keepingBalanceSto &&
+                  currentPair &&
+                  tokens[currentPair[1][0].token0[0].toString()]
+                "
+                class="base-font-title"
+              >
+                {{
+                  keepingBalanceSto[currentPair[1][0].token0[0].toString()]
+                    | bigintToFloat(
+                      4,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals
+                    )
+                    | formatNum
+                }}
+              </span>
+              <a-tooltip placement="top">
+                <template slot="title">
+                  Deposit {{ currentPair[1][0].token0[1] }}
+                </template>
+                <a-icon
+                  style="margin-left: 5px"
+                  type="plus-circle"
+                  @click="gridDepositKeepingBalance(true)"
+                />
+              </a-tooltip>
+            </div>
+          </div>
         </div>
         <div class="w100" style="display: flex; margin-top: 40px">
           <button class="margin-left-auto" @click="step = 2">Next</button>
         </div>
       </div>
-      <div v-show="step === 2">
-        <span style="color: #adb3c4"
-          >Step 2: Deposit tokens from Pro-wallet to Pro-TraderAcct (Trading
-          pair's account for pro-trader)</span
-        >
-        <div class="mt20" style="color: #adb3c4">Pro-TraderAcct:</div>
-        <div class="transfer-pro-wallet-main pc-show">
-          <div class="transfer-pro-wallet">
-            <span>{{ currentPair[1][0].token1[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                keepingBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token1[0].toString()]
-              "
-              >{{
-                keepingBalanceSto[currentPair[1][0].token1[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token1[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token1[0].toString()].decimals
-                  )
-                  | formatNum
-              }}</span
-            >
-          </div>
-          <div class="transfer-pro-wallet">
-            <span>{{ currentPair[1][0].token0[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                keepingBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token0[0].toString()]
-              "
-            >
-              {{
-                keepingBalanceSto[currentPair[1][0].token0[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token0[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token0[0].toString()].decimals
-                  )
-                  | formatNum
-              }}
-            </span>
-          </div>
-        </div>
-        <div class="transfer-pro-wallet-main pc-show">
-          <div class="transfer-pro-wallet">
-            <button class="primary" @click="gridDepositKeepingBalance(false)">
-              Deposit
-            </button>
-          </div>
-          <div class="transfer-pro-wallet">
-            <button class="primary" @click="gridDepositKeepingBalance(true)">
-              Deposit
-            </button>
-          </div>
-        </div>
-        <div class="transfer-pro-wallet-main h5-show">
-          <div class="transfer-pro-wallet">
-            <span>{{ currentPair[1][0].token0[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                keepingBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token0[0].toString()]
-              "
-            >
-              {{
-                keepingBalanceSto[currentPair[1][0].token0[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token0[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token0[0].toString()].decimals
-                  )
-                  | formatNum
-              }}
-            </span>
-          </div>
-          <button class="primary" @click="gridDepositKeepingBalance(true)">
-            Deposit
-          </button>
-        </div>
-        <div class="transfer-pro-wallet-main h5-show">
-          <div class="transfer-pro-wallet">
-            <span>{{ currentPair[1][0].token1[1] }}:&nbsp;</span>
-            <span
-              v-if="
-                keepingBalanceSto &&
-                currentPair &&
-                tokens[currentPair[1][0].token1[0].toString()]
-              "
-              >{{
-                keepingBalanceSto[currentPair[1][0].token1[0].toString()]
-                  | bigintToFloat(
-                    Math.min(
-                      tokens[currentPair[1][0].token1[0].toString()].decimals,
-                      8
-                    ),
-                    tokens[currentPair[1][0].token1[0].toString()].decimals
-                  )
-                  | formatNum
-              }}</span
-            >
-          </div>
-          <button class="primary" @click="gridDepositKeepingBalance(false)">
-            Deposit
-          </button>
-        </div>
-        <div class="w100" style="display: flex; margin-top: 40px">
-          <button class="margin-left-auto" @click="step = 3">Next</button>
-        </div>
-      </div>
-      <div v-show="step === 3" class="grid-setting">
-        <span v-show="type === 'create'" style="color: #adb3c4"
-          >Step 3: Create a {{ proType }} Order
+      <div v-show="step === 2" class="grid-setting">
+        <span v-show="type === 'create'" style="color: #eaecef; font-size: 15px"
+          >3. Create a {{ proType }} Order
           <a-tooltip placement="top">
             <template slot="title">
               Iceberg order will split the order into several orders, only after
@@ -271,7 +190,7 @@
         <div v-show="proType === 'Grid'">
           <div class="grid-setting-item">
             <div class="grid-setting-item-title base-font-title">
-              1. Price Range
+              Grid Price Range:
             </div>
             <div class="grid-setting-price-range">
               <div>
@@ -281,7 +200,7 @@
                   class="input-icp-suffix"
                   autocomplete="off"
                   type="text"
-                  placeholder="Lower"
+                  placeholder="Lower Limit"
                   v-only-float="buyUnit"
                 />
               </div>
@@ -293,18 +212,41 @@
                   class="input-icp-suffix"
                   autocomplete="off"
                   type="text"
-                  placeholder="Upper"
+                  placeholder="Upper Limit"
                   v-only-float="buyUnit"
                 />
               </div>
             </div>
+            <span
+              v-show="lowerPriceWarning && !insufficientPrice"
+              class="base-warning"
+            >
+              Lower limit is higher than the current price({{
+                currentTokenPrice
+              }}), buy orders will not be triggered.
+            </span>
+            <span
+              v-show="
+                upperPriceWarning && !lowerPriceWarning && !insufficientPrice
+              "
+              class="base-warning"
+            >
+              Upper limit is lower than the current price({{
+                currentTokenPrice
+              }}), sell orders will not be triggered.
+            </span>
             <span v-show="insufficientPrice" class="base-red">
-              Upper price must be greater than lower price.
+              Upper limit should be greater than lower limit.
             </span>
           </div>
           <div class="grid-setting-item">
             <div class="grid-setting-item-title base-font-title">
-              2. Spread
+              <a-tooltip placement="top">
+                <template slot="title">
+                  Spread between two grid prices.
+                </template>
+                Grid spread: <a-icon type="info-circle" />
+              </a-tooltip>
               <a-dropdown placement="bottomCenter">
                 <a-tooltip placement="top">
                   <template slot="title">
@@ -342,8 +284,29 @@
                 type="text"
                 placeholder="Arithmetic"
                 v-only-float="buyUnit"
-                :suffix="currentPair[1][0].token1[1]"
+                :suffix="currentPair[1][0].token1[1] + '(price spread)'"
               />
+              <span
+                v-show="
+                  arithmetic &&
+                  currentTokenPrice10 &&
+                  Number(arithmetic) > Number(currentTokenPrice10)
+                "
+                class="base-warning"
+              >
+                The spread greater than {{ currentTokenPrice10 }} of the current
+                price may make it difficult for the strategy to be triggered.
+              </span>
+              <span
+                v-show="
+                  arithmetic &&
+                  currentTokenPriceLower &&
+                  Number(arithmetic) <= Number(currentTokenPriceLower)
+                "
+                class="base-red"
+              >
+                The spread should be greater than {{ currentTokenPriceLower }}.
+              </span>
             </div>
             <div v-show="spread === gridMenu.Geometric">
               <a-input
@@ -355,24 +318,70 @@
                 v-only-float="3"
                 suffix="%"
               />
-              <span v-show="Number(geometric) > 100" class="base-red">
-                Max ratio is 100.
+              <span
+                v-show="geometric && Number(geometric) >= 10"
+                class="base-warning"
+              >
+                The spread greater than 10% of the current price({{
+                  currentTokenPrice
+                }}) may make it difficult for the strategy to be triggered.
               </span>
+              <span
+                v-show="geometric && Number(geometric) <= 0.1"
+                class="base-red"
+              >
+                The spread should be greater than 0.1%.
+              </span>
+              <div class="base-font base-tip-size">
+                Suggestions:
+                <p>
+                  1, Low volatility, high liquidity trading pairs (such as
+                  USDT/USDC): it is recommended to set 0.1% ~ 1.0%.
+                </p>
+                <p>
+                  2, High liquidity trading pairs: it is recommended to set 1.0%
+                  ~ 2.0%.
+                </p>
+                <p>
+                  3, Medium liquidity trading pairs: it is recommended to set
+                  2.0% ~ 5.0%.
+                </p>
+                <p>
+                  4, Low liquidity trading pairs: it is recommended to set 5.0%
+                  ~ 10.0%.
+                </p>
+              </div>
             </div>
           </div>
           <div class="grid-setting-item">
             <div class="grid-setting-item-title base-font-title">
-              3. Amount
+              <a-tooltip placement="top">
+                <template slot="title">
+                  <span
+                    v-if="currentPair && investment === gridAmountMenu.Token0"
+                  >
+                    The quantity ({{ currentPair[1][0].token0[1] }}) of each
+                    order placed when the strategy is triggered.
+                  </span>
+                  <span
+                    v-if="currentPair && investment === gridAmountMenu.Token1"
+                  >
+                    The amount ({{ currentPair[1][0].token1[1] }}) of each order
+                    placed when the strategy is triggered.
+                  </span>
+                  <span
+                    v-if="currentPair && investment === gridAmountMenu.Percent"
+                  >
+                    Percentage of available funds remaining.
+                  </span>
+                </template>
+                Grid amount: <a-icon type="info-circle" />
+              </a-tooltip>
               <a-dropdown placement="bottomCenter">
                 <span class="pointer margin-left-auto" style="color: #51b7c3">
-                  <a-tooltip placement="top">
-                    <template slot="title">
-                      Percentage of available funds remaining.
-                    </template>
-                    <span v-show="investment === gridAmountMenu.Percent">
-                      {{ investment }}
-                    </span>
-                  </a-tooltip>
+                  <span v-show="investment === gridAmountMenu.Percent">
+                    {{ investment }}
+                  </span>
                   <span
                     v-if="currentPair && investment === gridAmountMenu.Token0"
                   >
@@ -414,8 +423,19 @@
                 suffix="%"
                 v-only-float="3"
               />
-              <span v-show="Number(percent) > 100" class="base-red">
-                Max percent is 100.
+              <span v-show="percent && Number(percent) <= 0.1" class="base-red">
+                The amount should be greater than 0.1%.
+              </span>
+              <span v-show="percent && Number(percent) >= 100" class="base-red">
+                The percentage entered must be less than 100%.
+              </span>
+              <span
+                v-show="
+                  percent && Number(percent) > 20 && Number(percent) < 100
+                "
+                class="base-warning"
+              >
+                The amount should be lower than 20%.
               </span>
             </div>
             <div v-show="investment === gridAmountMenu.Token0">
@@ -430,8 +450,32 @@
                 v-only-float="tokenMinUnit"
                 :suffix="currentPair[1][0].token0[1]"
               />
-              <span v-show="insufficientToken0" class="base-red">
-                Insufficient {{ currentPair[1][0].token0[1] }}
+              <span
+                v-show="amount && Number(amount) < Number(unit10) && isModulo"
+                class="base-red"
+              >
+                The amount should be greater than {{ unit10 }}
+                {{ currentPair[1][0].token0[1] }}.
+              </span>
+              <span
+                v-show="
+                  amount &&
+                  Number(amount) >= Number(unit10) &&
+                  !isModulo(amount) &&
+                  currentPair &&
+                  tokens &&
+                  tokens[currentPair[1][0].token0[0].toString()]
+                "
+                class="base-red"
+              >
+                The amount must should an integral multiple of
+                {{
+                  unit
+                    | bigintToFloat(
+                      tokens[currentPair[1][0].token0[0].toString()].decimals,
+                      tokens[currentPair[1][0].token0[0].toString()].decimals
+                    )
+                }}.
               </span>
             </div>
             <div v-show="investment === gridAmountMenu.Token1">
@@ -446,8 +490,12 @@
                 v-only-float="buyUnit"
                 :suffix="currentPair[1][0].token1[1]"
               />
-              <span v-show="insufficientToken1" class="base-red">
-                Insufficient {{ currentPair[1][0].token1[1] }}
+              <span
+                v-show="amount && Number(amount) < Number(unit10Token1)"
+                class="base-red"
+              >
+                The amount should be greater than {{ unit10Token1 }}
+                {{ currentPair[1][0].token1[1] }}.
               </span>
             </div>
           </div>
@@ -483,7 +531,7 @@
           >
             <a-form-model-item
               class="ice-setting-item"
-              label="Time"
+              label="Period"
               prop="time"
             >
               <a-range-picker
@@ -491,12 +539,13 @@
                 show-time
                 :showToday="false"
                 v-model="iceForm.time"
+                :placeholder="['Select start time', 'Select end time']"
               >
               </a-range-picker>
             </a-form-model-item>
             <a-form-model-item
               class="ice-setting-item"
-              label="Limit price"
+              label="LMT price"
               prop="limitPrice"
             >
               <a-input
@@ -506,15 +555,39 @@
                 class="input-icp-suffix"
                 autocomplete="off"
                 type="text"
-                placeholder="Limit price"
+                placeholder="LMT price"
                 v-only-float="buyUnit"
                 :suffix="currentPair[1][0].token1[1]"
                 @input="limitPriceChange"
               />
+              <span
+                v-show="
+                  iceForm.limitPrice &&
+                  tradeType === 'Buy' &&
+                  Number(iceForm.limitPrice) >= Number(currentTokenPrice)
+                "
+                class="base-warning line22"
+              >
+                The price should be lower than the current price({{
+                  currentTokenPrice
+                }}).
+              </span>
+              <span
+                v-show="
+                  iceForm.limitPrice &&
+                  tradeType === 'Sell' &&
+                  Number(iceForm.limitPrice) <= Number(currentTokenPrice)
+                "
+                class="base-warning line22"
+              >
+                The price should be higher than the current price({{
+                  currentTokenPrice
+                }}).
+              </span>
             </a-form-model-item>
             <a-form-model-item
               class="ice-setting-item"
-              label="Quantity"
+              :label="`Total amount of ${currentPair[1][0].token0[1]}`"
               prop="totalQuantity"
             >
               <a-input
@@ -524,13 +597,16 @@
                 class="input-icp-suffix"
                 autocomplete="off"
                 type="text"
-                placeholder="Quantity"
+                :placeholder="`Total amount of ${currentPair[1][0].token0[1]}`"
                 v-only-float="tokenMinUnit"
                 :suffix="currentPair[1][0].token0[1]"
                 @input="totalQuantityChange"
               />
             </a-form-model-item>
-            <a-form-model-item class="ice-setting-item" label="Total">
+            <a-form-model-item
+              class="ice-setting-item"
+              :label="`Total amount of ${currentPair[1][0].token1[1]}`"
+            >
               <a-input
                 v-if="
                   currentPair &&
@@ -542,7 +618,7 @@
                 class="input-icp-suffix"
                 autocomplete="off"
                 type="text"
-                placeholder="Total"
+                :placeholder="`Total amount of ${currentPair[1][0].token1[1]}`"
                 v-only-float="
                   tokens[currentPair[1][0].token1[0].toString()].decimals
                 "
@@ -552,42 +628,797 @@
             </a-form-model-item>
             <a-form-model-item
               class="ice-setting-item"
-              label="Display quantity"
-              prop="displayQuantity"
+              :label="`Amount of ${currentPair[1][0].token0[1]} per order`"
+              prop="quantityPerOrder"
             >
               <a-input
                 v-if="currentPair"
                 :key="tokenMinUnit"
-                v-model="iceForm.displayQuantity"
+                v-model="iceForm.quantityPerOrder"
                 class="input-icp-suffix"
                 autocomplete="off"
                 type="text"
-                placeholder="Display quantity"
+                :placeholder="`Amount of ${currentPair[1][0].token0[1]} per order`"
                 v-only-float="tokenMinUnit"
                 :suffix="currentPair[1][0].token0[1]"
               />
             </a-form-model-item>
-            <a-form-model-item>
-              <button
-                type="button"
-                class="primary large-primary w100 mt20"
-                @click="onSubmitIce"
+          </a-form-model>
+        </div>
+        <div v-show="proType === 'TWAP'">
+          <div class="trade-h5-header">
+            <ul>
+              <li
+                @click="changeTradeType('Buy')"
+                :class="{
+                  'trade-buy': tradeType === 'Buy',
+                  disabled: type === 'update'
+                }"
               >
-                Submit
-              </button>
+                <span>Buy</span>
+              </li>
+              <li
+                @click="changeTradeType('Sell')"
+                :class="{
+                  'trade-sell': tradeType === 'Sell',
+                  disabled: type === 'update'
+                }"
+              >
+                <span>Sell</span>
+              </li>
+            </ul>
+          </div>
+          <a-form-model
+            class="ice-form mt20"
+            ref="TWAPForm"
+            :model="TWAPForm"
+            :rules="TWAPFormRules"
+          >
+            <a-form-model-item
+              class="ice-setting-item"
+              label="Period"
+              prop="time"
+            >
+              <a-range-picker
+                :disabled-date="disabledDate"
+                show-time
+                :showToday="false"
+                v-model="TWAPForm.time"
+                :placeholder="['Select start time', 'Select end time']"
+              >
+              </a-range-picker>
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item"
+              prop="priceLimit"
+            >
+              <template slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span v-show="tradeType === 'Buy'"
+                      >The highest price you would accept.</span
+                    >
+                    <span v-show="tradeType === 'Sell'"
+                      >The lowest price you would accept.</span
+                    >
+                  </template>
+                  <span> Price limit: <a-icon type="info-circle" /> </span>
+                </a-tooltip>
+              </template>
+              <a-input
+                v-if="currentPair"
+                :key="buyUnit"
+                v-model="TWAPForm.priceLimit"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Price limit"
+                v-only-float="buyUnit"
+                :suffix="currentPair[1][0].token1[1]"
+              />
+              <span
+                class="base-warning line22"
+                v-show="
+                  tradeType === 'Buy' &&
+                  TWAPForm.priceLimit &&
+                  Number(TWAPForm.priceLimit) < Number(currentTokenPrice)
+                "
+              >
+                The price is lower than the current price({{
+                  currentTokenPrice
+                }}) and the strategy may not be triggered.
+              </span>
+              <span
+                class="base-warning line22"
+                v-show="
+                  tradeType === 'Sell' &&
+                  TWAPForm.priceLimit &&
+                  Number(TWAPForm.priceLimit) > Number(currentTokenPrice)
+                "
+              >
+                The price is higher than the current price({{
+                  currentTokenPrice
+                }}) and the strategy may not be triggered.
+              </span>
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item"
+              prop="priceSpread"
+            >
+              <template slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span
+                      >When a strategy triggers an order to be placed, you are
+                      willing to take on additional trading slippage in order to
+                      increase the probability of a close.</span
+                    >
+                  </template>
+                  <span>Slippage: <a-icon type="info-circle" /> </span>
+                </a-tooltip>
+              </template>
+              <a-input
+                v-if="currentPair"
+                :key="buyUnit"
+                v-model="TWAPForm.priceSpread"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Slippage"
+                v-only-float="buyUnit"
+                :suffix="`${currentPair[1][0].token1[1]}(price spread)`"
+              />
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item ice-setting-item-trigger"
+              prop="totalQuantity"
+            >
+              <template class="w100 flex-center" slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span v-show="tradeType === 'Buy'"
+                      >The total amount of
+                      {{
+                        TWAPTokenLimit === tokenEnum.Token0
+                          ? currentPair[1][0].token0[1]
+                          : currentPair[1][0].token1[1]
+                      }}
+                      you wish to purchase.</span
+                    >
+                    <span v-show="tradeType === 'Sell'"
+                      >The total amount of
+                      {{
+                        TWAPTokenLimit === tokenEnum.Token0
+                          ? currentPair[1][0].token0[1]
+                          : currentPair[1][0].token1[1]
+                      }}
+                      you wish to sell.</span
+                    >
+                  </template>
+                  <span>Total amount: <a-icon type="info-circle" /></span>
+                </a-tooltip>
+                <a-dropdown placement="bottomCenter">
+                  <span class="pointer margin-left-auto" style="color: #51b7c3">
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                    >
+                      {{ currentPair[1][0].token0[1] }}
+                    </span>
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                    >
+                      {{ currentPair[1][0].token1[1] }}
+                    </span>
+                    <a-icon type="caret-down"
+                  /></span>
+                  <a-menu slot="overlay" class="strat-list">
+                    <a-menu-item
+                      v-for="(item, index) in tokenEnum"
+                      :key="index"
+                      class="strat-list-item"
+                      :class="{ active: item === TWAPTokenLimit }"
+                      @click="changeTWAPTokenLimit(item)"
+                    >
+                      <span v-if="currentPair && item === tokenEnum.Token0">
+                        {{ currentPair[1][0].token0[1] }}
+                      </span>
+                      <span v-if="currentPair && item === tokenEnum.Token1">
+                        {{ currentPair[1][0].token1[1] }}
+                      </span>
+                    </a-menu-item>
+                  </a-menu>
+                </a-dropdown>
+              </template>
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                :key="tokenMinUnit"
+                v-model="TWAPForm.totalQuantity"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="tokenMinUnit"
+                :suffix="currentPair[1][0].token0[1]"
+              />
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                :key="buyUnit"
+                v-model="TWAPForm.totalQuantity"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="buyUnit"
+                :suffix="currentPair[1][0].token1[1]"
+              />
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item ice-setting-item-trigger"
+              prop="quantityPerOrder"
+            >
+              <template class="w100 flex-center" slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span
+                      >The amount({{
+                        TWAPTokenLimit === tokenEnum.Token0
+                          ? currentPair[1][0].token0[1]
+                          : currentPair[1][0].token1[1]
+                      }}) of the order placed each time the strategy is
+                      triggered.</span
+                    >
+                  </template>
+                  <span>Quantity per order: <a-icon type="info-circle" /></span>
+                </a-tooltip>
+                <a-dropdown placement="bottomCenter">
+                  <span class="pointer margin-left-auto" style="color: #51b7c3">
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                    >
+                      {{ currentPair[1][0].token0[1] }}
+                    </span>
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                    >
+                      {{ currentPair[1][0].token1[1] }}
+                    </span>
+                    <a-icon type="caret-down"
+                  /></span>
+                  <a-menu slot="overlay" class="strat-list">
+                    <a-menu-item
+                      v-for="(item, index) in tokenEnum"
+                      :key="index"
+                      class="strat-list-item"
+                      :class="{ active: item === TWAPTokenLimit }"
+                      @click="changeTWAPTokenLimit(item)"
+                    >
+                      <span v-if="currentPair && item === tokenEnum.Token0">
+                        {{ currentPair[1][0].token0[1] }}
+                      </span>
+                      <span v-if="currentPair && item === tokenEnum.Token1">
+                        {{ currentPair[1][0].token1[1] }}
+                      </span>
+                    </a-menu-item>
+                  </a-menu>
+                </a-dropdown>
+              </template>
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                :key="tokenMinUnit"
+                v-model="TWAPForm.quantityPerOrder"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="tokenMinUnit"
+                :suffix="currentPair[1][0].token0[1]"
+              />
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                :key="buyUnit"
+                v-model="TWAPForm.quantityPerOrder"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="buyUnit"
+                :suffix="currentPair[1][0].token1[1]"
+              />
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="
+                ice-setting-item
+                ice-setting-item-suffix
+                ice-setting-item-trigger
+              "
+              prop="timeInterval"
+              ref="timeInterval"
+              :autoLink="false"
+            >
+              <template class="w100" slot="label">
+                <div class="flex-center">
+                  <a-tooltip placement="top">
+                    <template slot="title">
+                      At least how many intervals (seconds) between triggers
+                      (strategies may not be triggered when they are busy or
+                      when there are no deals)
+                    </template>
+                    <span
+                      >Interval (seconds) for trigger:
+                      <a-icon type="info-circle"
+                    /></span>
+                  </a-tooltip>
+                </div>
+              </template>
+              <div class="time-Label">
+                <div
+                  v-for="(item, index) in timeIntervalList"
+                  :key="index"
+                  @click="setTimeInterval(item.time)"
+                >
+                  <button>{{ item.value }}</button>
+                </div>
+              </div>
+              <a-input
+                v-if="currentPair"
+                v-model="TWAPForm.timeInterval"
+                class="input-icp-suffix"
+                autocomplete="off"
+                placeholder="Interval (seconds) for trigger"
+                v-only-number
+                @blur="
+                  () => {
+                    $refs.timeInterval.onFieldBlur();
+                  }
+                "
+                @change="
+                  () => {
+                    $refs.timeInterval.onFieldChange();
+                  }
+                "
+              />
+              <span class="suffix"> Seconds </span>
+              <div
+                v-show="
+                  TWAPForm.timeInterval &&
+                  Number(TWAPForm.timeInterval) < 900 &&
+                  Number(TWAPForm.timeInterval) > 60
+                "
+                class="base-warning line22"
+              >
+                To conserve on-chain resources, policies with intervals of less
+                than 900 seconds are not necessarily triggered in a timely
+                manner.
+              </div>
             </a-form-model-item>
           </a-form-model>
         </div>
+        <div v-show="proType === 'VWAP'">
+          <div class="trade-h5-header">
+            <ul>
+              <li
+                @click="changeTradeType('Buy')"
+                :class="{
+                  'trade-buy': tradeType === 'Buy',
+                  disabled: type === 'update'
+                }"
+              >
+                <span>Buy</span>
+              </li>
+              <li
+                @click="changeTradeType('Sell')"
+                :class="{
+                  'trade-sell': tradeType === 'Sell',
+                  disabled: type === 'update'
+                }"
+              >
+                <span>Sell</span>
+              </li>
+            </ul>
+          </div>
+          <a-form-model
+            class="ice-form mt20"
+            ref="VWAPForm"
+            :model="VWAPForm"
+            :rules="VWAPFormRules"
+          >
+            <a-form-model-item
+              class="ice-setting-item"
+              label="Period"
+              prop="time"
+            >
+              <a-range-picker
+                :disabled-date="disabledDate"
+                show-time
+                :showToday="false"
+                v-model="VWAPForm.time"
+                :placeholder="['Select start time', 'Select end time']"
+              >
+              </a-range-picker>
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item"
+              prop="priceLimit"
+            >
+              <template slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span v-show="tradeType === 'Buy'"
+                      >The highest price you would accept.</span
+                    >
+                    <span v-show="tradeType === 'Sell'"
+                      >The lowest price you would accept.</span
+                    >
+                  </template>
+                  <span> Price limit: <a-icon type="info-circle" /> </span>
+                </a-tooltip>
+              </template>
+              <a-input
+                v-if="currentPair"
+                :key="buyUnit"
+                v-model="VWAPForm.priceLimit"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Price limit"
+                v-only-float="buyUnit"
+                :suffix="currentPair[1][0].token1[1]"
+              />
+              <span
+                class="base-warning line22"
+                v-show="
+                  tradeType === 'Buy' &&
+                  VWAPForm.priceLimit &&
+                  Number(VWAPForm.priceLimit) < Number(currentTokenPrice)
+                "
+              >
+                The price is lower than the current price({{
+                  currentTokenPrice
+                }}) and the strategy may not be triggered.
+              </span>
+              <span
+                class="base-warning line22"
+                v-show="
+                  tradeType === 'Sell' &&
+                  VWAPForm.priceLimit &&
+                  Number(VWAPForm.priceLimit) > Number(currentTokenPrice)
+                "
+              >
+                The price is higher than the current price({{
+                  currentTokenPrice
+                }}) and the strategy may not be triggered.
+              </span>
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item"
+              prop="priceSpread"
+            >
+              <template slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span
+                      >When a strategy triggers an order to be placed, you are
+                      willing to take on additional trading slippage in order to
+                      increase the probability of a close.</span
+                    >
+                  </template>
+                  <span>Slippage: <a-icon type="info-circle" /> </span>
+                </a-tooltip>
+              </template>
+              <a-input
+                v-if="currentPair"
+                :key="buyUnit"
+                v-model="VWAPForm.priceSpread"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Slippage"
+                v-only-float="buyUnit"
+                :suffix="`${currentPair[1][0].token1[1]}(price spread)`"
+              />
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item ice-setting-item-trigger"
+              prop="totalQuantity"
+            >
+              <template class="w100 flex-center" slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span v-show="tradeType === 'Buy'"
+                      >The total amount of
+                      {{
+                        TWAPTokenLimit === tokenEnum.Token0
+                          ? currentPair[1][0].token0[1]
+                          : currentPair[1][0].token1[1]
+                      }}
+                      you wish to purchase.</span
+                    >
+                    <span v-show="tradeType === 'Sell'"
+                      >The total amount of
+                      {{
+                        TWAPTokenLimit === tokenEnum.Token0
+                          ? currentPair[1][0].token0[1]
+                          : currentPair[1][0].token1[1]
+                      }}
+                      you wish to sell.</span
+                    >
+                  </template>
+                  <span>Total amount: <a-icon type="info-circle" /></span>
+                </a-tooltip>
+                <a-dropdown placement="bottomCenter">
+                  <span class="pointer margin-left-auto" style="color: #51b7c3">
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                    >
+                      {{ currentPair[1][0].token0[1] }}
+                    </span>
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                    >
+                      {{ currentPair[1][0].token1[1] }}
+                    </span>
+                    <a-icon type="caret-down"
+                  /></span>
+                  <a-menu slot="overlay" class="strat-list">
+                    <a-menu-item
+                      v-for="(item, index) in tokenEnum"
+                      :key="index"
+                      class="strat-list-item"
+                      :class="{ active: item === TWAPTokenLimit }"
+                      @click="changeVWAPTokenLimit(item)"
+                    >
+                      <span v-if="currentPair && item === tokenEnum.Token0">
+                        {{ currentPair[1][0].token0[1] }}
+                      </span>
+                      <span v-if="currentPair && item === tokenEnum.Token1">
+                        {{ currentPair[1][0].token1[1] }}
+                      </span>
+                    </a-menu-item>
+                  </a-menu>
+                </a-dropdown>
+              </template>
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                :key="tokenMinUnit"
+                v-model="VWAPForm.totalQuantity"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="tokenMinUnit"
+                :suffix="currentPair[1][0].token0[1]"
+              />
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                :key="buyUnit"
+                v-model="VWAPForm.totalQuantity"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="buyUnit"
+                :suffix="currentPair[1][0].token1[1]"
+              />
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item ice-setting-item-trigger"
+              prop="quantityPerOrder"
+            >
+              <template class="w100 flex-center" slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    <span
+                      >The amount({{
+                        TWAPTokenLimit === tokenEnum.Token0
+                          ? currentPair[1][0].token0[1]
+                          : currentPair[1][0].token1[1]
+                      }}) of the order placed each time the strategy is
+                      triggered.</span
+                    >
+                  </template>
+                  <span>Quantity per order: <a-icon type="info-circle" /></span>
+                </a-tooltip>
+                <a-dropdown placement="bottomCenter">
+                  <span class="pointer margin-left-auto" style="color: #51b7c3">
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                    >
+                      {{ currentPair[1][0].token0[1] }}
+                    </span>
+                    <span
+                      v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                    >
+                      {{ currentPair[1][0].token1[1] }}
+                    </span>
+                    <a-icon type="caret-down"
+                  /></span>
+                  <a-menu slot="overlay" class="strat-list">
+                    <a-menu-item
+                      v-for="(item, index) in tokenEnum"
+                      :key="index"
+                      class="strat-list-item"
+                      :class="{ active: item === TWAPTokenLimit }"
+                      @click="changeTWAPTokenLimit(item)"
+                    >
+                      <span v-if="currentPair && item === tokenEnum.Token0">
+                        {{ currentPair[1][0].token0[1] }}
+                      </span>
+                      <span v-if="currentPair && item === tokenEnum.Token1">
+                        {{ currentPair[1][0].token1[1] }}
+                      </span>
+                    </a-menu-item>
+                  </a-menu>
+                </a-dropdown>
+              </template>
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token0"
+                :key="tokenMinUnit"
+                v-model="VWAPForm.quantityPerOrder"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="tokenMinUnit"
+                :suffix="currentPair[1][0].token0[1]"
+              />
+              <a-input
+                v-if="currentPair && TWAPTokenLimit === tokenEnum.Token1"
+                :key="buyUnit"
+                v-model="VWAPForm.quantityPerOrder"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Total amount"
+                v-only-float="buyUnit"
+                :suffix="currentPair[1][0].token1[1]"
+              />
+            </a-form-model-item>
+            <a-form-model-item
+              :colon="false"
+              class="ice-setting-item ice-setting-item-trigger"
+              prop="volume"
+            >
+              <div class="flex-center" slot="label">
+                <a-tooltip placement="top">
+                  <template slot="title">
+                    Triggered once for each specified volume generated.
+                  </template>
+                  <span>Volume for trigger: <a-icon type="info-circle" /></span>
+                </a-tooltip>
+                <a-dropdown placement="bottomCenter">
+                  <span class="pointer margin-left-auto" style="color: #51b7c3">
+                    <a-tooltip placement="top">
+                      <template slot="title">
+                        <span v-show="spread === gridMenu.Geometric">
+                          The strategy will be triggered for every percentage of
+                          volume generated by the trading pair over the previous
+                          24 hours.
+                        </span>
+                        <span v-show="spread === gridMenu.Arithmetic">
+                          The strategy will be triggered for every specified
+                          amount of {{ currentPair[1][0].token1[1] }} volume
+                          generated by the trading pair.
+                        </span>
+                      </template>
+                      {{ spread }} <a-icon type="caret-down" />
+                    </a-tooltip>
+                  </span>
+                  <a-menu slot="overlay" class="strat-list">
+                    <a-menu-item
+                      v-for="(item, index) in gridMenu"
+                      :key="index"
+                      class="strat-list-item"
+                      :class="{ active: item === spread }"
+                      @click="changeSpreadVWAP(item)"
+                    >
+                      {{ item }}
+                    </a-menu-item>
+                  </a-menu>
+                </a-dropdown>
+              </div>
+              <a-input
+                v-if="currentPair && spread === gridMenu.Arithmetic"
+                :key="buyUnit"
+                v-model="VWAPForm.volume"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Volume for trigger"
+                v-only-float="buyUnit"
+                :suffix="currentPair[1][0].token1[1]"
+              />
+              <a-input
+                v-if="currentPair && spread === gridMenu.Geometric"
+                v-model="VWAPForm.volume"
+                class="input-icp-suffix"
+                autocomplete="off"
+                type="text"
+                placeholder="Volume for trigger"
+                v-only-float="3"
+                suffix="%"
+              />
+            </a-form-model-item>
+          </a-form-model>
+        </div>
+        <div
+          class="trade-item-pro-fee"
+          v-if="
+            stoConfig &&
+            currentPair &&
+            tokens &&
+            sysConfig &&
+            tokens[sysConfig.sysToken.toString()] &&
+            dexRole
+          "
+        >
+          <span style="font-weight: bold">Fee:</span>
+          (Create)
+          <span v-show="dexRole.vipMaker">0</span>
+          <span v-show="!dexRole.vipMaker">
+            {{
+              stoConfig.poFee1
+                | bigintToFloat(
+                  tokens[sysConfig.sysToken.toString()].decimals,
+                  tokens[sysConfig.sysToken.toString()].decimals
+                )
+            }}
+          </span>
+          {{ tokens[sysConfig.sysToken.toString()].symbol }}, (Update)
+          <span v-show="dexRole.vipMaker">0</span>
+          <span v-show="!dexRole.vipMaker">
+            {{
+              stoConfig.poFee1
+                | stoUpdateFee(tokens[sysConfig.sysToken.toString()].decimals)
+            }}
+          </span>
+          {{ tokens[sysConfig.sysToken.toString()].symbol }}, (Order) taker
+          {{ currentPair | filterFee }} + {{ stoConfig.sloFee2 | stoOrderFee }};
+          maker {{ feeRebate | filterFeeSellRebate }} +
+          {{ stoConfig.sloFee2 | stoOrderFee }}.
+        </div>
+        <button
+          v-show="proType === 'Grid'"
+          type="button"
+          class="primary large-primary w100"
+          :disabled="canSubmit"
+          @click="onSubmit"
+        >
+          Submit
+        </button>
+        <button
+          v-show="proType === 'Iceberg'"
+          type="button"
+          class="primary large-primary w100"
+          @click="onSubmitIce"
+        >
+          Submit
+        </button>
+        <button
+          v-show="proType === 'TWAP'"
+          type="button"
+          class="primary large-primary w100"
+          @click="onSubmitTWAP"
+        >
+          Submit
+        </button>
+        <button
+          v-show="proType === 'VWAP'"
+          type="button"
+          class="primary large-primary w100"
+          @click="onSubmitVWAP"
+        >
+          Submit
+        </button>
       </div>
-      <button
-        v-show="proType === 'Grid' && step === 3"
-        type="button"
-        class="primary large-primary w100 mt20"
-        :disabled="canSubmit"
-        @click="onSubmit"
-      >
-        Submit
-      </button>
     </a-modal>
   </div>
 </template>
@@ -596,16 +1427,18 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {
   DePairs,
-  GridModeEnum,
-  GridModeMenu,
   GridAmountEnum,
   GridAmountMenu,
-  ProOrderMenu
+  GridModeEnum,
+  GridModeMenu,
+  ProOrderMenu,
+  TokenEnum
 } from '@/views/home/ICDex/model';
 import { TokenInfo } from '@/ic/common/icType';
 import BigNumber from 'bignumber.js';
 import {
   AccountSetting,
+  DexRole,
   GridOrder,
   GridOrderConfig,
   GridOrderConfigAmount,
@@ -615,7 +1448,12 @@ import {
   OrderSide,
   Ppm,
   STOrder,
-  STStatus
+  StoSetting,
+  STStatus,
+  TWAP,
+  TWAPSetting,
+  VWAP,
+  VWAPSetting
 } from '@/ic/ICDex/model';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { toHttpRejectError } from '@/ic/httpError';
@@ -628,11 +1466,45 @@ import { Principal } from '@dfinity/principal';
 import moment from 'moment';
 import { checkAuth } from '@/ic/CheckAuth';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { getFee } from '@/ic/getTokenFee';
+import { SysConfig } from '@/ic/ICDexRouter/model';
+import { getTokenBalance } from '@/ic/getTokenBalance';
+
 const ProSubaccountId = 1;
 
 @Component({
   name: 'proOrder',
-  components: {}
+  components: {},
+  filters: {
+    stoUpdateFee(poFee1: bigint, decimals: number): string {
+      return new BigNumber(poFee1.toString(10))
+        .times(0.2)
+        .div(10 ** decimals)
+        .toString(10);
+    },
+    stoOrderFee(poFee2: string): string {
+      return new BigNumber(poFee2).times(100).toString(10) + '%';
+    },
+    filterFeeSellRebate(val: string): string {
+      if (val) {
+        if (Number(val) === 0) {
+          return val + '%';
+        }
+        return '-' + new BigNumber(val).decimalPlaces(4) + '%';
+      }
+      return '-';
+    },
+    filterFee(val: DePairs): string {
+      if (val) {
+        return (
+          new BigNumber(val[1][0].feeRate.toString()).times(100).toString(10) +
+          '%'
+        );
+      }
+      return '';
+    }
+  }
 })
 export default class extends Vue {
   @Prop({ type: Array, default: () => [] })
@@ -651,8 +1523,16 @@ export default class extends Vue {
   private keepingBalanceSto!: { [key: string]: string };
   @Prop({ type: Object, default: () => null })
   private tokensBalanceSto!: { [key: string]: string };
-  @Prop({ type: String, default: '' })
-  private proType!: ProOrderMenu;
+  @Prop({ type: Object, default: () => null })
+  private stoConfig!: StoSetting;
+  @Prop({ type: Object, default: () => null })
+  private sysConfig!: SysConfig;
+  @Prop({ type: String, default: () => '' })
+  private currentTokenPrice!: string;
+  @Prop({ type: Object, default: () => null })
+  private dexRole!: DexRole;
+  @Prop({ type: String, default: () => '' })
+  private feeRebate!: string;
 
   private type = 'create';
   private soid: bigint;
@@ -664,50 +1544,533 @@ export default class extends Vue {
   private gridMenu = GridModeEnum;
   private spread: GridModeMenu = GridModeEnum.Arithmetic;
   private gridAmountMenu = GridAmountEnum;
-  private investment: GridAmountMenu = GridAmountEnum.Token1;
+  private investment: GridAmountMenu = GridAmountEnum.Token0;
   private percent = '';
   private amount = '';
   private arithmetic = '';
   private geometric = '';
-  private insufficientToken0 = false;
-  private insufficientToken1 = false;
   private step = 1;
   private tradeType = 'Buy';
-  private iceForm = {
+  private proType: ProOrderMenu = null;
+  private tokenEnum = TokenEnum;
+  private TWAPTokenLimit: TokenEnum = TokenEnum.Token0;
+  private VWAPForm = {
     time: null,
-    limitPrice: '',
+    priceLimit: '',
+    priceSpread: '',
     totalQuantity: '',
-    total: '',
-    displayQuantity: ''
+    quantityPerOrder: '',
+    volume: ''
   };
-  private iceFormRules = {
+  private VWAPFormRules = {
     time: [
       {
         required: true,
-        message: 'Please select Time',
+        message: 'Please select time',
         trigger: 'change'
-      }
+      },
+      { validator: this.validateTime, trigger: 'change' }
     ],
-    limitPrice: [
-      { required: true, message: 'Please enter limit price', trigger: 'change' }
+    priceLimit: [
+      { required: true, message: 'Please enter price limit', trigger: 'change' }
+    ],
+    priceSpread: [
+      {
+        required: true,
+        message: 'Please enter slippage',
+        trigger: 'change'
+      },
+      { validator: this.validateSlippage, trigger: 'change' }
     ],
     totalQuantity: [
       {
         required: true,
         message: 'Please enter total quantity',
         trigger: 'change'
-      }
+      },
+      { validator: this.validateTotalQuantityVWAP, trigger: ['change', 'blur'] }
     ],
-    displayQuantity: [
+    quantityPerOrder: [
       {
         required: true,
-        message: 'Please enter display quantity',
+        message: 'Please enter quantity per order',
         trigger: 'change'
       },
-      { validator: this.validateDisplayQuantity, trigger: 'change' }
+      { validator: this.validateQuantityPerOrderVWAP, trigger: 'change' }
+    ],
+    volume: [
+      {
+        required: true,
+        message: 'Please enter volume',
+        trigger: 'change'
+      },
+      { validator: this.validateVolume, trigger: 'change' }
     ]
   };
-  private validateDisplayQuantity(
+  private TWAPForm = {
+    time: null,
+    priceLimit: '',
+    priceSpread: '',
+    totalQuantity: '',
+    quantityPerOrder: '',
+    timeInterval: ''
+  };
+  private TWAPFormRules = {
+    time: [
+      {
+        required: true,
+        message: 'Please select period',
+        trigger: 'change'
+      },
+      { validator: this.validateTime, trigger: 'change' }
+    ],
+    priceLimit: [
+      { required: true, message: 'Please enter price limit', trigger: 'change' }
+    ],
+    priceSpread: [
+      {
+        required: true,
+        message: 'Please enter slippage',
+        trigger: 'change'
+      },
+      { validator: this.validateSlippage, trigger: 'change' }
+    ],
+    totalQuantity: [
+      {
+        required: true,
+        message: 'Please enter total amount',
+        trigger: 'change'
+      },
+      { validator: this.validateTotalQuantityTWAP, trigger: ['change', 'blur'] }
+    ],
+    quantityPerOrder: [
+      {
+        required: true,
+        message: 'Please enter quantity per order',
+        trigger: 'change'
+      },
+      { validator: this.validateQuantityPerOrderTWAP, trigger: 'change' }
+    ],
+    timeInterval: [
+      {
+        required: true,
+        message: 'Please time interval',
+        trigger: 'change'
+      },
+      { validator: this.validateTimeIntervalTWAP, trigger: 'change' }
+    ]
+  };
+  private iceForm = {
+    time: null,
+    limitPrice: '',
+    totalQuantity: '',
+    total: '',
+    quantityPerOrder: ''
+  };
+  private iceFormRules = {
+    time: [
+      {
+        required: true,
+        message: 'Please select period.',
+        trigger: 'change'
+      },
+      { validator: this.validateTime, trigger: 'change' }
+    ],
+    limitPrice: [
+      { required: true, message: 'Please enter LMT price.', trigger: 'change' }
+    ],
+    totalQuantity: [
+      {
+        required: true,
+        message: `Please enter total amount of ${this.currentPair[1][0].token0[1]}.`,
+        trigger: 'change'
+      },
+      { validator: this.validateTotalQuantity, trigger: 'change' }
+    ],
+    quantityPerOrder: [
+      {
+        required: true,
+        message: `Please enter amount of ${this.currentPair[1][0].token0[1]} per order`,
+        trigger: 'change'
+      },
+      { validator: this.validateQuantityPerOrder, trigger: 'change' }
+    ]
+  };
+  private timeIntervalList = [
+    {
+      value: '1hour',
+      time: '3600'
+    },
+    {
+      value: '12hour',
+      time: '43200'
+    },
+    {
+      value: '1day',
+      time: '86400'
+    },
+    {
+      value: '2day',
+      time: '172800'
+    },
+    {
+      value: '1week',
+      time: '604800'
+    },
+    {
+      value: '2week',
+      time: '1209600'
+    },
+    {
+      value: '1month',
+      time: '2629800'
+    }
+  ];
+  private validateTime(
+    rule: ValidationRule,
+    value: Array<moment.Moment>,
+    callback: (arg0?: string) => void
+  ): void {
+    if (value) {
+      const endTime = new BigNumber(value[1].valueOf());
+      const now = new Date().getTime();
+      if (new BigNumber(endTime).lt(now)) {
+        callback('The end time must be set to a future time.');
+      } else {
+        callback();
+      }
+    }
+  }
+  private validateSlippage(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    let price = '0';
+    if (
+      this.tokens &&
+      this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()] &&
+      this.tokens[this.currentPair[1][0].token1[0].toString()]
+    ) {
+      price = new BigNumber(this.currentTokenPrice)
+        .div(2)
+        .decimalPlaces(this.buyUnit)
+        .toString(10);
+    }
+    if (value && new BigNumber(value).gt(price)) {
+      callback(
+        `Slippage point should be below ${price} ${
+          this.tokens[this.currentPair[1][0].token0[0].toString()].symbol
+        }/${this.tokens[this.currentPair[1][0].token1[0].toString()].symbol}.`
+      );
+    } else {
+      callback();
+    }
+  }
+  private validateTotalQuantityVWAP(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    let min = '0';
+    let min1 = '0';
+    if (
+      this.tokens &&
+      this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()]
+    ) {
+      // min UNIT_SIZE * 1000
+      min = new BigNumber(this.unit.toString(10))
+        .times(1000)
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .toString(10);
+      min1 = new BigNumber(min)
+        .times(this.currentTokenPrice)
+        .decimalPlaces(this.buyUnit)
+        .toString(10);
+    }
+    if (value && this.VWAPForm.quantityPerOrder !== '') {
+      (this.$refs.VWAPForm as any).validateField(
+        'quantityPerOrder',
+        (errorMessage) => {
+          console.log(errorMessage);
+        }
+      );
+    }
+    if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token0 &&
+      new BigNumber(value).lt(min)
+    ) {
+      callback(
+        `Quantity should be greater than ${min} ${
+          this.tokens[this.currentPair[1][0].token0[0].toString()].symbol
+        }.`
+      );
+    } else if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token1 &&
+      new BigNumber(value).lt(min1)
+    ) {
+      callback(
+        `Quantity should be greater than ${min1} ${
+          this.tokens[this.currentPair[1][0].token1[0].toString()].symbol
+        }`
+      );
+    } else {
+      callback();
+    }
+  }
+  private validateTotalQuantityTWAP(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    let min = '0';
+    let min1 = '0';
+    if (
+      this.tokens &&
+      this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()]
+    ) {
+      // min UNIT_SIZE * 1000
+      min = new BigNumber(this.unit.toString(10))
+        .times(1000)
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .toString(10);
+      min1 = new BigNumber(min)
+        .times(this.currentTokenPrice)
+        .decimalPlaces(this.buyUnit)
+        .toString(10);
+    }
+    if (value && this.TWAPForm.quantityPerOrder !== '') {
+      (this.$refs.TWAPForm as any).validateField(
+        'quantityPerOrder',
+        (errorMessage) => {
+          console.log(errorMessage);
+        }
+      );
+    }
+    if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token0 &&
+      new BigNumber(value).lt(min)
+    ) {
+      callback(
+        `Quantity should be greater than ${min} ${
+          this.tokens[this.currentPair[1][0].token0[0].toString()].symbol
+        }.`
+      );
+    } else if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token1 &&
+      new BigNumber(value).lt(min1)
+    ) {
+      callback(
+        `Quantity should be greater than ${min1} ${
+          this.tokens[this.currentPair[1][0].token1[0].toString()].symbol
+        }`
+      );
+    } else {
+      callback();
+    }
+  }
+  private validateVolume(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    if (this.spread === GridModeEnum.Arithmetic) {
+      let min = '0';
+      if (
+        this.tokens &&
+        this.currentPair &&
+        this.tokens[this.currentPair[1][0].token0[0].toString()]
+      ) {
+        // min UNIT_SIZE * 1000
+        min = new BigNumber(this.unit.toString(10))
+          .times(1000)
+          .div(
+            10 **
+              this.tokens[this.currentPair[1][0].token1[0].toString()].decimals
+          )
+          .toString(10);
+        if (value && new BigNumber(value).lt(min)) {
+          callback(
+            `The value should be greater than ${min} ${
+              this.tokens[this.currentPair[1][0].token1[0].toString()].symbol
+            }.`
+          );
+        } else {
+          callback();
+        }
+      }
+    } else {
+      if (
+        value &&
+        (new BigNumber(value).lt(1) || new BigNumber(value).gt(3000))
+      ) {
+        callback('The value should be between 1.0% and 3000.0%.');
+      } else {
+        callback();
+      }
+    }
+  }
+  private validateQuantityPerOrderVWAP(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    let min = '0';
+    let min1 = '0';
+    if (
+      this.tokens &&
+      this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()]
+    ) {
+      // min UNIT_SIZE * 10
+      min = new BigNumber(this.unit.toString(10))
+        .times(10)
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .toString(10);
+      min1 = new BigNumber(min)
+        .times(this.currentTokenPrice)
+        .decimalPlaces(this.buyUnit)
+        .toString(10);
+    }
+    if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token0 &&
+      new BigNumber(value).lt(min)
+    ) {
+      callback(
+        `The quantity per order should be greater than ${min} ${
+          this.tokens[this.currentPair[1][0].token0[0].toString()].symbol
+        }.`
+      );
+    } else if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token1 &&
+      new BigNumber(value).lt(min1)
+    ) {
+      callback(
+        `The quantity per order should be greater than ${min1} ${
+          this.tokens[this.currentPair[1][0].token1[0].toString()].symbol
+        }.`
+      );
+    } else if (
+      this.VWAPForm.totalQuantity &&
+      value &&
+      new BigNumber(value).gte(this.VWAPForm.totalQuantity)
+    ) {
+      callback(
+        `The quantity per order must be less than ${this.VWAPForm.totalQuantity}.`
+      );
+    } else {
+      callback();
+    }
+  }
+  private validateQuantityPerOrderTWAP(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    let min = '0';
+    let min1 = '0';
+    if (
+      this.tokens &&
+      this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()]
+    ) {
+      // min UNIT_SIZE * 10
+      min = new BigNumber(this.unit.toString(10))
+        .times(10)
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .toString(10);
+      min1 = new BigNumber(min)
+        .times(this.currentTokenPrice)
+        .decimalPlaces(this.buyUnit)
+        .toString(10);
+    }
+    if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token0 &&
+      new BigNumber(value).lt(min)
+    ) {
+      callback(
+        `The quantity per order should be greater than ${min} ${
+          this.tokens[this.currentPair[1][0].token0[0].toString()].symbol
+        }.`
+      );
+    } else if (
+      value &&
+      this.TWAPTokenLimit === TokenEnum.Token1 &&
+      new BigNumber(value).lt(min1)
+    ) {
+      callback(
+        `The quantity per order should be greater than ${min1} ${
+          this.tokens[this.currentPair[1][0].token1[0].toString()].symbol
+        }.`
+      );
+    } else if (
+      this.TWAPForm.totalQuantity &&
+      value &&
+      new BigNumber(value).gte(this.TWAPForm.totalQuantity)
+    ) {
+      callback(
+        `The quantity per order must be less than ${this.TWAPForm.totalQuantity}.`
+      );
+    } else {
+      callback();
+    }
+  }
+  private validateTotalQuantity(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    let unitSize1000 = '0';
+    if (value && this.iceForm.quantityPerOrder !== '') {
+      (this.$refs.iceForm as any).validateField(
+        'quantityPerOrder',
+        (errorMessage) => {
+          console.log(errorMessage);
+        }
+      );
+    }
+    if (
+      this.tokens &&
+      this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()]
+    ) {
+      unitSize1000 = new BigNumber(this.unit.toString(10))
+        .times(1000)
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .toString(10);
+    }
+    if (value && new BigNumber(value).lte(unitSize1000)) {
+      callback(`Quantity should be greater than ${unitSize1000}.`);
+    } else {
+      callback();
+    }
+  }
+  private validateQuantityPerOrder(
     rule: ValidationRule,
     value: string,
     callback: (arg0?: string) => void
@@ -718,26 +2081,103 @@ export default class extends Vue {
       this.currentPair &&
       this.tokens[this.currentPair[1][0].token0[0].toString()]
     ) {
-      // min UNIT_SIZE * 11
+      // min UNIT_SIZE * 10
       min = new BigNumber(this.unit.toString(10))
-        .times(11)
+        .times(10)
         .div(
           10 **
             this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
         )
         .toString(10);
     }
-    if (value && new BigNumber(value).lt(min)) {
-      callback(`Min displayed quantity is ${min}.`);
+    if (value && new BigNumber(value).lte(min)) {
+      callback(
+        `Amount of ${this.currentPair[1][0].token0[1]} per order should be greater than  ${min}.`
+      );
     } else if (
       this.iceForm.totalQuantity &&
       value &&
       new BigNumber(value).gte(this.iceForm.totalQuantity)
     ) {
-      callback('The displayed quantity must be lower than the total quantity.');
+      callback('The quantity per order must be lower than the total quantity.');
     } else {
       callback();
     }
+  }
+  private validateTimeIntervalTWAP(
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void {
+    if (value && new BigNumber(value).lt(60)) {
+      callback('The interval should be greater than or equal to 60 seconds.');
+    } else {
+      callback();
+    }
+  }
+  get unit10(): string {
+    if (
+      this.unit &&
+      this.currentPair &&
+      this.tokens &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()]
+    ) {
+      return new BigNumber(this.unit.toString(10))
+        .times(10)
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .decimalPlaces(this.tokenMinUnit)
+        .toString(10);
+    }
+    return '';
+  }
+  get unit10Token1(): string {
+    if (
+      this.unit &&
+      this.currentPair &&
+      this.tokens &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()] &&
+      this.currentTokenPrice
+    ) {
+      return new BigNumber(this.unit10)
+        .times(this.currentTokenPrice)
+        .decimalPlaces(this.buyUnit)
+        .toString(10);
+    }
+    return '';
+  }
+  get currentTokenPrice10(): string {
+    if (this.currentTokenPrice) {
+      return new BigNumber(this.currentTokenPrice)
+        .div(10)
+        .decimalPlaces(this.buyUnit, 1)
+        .toString(10);
+    }
+    return '';
+  }
+  get currentTokenPriceLower(): string {
+    if (this.currentTokenPrice) {
+      return new BigNumber(this.currentTokenPrice)
+        .times(0.1)
+        .div(100)
+        .decimalPlaces(this.buyUnit)
+        .toString(10);
+    }
+    return '';
+  }
+  get upperPriceWarning(): boolean {
+    if (this.upper && this.currentTokenPrice) {
+      return new BigNumber(this.upper).lte(this.currentTokenPrice);
+    }
+    return false;
+  }
+  get lowerPriceWarning(): boolean {
+    if (this.lower && this.currentTokenPrice) {
+      return new BigNumber(this.lower).gte(this.currentTokenPrice);
+    }
+    return false;
   }
   get insufficientPrice(): boolean {
     if (this.upper && this.lower) {
@@ -757,24 +2197,34 @@ export default class extends Vue {
       flag = true;
     }
     if (this.spread === GridModeEnum.Geometric) {
-      if (new BigNumber(this.geometric).gt(100) || !this.geometric) {
+      if (new BigNumber(this.geometric).lte(0.1) || !this.geometric) {
         flag = true;
       }
     } else if (this.spread === GridModeEnum.Arithmetic) {
-      if (!this.arithmetic) {
+      if (
+        new BigNumber(this.arithmetic).lte(this.currentTokenPriceLower) ||
+        !this.arithmetic
+      ) {
         flag = true;
       }
     }
     if (this.investment === GridAmountEnum.Percent) {
-      if (new BigNumber(this.percent).gt(100) || !this.percent) {
+      if (this.percent && new BigNumber(this.percent).lte(0.1)) {
+        flag = true;
+      }
+      if (this.percent && new BigNumber(this.percent).gte(100)) {
         flag = true;
       }
     } else if (this.investment === GridAmountEnum.Token0) {
-      if (!this.amount) {
+      if (
+        !this.amount ||
+        Number(this.amount) < Number(this.unit10) ||
+        !this.isModulo(this.amount)
+      ) {
         flag = true;
       }
     } else if (this.investment === GridAmountEnum.Token1) {
-      if (!this.amount) {
+      if (!this.amount || Number(this.amount) < Number(this.unit10Token1)) {
         flag = true;
       }
     }
@@ -782,10 +2232,62 @@ export default class extends Vue {
   }
   private init(type: ProOrderMenu): void {
     this.proType = type;
+    this.type = 'create';
     this.title = `Create ${this.proType} order`;
     this.step = 1;
     this.visibleProOrder = true;
     this.tradeType = 'Buy';
+    this.spread = GridModeEnum.Arithmetic;
+    this.TWAPTokenLimit = TokenEnum.Token0;
+    this.setTimeIntervalList();
+  }
+  private setTimeInterval(time: string): void {
+    this.TWAPForm.timeInterval = time;
+    (this.$refs as any).TWAPForm.clearValidate('timeInterval');
+  }
+  private setTimeIntervalList(): void {
+    const width = document.documentElement.clientWidth;
+    if (width < 768) {
+      this.timeIntervalList = [
+        {
+          value: '1hour',
+          time: '3600'
+        },
+        {
+          value: '1day',
+          time: '86400'
+        },
+        {
+          value: '1week',
+          time: '604800'
+        },
+        {
+          value: '1month',
+          time: '2629800'
+        }
+      ];
+    }
+  }
+  private isModulo(amount: string): boolean {
+    if (
+      amount &&
+      this.tokens &&
+      this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()]
+    ) {
+      return (
+        new BigNumber(amount)
+          .modulo(
+            new BigNumber(this.unit.toString()).div(
+              10 **
+                this.tokens[this.currentPair[1][0].token0[0].toString()]
+                  .decimals
+            )
+          )
+          .toString(10) === '0'
+      );
+    }
+    return true;
   }
   private totalChange(): void {
     if (
@@ -847,7 +2349,16 @@ export default class extends Vue {
   private changeTradeType(tradeType: string): void {
     if (this.type === 'create') {
       this.tradeType = tradeType;
-      (this.$refs as any).iceForm.resetFields();
+      if (this.proType === 'Iceberg') {
+        this.iceForm.total = '';
+        (this.$refs as any).iceForm.resetFields();
+      }
+      if (this.proType === 'TWAP') {
+        (this.$refs as any).TWAPForm.resetFields();
+      }
+      if (this.proType === 'VWAP') {
+        (this.$refs as any).VWAPForm.resetFields();
+      }
     }
   }
   private gridDepositKeepingBalance(isToken0: boolean): void {
@@ -856,95 +2367,254 @@ export default class extends Vue {
   private gridTransferToken(isToken0: boolean): void {
     this.$emit('gridTransferToken', isToken0);
   }
-  private update(item: STOrder): void {
-    this.title = `Update ${this.proType} order`;
-    this.type = 'update';
-    this.soid = item.soid;
-    this.status = item.status;
-    console.log(item);
-    const decimals =
-      this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
-    const token0Decimals =
-      this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
-    if (this.proType === 'Grid') {
-      const setting = (item.strategy as { GridOrder: GridOrder }).GridOrder
-        .setting;
-      this.lower = new BigNumber(setting.lowerLimit.toString(10))
-        .div(10 ** decimals)
-        .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
-        .toString(10);
-      this.upper = new BigNumber(setting.upperLimit.toString(10))
-        .div(10 ** decimals)
-        .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
-        .toString(10);
-      const spread = Object.keys(setting.spread)[0];
-      const spreadValue = Object.values(setting.spread)[0];
-      if (spread === 'Geom') {
-        this.spread = GridModeEnum.Geometric;
-        this.geometric = new BigNumber(spreadValue.toString())
-          .div(10 ** 6)
-          .times(100)
-          .toString(10);
-      } else if (spread === 'Arith') {
-        this.spread = GridModeEnum.Arithmetic;
-        this.arithmetic = new BigNumber(spreadValue.toString())
+  private update(item: STOrder, type: ProOrderMenu): void {
+    this.visibleProOrder = true;
+    this.$nextTick(() => {
+      this.proType = type;
+      this.title = `Update ${this.proType} order`;
+      this.type = 'update';
+      this.TWAPTokenLimit = TokenEnum.Token0;
+      this.setTimeIntervalList();
+      this.soid = item.soid;
+      this.status = item.status;
+      console.log(item);
+      const decimals =
+        this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
+      const token0Decimals =
+        this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
+      if (this.proType === 'Grid') {
+        const setting = (item.strategy as { GridOrder: GridOrder }).GridOrder
+          .setting;
+        this.lower = new BigNumber(setting.lowerLimit.toString(10))
           .div(10 ** decimals)
           .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
           .toString(10);
-      }
-      const investment = Object.keys(setting.amount)[0];
-      const investmentValue = Object.values(setting.amount)[0];
-      if (investment === GridAmountEnum.Percent) {
-        this.investment = GridAmountEnum.Percent;
-        if (investmentValue && investmentValue.length) {
-          this.percent = new BigNumber(investmentValue[0].toString())
+        this.upper = new BigNumber(setting.upperLimit.toString(10))
+          .div(10 ** decimals)
+          .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
+          .toString(10);
+        const spread = Object.keys(setting.spread)[0];
+        const spreadValue = Object.values(setting.spread)[0];
+        if (spread === 'Geom') {
+          this.spread = GridModeEnum.Geometric;
+          this.geometric = new BigNumber(spreadValue.toString())
+            .div(10 ** 6)
+            .times(100)
+            .toString(10);
+        } else if (spread === 'Arith') {
+          this.spread = GridModeEnum.Arithmetic;
+          this.arithmetic = new BigNumber(spreadValue.toString())
+            .div(10 ** decimals)
+            .div(
+              new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals)
+            )
+            .toString(10);
+        }
+        const investment = Object.keys(setting.amount)[0];
+        const investmentValue = Object.values(setting.amount)[0];
+        if (investment === GridAmountEnum.Percent) {
+          this.investment = GridAmountEnum.Percent;
+          if (investmentValue && investmentValue.length) {
+            this.percent = new BigNumber(investmentValue[0].toString())
+              .div(10 ** 6)
+              .times(100)
+              .toString(10);
+          }
+        } else if (investment === GridAmountEnum.Token0) {
+          this.investment = GridAmountEnum.Token0;
+          this.amount = new BigNumber(investmentValue.toString())
+            .div(10 ** token0Decimals)
+            .toString(10);
+        } else if (investment === GridAmountEnum.Token1) {
+          this.investment = GridAmountEnum.Token1;
+          this.amount = new BigNumber(investmentValue.toString())
+            .div(10 ** decimals)
+            .toString(10);
+        }
+      } else if (this.proType === 'Iceberg') {
+        const setting = (item.strategy as { IcebergOrder: IcebergOrder })
+          .IcebergOrder.setting;
+        this.tradeType = Object.keys(setting.order.side)[0];
+        const start = formatDateToSecond(
+          new Date(
+            Number(new BigNumber(setting.startingTime.toString(10)).times(1000))
+          )
+        );
+        const end = formatDateToSecond(
+          new Date(
+            Number(new BigNumber(setting.endTime.toString(10)).times(1000))
+          )
+        );
+        this.iceForm.time = [moment(start), moment(end)];
+        this.iceForm.limitPrice = new BigNumber(
+          setting.order.price.toString(10)
+        )
+          .div(10 ** decimals)
+          .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
+          .toString(10);
+        const totalQuantity = Object.values(setting.totalLimit)[0];
+        this.iceForm.totalQuantity = new BigNumber(totalQuantity.toString(10))
+          .div(10 ** token0Decimals)
+          .toString(10);
+        this.iceForm.total = new BigNumber(this.iceForm.limitPrice)
+          .times(this.iceForm.totalQuantity)
+          .toString(10);
+        const quantityPerOrder = Object.values(setting.amountPerTrigger)[0];
+        this.iceForm.quantityPerOrder = new BigNumber(
+          quantityPerOrder.toString(10)
+        )
+          .div(10 ** token0Decimals)
+          .toString(10);
+      } else if (this.proType === 'TWAP') {
+        const setting = (item.strategy as { TWAP: TWAP }).TWAP.setting;
+        this.tradeType = Object.keys(setting.order.side)[0];
+        const start = formatDateToSecond(
+          new Date(
+            Number(new BigNumber(setting.startingTime.toString(10)).times(1000))
+          )
+        );
+        const end = formatDateToSecond(
+          new Date(
+            Number(new BigNumber(setting.endTime.toString(10)).times(1000))
+          )
+        );
+        this.TWAPForm.time = [moment(start), moment(end)];
+        this.TWAPForm.priceLimit = new BigNumber(
+          setting.order.priceLimit.toString(10)
+        )
+          .div(10 ** decimals)
+          .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
+          .toString(10);
+        this.TWAPForm.priceSpread = new BigNumber(
+          setting.order.priceSpread.toString(10)
+        )
+          .div(10 ** decimals)
+          .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
+          .toString(10);
+        const totalQuantity = Object.values(setting.totalLimit)[0];
+        let type = Object.keys(setting.totalLimit)[0];
+        if (type === 'Token0') {
+          this.TWAPTokenLimit = TokenEnum.Token0;
+          this.TWAPForm.totalQuantity = new BigNumber(
+            totalQuantity.toString(10)
+          )
+            .div(10 ** token0Decimals)
+            .toString(10);
+        } else {
+          this.TWAPTokenLimit = TokenEnum.Token1;
+          this.TWAPForm.totalQuantity = new BigNumber(
+            totalQuantity.toString(10)
+          )
+            .div(10 ** decimals)
+            .toString(10);
+        }
+        const quantityPerOrder = Object.values(setting.amountPerTrigger)[0];
+        let type1 = Object.keys(setting.totalLimit)[0];
+        if (type1 === 'Token0') {
+          this.TWAPForm.quantityPerOrder = new BigNumber(
+            quantityPerOrder.toString(10)
+          )
+            .div(10 ** token0Decimals)
+            .toString(10);
+        } else {
+          this.TWAPForm.quantityPerOrder = new BigNumber(
+            quantityPerOrder.toString(10)
+          )
+            .div(10 ** decimals)
+            .toString(10);
+        }
+        this.TWAPForm.timeInterval = setting.triggerInterval.toString(10);
+      } else if (this.proType === 'VWAP') {
+        const setting = (item.strategy as { VWAP: VWAP }).VWAP.setting;
+        this.tradeType = Object.keys(setting.order.side)[0];
+        const start = formatDateToSecond(
+          new Date(
+            Number(new BigNumber(setting.startingTime.toString(10)).times(1000))
+          )
+        );
+        const end = formatDateToSecond(
+          new Date(
+            Number(new BigNumber(setting.endTime.toString(10)).times(1000))
+          )
+        );
+        this.VWAPForm.time = [moment(start), moment(end)];
+        this.VWAPForm.priceLimit = new BigNumber(
+          setting.order.priceLimit.toString(10)
+        )
+          .div(10 ** decimals)
+          .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
+          .toString(10);
+        this.VWAPForm.priceSpread = new BigNumber(
+          setting.order.priceSpread.toString(10)
+        )
+          .div(10 ** decimals)
+          .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
+          .toString(10);
+        const totalQuantity = Object.values(setting.totalLimit)[0];
+        let type = Object.keys(setting.totalLimit)[0];
+        if (type === 'Token0') {
+          this.TWAPTokenLimit = TokenEnum.Token0;
+          this.VWAPForm.totalQuantity = new BigNumber(
+            totalQuantity.toString(10)
+          )
+            .div(10 ** token0Decimals)
+            .toString(10);
+        } else {
+          this.TWAPTokenLimit = TokenEnum.Token1;
+          this.VWAPForm.totalQuantity = new BigNumber(
+            totalQuantity.toString(10)
+          )
+            .div(10 ** decimals)
+            .toString(10);
+        }
+        const quantityPerOrder = Object.values(setting.amountPerTrigger)[0];
+        let type1 = Object.keys(setting.amountPerTrigger)[0];
+        if (type1 === 'Token0') {
+          this.VWAPForm.quantityPerOrder = new BigNumber(
+            quantityPerOrder.toString(10)
+          )
+            .div(10 ** token0Decimals)
+            .toString(10);
+        } else {
+          this.VWAPForm.quantityPerOrder = new BigNumber(
+            quantityPerOrder.toString(10)
+          )
+            .div(10 ** decimals)
+            .toString(10);
+        }
+        const volType = Object.keys(setting.triggerVol)[0];
+        if (volType === 'Arith') {
+          this.spread = GridModeEnum.Arithmetic;
+          this.VWAPForm.volume = new BigNumber(
+            Object.values(setting.triggerVol)[0].toString(10)
+          )
+            .div(10 ** decimals)
+            .toString(10);
+        } else if (volType === 'Geom') {
+          this.spread = GridModeEnum.Geometric;
+          this.VWAPForm.volume = new BigNumber(
+            Object.values(setting.triggerVol)[0].toString()
+          )
             .div(10 ** 6)
             .times(100)
             .toString(10);
         }
-      } else if (investment === GridAmountEnum.Token0) {
-        this.investment = GridAmountEnum.Token0;
-        this.amount = new BigNumber(investmentValue.toString())
-          .div(10 ** token0Decimals)
-          .toString(10);
-      } else if (investment === GridAmountEnum.Token1) {
-        this.investment = GridAmountEnum.Token1;
-        this.amount = new BigNumber(investmentValue.toString())
-          .div(10 ** decimals)
-          .toString(10);
       }
-    } else if (this.proType === 'Iceberg') {
-      const setting = (item.strategy as { IcebergOrder: IcebergOrder })
-        .IcebergOrder.setting;
-      this.tradeType = Object.keys(setting.order.side)[0];
-      const start = formatDateToSecond(
-        new Date(
-          Number(new BigNumber(setting.startingTime.toString(10)).times(1000))
-        )
-      );
-      const end = formatDateToSecond(
-        new Date(
-          Number(new BigNumber(setting.endTime.toString(10)).times(1000))
-        )
-      );
-      this.iceForm.time = [moment(start), moment(end)];
-      this.iceForm.limitPrice = new BigNumber(setting.order.price.toString(10))
-        .div(10 ** decimals)
-        .div(new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals))
-        .toString(10);
-      const totalQuantity = Object.values(setting.totalLimit)[0];
-      this.iceForm.totalQuantity = new BigNumber(totalQuantity.toString(10))
-        .div(10 ** token0Decimals)
-        .toString(10);
-      this.iceForm.total = new BigNumber(this.iceForm.limitPrice)
-        .times(this.iceForm.totalQuantity)
-        .toString(10);
-      const displayQuantity = Object.values(setting.amountPerTrigger)[0];
-      this.iceForm.displayQuantity = new BigNumber(displayQuantity.toString(10))
-        .div(10 ** token0Decimals)
-        .toString(10);
-    }
-    this.visibleProOrder = true;
+    });
+  }
+  private changeVWAPTokenLimit(item: TokenEnum): void {
+    this.VWAPForm.totalQuantity = '';
+    this.VWAPForm.quantityPerOrder = '';
+    this.TWAPTokenLimit = item;
+    (this.$refs as any).VWAPForm.clearValidate('totalQuantity');
+    (this.$refs as any).VWAPForm.clearValidate('quantityPerOrder');
+  }
+  private changeTWAPTokenLimit(item: TokenEnum): void {
+    this.TWAPForm.totalQuantity = '';
+    this.TWAPForm.quantityPerOrder = '';
+    this.TWAPTokenLimit = item;
+    (this.$refs as any).TWAPForm.clearValidate('totalQuantity');
+    (this.$refs as any).TWAPForm.clearValidate('quantityPerOrder');
   }
   private changeInvestment(item: GridAmountEnum): void {
     this.percent = '';
@@ -956,6 +2626,413 @@ export default class extends Vue {
     this.geometric = '';
     this.spread = item;
   }
+  private changeSpreadVWAP(item: GridModeMenu): void {
+    this.VWAPForm.volume = '';
+    (this.$refs as any).VWAPForm.clearValidate('volume');
+    this.spread = item;
+  }
+  private async setPoolMode(): Promise<void> {
+    const setting = await this.getAccountSetting();
+    if (!setting.enPoolMode || !setting.enKeepingBalance) {
+      const currentICDexService = new ICDexService();
+      await currentICDexService.accountConfig(
+        this.currentPair[0].toString(),
+        { PoolMode: null },
+        true,
+        ProSubaccountId
+      );
+    }
+  }
+  private async stoFee(): Promise<boolean> {
+    if (this.dexRole && this.dexRole.vipMaker) {
+      return true;
+    }
+    const sysToken = this.sysConfig.sysToken.toString();
+    console.log(this.sysConfig);
+    if (!this.stoConfig.poFee1) {
+      return true;
+    }
+    console.log(this.tokens[sysToken]);
+    const currentDrc20Token = new DRC20TokenService();
+    const principal = localStorage.getItem('principal');
+    const res = await currentDrc20Token.icrc2_allowance(sysToken, {
+      account: {
+        owner: Principal.fromText(principal),
+        subaccount: [fromSubAccountId(ProSubaccountId)]
+      },
+      spender: {
+        owner: this.currentPair[0],
+        subaccount: []
+      }
+    });
+    console.log(res.allowance);
+    let fee = new BigNumber(this.stoConfig.poFee1.toString(10));
+    if (this.type === 'update') {
+      fee = fee.div(5);
+    }
+    fee = fee.plus(this.sysConfig.sysTokenFee.toString(10));
+    console.log(fee.toString(10));
+    let ICLBalance = await getTokenBalance(
+      { icrc1: null },
+      sysToken,
+      ProSubaccountId
+    );
+    let tokenFee = getFee(this.tokens[sysToken]).toString(10);
+    if (new BigNumber(res.allowance.toString(10)).lt(fee)) {
+      // approve fee
+      tokenFee = new BigNumber(tokenFee).plus(tokenFee).toString(10);
+      fee = fee.plus(this.sysConfig.sysTokenFee.toString(10));
+    }
+    let balance = new BigNumber(ICLBalance).minus(tokenFee);
+    console.log(balance.toString(10));
+    if (balance.lt(fee)) {
+      const ICLBalance0 = await getTokenBalance({ icrc1: null }, sysToken);
+      if (
+        new BigNumber(ICLBalance0)
+          .minus(getFee(this.tokens[sysToken]).toString(10))
+          .plus(balance)
+          .lt(fee)
+      ) {
+        const createFee = new BigNumber(fee)
+          .plus(tokenFee)
+          .plus(getFee(this.tokens[sysToken]).toString(10))
+          .div(10 ** this.tokens[sysToken].decimals)
+          .toString(10);
+        if (this.type === 'create') {
+          this.$message.error(
+            `Insufficient ${this.tokens[sysToken].symbol}: Create a pro-order need ${createFee} ${this.tokens[sysToken].symbol}.`
+          );
+        } else {
+          this.$message.error(
+            `Insufficient ${this.tokens[sysToken].symbol}: Update pro-order need ${createFee} ${this.tokens[sysToken].symbol}.`
+          );
+        }
+        return false;
+      } else {
+        const amount = new BigNumber(fee).minus(balance).toString(10);
+        console.log(amount);
+        await currentDrc20Token.icrc1Transfer(sysToken, BigInt(amount), {
+          owner: Principal.fromText(principal),
+          subaccount: [fromSubAccountId(ProSubaccountId)]
+        });
+      }
+    }
+    if (new BigNumber(res.allowance.toString(10)).lt(fee)) {
+      const approve = new BigNumber(10000).times(
+        10 ** this.tokens[sysToken].decimals
+      );
+      await currentDrc20Token.icrc2_approve(
+        sysToken,
+        {
+          owner: this.currentPair[0],
+          subaccount: []
+        },
+        BigInt(approve),
+        [fromSubAccountId(ProSubaccountId)]
+      );
+    }
+    return true;
+  }
+  private onSubmitVWAP(): void {
+    (this.$refs.VWAPForm as any).validate(async (valid: any) => {
+      console.log(this.VWAPForm);
+      if (valid) {
+        await checkAuth();
+        const loading = this.$loading({
+          lock: true,
+          background: 'rgba(0, 0, 0, 0.5)'
+        });
+        const canSubmit = await this.stoFee();
+        if (!canSubmit) {
+          loading.close();
+          return;
+        }
+        await this.setPoolMode();
+        const time: Array<moment.Moment> = this.VWAPForm.time;
+        const startingTime = new BigNumber(time[0].valueOf())
+          .div(1000)
+          .decimalPlaces(0, 1)
+          .toString(10);
+        const endTime = new BigNumber(time[1].valueOf())
+          .div(1000)
+          .decimalPlaces(0, 1)
+          .toString(10);
+        let side: OrderSide = {
+          Buy: null
+        };
+        if (this.tradeType === 'Sell') {
+          side = {
+            Sell: null
+          };
+        }
+        const token1 = this.currentPair[1][0].token1;
+        const token0 = this.currentPair[1][0].token0;
+        const token1Decimals = this.tokens[token1[0].toString()].decimals;
+        const token0Decimals = this.tokens[token0[0].toString()].decimals;
+        const priceLimit = BigInt(
+          new BigNumber(this.VWAPForm.priceLimit)
+            .times(10 ** token1Decimals)
+            .times(
+              new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals)
+            )
+            .toString(10)
+        );
+        const priceSpread = BigInt(
+          new BigNumber(this.VWAPForm.priceSpread)
+            .times(10 ** token1Decimals)
+            .times(
+              new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals)
+            )
+            .toString(10)
+        );
+        let totalQuantity = BigInt(
+          new BigNumber(this.VWAPForm.totalQuantity)
+            .times(10 ** token0Decimals)
+            .toString(10)
+        );
+        let totalLimit: { Token0: bigint } | { Token1: bigint } = {
+          Token0: totalQuantity
+        };
+        let amountPerTrigger = BigInt(
+          new BigNumber(this.VWAPForm.quantityPerOrder)
+            .times(10 ** token0Decimals)
+            .toString(10)
+        );
+        let amountPerTriggerArg: { Token0: bigint } | { Token1: bigint } = {
+          Token0: amountPerTrigger
+        };
+        if (this.TWAPTokenLimit === TokenEnum.Token1) {
+          totalQuantity = BigInt(
+            new BigNumber(this.VWAPForm.totalQuantity)
+              .times(10 ** token1Decimals)
+              .toString(10)
+          );
+          totalLimit = {
+            Token1: totalQuantity
+          };
+          amountPerTrigger = BigInt(
+            new BigNumber(this.VWAPForm.quantityPerOrder)
+              .times(10 ** token1Decimals)
+              .toString(10)
+          );
+          amountPerTriggerArg = {
+            Token1: amountPerTrigger
+          };
+        }
+        let vol:
+          | {
+              Geom: Ppm;
+            }
+          | { Arith: bigint } = null;
+        if (this.spread === GridModeEnum.Arithmetic) {
+          const arith = new BigNumber(this.VWAPForm.volume)
+            .times(10 ** token1Decimals)
+            .toString(10);
+          vol = {
+            Arith: BigInt(arith)
+          };
+        } else {
+          const geom = new BigNumber(this.VWAPForm.volume)
+            .times(10 ** 6)
+            .div(100)
+            .toString(10);
+          vol = {
+            Geom: BigInt(geom)
+          };
+        }
+        const VWAPSetting: VWAPSetting = {
+          startingTime: BigInt(startingTime),
+          endTime: BigInt(endTime),
+          order: {
+            priceLimit: priceLimit,
+            priceSpread: priceSpread,
+            side: side
+          },
+          totalLimit: totalLimit,
+          amountPerTrigger: amountPerTriggerArg,
+          triggerVol: vol
+        };
+        console.log(VWAPSetting);
+        try {
+          const currentICDexService = new ICDexService();
+          let res;
+          if (this.type === 'create') {
+            res = await currentICDexService.sto_createProOrder(
+              this.currentPair[0].toString(),
+              { VWAP: VWAPSetting },
+              ProSubaccountId
+            );
+          } else {
+            res = await currentICDexService.sto_updateProOrder(
+              this.currentPair[0].toString(),
+              this.soid,
+              {
+                VWAP: {
+                  status: [],
+                  setting: [VWAPSetting]
+                }
+              },
+              ProSubaccountId
+            );
+          }
+          if (res) {
+            this.$message.success('Success');
+            this.visibleProOrder = false;
+            this.$emit('createProOrderSuccess');
+          } else {
+            this.$message.error('Error');
+          }
+        } catch (e) {
+          if (toHttpRejectError(e)) {
+            this.$message.error(toHttpRejectError(e));
+          } else {
+            this.$message.error('Error');
+          }
+        }
+        loading.close();
+      }
+    });
+  }
+  private onSubmitTWAP(): void {
+    (this.$refs.TWAPForm as any).validate(async (valid: any) => {
+      console.log(this.TWAPForm);
+      if (valid) {
+        await checkAuth();
+        const loading = this.$loading({
+          lock: true,
+          background: 'rgba(0, 0, 0, 0.5)'
+        });
+        const canSubmit = await this.stoFee();
+        if (!canSubmit) {
+          loading.close();
+          return;
+        }
+        await this.setPoolMode();
+        const time: Array<moment.Moment> = this.TWAPForm.time;
+        const startingTime = new BigNumber(time[0].valueOf())
+          .div(1000)
+          .decimalPlaces(0, 1)
+          .toString(10);
+        const endTime = new BigNumber(time[1].valueOf())
+          .div(1000)
+          .decimalPlaces(0, 1)
+          .toString(10);
+        let side: OrderSide = {
+          Buy: null
+        };
+        if (this.tradeType === 'Sell') {
+          side = {
+            Sell: null
+          };
+        }
+        const token1 = this.currentPair[1][0].token1;
+        const token0 = this.currentPair[1][0].token0;
+        const token1Decimals = this.tokens[token1[0].toString()].decimals;
+        const token0Decimals = this.tokens[token0[0].toString()].decimals;
+        const priceLimit = BigInt(
+          new BigNumber(this.TWAPForm.priceLimit)
+            .times(10 ** token1Decimals)
+            .times(
+              new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals)
+            )
+            .toString(10)
+        );
+        const priceSpread = BigInt(
+          new BigNumber(this.TWAPForm.priceSpread)
+            .times(10 ** token1Decimals)
+            .times(
+              new BigNumber(this.unit.toString(10)).div(10 ** token0Decimals)
+            )
+            .toString(10)
+        );
+        let totalQuantity = BigInt(
+          new BigNumber(this.TWAPForm.totalQuantity)
+            .times(10 ** token0Decimals)
+            .toString(10)
+        );
+        let amountPerTrigger = BigInt(
+          new BigNumber(this.TWAPForm.quantityPerOrder)
+            .times(10 ** token0Decimals)
+            .toString(10)
+        );
+        let totalLimit: { Token0: bigint } | { Token1: bigint } = {
+          Token0: totalQuantity
+        };
+        let amountPerTriggerArg: { Token0: bigint } | { Token1: bigint } = {
+          Token0: amountPerTrigger
+        };
+        if (this.TWAPTokenLimit === TokenEnum.Token1) {
+          totalQuantity = BigInt(
+            new BigNumber(this.TWAPForm.totalQuantity)
+              .times(10 ** token1Decimals)
+              .toString(10)
+          );
+          totalLimit = {
+            Token1: totalQuantity
+          };
+          amountPerTrigger = BigInt(
+            new BigNumber(this.TWAPForm.quantityPerOrder)
+              .times(10 ** token1Decimals)
+              .toString(10)
+          );
+          amountPerTriggerArg = {
+            Token1: amountPerTrigger
+          };
+        }
+        const timeInterval = BigInt(this.TWAPForm.timeInterval);
+        try {
+          const currentICDexService = new ICDexService();
+          const TWAPSetting: TWAPSetting = {
+            startingTime: BigInt(startingTime),
+            endTime: BigInt(endTime),
+            order: {
+              priceLimit: priceLimit,
+              priceSpread: priceSpread,
+              side: side
+            },
+            totalLimit: totalLimit,
+            amountPerTrigger: amountPerTriggerArg,
+            triggerInterval: timeInterval
+          };
+          console.log(TWAPSetting);
+          let res;
+          if (this.type === 'create') {
+            res = await currentICDexService.sto_createProOrder(
+              this.currentPair[0].toString(),
+              { TWAP: TWAPSetting },
+              ProSubaccountId
+            );
+          } else {
+            res = await currentICDexService.sto_updateProOrder(
+              this.currentPair[0].toString(),
+              this.soid,
+              {
+                TWAP: {
+                  status: [],
+                  setting: [TWAPSetting]
+                }
+              },
+              ProSubaccountId
+            );
+          }
+          if (res) {
+            this.$message.success('Success');
+            this.visibleProOrder = false;
+            this.$emit('createProOrderSuccess');
+          } else {
+            this.$message.error('Error');
+          }
+        } catch (e) {
+          if (toHttpRejectError(e)) {
+            this.$message.error(toHttpRejectError(e));
+          } else {
+            this.$message.error('Error');
+          }
+        }
+        loading.close();
+      }
+    });
+  }
   private onSubmitIce(): void {
     (this.$refs.iceForm as any).validate(async (valid: any) => {
       console.log(this.iceForm);
@@ -965,16 +3042,12 @@ export default class extends Vue {
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
-        const setting = await this.getAccountSetting();
-        if (!setting.enPoolMode || !setting.enKeepingBalance) {
-          const currentICDexService = new ICDexService();
-          await currentICDexService.accountConfig(
-            this.currentPair[0].toString(),
-            { PoolMode: null },
-            true,
-            ProSubaccountId
-          );
+        const canSubmit = await this.stoFee();
+        if (!canSubmit) {
+          loading.close();
+          return;
         }
+        await this.setPoolMode();
         const time: Array<moment.Moment> = this.iceForm.time;
         const startingTime = new BigNumber(time[0].valueOf())
           .div(1000)
@@ -1014,26 +3087,26 @@ export default class extends Vue {
             .toString(10)
         );
         const amountPerTrigger = BigInt(
-          new BigNumber(this.iceForm.displayQuantity)
+          new BigNumber(this.iceForm.quantityPerOrder)
             .times(10 ** token0Decimals)
             .toString(10)
         );
         try {
           const currentICDexService = new ICDexService();
+          const IcebergOrder: IcebergOrderConfig = {
+            startingTime: BigInt(startingTime),
+            endTime: BigInt(endTime),
+            order: order,
+            totalLimit: {
+              Token0: totalQuantity
+            },
+            amountPerTrigger: {
+              Token0: amountPerTrigger
+            }
+          };
           let res;
           if (this.type === 'create') {
             console.log('sto_createProOrder');
-            const IcebergOrder: IcebergOrderConfig = {
-              startingTime: BigInt(startingTime),
-              endTime: BigInt(endTime),
-              order: order,
-              totalLimit: {
-                Token0: totalQuantity
-              },
-              amountPerTrigger: {
-                Token0: amountPerTrigger
-              }
-            };
             console.log(IcebergOrder);
             res = await currentICDexService.sto_createProOrder(
               this.currentPair[0].toString(),
@@ -1044,17 +3117,6 @@ export default class extends Vue {
             );
           } else {
             console.log('sto_updateProOrder');
-            const IcebergOrder: IcebergOrderConfig = {
-              startingTime: BigInt(startingTime),
-              endTime: BigInt(endTime),
-              order: order,
-              totalLimit: {
-                Token0: totalQuantity
-              },
-              amountPerTrigger: {
-                Token0: amountPerTrigger
-              }
-            };
             console.log(IcebergOrder);
             res = await currentICDexService.sto_updateProOrder(
               this.currentPair[0].toString(),
@@ -1093,16 +3155,12 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    const setting = await this.getAccountSetting();
-    if (!setting.enPoolMode || !setting.enKeepingBalance) {
-      const currentICDexService = new ICDexService();
-      await currentICDexService.accountConfig(
-        this.currentPair[0].toString(),
-        { PoolMode: null },
-        true,
-        ProSubaccountId
-      );
+    const canSubmit = await this.stoFee();
+    if (!canSubmit) {
+      loading.close();
+      return;
     }
+    await this.setPoolMode();
     const token1 = this.currentPair[1][0].token1;
     const token0 = this.currentPair[1][0].token0;
     const token1Decimals = this.tokens[token1[0].toString()].decimals;
@@ -1238,28 +3296,61 @@ export default class extends Vue {
     }
   }
   private afterClose(): void {
+    console.log('afterClose');
+    console.log(this.proType);
     if (this.proType === 'Grid') {
       this.lower = '';
       this.upper = '';
       this.spread = GridModeEnum.Arithmetic;
-      this.investment = GridAmountEnum.Percent;
+      this.investment = GridAmountEnum.Token0;
       this.percent = '';
       this.amount = '';
       this.arithmetic = '';
       this.geometric = '';
     }
     if (this.proType === 'Iceberg') {
-      (this.$refs as any).iceForm.resetFields();
+      this.iceForm.total = '';
+      (this.$refs.iceForm as any).resetFields();
+    }
+    if (this.proType === 'TWAP') {
+      (this.$refs.TWAPForm as any).resetFields();
+    }
+    if (this.proType === 'VWAP') {
+      (this.$refs.VWAPForm as any).resetFields();
+      this.spread = GridModeEnum.Arithmetic;
+      console.log(this.VWAPForm);
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+.time-Label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  div {
+    cursor: pointer;
+  }
+  button {
+    width: auto;
+    background: #1a2a33;
+    color: #52b7c3;
+  }
+}
+.line22 {
+  line-height: 22px;
+}
+.pro-order-item {
+  background: #101014;
+  padding: 20px 15px;
+  border-radius: 10px;
+}
 .grid-setting-item-title {
   display: flex;
   align-items: center;
-  padding: 15px 0 5px;
+  padding: 20px 0 5px;
 }
 .grid-setting-price-range {
   display: flex;
@@ -1277,6 +3368,14 @@ span.base-font-title {
 }
 .transfer-pro-wallet-main {
   display: flex;
+  .transfer-pro-wallet-down {
+    margin: 10px 0;
+    cursor: pointer;
+    font-size: 22px;
+    padding-left: 50px;
+    color: #51b7c3;
+    text-align: left;
+  }
 }
 .transfer-pro-wallet {
   width: 50%;
@@ -1328,7 +3427,37 @@ span.base-font-title {
     }
   }
 }
+.flex-center {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
 .ice-setting-item {
+  &.ice-setting-item-trigger {
+    ::v-deep .ant-form-item-label {
+      width: 100%;
+    }
+    ::v-deep label {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+  }
+  &.ice-setting-item-suffix {
+    ::v-deep input {
+      padding-right: 30px;
+    }
+  }
+  .suffix {
+    position: absolute;
+    top: 63px;
+    right: 10px;
+    font-size: 12px;
+    color: #8c90a1;
+  }
+  ::v-deep &.ant-form-item {
+    margin-bottom: 10px;
+  }
   ::v-deep .ant-calendar-picker-clear {
     background: transparent;
     color: #adb3c4;
@@ -1346,6 +3475,10 @@ span.base-font-title {
     }
   }
 }
+.trade-item-pro-fee {
+  margin: 30px 0 5px;
+  font-size: 12px;
+}
 @media screen and (max-width: 768px) {
   .h5-show {
     display: flex;
@@ -1360,13 +3493,16 @@ span.base-font-title {
   }
   .transfer-pro-wallet-main {
     flex-direction: column;
-    margin-bottom: 10px;
+    margin-bottom: 0;
     button {
       margin-top: 5px;
     }
   }
   .transfer-pro-wallet {
     width: 100%;
+  }
+  .pro-order-item {
+    padding: 10px;
   }
 }
 </style>

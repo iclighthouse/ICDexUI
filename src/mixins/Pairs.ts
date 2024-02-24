@@ -25,7 +25,7 @@ import {
   TokenLiquidity
 } from '@/ic/ICSwap/model';
 import { Config, Liquidity } from '@/ic/cyclesFinance/model';
-import { Pairs } from '@/ic/ICSwapRouter/model';
+import { Pairs, SwapPair } from '@/ic/ICSwapRouter/model';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { LedgerService } from '@/ic/ledger/ledgerService';
 import { principalToAccountIdentifier } from '@/ic/converter';
@@ -134,7 +134,7 @@ export class PairsMixin extends Vue {
         'ICP',
         { icp: null },
         {
-          name: 'Icp',
+          name: 'ICP',
           symbol: 'ICP',
           decimals: 8,
           fee: BigInt(10000),
@@ -731,18 +731,19 @@ export class PairsMixin extends Vue {
   }
   public async initLiquidity(): Promise<void> {
     if (this.currentPool && this.currentPool.length) {
+      const info = this.currentPool[1] as [SwapPair, bigint]
       if (!this.swapId) {
         this.tokenSwapFrom = [
-          ...this.currentPool[1][0].token0,
-          this.tokens[this.currentPool[1][0].token0[0].toString()]
+          ...info[0].token0,
+          this.tokens[info[0].token0[0].toString()]
         ];
         this.tokenSwapTo = [
-          ...this.currentPool[1][0].token1,
-          this.tokens[this.currentPool[1][0].token1[0].toString()]
+          ...info[0].token1,
+          this.tokens[info[0].token1[0].toString()]
         ];
         this.swapId = this.currentPool[0].toString();
         this.currentRoute = [
-          [Principal.fromText(this.swapId), this.currentPool[1]]
+          [Principal.fromText(this.swapId), info]
         ];
       }
       const promiseAllValue = [];
@@ -769,7 +770,7 @@ export class PairsMixin extends Vue {
           'ICP',
           { icp: null },
           {
-            name: 'Icp',
+            name: 'ICP',
             symbol: 'ICP',
             decimals: 8,
             fee: BigInt(10000),
@@ -833,7 +834,7 @@ export class PairsMixin extends Vue {
       const std = Object.keys(tokenStd)[0].toLocaleLowerCase();
       let balance: string;
       if (std === 'icp') {
-        balance = await getDepositing(tokenStd, '', this.depositAccountId);
+        balance = await getDepositing(tokenStd, '', this.depositAccount[0]);
       } else {
         balance = await getDepositing(
           tokenStd,

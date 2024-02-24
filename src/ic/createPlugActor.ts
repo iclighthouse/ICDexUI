@@ -46,52 +46,85 @@ export const createPlugActor = async <T>(
   if (plugActor && plugActor[canisterId]) {
     return plugActor[canisterId];
   }
-  if (
-    canisterId === LEDGER_CANISTER_ID ||
-    canisterId === WICP_CANISTER_ID ||
-    canisterId == OT ||
-    snsToken.includes(canisterId)
-  ) {
-    if (requestsCanisterId.includes(canisterId)) {
-      return new Promise((resolve) => {
-        if (!requests[canisterId]) {
-          requests[canisterId] = [];
-        }
-        requests[canisterId].push((actor) => {
-          resolve(actor);
-        });
-      });
-    } else {
-      if (await canRequest(canisterId)) {
-        requestsCanisterId.push(canisterId);
-        const t = new Date().getTime();
-        console.log(canisterId + ': ' + t);
-        return plugIc
-          .createActor({
-            canisterId: canisterId,
-            interfaceFactory: IDL
-          })
-          .then((res) => {
-            console.log(canisterId + ': ' + (new Date().getTime() - t));
-            plugActor[canisterId] = res;
-            if (requests[canisterId] && requests[canisterId].length) {
-              requests[canisterId].forEach((m) => m(plugActor[canisterId]));
-              requestsCanisterId.splice(requestsCanisterId.indexOf(canisterId));
-              delete requests[canisterId];
-            }
-            return plugActor[canisterId];
-          });
-      } else {
-        return null;
+  if (requestsCanisterId.includes(canisterId)) {
+    return new Promise((resolve) => {
+      if (!requests[canisterId]) {
+        requests[canisterId] = [];
       }
-    }
-  } else {
-    plugActor[canisterId] = Actor.createActor(IDL, {
-      agent: plugIc.agent,
-      canisterId: canisterId
+      requests[canisterId].push((actor) => {
+        resolve(actor);
+      });
     });
-    return plugActor[canisterId];
+  } else {
+    if (await canRequest(canisterId)) {
+      requestsCanisterId.push(canisterId);
+      const t = new Date().getTime();
+      console.log(canisterId + ': ' + t);
+      return plugIc
+        .createActor({
+          canisterId: canisterId,
+          interfaceFactory: IDL
+        })
+        .then((res) => {
+          console.log(canisterId + ': ' + (new Date().getTime() - t));
+          plugActor[canisterId] = res;
+          if (requests[canisterId] && requests[canisterId].length) {
+            requests[canisterId].forEach((m) => m(plugActor[canisterId]));
+            requestsCanisterId.splice(requestsCanisterId.indexOf(canisterId));
+            delete requests[canisterId];
+          }
+          return plugActor[canisterId];
+        });
+    } else {
+      return null;
+    }
   }
+  // if (
+  //   canisterId === LEDGER_CANISTER_ID ||
+  //   canisterId === WICP_CANISTER_ID ||
+  //   canisterId == OT ||
+  //   snsToken.includes(canisterId)
+  // ) {
+  //   if (requestsCanisterId.includes(canisterId)) {
+  //     return new Promise((resolve) => {
+  //       if (!requests[canisterId]) {
+  //         requests[canisterId] = [];
+  //       }
+  //       requests[canisterId].push((actor) => {
+  //         resolve(actor);
+  //       });
+  //     });
+  //   } else {
+  //     if (await canRequest(canisterId)) {
+  //       requestsCanisterId.push(canisterId);
+  //       const t = new Date().getTime();
+  //       console.log(canisterId + ': ' + t);
+  //       return plugIc
+  //         .createActor({
+  //           canisterId: canisterId,
+  //           interfaceFactory: IDL
+  //         })
+  //         .then((res) => {
+  //           console.log(canisterId + ': ' + (new Date().getTime() - t));
+  //           plugActor[canisterId] = res;
+  //           if (requests[canisterId] && requests[canisterId].length) {
+  //             requests[canisterId].forEach((m) => m(plugActor[canisterId]));
+  //             requestsCanisterId.splice(requestsCanisterId.indexOf(canisterId));
+  //             delete requests[canisterId];
+  //           }
+  //           return plugActor[canisterId];
+  //         });
+  //     } else {
+  //       return null;
+  //     }
+  //   }
+  // } else {
+  //   plugActor[canisterId] = Actor.createActor(IDL, {
+  //     agent: plugIc.agent,
+  //     canisterId: canisterId
+  //   });
+  //   return plugActor[canisterId];
+  // }
 };
 
 export const hasActor = (canisterId: string): boolean => {
@@ -107,54 +140,54 @@ const plugWhitelist = [
     canisterId: LEDGER_CANISTER_ID,
     idl: ledgerIDL
   },
-  {
-    canisterId: CHAT,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: SNS1,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: KINIC,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: HOT,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: GHOST,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: MOD,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: BOOM,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: CAT,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: ICX,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: NUA,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: SONIC,
-    idl: DRC20IDL
-  },
-  {
-    canisterId: CKBTC,
-    idl: DRC20IDL
-  }
+  // {
+  //   canisterId: CHAT,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: SNS1,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: KINIC,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: HOT,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: GHOST,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: MOD,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: BOOM,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: CAT,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: ICX,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: NUA,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: SONIC,
+  //   idl: DRC20IDL
+  // },
+  // {
+  //   canisterId: CKBTC,
+  //   idl: DRC20IDL
+  // }
   // {
   //   canisterId: GOVERNANCE_CANISTER_ID,
   //   idl: governanceIDL

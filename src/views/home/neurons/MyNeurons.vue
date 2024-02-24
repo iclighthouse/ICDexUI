@@ -758,6 +758,26 @@ export default class extends Mixins(BalanceMixin) {
     this.$refs.increaseDissolveDelay.init(this.neuronList, this.neuronIndex);
   }
   public onTopUpNeuron(neuron: Neuron, index: number): void {
+    if (this.showOperation(index)) {
+      this.toTopUpNeuron(neuron, index);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const _that = this;
+      this.$confirm({
+        content:
+          'WARNING: This neuron sets your account as a hotkey, but is not necessarily your neuron. You need to verify that this is the neuron you control or you may lose funds.',
+        class: 'connect-plug register-mining-confirm',
+        icon: 'connect-plug',
+        okText: 'Confirm',
+        cancelText: "Cancel / I'm not sure",
+        centered: true,
+        onOk() {
+          _that.toTopUpNeuron(neuron, index);
+        }
+      });
+    }
+  }
+  private toTopUpNeuron(neuron: Neuron, index: number): void {
     this.neuronAccount = neuronAccountToAccountIdentifier(neuron.account);
     this.neuronId = neuron.id[0].id;
     this.neuronIndex = index;

@@ -29,7 +29,7 @@ export const getTokenInfo = async (
     tokenId.toString() === LEDGER_CANISTER_ID ||
     (tokenStd && (tokenStd as { icp: null }).icp === null)
   ) {
-    tokenInfo.name = 'Icp';
+    tokenInfo.name = 'ICP';
     tokenInfo.symbol = 'ICP';
     tokenInfo.fee = BigInt(10000);
     tokenInfo.decimals = 8;

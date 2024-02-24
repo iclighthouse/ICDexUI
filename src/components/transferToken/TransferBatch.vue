@@ -93,7 +93,6 @@ import { Identity } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import BigNumber from 'bignumber.js';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import {
   AddTokenItem,
   AddTokenItemClass,
@@ -103,7 +102,6 @@ import { Gas } from '@/ic/ICTokens/model';
 import { Txid } from '@/ic/ICLighthouseToken/model';
 import { checkAuth } from '@/ic/CheckAuth';
 import { hexToBytes } from '@/ic/converter';
-import store from '@/store';
 import { validateAccount, validatePrincipal } from '@/ic/utils';
 
 @Component({
@@ -114,7 +112,6 @@ export default class extends Vue {
   @Prop()
   private identity!: Identity;
   public currentToken: AddTokenItem = new AddTokenItemClass();
-  private ICLighthouseTokenService: ICLighthouseTokenService;
   private DRC20TokenService: DRC20TokenService;
   public visibleTransfer = false;
   private isIcx = false;
@@ -213,7 +210,6 @@ export default class extends Vue {
     }
     this.currentToken = token;
     this.visibleTransfer = true;
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.DRC20TokenService = new DRC20TokenService();
     if (
       token.standard === TokenStandard['ICRC-1'] ||
@@ -231,7 +227,7 @@ export default class extends Vue {
     const principal = localStorage.getItem('principal');
     let res: bigint;
     if (this.currentToken.standard === TokenStandard.DRC20) {
-      res = await this.ICLighthouseTokenService.getBalance(
+      res = await this.DRC20TokenService.drc20_balanceOf(
         principal,
         this.currentToken.canisterId.toString()
       );
@@ -265,13 +261,13 @@ export default class extends Vue {
     let fee;
     if (this.currentToken.standard === TokenStandard.DRC20) {
       try {
-        this.gas = await this.ICLighthouseTokenService.gas(
+        this.gas = await this.DRC20TokenService.gas(
           this.currentToken.canisterId.toString()
         );
         console.log(this.gas);
         fee = (this.gas as { token: bigint }).token;
       } catch (e) {
-        fee = await this.ICLighthouseTokenService.fee(
+        fee = await this.DRC20TokenService.fee(
           this.currentToken.canisterId.toString()
         );
       }
@@ -325,7 +321,7 @@ export default class extends Vue {
         console.log(batchAmount);
         const principal = localStorage.getItem('principal');
         if (this.currentToken.standard === TokenStandard.DRC20) {
-          const nonceRes = await this.ICLighthouseTokenService.txnQuery(
+          const nonceRes = await this.DRC20TokenService.txnQuery(
             {
               txnCount: { owner: principal }
             },
@@ -342,7 +338,7 @@ export default class extends Vue {
               Array.from(Buffer.from(hexToBytes(this.transferForm.data)))
             ];
           }
-          const res = await this.ICLighthouseTokenService.drc20_transferBatch(
+          const res = await this.DRC20TokenService.drc20_transferBatch(
             this.currentToken.canisterId.toString(),
             account,
             batchAmount,

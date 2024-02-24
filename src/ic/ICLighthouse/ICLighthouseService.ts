@@ -120,4 +120,31 @@ export class ICLighthouseService {
       operation
     );
   };
+  public getFavorites = async (): Promise<Array<Principal>> => {
+    await this.check();
+    try {
+      return await this.service.getFavorites();
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  };
+  public addFavorites = async (pairId: Principal): Promise<void> => {
+    await this.check();
+    try {
+      return await this.service.addFavorites(pairId);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public removeFavorites = async (pairId: Principal): Promise<boolean> => {
+    await this.check();
+    try {
+      return await this.service.removeFavorites(pairId);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 }

@@ -2,7 +2,7 @@
   <a-modal
     v-model="visible"
     centered
-    :title="'Approve ' + symbol"
+    :title="symbol + ' Approval'"
     width="550px"
     :footer="null"
     :keyboard="false"
@@ -68,7 +68,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
 import { checkAuth } from '@/ic/CheckAuth';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import BigNumber from 'bignumber.js';
 import {
   IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
@@ -100,9 +99,8 @@ export default class extends Vue {
   IclTokenAmount!: number;
   @Prop({ type: String, default: 'add' })
   type!: string;
-  @Prop({ type: String, default: 'drc20' })
+  @Prop({ type: String, default: 'icrc1' })
   approveMode!: string;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
   private DRC20TokenService: DRC20TokenService;
   private approveForm = {
     spender: '',
@@ -133,7 +131,6 @@ export default class extends Vue {
   }
   private visible = false;
   created(): void {
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.DRC20TokenService = new DRC20TokenService();
   }
   private afterClose(): void {
@@ -155,7 +152,7 @@ export default class extends Vue {
         try {
           if (this.approveMode === 'drc20') {
             const principal = localStorage.getItem('principal');
-            const nonceRes = await this.ICLighthouseTokenService.txnQuery(
+            const nonceRes = await this.DRC20TokenService.txnQuery(
               {
                 txnCount: { owner: principal }
               },
@@ -172,7 +169,7 @@ export default class extends Vue {
                 Array.from(Buffer.from(hexToBytes(this.approveForm.data)))
               ];
             }
-            const res = await this.ICLighthouseTokenService.approve(
+            const res = await this.DRC20TokenService.drc20Approve(
               amount,
               data,
               this.approveForm.spender,
@@ -188,7 +185,7 @@ export default class extends Vue {
               ).ok
             ) {
               this.visible = false;
-              this.$message.success('Approve Success');
+              this.$message.success('Approval success!');
               this.$emit('approveSuccess');
             } else {
               this.$message.error((res as TxnResultErr).err.message);
@@ -207,7 +204,7 @@ export default class extends Vue {
               const type = Object.keys(res)[0];
               if (type === 'Ok') {
                 this.visible = false;
-                this.$message.success('Approve Success');
+                this.$message.success('Approval success!');
                 this.$emit('approveSuccess');
               } else {
                 console.log(res);

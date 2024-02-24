@@ -25,6 +25,9 @@ export class NftService {
   public tokens_ext = async (): Promise<ExtResult> => {
     await this.check(false, false);
     const principal = localStorage.getItem('principal');
+    if (!principal) {
+      return null;
+    }
     const account = principalToAccountIdentifier(Principal.fromText(principal));
     const res = await this.service.tokens_ext(account);
     return SerializableIC(res);

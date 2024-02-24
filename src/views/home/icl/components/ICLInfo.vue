@@ -82,17 +82,20 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
 import { Identity } from '@dfinity/agent';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { ICTokenService } from '@/ic/ICTokens/ICTokenService';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { AddTokenItemClass } from '@/views/home/account/model';
-import { InitArgs, GasMenu, GasType, Gas } from '@/ic/ICTokens/model';
-import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
+import {
+  IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+  IC_TOKEN_CANISTER_ID
+} from '@/ic/utils';
 import TransferToken from '@/components/transferToken/Index.vue';
 import { checkAuth } from '@/ic/CheckAuth';
 import ReceiveModal from '@/components/receiveModal/Index.vue';
 import { namespace } from 'vuex-class';
+import { Principal } from '@dfinity/principal';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 const commonModule = namespace('common');
 @Component({
   name: 'ICLInfo',
@@ -114,7 +117,7 @@ export default class extends Vue {
   private currentToken = new AddTokenItemClass();
   private ICL = '0';
   private decimals = 8;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
+  private DRC20TokenService: DRC20TokenService;
   private ICTokenService: ICTokenService;
   private visible = false;
   private refreshBalanceLoading = false;
@@ -137,7 +140,7 @@ export default class extends Vue {
     //   callback('Insufficient ICL');
     // } else
     if (value && value < min) {
-      callback('Min amount is 100 ICL');
+      callback('Min amount is 1000 ICL');
     } else {
       callback();
     }
@@ -156,12 +159,12 @@ export default class extends Vue {
     }
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
     this.ICL = currentInfo.ICL || '0';
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
+    this.DRC20TokenService = new DRC20TokenService();
     this.ICTokenService = new ICTokenService();
     this.getBalance();
     this.getIcl();
     this.currentToken = {
-      canisterId: IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+      canisterId: Principal.fromHex(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
       balance: this.ICL.toString(),
       decimals: Number(this.decimals),
       name: '',
@@ -198,8 +201,14 @@ export default class extends Vue {
       this.refreshBalanceLoading = true;
     }
     const principal = localStorage.getItem('principal');
-    // const decimals = await this.ICLighthouseTokenService.getDecimals();
-    const ICL = await this.ICLighthouseTokenService.getBalance(principal);
+    const to = {
+      owner: Principal.fromText(principal),
+      subaccount: []
+    };
+    const ICL = await this.DRC20TokenService.icrc1_balance_of(
+      IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+      to
+    );
     if (Number(this.decimals) > 4) {
       this.ICL = new BigNumber(ICL.toString(10))
         .div(10 ** Number(this.decimals))
@@ -219,17 +228,6 @@ export default class extends Vue {
     this.$set(this.currentToken, 'balance', this.ICL);
     console.log(this.currentToken);
     this.refreshBalanceLoading = false;
-  }
-  private async approvals(): Promise<void> {
-    const principal = localStorage.getItem('principal');
-    const res = await this.ICLighthouseTokenService.approvals(principal);
-    console.log(res);
-    const remaining = res.reduce((remaining, item) => {
-      return BigInt(
-        new BigNumber(remaining.toString(10)).plus(item.remaining.toString(10))
-      );
-    }, BigInt('0'));
-    console.log(remaining);
   }
   private afterClose(): void {
     this.$refs.approveForm.resetFields();
@@ -274,19 +272,24 @@ export default class extends Vue {
           background: 'rgba(0, 0, 0, 0.5)'
         });
         try {
-          const res = await this.ICLighthouseTokenService.approve(ICL);
-          if (
-            (
-              res as {
-                ok: Txid;
-              }
-            ).ok
-          ) {
-            this.getBalance();
-            this.visible = false;
-            this.$message.success('Approve Success');
-          } else {
-            this.$message.error((res as TxnResultErr).err.message);
+          const res = await this.DRC20TokenService.icrc2_approve(
+            IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+            {
+              owner: Principal.fromText(IC_TOKEN_CANISTER_ID),
+              subaccount: []
+            },
+            ICL
+          );
+          if (res) {
+            const type = Object.keys(res)[0];
+            if (type === 'Ok') {
+              this.getBalance();
+              this.visible = false;
+              this.$message.success('Approve Success');
+            } else {
+              console.log(res);
+              this.$message.error('Approve Error');
+            }
           }
           loading.close();
         } catch (e) {

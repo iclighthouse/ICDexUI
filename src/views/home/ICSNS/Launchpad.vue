@@ -471,9 +471,9 @@ import {
   CfInvestment,
   CfParticipant,
   DirectInvestment,
+  GetDerivedStateResponse1,
   GetStateResponse,
   Investor,
-  NeuronBasketConstructionParameters,
   Params
 } from '@/ic/SNSSwap/model';
 import BigNumber from 'bignumber.js';
@@ -533,7 +533,7 @@ export default class extends Vue {
   private timer = null;
   private loading = false;
   async activated(): Promise<void> {
-    if (!this.$route.meta.isBack) {
+    if (!this.$route.meta.isBack || !this.SNSTokens.length) {
       this.$route.meta.isBack = false;
       this.SNSTokensOpen = [];
       this.SNSTokensPending = [];
@@ -681,7 +681,7 @@ export default class extends Vue {
     this.loading = true;
     const SNSProposals = await this.getSNSProposals();
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
-    const MAX_COCURRENCY = 10;
+    const MAX_COCURRENCY = 20;
     let promiseAll = [];
     let snsTokens = [];
     for (let i = 0; i < listDeployedSnses.length; i++) {
@@ -876,15 +876,15 @@ export default class extends Vue {
         if (proposalRes[0].decided_timestamp_seconds) {
           this.refreshPendingLifecycle(res);
         }
-        if (executedTime && res.params[0].sale_delay_seconds[0]) {
-          const deadline = new BigNumber(executedTime.toString(10))
-            .plus(res.params[0].sale_delay_seconds[0].toString(10))
-            .times(1000)
-            .decimalPlaces(0)
-            .toNumber();
-          console.log(deadline);
-          this.$set(res, 'deadline', deadline);
-        }
+        // if (executedTime && res.params[0].sale_delay_seconds[0]) {
+        //   const deadline = new BigNumber(executedTime.toString(10))
+        //     .plus(res.params[0].sale_delay_seconds[0].toString(10))
+        //     .times(1000)
+        //     .decimalPlaces(0)
+        //     .toNumber();
+        //   console.log(deadline);
+        //   this.$set(res, 'deadline', deadline);
+        // }
       }
     }
   }
@@ -929,11 +929,27 @@ export default class extends Vue {
     const res = await Promise.all(promiseAll);
     let params = res[3];
     let proposalId = null;
+    let deadline = null;
     console.log(res[2][0]);
     if (res[2] && res[2][0] && Number(res[2][0]) === 5) {
       try {
         const res = await this.getSNSTokenSwapState(swapCanisterId.toString());
         proposalId = res.swap[0].open_sns_token_swap_proposal_id[0];
+        if (
+          res &&
+          res.swap &&
+          res.swap.length &&
+          res.swap[0].init &&
+          res.swap[0].init.length &&
+          res.swap[0].init[0].swap_start_timestamp_seconds &&
+          res.swap[0].init[0].swap_start_timestamp_seconds.length
+        ) {
+          deadline = new BigNumber(
+            res.swap[0].init[0].swap_start_timestamp_seconds[0].toString(10)
+          )
+            .times(1000)
+            .toNumber();
+        }
       } catch (e) {
         console.log(e);
       }
@@ -958,38 +974,47 @@ export default class extends Vue {
       lifecycle: res[2],
       params: params,
       proposalId: proposalId,
-      buyersTotal: BigInt(buyersTotal)
+      buyersTotal: BigInt(buyersTotal),
+      deadline: deadline
     };
   }
   private async listCommunityFundParticipants(
     tokenId: string
   ): Promise<Array<CfParticipant>> {
     const snsSwapService = new SNSSwapService();
-    console.time('listCommunityFundParticipants');
     const res = await snsSwapService.listCommunityFundParticipants(tokenId);
-    console.timeEnd('listCommunityFundParticipants');
     return res.cf_participants;
   }
   private async getParams(tokenId: string): Promise<Array<Params>> {
     const snsSwapService = new SNSSwapService();
-    console.time('getParams');
     const res = await snsSwapService.getSaleParameters(tokenId);
+    if (
+      res &&
+      res.params &&
+      res.params.length &&
+      res.params[0].max_direct_participation_icp_e8s &&
+      res.params[0].max_direct_participation_icp_e8s.length
+    ) {
+      res.params[0].max_icp_e8s =
+        res.params[0].max_direct_participation_icp_e8s[0];
+    }
     console.log(res);
-    console.time('getParams');
     return res.params;
   }
   private async getLifecycle(tokenId: string): Promise<Array<bigint>> {
     const snsSwapService = new SNSSwapService();
-    console.time('getLifecycle');
     const res = await snsSwapService.getLifecycle(tokenId);
-    console.timeEnd('getLifecycle');
     return res.lifecycle;
   }
   private async getDerivedState(tokenId: string): Promise<bigint> {
     const snsSwapService = new SNSSwapService();
-    console.time('1');
     const res = await snsSwapService.getDerivedState(tokenId);
-    console.timeEnd('1');
+    if (
+      (res as GetDerivedStateResponse1).direct_participation_icp_e8s &&
+      (res as GetDerivedStateResponse1).direct_participation_icp_e8s.length
+    ) {
+      return (res as GetDerivedStateResponse1).direct_participation_icp_e8s[0];
+    }
     return res.buyer_total_icp_e8s[0];
   }
   private async getCurrentTokenInfo(tokenId: Principal): Promise<TokenInfo> {
@@ -1035,10 +1060,7 @@ export default class extends Vue {
     tokenId: string
   ): Promise<GetStateResponse> {
     const snsSwapService = new SNSSwapService();
-    console.time('2');
-    const res = await snsSwapService.getState(tokenId);
-    console.timeEnd('2');
-    return res;
+    return await snsSwapService.getState(tokenId);
   }
 }
 </script>

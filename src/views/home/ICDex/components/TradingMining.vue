@@ -91,7 +91,7 @@
         <button type="button" @click="noNftVisible = false">Cancel</button>
         <a
           @click="noNftVisible = false"
-          href="https://tppkg-ziaaa-aaaal-qatrq-cai.raw.ic0.app/market/collection-nft-list?id=goncb-kqaaa-aaaap-aakpa-cai"
+          href="https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai"
           target="_blank"
           rel="nofollow noreferrer noopener"
         >
@@ -129,7 +129,7 @@
                 >
                   <a
                     style="color: #166a89"
-                    :href="`https://tppkg-ziaaa-aaaal-qatrq-cai.raw.ic0.app/market/nft-detail/goncb-kqaaa-aaaap-aakpa-cai/${item[0]}`"
+                    :href="`https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai/${item[0]}`"
                     rel="nofollow noreferrer noopener"
                     target="_blank"
                     >{{ item[0] }}</a

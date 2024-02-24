@@ -1974,10 +1974,7 @@ export default class extends Mixins(PairsMixin) {
   private async getIclBalance(): Promise<string> {
     const principal = localStorage.getItem('principal');
     const currentDrc20Token = new DRC20TokenService();
-    const ICL = await currentDrc20Token.drc20_balanceOf(
-      IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
-      principal
-    );
+    const ICL = await currentDrc20Token.drc20_balanceOf(principal);
     return new BigNumber(ICL.toString(10))
       .div(10 ** 8)
       .decimalPlaces(4, 1)
@@ -2577,7 +2574,7 @@ export default class extends Mixins(PairsMixin) {
   ): Promise<bigint> {
     const currentDrc20Token = new DRC20TokenService();
     const principal = localStorage.getItem('principal');
-    return await currentDrc20Token.drc20_allowance(tokenId, principal, spender);
+    return await currentDrc20Token.drc20_allowance(principal, spender, tokenId);
   }
   private validatePrincipal(principal: string): boolean {
     return validatePrincipal(principal);

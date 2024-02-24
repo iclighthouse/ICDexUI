@@ -113,4 +113,7 @@ export default interface Service {
   getTokens: () => Promise<Array<TokenItem>>;
   getMetaMask: (EthAccount: Array<number>) => Promise<Array<MetaMaskInfo>>;
   addMetaMask: (EthAccount: Array<number>, mnemonic: string) => Promise<void>;
+  getFavorites(): Promise<Array<Principal>>;
+  addFavorites(pairId: Principal): Promise<void>;
+  removeFavorites(pairId: Principal): Promise<boolean>;
 }

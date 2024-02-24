@@ -74,6 +74,17 @@ const ICDexRouter: RouteConfig[] = [
       requireAuth: true,
       measurementId: 'G-056B85Q2L0'
     }
+  },
+  {
+    path: '/ICDex/NFT',
+    name: 'NFT',
+    component: () => import('@/views/home/ICDex/NFT.vue'),
+    meta: {
+      title: 'NFT',
+      version: '0.5test',
+      requireAuth: true,
+      measurementId: 'G-056B85Q2L0'
+    }
   }
 ];
 

@@ -1798,15 +1798,14 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async getRefundIcp(): Promise<void> {
     if (this.getPrincipalId && this.currentToken.swapId) {
-      const swapCanisterAccount = principalToAccountIdentifier(
-        Principal.fromText(this.currentToken.swapId),
-        principalToSubAccount(Principal.fromText(this.getPrincipalId))
-      );
-      this.refundIcp = await getDepositing(
-        { icp: null },
-        '',
-        swapCanisterAccount
-      );
+      this.refundIcp = await getDepositing({ icp: null }, '', {
+        owner: Principal.fromText(this.currentToken.swapId),
+        subaccount: [
+          Array.from(
+            principalToSubAccount(Principal.fromText(this.getPrincipalId))
+          )
+        ]
+      });
       window.clearTimeout(this.refundIcpTimer);
       if (
         this.currentToken.lifecycle[0] &&

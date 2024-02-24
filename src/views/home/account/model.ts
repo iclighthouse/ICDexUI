@@ -39,6 +39,11 @@ export enum TokenStandard {
   'ICRC-1' = 'ICRC-1',
   'ICRC-2' = 'ICRC-2'
 }
+export enum AddTokenStandard {
+  'DRC20' = 'DRC20',
+  'DIP20' = 'DIP20',
+  'ICRC-1' = 'ICRC-1'
+}
 export enum BTCTypeEnum {
   'icBTC' = 'icBTC',
   'ckBTC' = 'ckBTC'

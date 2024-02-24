@@ -32,21 +32,18 @@
     <div class="icl-item-info">
       <div class="icl-item-info-title">ICL Token</div>
       <p>Symbol: <span>ICL</span></p>
-      <p>CanisterId: <span>5573k-xaaaa-aaaak-aacnq-cai</span></p>
+      <p>
+        CanisterId: <span>{{ ICLTokenId }}</span>
+      </p>
       <p>Decimals: <span>8</span></p>
       <p>TotalSupply: <span>Approx. 210,000,000</span></p>
       <p>Rules of distribution (based on a total of 210,000,000):</p>
       <ul>
-        <li>
-          <span class="round"></span>51% ICL is distributed to the community,
-          through airdrops, mining, community rewards, etc.
-        </li>
-        <li><span class="round"></span>29% ICL is distributed to investors.</li>
-        <li>
-          <span class="round"></span>15% ICL is distributed to project
-          developers and operational contributors.
-        </li>
-        <li><span class="round"></span>5% ICL reserved.</li>
+        <li><span class="round"></span>Voting Rewards (4.762%).</li>
+        <li><span class="round"></span>Treasury (36.238%).</li>
+        <li><span class="round"></span>Early Investors (14%).</li>
+        <li><span class="round"></span>Team (15%).</li>
+        <li><span class="round"></span>SNS Swap (30%).</li>
       </ul>
     </div>
     <div class="icl-item-info">
@@ -91,12 +88,15 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
 
 @Component({
   name: 'About',
   components: {}
 })
-export default class extends Vue {}
+export default class extends Vue {
+  private ICLTokenId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID;
+}
 </script>
 
 <style scoped lang="scss">

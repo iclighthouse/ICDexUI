@@ -10,7 +10,16 @@
         {{ item.value }}
       </li>
     </ul>
-    <router-view class="container-width" />
+    <div
+      class="container-width"
+      style="color: #8c98a5; font-weight: bold; margin-bottom: 15px"
+    >
+      This feature is experimental, the token created here should not be used in
+      the production environment. The created token is controlled by Funder,
+      please pay attention to the token's controllers changes. Note: controllers
+      can be upgraded, modified token canister, including increment.
+    </div>
+    <router-view class="token-main" />
   </div>
 </template>
 
@@ -140,6 +149,10 @@ export default class extends Vue {
       background: #51b7c3;
     }
   }
+}
+.token-main {
+  width: 100%;
+  padding: 0 20px;
 }
 @media screen and (max-width: 768px) {
   .token-list-menu {

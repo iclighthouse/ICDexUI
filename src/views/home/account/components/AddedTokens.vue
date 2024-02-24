@@ -196,7 +196,7 @@
                         token.standard === 'DRC20' && token && token.coinSeconds
                       "
                     >
-                      {{ token.coinSeconds | filterCoinSeconds }} GCS
+                      {{ token.coinSeconds }}
                     </span>
                     <span v-show="token.standard !== 'DRC20'">-</span>
                   </dt>
@@ -251,10 +251,7 @@
                         >LockTransfer</a-menu-item
                       >
                       <a-menu-item
-                        v-if="
-                          token.canisterId.toString() !==
-                          '5573k-xaaaa-aaaak-aacnq-cai'
-                        "
+                        v-if="token.canisterId.toString() !== ICLTokenId"
                         @click="onRemoveToken(token, index)"
                         >Remove</a-menu-item
                       >
@@ -290,7 +287,7 @@
               style="color: #1996c4"
               rel="nofollow noreferrer noopener"
               >DRC20</a
-            >/ICRC-1/ICRC-2 standard tokens)
+            >/ICRC-1 standard tokens)
           </template>
           <!--<a-input
             v-model="addTokenForm.tokenId"
@@ -551,6 +548,7 @@
       :symbol="currentToken.symbol"
       :token-id="currentToken.canisterId && currentToken.canisterId.toString()"
       :spender="currentToken.canisterId && currentToken.canisterId.toString()"
+      :approve-mode="currentToken.standard.includes('icrc') ? 'icrc1' : 'drc20'"
       ref="approve"
       @approveSuccess="approveSuccess"
     ></approve-modal>
@@ -603,11 +601,15 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { Identity } from '@dfinity/agent';
-import { AddTokenItem, AddTokenItemClass, TokenStandard } from '../model';
+import {
+  AddTokenItem,
+  AddTokenItemClass,
+  AddTokenStandard,
+  TokenStandard
+} from '../model';
 import { addToken } from '@/ic/addToken';
 import { validateCanister } from '@/utils/validate';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import BigNumber from 'bignumber.js';
 import TransferToken from '@/components/transferToken/Index.vue';
 import TransferBatchToken from '@/components/transferToken/TransferBatch.vue';
@@ -769,6 +771,7 @@ export default class extends Vue {
   @Prop()
   private identity!: Identity;
   private currentToken: AddTokenItem = new AddTokenItemClass();
+  private ICLTokenId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID;
   private currentIndex: number;
   private approveType = 'add';
   private visible = false;
@@ -777,7 +780,6 @@ export default class extends Vue {
   private tokens: Array<AddTokenItem> = [];
   private ICLighthouseService: ICLighthouseService;
   private DRC20TokenService: DRC20TokenService;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
   private sortType = '';
   private addTokenForm = {
     tokenId: ''
@@ -944,7 +946,7 @@ export default class extends Vue {
   private locked = '0';
   private timer = null;
   private tokenStd: TokenStandard = TokenStandard.DRC20;
-  private tokenStandardList = TokenStandard;
+  private tokenStandardList = AddTokenStandard;
   private ICTokensScanService: ICTokensScanService;
   private tokenList: Array<TokenItem> = [];
   private SNSWasmService: SNSWasmService = null;
@@ -957,7 +959,6 @@ export default class extends Vue {
   created(): void {
     // this.principal = localStorage.getItem('principal');
     this.ICLighthouseService = new ICLighthouseService();
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.DRC20TokenService = new DRC20TokenService();
     this.ICTokensScanService = new ICTokensScanService();
     this.SNSWasmService = new SNSWasmService();
@@ -1286,7 +1287,7 @@ export default class extends Vue {
   }
   private async txnCount(token: AddTokenItem): Promise<void> {
     try {
-      const res = await this.ICLighthouseTokenService.txnQuery(
+      const res = await this.DRC20TokenService.txnQuery(
         {
           getEvents: { owner: [this.getPrincipalId] }
         },
@@ -1401,13 +1402,9 @@ export default class extends Vue {
     try {
       const promiseAllValue = [];
       promiseAllValue.push(
-        this.ICLighthouseTokenService.getName(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
-        this.ICLighthouseTokenService.getSymbol(
-          IC_LIGHTHOUSE_TOKEN_CANISTER_ID
-        ),
-        this.ICLighthouseTokenService.getDecimals(
-          IC_LIGHTHOUSE_TOKEN_CANISTER_ID
-        )
+        this.DRC20TokenService.icrcName(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
+        this.DRC20TokenService.icrcSymbol(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
+        this.DRC20TokenService.icrcDecimals(IC_LIGHTHOUSE_TOKEN_CANISTER_ID)
       );
       tokenInfo = await Promise.all(promiseAllValue);
     } catch (e) {
@@ -1420,7 +1417,7 @@ export default class extends Vue {
         tokenInfo[1],
         tokenInfo[0],
         tokenInfo[2],
-        'DRC20',
+        'ICRC-1',
         {
           add: null
         }
@@ -1431,15 +1428,12 @@ export default class extends Vue {
           symbol: tokenInfo[1],
           name: tokenInfo[0],
           decimals: tokenInfo[2],
-          standard: 'DRC20',
+          standard: 'ICRC-1',
           canisterId: Principal.fromText(IC_LIGHTHOUSE_TOKEN_CANISTER_ID)
         };
         this.tokens.push(token);
-        this.getBalance(token);
-        this.getMetadata(token);
-        this.getLocked(token);
-        this.txnCount(token);
-        this.getApprovalsAllowance(token);
+        this.getICRCBalance(token);
+        this.getIcrcMetadata(token);
       }
     } catch (e) {
       console.log(e);
@@ -1488,7 +1482,7 @@ export default class extends Vue {
     this.$set(token, 'logo', metadata.logo);
   }
   private async getMetadata(token: AddTokenItem): Promise<void> {
-    const metadata = await this.ICLighthouseTokenService.metadata(
+    const metadata = await this.DRC20TokenService.metadata(
       token.canisterId.toString()
     );
     metadata.some((val) => {
@@ -1500,7 +1494,7 @@ export default class extends Vue {
   }
   private async getCoinSeconds(token: AddTokenItem): Promise<void> {
     try {
-      const res = await this.ICLighthouseTokenService.getCoinSeconds(
+      const res = await this.DRC20TokenService.getCoinSeconds(
         [this.getPrincipalId],
         token.canisterId.toString()
       );
@@ -1512,6 +1506,11 @@ export default class extends Vue {
           .div(10 ** 9)
           .decimalPlaces(4, 1)
           .toString(10);
+        if (Number(coinSeconds) > 100) {
+          coinSeconds = parseInt(coinSeconds).toString(10) + ' GCS';
+        } else {
+          coinSeconds = coinSeconds + ' GCS';
+        }
       } else {
         coinSeconds = new BigNumber(coinSeconds).decimalPlaces(2, 1) + ' CS';
       }
@@ -1521,7 +1520,7 @@ export default class extends Vue {
     }
   }
   private async getLocked(token: AddTokenItem): Promise<void> {
-    const res = await this.ICLighthouseTokenService.txnQuery(
+    const res = await this.DRC20TokenService.txnQuery(
       {
         lockedTxns: { owner: this.getPrincipalId }
       },
@@ -1545,7 +1544,7 @@ export default class extends Vue {
     });
   }
   private async getApprovalsAllowance(token: AddTokenItem): Promise<void> {
-    const res = await this.ICLighthouseTokenService.approvals(
+    const res = await this.DRC20TokenService.approvals(
       this.getPrincipalId,
       token.canisterId.toString()
     );
@@ -1569,7 +1568,7 @@ export default class extends Vue {
     });
     try {
       const principal = localStorage.getItem('principal');
-      const nonceRes = await this.ICLighthouseTokenService.txnQuery(
+      const nonceRes = await this.DRC20TokenService.txnQuery(
         {
           txnCount: { owner: principal }
         },
@@ -1580,7 +1579,7 @@ export default class extends Vue {
           txnCount: bigint;
         }
       ).txnCount;
-      const res = await this.ICLighthouseTokenService.approve(
+      const res = await this.DRC20TokenService.drc20Approve(
         BigInt('0'),
         [],
         this.arrayToString(text.spender),
@@ -1617,7 +1616,7 @@ export default class extends Vue {
     this.lockTransactionsModal = true;
     this.lockTransactionsLoading = true;
     try {
-      const res = await this.ICLighthouseTokenService.txnQuery(
+      const res = await this.DRC20TokenService.txnQuery(
         {
           lockedTxns: { owner: this.getPrincipalId }
         },
@@ -1647,7 +1646,7 @@ export default class extends Vue {
     this.approvalsLoading = true;
     this.approvals = [];
     try {
-      const res = await this.ICLighthouseTokenService.approvals(
+      const res = await this.DRC20TokenService.approvals(
         this.getPrincipalId,
         token.canisterId.toString()
       );
@@ -1664,7 +1663,7 @@ export default class extends Vue {
     this.transactionsLoading = true;
     this.transactions = [];
     try {
-      const res = await this.ICLighthouseTokenService.txnQuery(
+      const res = await this.DRC20TokenService.txnQuery(
         {
           getEvents: { owner: [this.getPrincipalId] }
         },
@@ -1805,9 +1804,9 @@ export default class extends Vue {
     if (this.tokenStd === TokenStandard.DRC20) {
       const promiseAllValue = [];
       promiseAllValue.push(
-        this.ICLighthouseTokenService.getName(this.addTokenForm.tokenId),
-        this.ICLighthouseTokenService.getSymbol(this.addTokenForm.tokenId),
-        this.ICLighthouseTokenService.getDecimals(this.addTokenForm.tokenId)
+        this.DRC20TokenService.name(this.addTokenForm.tokenId),
+        this.DRC20TokenService.symbol(this.addTokenForm.tokenId),
+        this.DRC20TokenService.decimals(this.addTokenForm.tokenId)
       );
       tokenInfo = await Promise.all(promiseAllValue);
     } else if (

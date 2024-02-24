@@ -12,7 +12,7 @@ export interface KLData extends KLineData {
   token1volume: number;
 }
 
-export type DePairs = [...TrieListData, Stats?];
+export type DePairs = [...TrieListData, Stats?, string?];
 
 export enum OrderBookType {
   All = 'All',
@@ -20,18 +20,19 @@ export enum OrderBookType {
   Sell = 'Sell'
 }
 export enum TradeCompetitionsEnum {
+  Pools = 'Pools',
   Info = 'Info',
   Referral = 'Referral'
   // Competitions = 'Competitions'
 }
-export type TradeCompetitionsMenu = 'Info' | 'Referral' | 'Competitions';
+export type TradeCompetitionsMenu = 'Pools' | 'Info' | 'Referral' | 'Competitions';
 
 export enum OrderTypeEnum {
   LMT = 'LMT',
   MKT = 'MKT',
   FAK = 'FAK',
   FOK = 'FOK',
-  'Stop-loss' = 'Stop-loss'
+  'Stop-limit' = 'Stop-limit'
 }
 
 export type OrderTypeMenu = keyof typeof OrderTypeEnum;
@@ -67,3 +68,14 @@ export enum ProOrderEnum {
   VWAP = 'VWAP'
 }
 export type ProOrderMenu = keyof typeof ProOrderEnum;
+
+export enum TokenEnum {
+  Token1 = 'Token1',
+  Token0 = 'Token0'
+}
+
+export enum NFTRole {
+  BecomeVipMaker = 'BecomeVipMaker',
+  CreateMaker = 'CreateMaker',
+  ListingReferrer = 'ListingReferrer'
+}

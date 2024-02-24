@@ -393,8 +393,8 @@
                         :href="
                           networkTokensFrom[networkTokenIdMint].networkId ===
                           '2'
-                            ? `https://goerli.etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}`
-                            : `https://etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}`
+                            ? `https://goerli.etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}#code`
+                            : `https://etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}#code`
                         "
                         rel="nofollow noreferrer noopener"
                         target="_blank"
@@ -707,8 +707,8 @@
                         :href="
                           networkTokensTo[networkTokenIdMintTo].networkId ===
                           '2'
-                            ? `https://goerli.etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}`
-                            : `https://etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}`
+                            ? `https://goerli.etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}#code`
+                            : `https://etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}#code`
                         "
                         rel="nofollow noreferrer noopener"
                         target="_blank"
@@ -912,7 +912,7 @@
                   networkIds[icNetworkTokens.networkId]
                 }})&nbsp;
                 <a-icon
-                  @click="refreshCkETHBalance(true, 'ICRC-2')"
+                  @click="refreshCkETHBalance(true, 'ICRC-1')"
                   v-show="!refreshCkETHBalanceLoading"
                   type="reload"
                   class="reload-icon"
@@ -1205,7 +1205,7 @@
             networkIds[icNetworkTokens.networkId]
           }})&nbsp;
           <a-icon
-            @click="refreshCkETHBalance(true, 'ICRC-2')"
+            @click="refreshCkETHBalance(true, 'ICRC-1')"
             v-show="!refreshCkETHBalanceLoading"
             type="reload"
             class="reload-icon"
@@ -4162,7 +4162,6 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import abi from '@/ic/abi/erc20';
 import ethAbi from '@/ic/abi/eth';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { getTokenLogo } from '@/ic/getTokenLogo';
 import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
 import { principalToBytes32 } from '@/ic/principal_to_bytes';
@@ -4172,9 +4171,7 @@ const { Web3 } = require('web3');
 
 let ethereum = (window as any).ethereum;
 if (ethereum && ethereum.providers) {
-  ethereum = ethereum.providers.find(
-    (provider) => provider.isMetaMask
-  );
+  ethereum = ethereum.providers.find((provider) => provider.isMetaMask);
 }
 let ETHUpdateTime = null;
 let ETHDepositTime = null;
@@ -4221,7 +4218,6 @@ export default class extends Mixins(BalanceMixin) {
   private dissolveBalance = '';
   private canRetrieve = false;
   private ICLighthouseService: ICLighthouseService = null;
-  private ICLighthouseTokenService: ICLighthouseTokenService = null;
   private ckBTCMinterService: ckBTCMinterService = null;
   private questsService: questsService = null;
   private ckBTCBalance = '';
@@ -4594,7 +4590,6 @@ export default class extends Mixins(BalanceMixin) {
     this.DRC20TokenService = new DRC20TokenService();
     this.ckBTCMinterService = new ckBTCMinterService();
     this.ICLighthouseService = new ICLighthouseService();
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.questsService = new questsService();
     this.ckETHMinterService = new ckETHMinterService();
     this.ckETHMinterDfiService = new ckETHMinterDfiService();
@@ -4770,7 +4765,7 @@ export default class extends Mixins(BalanceMixin) {
       const res = await getTokenInfo(
         Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
         {
-          icrc2: null
+          icrc1: null
         }
       );
       this.$set(this.tokens, CK_ETH_LEDGER_CANISTER_ID, res);
@@ -4779,7 +4774,7 @@ export default class extends Mixins(BalanceMixin) {
         const logo = await getTokenLogo(
           Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
           {
-            icrc2: null
+            icrc1: null
           }
         );
         this.$set(
@@ -4802,11 +4797,13 @@ export default class extends Mixins(BalanceMixin) {
       minAmount: BigInt('30000000000000000'),
       std: { ETH: null },
       symbol: 'ETH',
-      tokenId: this.smartContractAddress,
+      // tokenId: this.smartContractAddress,
+      tokenId: '0x0000000000000000000000000000000000000000',
       totalSupply: null
     };
     this.networkTokens.unshift({
-      id: this.smartContractAddress,
+      // id: this.smartContractAddress,
+      id: '0x0000000000000000000000000000000000000000',
       networkId: '-1',
       networkToIcId: '1',
       symbol: this.tokens[CK_ETH_LEDGER_CANISTER_ID].symbol,
@@ -4814,7 +4811,8 @@ export default class extends Mixins(BalanceMixin) {
       icTokenInfo: icTokenInfo
     });
     this.networkTokens.unshift({
-      id: this.smartContractAddress,
+      // id: this.smartContractAddress,
+      id: '0x0000000000000000000000000000000000000000',
       networkId: '1',
       networkToIcId: '-1',
       symbol: 'ETH',
@@ -5110,8 +5108,8 @@ export default class extends Mixins(BalanceMixin) {
     let retrievePending: Array<RetrieveActive> = [];
     const currentInfo =
       JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-    const smartContractAddress = await this.getMinterAddress();
-    const key = 'ckETHRetrieve-' + smartContractAddress;
+    // const smartContractAddress = await this.getMinterAddress();
+    const key = 'ckETHRetrieve-' + '0x0000000000000000000000000000000000000000';
     const retrieveCKETH = currentInfo[key] || {};
     console.log(retrieveCKETH);
     for (let key in retrieveCKETH) {
@@ -5145,8 +5143,8 @@ export default class extends Mixins(BalanceMixin) {
     let mintPending: Array<ClaimCKETHActive> = [];
     const currentInfo =
       JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-    const smartContractAddress = await this.getMinterAddress();
-    const key = 'ckETHMint-' + smartContractAddress;
+    // const smartContractAddress = await this.getMinterAddress();
+    const key = 'ckETHMint-' + '0x0000000000000000000000000000000000000000';
     const mintCKETH = currentInfo[key] || {};
     console.log(mintCKETH);
     if (mintCKETH) {
@@ -6818,7 +6816,7 @@ export default class extends Mixins(BalanceMixin) {
     const tokenId = icNetworkTokens.tokenId;
     const balance = await getTokenBalance({ icrc1: null }, tokenId);
     this.$set(this.ERC20Balance, tokenId, balance);
-    this.toAddToken('ICRC-2');
+    this.toAddToken('ICRC-1');
   }
   private getCKETHMinterInterval(
     icNetworkTokens: ICNetworkTokensInterface
@@ -7171,10 +7169,16 @@ export default class extends Mixins(BalanceMixin) {
       if (typeof this.networkTokenIdMint === 'number') {
         return (
           item.networkId === this.networkListTo[val].id &&
-          item.id === this.networkTokensFrom[this.networkTokenIdMint].id
+          item.id === this.networkTokensFrom[this.networkTokenIdMint].id &&
+          item.networkToIcId ===
+            this.networkTokensFrom[this.networkTokenIdMint].networkId
         );
       }
     });
+    console.log(this.networkTokens);
+    console.log(this.networkTokensFrom[this.networkTokenIdMint as number]);
+    console.log(this.networkListTo[val]);
+    console.log(this.networkTokensTo);
   }
   private changeNetworkTokenIdMint(val: number): void {
     this.networkIdMintTo = [];
@@ -8375,7 +8379,7 @@ export default class extends Mixins(BalanceMixin) {
           }
           let name = '';
           if (std === 'DRC20') {
-            name = await this.ICLighthouseTokenService.getName(ERC20TokenId);
+            name = await this.DRC20TokenService.name(ERC20TokenId);
           } else if (std === 'ICRC-1' || std === 'ICRC-2') {
             name = await this.DRC20TokenService.icrcName(ERC20TokenId);
           }
@@ -8435,7 +8439,7 @@ export default class extends Mixins(BalanceMixin) {
     this.BTCType = type;
     this.getBalance();
     const approveTokenInfo = this.tokens[LEDGER_CANISTER_ID] || {
-      name: 'Icp',
+      name: 'ICP',
       symbol: 'ICP',
       decimals: 8,
       fee: '10000',
@@ -8916,7 +8920,8 @@ export default class extends Mixins(BalanceMixin) {
             const accounts: string[] = await ethereum.request({
               method: 'eth_requestAccounts'
             });
-            const contractId = this.icNetworkTokens.icTokenInfo.tokenId;
+            console.log(accounts);
+            const contractId = this.smartContractAddress;
             const amount =
               '0x' +
               new BigNumber(this.erc20Form.amount).times(10 ** 18).toString(16);
@@ -8949,11 +8954,12 @@ export default class extends Mixins(BalanceMixin) {
             });
             const currentInfo =
               JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-            let mint = currentInfo['ckETHMint-' + this.icNetworkTokens.id];
-            if (!mint) {
-              mint = {};
+            if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
+              currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
             }
-            mint[this.icNetworkTokens.tokenId] = this.ckETHMint;
+            currentInfo['ckETHMint-' + this.icNetworkTokens.id][
+              this.icNetworkTokens.tokenId
+            ] = this.ckETHMint;
             localStorage.setItem(
               this.getPrincipalId,
               JSON.stringify(currentInfo)

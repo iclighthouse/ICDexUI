@@ -11,7 +11,101 @@
       :after-close="afterCloseModal"
     >
       <div class="nfts">
-        <p class="base-color-w">NFTs:</p>
+        <div v-if="type === 'CreateMaker'" class="base-font-title">
+          <div v-if="isPublic">Public OAMMs are created in two ways:</div>
+          <p
+            v-if="
+              isPublic &&
+              sysConfig &&
+              sysConfig.creatingMakerFee &&
+              tokens &&
+              tokens[sysConfig.sysToken.toString()]
+            "
+          >
+            1.
+            <a
+              href="https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai"
+              target="_blank"
+              rel="nofollow noreferrer noopener"
+              class="link"
+              >ICLighthouse Planet NFT</a
+            >
+            (#NEPTUNE, #URANUS or #SATURN) holders are required to burn
+            {{
+              sysConfig.creatingMakerFee
+                | bigintToFloat(
+                  tokens[sysConfig.sysToken.toString()].decimals,
+                  tokens[sysConfig.sysToken.toString()].decimals
+                )
+            }}
+            ICL to create a Public OAMM pool.
+          </p>
+          <p
+            v-if="
+              isPublic &&
+              createFee &&
+              tokens &&
+              tokens[sysConfig.sysToken.toString()]
+            "
+          >
+            2. Non-above NFT holders are required to burn
+            {{
+              createFee
+                | bigintToFloat(
+                  tokens[sysConfig.sysToken.toString()].decimals,
+                  tokens[sysConfig.sysToken.toString()].decimals
+                )
+            }}
+            ICL to create a Public OAMM pool.
+          </p>
+          <div v-if="!isPublic">Private OAMMs are created in two ways:</div>
+          <p
+            v-if="
+              !isPublic &&
+              sysConfig &&
+              sysConfig.creatingMakerFee &&
+              tokens &&
+              tokens[sysConfig.sysToken.toString()]
+            "
+          >
+            1. ICLighthouse Planet NFT (any card) holders are required to burn
+            {{
+              sysConfig.creatingMakerFee
+                | bigintToFloat(
+                  tokens[sysConfig.sysToken.toString()].decimals,
+                  tokens[sysConfig.sysToken.toString()].decimals
+                )
+            }}
+            ICL to create a Private OAMM pool.
+          </p>
+          <p
+            v-if="
+              !isPublic &&
+              createPrivateFee &&
+              tokens &&
+              tokens[sysConfig.sysToken.toString()]
+            "
+          >
+            2. Non-NFT holders are required to burn
+            {{
+              createPrivateFee
+                | bigintToFloat(
+                  tokens[sysConfig.sysToken.toString()].decimals,
+                  tokens[sysConfig.sysToken.toString()].decimals
+                )
+            }}
+            ICL to create a Private OAMM pool.
+          </p>
+        </div>
+        <p class="flex-center base-color-w mt20">
+          NFTs:
+          <span
+            v-if="listingReferrer && listingReferrer[0]"
+            class="margin-left-auto main-color font-bold pointer"
+            @click="toPropose"
+            >Listing Referrer</span
+          >
+        </p>
         <div class="nfts-main">
           <div class="base-font-title">Select an NFT</div>
           <ul class="nft-main">
@@ -21,7 +115,10 @@
                 (extPage + 1) * extPageNum
               )"
               :key="index"
-              :class="{ active: currentNft && ext[0] === currentNft[0] }"
+              :class="{
+                active: currentNft && ext[0] === currentNft[0],
+                disabled: !canDeposit(ext)
+              }"
               @click="selectNft(ext)"
             >
               <img
@@ -37,9 +134,31 @@
             </li>
           </ul>
           <div class="err-tip" v-show="currentNft && !canDeposit(currentNft)">
-            Only Planet NEPTUNE/URANUS/SATURN cards can continue to operate.
+            <span v-if="type === 'BecomeVipMaker'"
+              >Only Planet NEPTUNE cards can continue to operate.
+            </span>
+            <span v-if="type === 'CreateMaker'">
+              Only Planet NEPTUNE/URANUS/SATURN cards can continue to operate.
+            </span>
+            <span v-if="type === 'ListingReferrer'">
+              Only Planet URANUS cards can continue to operate.
+            </span>
           </div>
-          <div v-if="!nfts.length" class="text-center">No NFT</div>
+          <div class="flex-center" v-if="!nfts.length">
+            <span v-if="type === 'BecomeVipMaker'"
+              >You need to transfer the NEPTUNE NFT to
+            </span>
+            <span v-if="type === 'CreateMaker'"
+              >You need to transfer the NEPTUNE, URANUS or SATURN NFT to
+            </span>
+            <span v-if="type === 'ListingReferrer'"
+              >You need to transfer the URANUS NFT to
+            </span>
+            <copy-account
+              :account="getPrincipalId"
+              copyText="Principal"
+            ></copy-account>
+          </div>
           <div class="nft-main-pagination">
             <a-pagination
               v-if="nfts.length > 3"
@@ -50,7 +169,7 @@
               @change="pageChange"
             />
           </div>
-          <div class="mt20 w100">
+          <div class="w100">
             <button
               :disabled="!currentNft || (currentNft && !canDeposit(currentNft))"
               type="button"
@@ -74,7 +193,9 @@
               )"
               :key="index"
               :class="{
-                active: currentDepositedNft && ext[1] === currentDepositedNft[1]
+                active:
+                  currentDepositedNft && ext[1] === currentDepositedNft[1],
+                disabled: !canSubmit(ext)
               }"
               @click="selectDepositedNft(ext)"
             >
@@ -90,14 +211,25 @@
                 <img :src="getImg(ext[3])" alt="" />
               </div>
               <div class="ext-info">{{ Object.keys(ext[3])[0] }} CARD</div>
-              <div class="ext-transfer" @click="onWithdraw(ext)">Withdraw</div>
+              <div class="ext-transfer" @click.stop="onWithdraw(ext)">
+                Withdraw
+              </div>
             </li>
           </ul>
           <div
             class="err-tip"
-            v-show="currentDepositedNft && !canBind(currentDepositedNft)"
+            v-show="currentDepositedNft && !canSubmit(currentDepositedNft)"
           >
-            Only Planet NEPTUNE cards can continue to operate.
+            <span v-if="type === 'BecomeVipMaker'"
+              >Only Planet NEPTUNE cards can continue to operate.</span
+            >
+            <span v-if="type === 'CreateMaker'"
+              >Only Planet NEPTUNE, URANUS or SATURN cards can continue to
+              operate.</span
+            >
+            <span v-if="type === 'ListingReferrer'"
+              >Only Planet URANUS cards can continue to operate.</span
+            >
           </div>
           <div v-if="!nftBalance.length" class="text-center">
             No Deposited NFT
@@ -112,40 +244,148 @@
               @change="pageChangeDeposited"
             />
           </div>
-          <div class="mt20 w100 flex-center">
+          <div class="w100 flex-center">
             <button
               :disabled="
                 !currentDepositedNft ||
-                (currentDepositedNft && !canBind(currentDepositedNft))
+                (currentDepositedNft && !canSubmit(currentDepositedNft))
               "
               type="button"
               class="w100 primary"
-              v-if="!isBecomeMaker"
+              v-if="type === 'CreateMaker'"
               style="margin-right: 10px"
               @click="onCreateMMPool"
             >
-              Create a MM Pool
+              Create OAMM with NFT
+              <span
+                v-if="
+                  sysConfig &&
+                  sysConfig.creatingMakerFee &&
+                  tokens &&
+                  tokens[sysConfig.sysToken.toString()]
+                "
+              >
+                (Fee:
+                {{
+                  sysConfig.creatingMakerFee
+                    | bigintToFloat(
+                      tokens[sysConfig.sysToken.toString()].decimals,
+                      tokens[sysConfig.sysToken.toString()].decimals
+                    )
+                }}
+                ICL)</span
+              >
             </button>
             <button
-              v-if="isBecomeMaker"
+              type="button"
+              class="w100 primary"
+              v-if="type === 'CreateMaker'"
+              style="margin-right: 10px"
+              @click="onCreateMMPool(false)"
+            >
+              Create OAMM without NFT
+              <span
+                v-if="
+                  isPublic &&
+                  createFee &&
+                  tokens &&
+                  tokens[sysConfig.sysToken.toString()]
+                "
+              >
+                (Fee:
+                {{
+                  createFee
+                    | bigintToFloat(
+                      tokens[sysConfig.sysToken.toString()].decimals,
+                      tokens[sysConfig.sysToken.toString()].decimals
+                    )
+                }}
+                ICL)
+              </span>
+              <span
+                v-if="
+                  !isPublic &&
+                  createPrivateFee &&
+                  tokens &&
+                  tokens[sysConfig.sysToken.toString()]
+                "
+              >
+                (Fee:
+                {{
+                  createPrivateFee
+                    | bigintToFloat(
+                      tokens[sysConfig.sysToken.toString()].decimals,
+                      tokens[sysConfig.sysToken.toString()].decimals
+                    )
+                }}
+                ICL)
+              </span>
+            </button>
+            <button
+              v-if="type === 'BecomeVipMaker'"
               :disabled="
                 !currentDepositedNft ||
-                (currentDepositedNft && !canBind(currentDepositedNft))
+                (currentDepositedNft && !canSubmit(currentDepositedNft))
               "
               type="button"
               class="w100 primary"
               @click="onBindMMPool"
             >
-              Bind MM NFT
+              Add a vip-maker with NFT
+            </button>
+            <button
+              v-if="type === 'ListingReferrer'"
+              :disabled="
+                !currentDepositedNft ||
+                (currentDepositedNft && !canSubmit(currentDepositedNft))
+              "
+              type="button"
+              class="w100 primary"
+              @click="onListingReferrer"
+            >
+              Set Listing Referrer By NFT
             </button>
           </div>
         </div>
       </div>
     </a-modal>
     <a-modal
+      v-model="visiblePropose"
+      centered
+      width="500px"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="transfer-modal nft-modal"
+    >
+      <div>
+        <div v-if="!canPropose">
+          Your NFT lockout period is over 330 days ({{ lockedTime }} days) and
+          you can no longer sponsor new pairs.
+        </div>
+        <div v-if="canPropose && pair">
+          <span v-if="Number(lockedTime) > 0"
+            >Your NFT has sponsored {{ NFTStakedPairs }} trading pairs with a
+            lockup period of {{ lockedTime }} days.
+          </span>
+          Are you sure you want to sponsor
+          {{ pair[1].pair.token0[1] }}/{{ pair[1].pair.token1[1] }}({{
+            pair[0].toString()
+          }})? By doing so, your NFT will extend the lockup period by 30 days.
+        </div>
+        <button
+          class="mt20 w100 primary"
+          :disabled="!canPropose"
+          @click="onPropose"
+        >
+          Propose
+        </button>
+      </div>
+    </a-modal>
+    <a-modal
       v-model="createMakerVisible"
       width="710px"
-      title="Create Maker Pool"
+      title="Create OAMM Pool"
       centered
       :footer="null"
       :keyboard="false"
@@ -183,7 +423,7 @@
             placeholder="Pool Name"
           />
         </a-form-model-item>
-        <span class="ant-form-item-required base-font-title"
+        <!--<span class="ant-form-item-required base-font-title"
           >Limit Price:
         </span>
         <div class="setting-price-range">
@@ -220,7 +460,7 @@
               v-only-float="unit"
             />
           </a-form-model-item>
-        </div>
+        </div>-->
         <a-form-model-item prop="spreadRate" :colon="false">
           <span slot="label">
             <span>Spread Rate: </span>
@@ -240,7 +480,26 @@
             v-only-float="1"
           />
         </a-form-model-item>
-        <a-form-model-item prop="threshold" :colon="false">
+        <div class="base-tip-size" style="margin: -5px 0 5px">
+          Suggestions:
+          <p>
+            1, Low volatility, high liquidity trading pairs (such as USDT/USDC):
+            it is recommended to set 0.1% ~ 1.0%.
+          </p>
+          <p>
+            2, High liquidity trading pairs: it is recommended to set 1.0% ~
+            2.0%.
+          </p>
+          <p>
+            3, Medium liquidity trading pairs: it is recommended to set 2.0% ~
+            5.0%.
+          </p>
+          <p>
+            4, Low liquidity trading pairs: it is recommended to set 5.0% ~
+            10.0%.
+          </p>
+        </div>
+        <a-form-model-item v-show="isPublic" prop="threshold" :colon="false">
           <span slot="label">
             <span>Threshold: </span>
             <a-tooltip>
@@ -260,7 +519,7 @@
             v-only-float="unit"
           />
         </a-form-model-item>
-        <a-form-model-item prop="volFactor" :colon="false">
+        <a-form-model-item v-show="isPublic" prop="volFactor" :colon="false">
           <span slot="label">
             <span>Vol Factor: </span>
             <a-tooltip>
@@ -345,7 +604,7 @@
     <approve-modal
       :isICLToken="true"
       :decimals="8"
-      :icl-token-amount="50"
+      :icl-token-amount="iclTokenAmount"
       approve-mode="icrc1"
       ref="approve"
       @approveSuccess="approveSuccess"
@@ -355,7 +614,12 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { MakerCreateArg, NFT, NFTType } from '@/ic/ICDexRouter/model';
+import {
+  MakerCreateArg,
+  NFT,
+  NFTType,
+  SysConfig
+} from '@/ic/ICDexRouter/model';
 import { ApproveRequest, TokenExt, TokensExt } from '@/ic/nft/model';
 import {
   getTokenIdentifier,
@@ -365,7 +629,7 @@ import {
 } from '@/ic/converter';
 import {
   IC_DEX_ROUTER_CANISTER_ID,
-  IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+  IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
   NFT_CANISTER_ID
 } from '@/ic/utils';
 import { checkAuth } from '@/ic/CheckAuth';
@@ -380,13 +644,15 @@ import ConnectPlug, { needConnectPlug } from '@/ic/ConnectPlug';
 import ConnectInfinity, { needConnectInfinity } from '@/ic/ConnectInfinity';
 import { toHttpRejectError } from '@/ic/httpError';
 import { validateCanisterOrAccount } from '@/utils/validate';
-import { PairTrie, SwapTokenInfo } from '@/ic/ICSwapRouter/model';
+import { PairTrie, StakedNFT, SwapTokenInfo } from '@/ic/ICSwapRouter/model';
 import { TokenInfo } from '@/ic/common/icType';
 import { namespace } from 'vuex-class';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import ApproveModal from '@/components/approve/Index.vue';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { getTokenInfo } from '@/ic/getTokenInfo';
+import { NFTRole } from '@/views/home/ICDex/model';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 
 const commonModule = namespace('common');
 
@@ -400,14 +666,17 @@ export default class extends Vue {
   private nftBalance!: Array<NFT>;
   @Prop({ type: Array, default: () => [] })
   private nfts!: TokensExt;
-  @Prop({ type: Boolean, default: () => false })
-  private isBecomeMaker!: boolean;
+  @Prop({ type: String, default: () => null })
+  private type!: NFTRole;
   @Prop({ type: Object, default: () => null })
   private tokens!: { [key: string]: TokenInfo };
   @Prop({ type: Array, default: () => [] })
   private pairsMaker!: Array<PairTrie>;
+  @Prop({ type: Array, default: () => null })
+  private listingReferrer!: [boolean, boolean];
 
   private visible = false;
+  private visiblePropose = false;
   private extPage = 0;
   private extPageNum = 3;
   private currentNft: TokenExt = null;
@@ -416,13 +685,23 @@ export default class extends Vue {
   private currentDepositedNft: NFT = null;
   private NftService: NftService = null;
   private ICDexRouterService: ICDexRouterService = null;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService = null;
   private DRC20TokenService: DRC20TokenService;
   private createMakerVisible = false;
   private bindNftTokenId = '';
   private unit = 8;
   private token1: SwapTokenInfo = null;
   private token0: SwapTokenInfo = null;
+  private sysConfig: SysConfig = null;
+  private createFee = '';
+  private createPrivateFee = '';
+  private iclTokenAmount = null;
+  private isPublic = false;
+  private pair: PairTrie = null;
+  private NFTStaked: Array<StakedNFT> = [];
+  private NFTStakedPairs = 0;
+  private canPropose = false;
+  private lockedTime = '0';
   private createMakerPoolForm = {
     name: '',
     pair: undefined,
@@ -438,7 +717,7 @@ export default class extends Vue {
       { required: true, message: 'Please select a pair', trigger: 'change' }
     ],
     name: [{ required: true, message: 'Please enter name', trigger: 'blur' }],
-    lowerLimit: [
+    /*lowerLimit: [
       {
         required: true,
         message: 'Please enter lowerLimit',
@@ -453,7 +732,7 @@ export default class extends Vue {
         trigger: ['change', 'blur']
       },
       { validator: this.validateUpperLimit, trigger: ['change', 'blur'] }
-    ],
+    ],*/
     spreadRate: [
       {
         required: true,
@@ -462,10 +741,18 @@ export default class extends Vue {
       }
     ],
     threshold: [
-      { required: true, message: 'Please enter threshold', trigger: 'blur' }
+      {
+        required: true,
+        message: 'Please enter threshold',
+        trigger: ['change', 'blur']
+      }
     ],
     volFactor: [
-      { required: true, message: 'Please enter vol factor', trigger: 'blur' }
+      {
+        required: true,
+        message: 'Please enter vol factor',
+        trigger: ['change', 'blur']
+      }
     ]
   };
   private validateUpperLimit(
@@ -474,7 +761,7 @@ export default class extends Vue {
     callback: (arg0?: string) => void
   ): void {
     if (new BigNumber(value).lte(0)) {
-      callback('Upper Limit must be less than 0');
+      callback('The upper Limit must be greater than 0');
     } else if (this.createMakerPoolForm.lowerLimit) {
       (this.$refs.createMakerPoolForm as any).validateField('lowerLimit');
       callback();
@@ -488,7 +775,7 @@ export default class extends Vue {
     callback: (arg0?: string) => void
   ): void {
     if (new BigNumber(value).lte(0)) {
-      callback('Lower Limit must be less than 0');
+      callback('The lower Limit must be greater than 0');
     } else if (
       this.createMakerPoolForm.upperLimit &&
       new BigNumber(this.createMakerPoolForm.upperLimit).lte(value)
@@ -519,10 +806,73 @@ export default class extends Vue {
   created(): void {
     this.NftService = new NftService();
     this.ICDexRouterService = new ICDexRouterService();
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.DRC20TokenService = new DRC20TokenService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
+    this.getSysConfig();
   }
-  private bindMMPoolInit(pair: string, pool: string): void {
+  private init(): void {
+    if (this.nfts && this.nfts.length) {
+      this.currentNft = this.nfts[0];
+    } else {
+      this.currentNft = null;
+    }
+    if (this.nftBalance && this.nftBalance.length) {
+      this.currentDepositedNft = this.nftBalance[0];
+    } else {
+      this.currentDepositedNft = null;
+    }
+    if (this.type === NFTRole.ListingReferrer) {
+      this.getNFTStaked();
+      if (this.listingReferrer && this.listingReferrer[0]) {
+        this.currentNft = null;
+        this.currentDepositedNft = null;
+      }
+    }
+  }
+  private async getNFTStaked(): Promise<void> {
+    if (this.getPrincipalId) {
+      const res = await this.ICSwapRouterFiduciaryService.NFTStaked(
+        this.getPrincipalId
+      );
+      console.log(res);
+      if (res && res.length) {
+        this.NFTStaked = res;
+        const now = new Date().getTime();
+        this.lockedTime = new BigNumber(res[0][2].toString(10))
+          .div(10 ** 6)
+          .minus(now)
+          .div(86400 * 1000)
+          .decimalPlaces(0)
+          .toString(10);
+        this.NFTStakedPairs = new BigNumber(this.lockedTime)
+          .div(30)
+          .decimalPlaces(0)
+          .toNumber();
+        this.canPropose = new BigNumber(this.lockedTime).lt(330);
+      } else {
+        this.NFTStaked = [];
+        this.canPropose = true;
+      }
+    } else {
+      this.NFTStaked = [];
+    }
+  }
+  private toPropose(): void {
+    this.visiblePropose = true;
+  }
+  private async onPropose(): Promise<void> {
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    await this.ICSwapRouterFiduciaryService.propose(this.pair[0]);
+    loading.close();
+    this.$message.success('Propose success');
+    this.visiblePropose = false;
+    this.visible = false;
+    this.$emit('proposeSuccess');
+  }
+  private bindMMPoolInit(pair: string, pool: string, isPublic: boolean): void {
     if (pair && pool) {
       this.bindMakerForm.pair = pair;
       this.bindMakerForm.account = pool;
@@ -530,7 +880,28 @@ export default class extends Vue {
       this.bindMakerForm.pair = undefined;
       this.bindMakerForm.account = '';
     }
+    this.isPublic = isPublic;
     this.visible = true;
+    this.init();
+  }
+  private async onListingReferrer(): Promise<void> {
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      await this.ICSwapRouterFiduciaryService.setListingReferrerByNft(
+        'icdex',
+        this.currentDepositedNft[1]
+      );
+      this.$message.success('Success');
+      this.$emit('setListingReferrerByNftSuccess');
+      this.getNFTStaked();
+      this.visiblePropose = true;
+    } catch (e) {
+      console.log(e);
+    }
+    loading.close();
   }
   private onBindMMPool(): void {
     this.bindNftTokenId = this.currentDepositedNft[1];
@@ -546,7 +917,7 @@ export default class extends Vue {
   }
   private async getAllowance(): Promise<bigint> {
     const res = await this.DRC20TokenService.icrc2_allowance(
-      IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+      this.sysConfig.sysToken.toString(),
       {
         account: {
           owner: Principal.fromText(this.getPrincipalId),
@@ -565,21 +936,73 @@ export default class extends Vue {
       return BigInt(0);
     }
   }
+  private initForm(): void {
+    this.$nextTick(() => {
+      if (!this.isPublic) {
+        this.createMakerPoolForm.threshold = '1000000.00';
+        this.createMakerPoolForm.volFactor = '10000';
+      } else {
+        this.createMakerPoolForm.threshold = '';
+        this.createMakerPoolForm.volFactor = '';
+      }
+    });
+  }
   private approveSuccess(): void {
     this.createMakerVisible = true;
+    this.initForm();
   }
-  private async onCreateMMPool(): Promise<void> {
+  private async getSysConfig(): Promise<void> {
+    this.sysConfig = await this.ICDexRouterService.sys_getConfig();
+    this.createFee = new BigNumber(this.sysConfig.creatingMakerFee.toString(10))
+      .times(10)
+      .toString(10);
+    this.createPrivateFee = new BigNumber(
+      this.sysConfig.creatingMakerFee.toString(10)
+    )
+      .times(3)
+      .toString(10);
+  }
+  private async onCreateMMPool(hasNft = true): Promise<void> {
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await this.getSysConfig();
     const allowance = await this.getAllowance();
     console.log(allowance);
-    if (new BigNumber(await this.getIclBalance()).lt(50.01)) {
+    let tokenInfo = this.tokens[this.sysConfig.sysToken.toString()];
+    if (!tokenInfo) {
+      tokenInfo = await getTokenInfo(this.sysConfig.sysToken, {
+        icrc1: null
+      });
+      this.$set(this.tokens, this.sysConfig.sysToken.toString(), tokenInfo);
+    }
+    let fee = new BigNumber(this.sysConfig.creatingMakerFee.toString(10))
+      .plus(this.sysConfig.sysTokenFee.toString(10))
+      .plus(this.sysConfig.sysTokenFee.toString(10))
+      .div(10 ** tokenInfo.decimals)
+      .toString(10);
+    if (!hasNft) {
+      if (this.isPublic) {
+        fee = new BigNumber(this.sysConfig.creatingMakerFee.toString(10))
+          .times(10)
+          .plus(this.sysConfig.sysTokenFee.toString(10))
+          .plus(this.sysConfig.sysTokenFee.toString(10))
+          .div(10 ** tokenInfo.decimals)
+          .toString(10);
+      } else {
+        fee = new BigNumber(this.sysConfig.creatingMakerFee.toString(10))
+          .times(3)
+          .plus(this.sysConfig.sysTokenFee.toString(10))
+          .plus(this.sysConfig.sysTokenFee.toString(10))
+          .div(10 ** tokenInfo.decimals)
+          .toString(10);
+      }
+    }
+    if (new BigNumber(await this.getIclBalance()).lt(fee)) {
       loading.close();
       this.$info({
-        content:
-          'Insufficient balance. A minimum of 50.01 ICL is required to create a MM Pool.',
+        content: `Insufficient balance. A minimum of ${fee} ${tokenInfo.symbol} is required to create a MM Pool.`,
         class: 'connect-plug',
         icon: 'connect-plug',
         okText: 'Confirm',
@@ -589,35 +1012,42 @@ export default class extends Vue {
         }
       });
     } else if (allowance || (allowance !== null && Number(allowance) === 0)) {
+      this.iclTokenAmount = Number(fee);
       loading.close();
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
-      if (new BigNumber(allowance.toString(10)).div(10 ** 8).lt(50)) {
+      if (new BigNumber(allowance.toString(10)).div(10 ** 8).lt(fee)) {
         this.$info({
-          content:
-            'Required to allow the smart contract to spend your ICL token as a fee(50 ICL / creating MM Pool).',
+          content: `Required to allow the smart contract to spend your ICL token as a fee(${fee} ICL).`,
           class: 'connect-plug',
           icon: 'connect-plug',
           okText: 'Approve',
           centered: true,
           onOk() {
             (that.$refs.approve as any).visible = true;
+            (that.$refs.approve as any).approveForm.amount = fee;
             (that.$refs.approve as any).approveForm.spender =
               IC_DEX_ROUTER_CANISTER_ID;
           }
         });
       } else {
         loading.close();
-        that.createMakerVisible = true;
+        this.createMakerVisible = true;
+        this.initForm();
       }
     }
   }
   private async getIclBalance(): Promise<string> {
-    const ICL = await this.ICLighthouseTokenService.getBalance(
-      this.getPrincipalId
+    const to = {
+      owner: Principal.fromText(this.getPrincipalId),
+      subaccount: []
+    };
+    const ICL = await this.DRC20TokenService.icrc1_balance_of(
+      this.sysConfig.sysToken.toString(),
+      to
     );
     return new BigNumber(ICL.toString(10))
-      .div(10 ** 8)
+      .div(10 ** this.tokens[this.sysConfig.sysToken.toString()].decimals)
       .decimalPlaces(4, 1)
       .toString(10);
   }
@@ -677,6 +1107,7 @@ export default class extends Vue {
     (this.$refs.createMakerPoolForm as any).validate(async (valid: any) => {
       console.log(valid);
       if (valid) {
+        console.log(this.pairsMaker[this.createMakerPoolForm.pair][1]);
         await checkAuth();
         const loading = this.$loading({
           lock: true,
@@ -695,13 +1126,24 @@ export default class extends Vue {
             .unitSize;
         const token1Decimals = this.tokens[token1Id].decimals;
         const token0Decimals = this.tokens[token0Id].decimals;
-        const lowerLimit = new BigNumber(this.createMakerPoolForm.lowerLimit)
-          .times(10 ** token1Decimals)
-          .times(new BigNumber(unitSize.toString(10)).div(10 ** token0Decimals))
+        let lowerLimit = new BigNumber(
+          this.pairsMaker[
+            this.createMakerPoolForm.pair
+          ][1].liquidity[0].price.toString(10)
+        )
+          .div(1_000_000_000_000)
+          .decimalPlaces(0, 1)
           .toString(10);
-        const upperLimit = new BigNumber(this.createMakerPoolForm.upperLimit)
-          .times(10 ** token1Decimals)
-          .times(new BigNumber(unitSize.toString(10)).div(10 ** token0Decimals))
+        if (new BigNumber(lowerLimit).lt(1)) {
+          lowerLimit = '1';
+        }
+        const upperLimit = new BigNumber(
+          this.pairsMaker[
+            this.createMakerPoolForm.pair
+          ][1].liquidity[0].price.toString(10)
+        )
+          .times(1_000_000_000_000)
+          .decimalPlaces(0)
           .toString(10);
         // ppm
         const spreadRate = new BigNumber(this.createMakerPoolForm.spreadRate)
@@ -711,10 +1153,23 @@ export default class extends Vue {
         const threshold = new BigNumber(this.createMakerPoolForm.threshold)
           .times(10 ** token1Decimals)
           .toString(10);
+        let allow:
+          | {
+              Private: null;
+            }
+          | {
+              Public: null;
+            } = { Public: null };
+        if (!this.isPublic) {
+          allow = {
+            Private: null
+          };
+        }
         const makerCreateArg: MakerCreateArg = {
+          creator: [],
           name: this.createMakerPoolForm.name,
           pair: this.pairsMaker[this.createMakerPoolForm.pair][0],
-          allow: { Public: null }, // todo Public
+          allow: allow,
           lowerLimit: BigInt(lowerLimit),
           upperLimit: BigInt(upperLimit),
           spreadRate: BigInt(spreadRate),
@@ -751,9 +1206,15 @@ export default class extends Vue {
                       if (!isConnect) {
                         return;
                       }
-                      await _that.$router.push(
-                        `/ICDex/pools/pool/${res.toString()}`
-                      );
+                      if (_that.isPublic) {
+                        await _that.$router.push(
+                          `/ICDex/pools/pool/${res.toString()}`
+                        );
+                      } else {
+                        await _that.$router.push(
+                          `/ICDex/pools/pool/${res.toString()}?private`
+                        );
+                      }
                     });
                 }
               });
@@ -774,14 +1235,26 @@ export default class extends Vue {
                       if (!isConnect) {
                         return;
                       }
-                      await _that.$router.push(
-                        `/ICDex/pools/pool/${res.toString()}`
-                      );
+                      if (_that.isPublic) {
+                        await _that.$router.push(
+                          `/ICDex/pools/pool/${res.toString()}`
+                        );
+                      } else {
+                        await _that.$router.push(
+                          `/ICDex/pools/pool/${res.toString()}?private`
+                        );
+                      }
                     });
                 }
               });
             } else {
-              this.$router.push(`/ICDex/pools/pool/${res.toString()}`);
+              if (this.isPublic) {
+                await this.$router.push(`/ICDex/pools/pool/${res.toString()}`);
+              } else {
+                await this.$router.push(
+                  `/ICDex/pools/pool/${res.toString()}?private`
+                );
+              }
             }
           } else {
             this.$message.error('Error');
@@ -798,7 +1271,12 @@ export default class extends Vue {
     this.onApprove();
   }
   private async onApprove(): Promise<void> {
-    const spender = IC_DEX_ROUTER_CANISTER_ID;
+    let spender = IC_DEX_ROUTER_CANISTER_ID;
+    let spenderSuccess = IC_DEX_ROUTER_CANISTER_ID;
+    if (this.type === 'ListingReferrer') {
+      spender = IC_SWAP_ROUTER_CANISTER_ID_Fiduciary;
+      spenderSuccess = IC_SWAP_ROUTER_CANISTER_ID_Fiduciary;
+    }
     const approveRequest: ApproveRequest = {
       token: getTokenIdentifier(NFT_CANISTER_ID, Number(this.currentNft[0])),
       subaccount: [],
@@ -820,7 +1298,7 @@ export default class extends Vue {
         onSuccess: async (res) => {
           if (res) {
             // this.$message.success('Approve Success');
-            if (spender === IC_DEX_ROUTER_CANISTER_ID) {
+            if (spender === spenderSuccess) {
               localStorage.setItem(
                 'approveNftVip',
                 this.currentNft[0].toString(10)
@@ -849,7 +1327,7 @@ export default class extends Vue {
         onSuccess: async (res) => {
           if (res) {
             // this.$message.success('Approve Success');
-            if (spender === IC_DEX_ROUTER_CANISTER_ID) {
+            if (spender === spenderSuccess) {
               localStorage.setItem(
                 'approveNftVip',
                 this.currentNft[0].toString(10)
@@ -873,7 +1351,7 @@ export default class extends Vue {
       try {
         const res = await this.NftService.approve(approveRequest);
         if (res) {
-          if (spender === IC_DEX_ROUTER_CANISTER_ID) {
+          if (spender === spenderSuccess) {
             localStorage.setItem(
               'approveNftVip',
               this.currentNft[0].toString(10)
@@ -892,10 +1370,18 @@ export default class extends Vue {
     }
   }
   private async deposit(loading): Promise<void> {
-    const res = await this.ICDexRouterService.NFTDeposit(
-      Principal.fromText(NFT_CANISTER_ID),
-      getTokenIdentifier(NFT_CANISTER_ID, Number(this.currentNft[0]))
-    );
+    let res;
+    if (this.type === 'ListingReferrer') {
+      res = await this.ICSwapRouterFiduciaryService.NFTDeposit(
+        Principal.fromText(NFT_CANISTER_ID),
+        getTokenIdentifier(NFT_CANISTER_ID, Number(this.currentNft[0]))
+      );
+    } else {
+      res = await this.ICDexRouterService.NFTDeposit(
+        Principal.fromText(NFT_CANISTER_ID),
+        getTokenIdentifier(NFT_CANISTER_ID, Number(this.currentNft[0]))
+      );
+    }
     loading.close();
     if (res) {
       this.currentNft = null;
@@ -907,10 +1393,25 @@ export default class extends Vue {
       this.$message.error('Error');
     }
   }
-  private canBind(nft: NFT): boolean {
+  private canSubmit(nft: NFT): boolean {
     if (nft) {
       const type = Object.keys(nft[3])[0];
-      if (type && type === 'NEPTUNE') {
+      if (this.type === 'CreateMaker') {
+        if (
+          this.isPublic &&
+          (type.includes('NEPTUNE') ||
+            type.includes('URANUS') ||
+            type.includes('SATURN'))
+        ) {
+          return true;
+        } else if (!this.isPublic) {
+          return true;
+        }
+      }
+      if (this.type === 'BecomeVipMaker' && type.includes('NEPTUNE')) {
+        return true;
+      }
+      if (this.type === 'ListingReferrer' && type.includes('URANUS')) {
         return true;
       }
     }
@@ -919,13 +1420,25 @@ export default class extends Vue {
   private canDeposit(nft: TokenExt): boolean {
     if (nft) {
       const info = this.getExtInfo(nft[2]);
-      if (
-        info.name &&
-        (info.name.includes('NEPTUNE') ||
-          info.name.includes('URANUS') ||
-          info.name.includes('SATURN'))
-      ) {
-        return true;
+      if (info.name) {
+        if (this.type === 'CreateMaker') {
+          if (
+            this.isPublic &&
+            (info.name.includes('NEPTUNE') ||
+              info.name.includes('URANUS') ||
+              info.name.includes('SATURN'))
+          ) {
+            return true;
+          } else if (!this.isPublic) {
+            return true;
+          }
+        }
+        if (this.type === 'BecomeVipMaker' && info.name.includes('NEPTUNE')) {
+          return true;
+        }
+        if (this.type === 'ListingReferrer' && info.name.includes('URANUS')) {
+          return true;
+        }
       }
     }
     return false;
@@ -966,30 +1479,93 @@ export default class extends Vue {
     this.currentNft = nft;
   }
   private onWithdraw(nft: NFT): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-    this.$confirm({
-      content: 'Withdraw NFT will unbind Makers.',
-      class: 'connect-plug',
-      icon: 'connect-plug',
-      centered: true,
-      okText: 'Confirm',
-      cancelText: 'Cancel',
-      onOk() {
-        const loading = that.$loading({
-          lock: true,
-          background: 'rgba(0, 0, 0, 0.5)'
+    const type = Object.keys(nft[3])[0];
+    if (type === 'NEPTUNE') {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
+      this.$confirm({
+        content: 'Withdraw NFT will unbind Makers.',
+        class: 'connect-plug',
+        icon: 'connect-plug',
+        centered: true,
+        okText: 'Confirm',
+        cancelText: 'Cancel',
+        onOk() {
+          const loading = that.$loading({
+            lock: true,
+            background: 'rgba(0, 0, 0, 0.5)'
+          });
+          if (that.type === 'ListingReferrer') {
+            that.ICSwapRouterFiduciaryService.NFTWithdraw([nft[1]])
+              .then(() => {
+                that.$message.success('Success');
+                that.$emit('NFTWithdrawSuccess');
+                that.currentDepositedNft = null;
+              })
+              .finally(() => {
+                loading.close();
+              });
+          } else {
+            that.ICDexRouterService.NFTWithdraw([nft[1]])
+              .then(() => {
+                that.$message.success('Success');
+                that.$emit('NFTWithdrawSuccess');
+                that.currentDepositedNft = null;
+              })
+              .finally(() => {
+                loading.close();
+              });
+          }
+        }
+      });
+    } else {
+      console.log(nft[1]);
+      const loading = this.$loading({
+        lock: true,
+        background: 'rgba(0, 0, 0, 0.5)'
+      });
+      if (this.type === 'ListingReferrer') {
+        let flag = false;
+        this.NFTStaked.some((item) => {
+          if (item[1] === nft[1]) {
+            if (
+              new BigNumber(item[2].toString(10))
+                .div(10 ** 6)
+                .gt(new Date().getTime())
+            ) {
+              flag = true;
+            }
+            return true;
+          }
         });
-        that.ICDexRouterService.NFTWithdraw([nft[1]])
+        if (flag) {
+          this.$message
+            .warning(`Your NFT has sponsored ${this.NFTStakedPairs} trading pairs with a
+            lockup period of ${this.lockedTime} days.`);
+          loading.close();
+          return;
+        }
+        this.ICSwapRouterFiduciaryService.NFTWithdraw([nft[1]])
           .then(() => {
-            that.$message.success('Success');
-            that.$emit('NFTWithdrawSuccess');
+            this.$message.success('Success');
+            this.$emit('NFTWithdrawSuccess');
+            this.currentDepositedNft = null;
+          })
+          .finally(() => {
+            loading.close();
+          });
+      } else {
+        this.ICDexRouterService.NFTWithdraw([nft[1]])
+          .then(() => {
+            this.$message.success('Success');
+            this.$emit('NFTWithdrawSuccess');
+            this.currentDepositedNft = null;
           })
           .finally(() => {
             loading.close();
           });
       }
-    });
+    }
   }
   private getImg(nftType: NFTType): string {
     const type = Object.keys(nftType)[0];
@@ -1001,6 +1577,21 @@ export default class extends Vue {
     }
     if (type === 'SATURN') {
       return 'https://pgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app/file/15_thumb.jpeg';
+    }
+    if (type === 'JUPITER') {
+      return 'https://pgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app/file/126_thumb.jpeg';
+    }
+    if (type === 'MARS') {
+      return 'https://pgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app/file/346_thumb.jpeg';
+    }
+    if (type === 'EARTH') {
+      return 'https://pgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app/file/870_thumb.jpeg';
+    }
+    if (type === 'VENUS') {
+      return 'https://pgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app/file/1361_thumb.jpeg';
+    }
+    if (type === 'MERCURY') {
+      return 'https://pgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app/file/1886_thumb.jpeg';
     }
   }
   private onChangePairBind(): void {
@@ -1057,6 +1648,9 @@ export default class extends Vue {
   .ext-info {
     padding-bottom: 0;
   }
+  button {
+    margin-top: 10px;
+  }
 }
 .text-center {
   text-align: center;
@@ -1074,6 +1668,15 @@ export default class extends Vue {
     }
     &:nth-child(3n) {
       margin-right: 0;
+    }
+    &.disabled {
+      cursor: not-allowed;
+      .checked {
+        opacity: 0.5;
+      }
+      &.active {
+        border-color: rgba(33, 199, 125, 0.2);
+      }
     }
   }
 }

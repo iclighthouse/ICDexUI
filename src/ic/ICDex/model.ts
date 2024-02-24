@@ -1,7 +1,7 @@
 import { Principal } from '@dfinity/principal';
 import { Address } from '@/ic/DRC20Token/model';
 import { Amount, DexInfo, TokenLiquidity, Vol } from '@/ic/ICSwap/model';
-import { Txid, Time, Icrc1Account } from '@/ic/common/icType';
+import { Txid, Time, Icrc1Account, AccountId } from '@/ic/common/icType';
 import { TxnRecordStatus } from '@/ic/cyclesFinance/model';
 import { SwapTokenInfo } from '@/ic/ICSwapRouter/model';
 import exp from 'constants';
@@ -322,6 +322,11 @@ export interface PairInfo {
   token0: SwapTokenInfo;
   token1: SwapTokenInfo;
   paused: boolean;
+  controllers?: Array<string>;
+  moduleHash?: string;
+  admins?: Array<Principal>;
+  IDOConfig?: IDOConfig;
+  auctionMode?: [boolean, AccountId];
 }
 export type OrderStatusResponse =
   | { Failed: TradingOrder }
@@ -483,10 +488,7 @@ export type Ppm = bigint;
 export type Soid = bigint;
 export interface STOrder {
   status: STStatus;
-  pendingOrders: {
-    buy: Array<[Txid[], bigint, bigint]>;
-    sell: Array<[Txid[], bigint, bigint]>;
-  };
+  pendingOrders: STOrderPendingOrders;
   strategy: STStrategy;
   soid: Soid;
   initTime: Time;
@@ -495,6 +497,11 @@ export interface STOrder {
   triggerTime: Time;
   stType: STType;
 }
+export type STOrderPendingOrder = [Txid[], bigint, bigint];
+export type STOrderPendingOrders = {
+  buy: Array<STOrderPendingOrder>;
+  sell: Array<STOrderPendingOrder>;
+};
 export type STType =
   | { GridOrder: null }
   | { TWAP: null }
@@ -559,7 +566,9 @@ export interface IcebergOrder {
 export interface GridOrder {
   setting: GridSetting;
   gridPrices: GridPrices;
+  level1Filled: level1Filled;
 }
+export type level1Filled = Array<{ buy1: bigint; sell1: bigint }>;
 export interface GridPrices {
   buy: bigint[];
   sell: bigint[];
@@ -583,7 +592,7 @@ export type STStatus =
   | { Deleted: null };
 export interface StoSetting {
   gridMaxPerSide: bigint;
-  stopLossCountMax: bigint;
+  StopLossCountMax: bigint;
   poFee1: bigint;
   poFee2: string;
   sloFee1: bigint;
@@ -610,7 +619,31 @@ export interface StopLossOrderConfig {
 export interface UpdateStopLossOrderConfig {
   status: Array<STStatus>;
   order: Array<TriggeredOrderInfo>;
-  triggerPrice: Array<Amount>
+  triggerPrice: Array<Amount>;
+}
+export type IDOConfig = [Array<Principal>, IDOSetting, Array<IDORequirement>];
+export interface IDOSetting {
+  IDOSupplies: Array<{ supply: Amount; price: bigint }>;
+  IDOWhitelistEnabled: boolean;
+  IDOOpeningTime: Time;
+  IDOTotalSupply: {
+    IDOSupply: Amount;
+    percentageOfTotal: string;
+  };
+  IDOEnabled: boolean;
+  IDOLimitPerAccount: Amount;
+  IDOClosingTime: Time;
+}
+export interface IDORequirement {
+  threshold: string;
+  pairs: Array<{ pair: Principal; token1ToUsdRatio: string }>;
+}
+export type Qualification = Array<[string, Participant]>;
+export interface Participant {
+  updatedTime: Time;
+  used: Amount;
+  limit: Amount;
+  historyVol: string;
 }
 
 export default interface Service {
@@ -716,7 +749,7 @@ export default interface Service {
     end: Array<bigint>
   ): Promise<[Array<TxnRecord>, boolean]>;
   sto_createStopLossOrder(
-    stopLossOrderConfig: StopLossOrderConfig,
+    StopLossOrderConfig: StopLossOrderConfig,
     subaccount: Array<Array<number>>
   ): Promise<Soid>;
   sto_getAccountStopLossOrders(address: string): Promise<Array<STOrder>>;
@@ -725,4 +758,10 @@ export default interface Service {
     updateStopLossOrderConfig: UpdateStopLossOrderConfig,
     subaccount: Array<Array<number>>
   ): Promise<Soid>;
+  sto_getStratOrder(soid: Soid): Promise<Array<STOrder>>;
+  IDO_getConfig(): Promise<IDOConfig>;
+  IDO_qualification(address: Array<string>): Promise<Qualification>;
+  IDO_updateQualification(subaccount: Array<Array<number>>): Promise<Array<Participant>>;
+  ictc_getAdmins(): Promise<Array<Principal>>;
+  getAuctionMode(): Promise<[boolean, AccountId]>;
 }

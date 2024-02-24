@@ -48,7 +48,8 @@
       <div class="transfer-balance">
         <div class="transfer-balance-left">
           <p>Balance: {{ balance }} ICP</p>
-          <p>Fee: {{ fee }} ICP</p>
+          <p v-if="type === 'Deposit'">Fee: {{ depositFee }} ICP</p>
+          <p v-else>Fee: {{ fee }} ICP</p>
         </div>
         <div class="transfer-balance-right" @click="setMaxBalance">Max</div>
       </div>
@@ -115,6 +116,7 @@ export default class extends Vue {
   public memo!: bigint;
   public decimals = 8;
   public fee = 0.0001;
+  private depositFee = 0.0002;
   private isIcx = false;
   public subaccountId = 0;
   public ledgerService: LedgerService | undefined;
@@ -155,9 +157,12 @@ export default class extends Vue {
     value: number,
     callback: (arg0?: string) => void
   ): void {
-    const min = Number(
-      new BigNumber(this.balance).minus(this.fee).minus(value)
-    );
+    let min = Number(new BigNumber(this.balance).minus(this.fee).minus(value));
+    if (this.type === 'Deposit') {
+      min = Number(
+        new BigNumber(this.balance).minus(this.depositFee).minus(value)
+      );
+    }
     if (value && min < 0) {
       callback('Insufficient ICP');
     } else if (this.type === 'topUpNeuron' && value < 1) {
@@ -220,11 +225,16 @@ export default class extends Vue {
             }
             console.log(this.transferForm.to);
             console.log(principalAndAccountId);
+            let amount = new BigNumber(this.transferForm.amount.toString())
+              .times(10 ** 8)
+              .toString(10);
+            if (this.type === 'Deposit') {
+              amount = new BigNumber(amount)
+                .plus(new BigNumber(this.fee).times(10 ** 8))
+                .toString(10);
+            }
             if (principalAndAccountId && principalAndAccountId.principal) {
               const currentDrc20Token = new DRC20TokenService();
-              const amount = new BigNumber(this.transferForm.amount.toString())
-                .times(10 ** 8)
-                .toString(10);
               await currentDrc20Token.icrc1Transfer(
                 LEDGER_CANISTER_ID,
                 BigInt(amount),
@@ -259,12 +269,14 @@ export default class extends Vue {
               loading.close();
               this.visibleTransfer = false;
             }
-            this.$emit(
-              'transferSuccess',
-              this.transferForm.amount.toString(),
-              loading,
-              this.subaccountId
-            );
+            let deposit = new BigNumber(amount).div(10 ** 8).toString(10);
+            if (this.type === 'Deposit') {
+              deposit = new BigNumber(amount)
+                .minus(new BigNumber(this.fee).times(10 ** 8))
+                .div(10 ** 8)
+                .toString(10);
+            }
+            this.$emit('transferSuccess', deposit, loading, this.subaccountId);
           } catch (e) {
             loading.close();
             console.log(e);
@@ -276,7 +288,10 @@ export default class extends Vue {
     );
   }
   public setMaxBalance(): void {
-    const max = new BigNumber(this.balance).minus(this.fee);
+    let max = new BigNumber(this.balance).minus(this.fee);
+    if (this.type === 'Deposit') {
+      max = new BigNumber(this.balance).minus(this.fee).minus(this.fee);
+    }
     if (new BigNumber(max).gt(0)) {
       this.transferForm.amount = max.toString(10);
     } else {

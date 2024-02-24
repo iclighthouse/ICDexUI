@@ -214,7 +214,9 @@
                       >
                       <a-menu-item @click="update(token)">Upgrade</a-menu-item>
                       <a-menu-item
-                        v-if="token.owner === getPrincipalId"
+                        v-if="
+                          token.owner === getPrincipalId || token.isController
+                        "
                         @click="handleUpdateMetadata(token)"
                         >Update Metadata</a-menu-item
                       >
@@ -377,10 +379,10 @@
                 {{ controller }} (Blackhole)
               </div>
               <div v-if="controller === currentToken.tokenId.toString()">
-                {{ controller }} (Token)
+                TokenSelf: ({{ controller }})
               </div>
-              <div v-if="controller === 'igm6s-dqaaa-aaaar-qaa3a-cai'">
-                {{ controller }} (Factory)
+              <div v-if="controller === 'y2b5k-gqaaa-aaaak-aacqq-cai'">
+                Constructor: ({{ controller }})
               </div>
               <div v-if="controller === getPrincipalId">
                 {{ controller }} (Your)
@@ -559,7 +561,7 @@
     >
       <p>
         Required to allow the smart contract to spend your ICL token as a
-        fee(100 ICL / creating a token)
+        fee(1000 ICL / creating a token)
       </p>
       <div class="delete-button">
         <button
@@ -781,7 +783,6 @@ import BigNumber from 'bignumber.js';
 import { Principal } from '@dfinity/principal';
 import { ICTokenService } from '@/ic/ICTokens/ICTokenService';
 import { ICManagementService } from '@/ic/ICManagement/ICManagementService';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import {
   Token,
@@ -808,6 +809,7 @@ import ApproveModal from '@/components/approve/Index.vue';
 import { namespace } from 'vuex-class';
 import ConnectPlug, { needConnectPlug } from '@/ic/ConnectPlug';
 import ConnectInfinity, { needConnectInfinity } from '@/ic/ConnectInfinity';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 const commonModule = namespace('common');
 
 @Component({
@@ -874,7 +876,7 @@ export default class extends Mixins(BalanceMixin) {
   private addedTokens: Array<TokenItem> = null;
   private ICTokenService: ICTokenService;
   private ICManagementService: ICManagementService;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
+  private DRC20TokenService: DRC20TokenService;
   private updateMetadataVisible = false;
   private tokens: Array<Token> = [];
   // private principalId: PrincipalString;
@@ -969,8 +971,8 @@ export default class extends Mixins(BalanceMixin) {
     this.ICManagementService = new ICManagementService();
     this.ICTokenService = new ICTokenService();
     this.ICLighthouseService = new ICLighthouseService();
+    this.DRC20TokenService = new DRC20TokenService();
     // this.principalId = localStorage.getItem('principal');
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     if (this.getPrincipalId) {
       this.getTokens();
       this.getAddedTokens();
@@ -988,7 +990,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async approvals(): Promise<void> {
     const principal = localStorage.getItem('principal');
-    const res = await this.ICLighthouseTokenService.approvals(principal);
+    const res = await this.DRC20TokenService.approvals(principal);
     console.log(res);
     const remaining = res.reduce((remaining, item) => {
       return BigInt(
@@ -998,7 +1000,7 @@ export default class extends Mixins(BalanceMixin) {
     console.log(remaining);
   }
   private async getAllowance(): Promise<void> {
-    this.allowance = await this.ICLighthouseTokenService.allowance(
+    this.allowance = await this.DRC20TokenService.drc20_allowance(
       this.getPrincipalId
     );
   }
@@ -1109,26 +1111,16 @@ export default class extends Mixins(BalanceMixin) {
       if (
         new BigNumber(this.allowance.toString(10))
           .div(10 ** this.iclDecimals)
-          .lt(100)
+          .lt(1000)
       ) {
         this.allowanceVisible = true;
-      } else if (new BigNumber(await this.getIclBalance()).lt(100.01)) {
+      } else if (new BigNumber(await this.getIclBalance()).lt(1000.02)) {
         this.insufficientVisible = true;
       } else {
         this.createTokenVisible = true;
       }
     }
     this.loading = false;
-    // this.createTokenVisible = true;
-    // this.getAllowance();
-    // this.iclDecimals = await this.ICLighthouseTokenService.getDecimals();
-    // const gas = await this.ICLighthouseTokenService.gas();
-    // const fee = (gas as { token: bigint }).token;
-    // if (fee || fee.toString() === '0') {
-    //   this.iclFee = new BigNumber(fee.toString())
-    //     .div(10 ** this.iclDecimals)
-    //     .toString();
-    // }
   }
   private handleDeleteToken(token: Token, index: number): void {
     this.deleteVisible = true;
@@ -1212,7 +1204,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async getIclBalance(): Promise<string> {
     const principal = localStorage.getItem('principal');
-    const ICL = await this.ICLighthouseTokenService.getBalance(principal);
+    const ICL = await this.DRC20TokenService.drc20_balanceOf(principal);
     return new BigNumber(ICL.toString(10))
       .div(10 ** 8)
       .decimalPlaces(4, 1)
@@ -1240,7 +1232,7 @@ export default class extends Mixins(BalanceMixin) {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
-      const res = await this.ICLighthouseTokenService.setMetadata(
+      const res = await this.DRC20TokenService.setMetadata(
         this.currentMetadata,
         this.currentToken.tokenId.toString()
       );
@@ -1366,12 +1358,8 @@ export default class extends Mixins(BalanceMixin) {
     this.oldControllers = [];
   }
   private async getOwner(token: Token): Promise<void> {
-    // this.ICLighthouseTokenService = new ICLighthouseTokenService(
-    //   this.identity,
-    //   token.tokenId.toString()
-    // );
     try {
-      const owner = await this.ICLighthouseTokenService.getOwner(
+      const owner = await this.DRC20TokenService.getOwner(
         token.tokenId.toString()
       );
       token.owner = owner.toString();
@@ -1455,48 +1443,24 @@ export default class extends Mixins(BalanceMixin) {
     console.log(token);
   }
   private async getName(token: Token): Promise<void> {
-    // this.ICLighthouseTokenService = new ICLighthouseTokenService(
-    //   this.identity,
-    //   token.tokenId.toString()
-    // );
-    token.name = await this.ICLighthouseTokenService.getName(
-      token.tokenId.toString()
-    );
+    token.name = await this.DRC20TokenService.name(token.tokenId.toString());
     this.$forceUpdate();
   }
   private async getSymbol(token: Token): Promise<void> {
-    // this.ICLighthouseTokenService = new ICLighthouseTokenService(
-    //   this.identity,
-    //   token.tokenId.toString()
-    // );
-    token.symbol = await this.ICLighthouseTokenService.getSymbol(
+    token.symbol = await this.DRC20TokenService.symbol(
       token.tokenId.toString()
     );
     this.$forceUpdate();
   }
   private async totalSupply(token: Token): Promise<void> {
-    // this.ICLighthouseTokenService = new ICLighthouseTokenService(
-    //   this.identity,
-    //   token.tokenId.toString()
-    // );
-    let totalSupply = await this.ICLighthouseTokenService.totalSupply(
+    let totalSupply = await this.DRC20TokenService.totalSupply(
       token.tokenId.toString()
     );
-    // let decimals = await this.getDecimals(token);
-    // totalSupply = BigInt(
-    //   new BigNumber(totalSupply.toString()).div(
-    //     new BigNumber(10).pow(decimals.toString())
-    //   )
-    // );
     token.totalSupply = totalSupply;
     this.$forceUpdate();
   }
   private async getDecimals(token: Token): Promise<number> {
-    // this.ICLighthouseTokenService = new ICLighthouseTokenService(
-    //   this.identity,
-    //   token.tokenId.toString()
-    // );
-    token.decimals = await this.ICLighthouseTokenService.getDecimals(
+    token.decimals = await this.DRC20TokenService.decimals(
       token.tokenId.toString()
     );
     return token.decimals;
@@ -1526,16 +1490,10 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async getGas(token: Token): Promise<void> {
-    token.gas = await this.ICLighthouseTokenService.gas(
-      token.tokenId.toString()
-    );
+    token.gas = await this.DRC20TokenService.gas(token.tokenId.toString());
   }
   private async getMetadata(token: Token): Promise<void> {
-    // this.ICLighthouseTokenService = new ICLighthouseTokenService(
-    //   this.identity,
-    //   token.tokenId.toString()
-    // );
-    const metadata = await this.ICLighthouseTokenService.metadata(
+    const metadata = await this.DRC20TokenService.metadata(
       token.tokenId.toString()
     );
     token.metadata = metadata;
@@ -1604,12 +1562,8 @@ export default class extends Mixins(BalanceMixin) {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    // this.ICLighthouseTokenService = new ICLighthouseTokenService(
-    //   this.identity,
-    //   this.currentToken.tokenId.toString()
-    // );
     try {
-      const res = this.ICLighthouseTokenService.changeOwner(
+      const res = this.DRC20TokenService.changeOwner(
         Principal.fromText(this.owner),
         this.currentToken.tokenId.toString()
       );

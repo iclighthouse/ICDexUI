@@ -45,7 +45,7 @@ export interface PoolInfo {
     gridUpperLimit: bigint;
     gridSpread: bigint;
   };
-  gridSoid: Array<bigint>;
+  gridSoid: Array<Array<bigint>>;
   version: string;
   pairInfo: {
     pairUnitSize: bigint;
@@ -64,6 +64,18 @@ export interface PoolInfo {
       };
   poolThreshold: Amount;
   paused: boolean;
+  sysGlobalLock: Array<boolean>;
+}
+export interface TrieListEvents {
+  total: bigint;
+  totalPage: bigint;
+  data: Array<[bigint, [PoolEvent, Time]]>;
+}
+export type PoolEvent = any;
+export interface MakerConfigure {
+  controllers?: Array<string>;
+  moduleHash?: string;
+  ICTCAdmins?: Array<Principal>;
 }
 
 export default interface Service {
@@ -71,8 +83,20 @@ export default interface Service {
   getDepositAccount(address: string): Promise<[Icrc1Account, string]>;
   getAccountShares(address: string): Promise<[bigint, ShareWeighted]>;
   info(): Promise<PoolInfo>;
-  add(token0Amount: bigint, token1Amount: bigint, subaccount: Array<Array<number>>): Promise<bigint>;
-  remove(shares: bigint, subaccount: Array<Array<number>>): Promise<[bigint, bigint]>;
-  getUnitNetValues(): Promise<{data: Array<UnitNetValue>, shareUnitSize: bigint}>;
+  add(
+    token0Amount: bigint,
+    token1Amount: bigint,
+    subaccount: Array<Array<number>>
+  ): Promise<bigint>;
+  remove(
+    shares: bigint,
+    subaccount: Array<Array<number>>
+  ): Promise<[bigint, bigint]>;
+  getUnitNetValues(): Promise<{
+    data: Array<UnitNetValue>;
+    shareUnitSize: bigint;
+  }>;
   getAccountVolUsed(address: string): Promise<bigint>;
+  get_events(page: Array<bigint>, size: Array<bigint>): Promise<TrieListEvents>;
+  ictc_getAdmins(): Promise<Array<Principal>>;
 }

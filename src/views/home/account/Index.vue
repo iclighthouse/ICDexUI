@@ -139,7 +139,7 @@
               >
                 <div>
                   <a
-                    :href="`https://tppkg-ziaaa-aaaal-qatrq-cai.raw.ic0.app/market/nft-detail/goncb-kqaaa-aaaap-aakpa-cai/${ext[0]}`"
+                    :href="`https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai/${ext[0]}`"
                     rel="nofollow noreferrer noopener"
                     target="_blank"
                     ><img :src="getExtInfo(ext[2]).thumb" alt=""

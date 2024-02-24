@@ -42,7 +42,23 @@
                   ></copy-account
                 ></a>
               </td>
-              <td class="token-id" style="line-height: 1.2">
+              <td>
+                <div style="font-size: 12px; line-height: 1.5" v-if="token[10]">
+                  <div v-for="(item, index) in token[10]" :key="index">
+                    <span
+                      v-if="filterToken(item, token[0].toString())"
+                      style="color: #646e79"
+                      >{{ filterToken(item, token[0].toString()) }}:</span
+                    ><copy-account
+                      :front="item.length > 27 ? 20 : 27"
+                      :account="item"
+                      :showCopy="false"
+                      copyText="Token ID"
+                    ></copy-account>
+                  </div>
+                </div>
+              </td>
+              <!--<td class="token-id" style="line-height: 1.2">
                 <div v-if="token[10] && token[10].length">
                   <div v-for="item in token[10]" :key="item">
                     <a
@@ -68,17 +84,17 @@
                         copyText="Controller"
                       ></copy-account
                     ></a>
-                    <!-- <span v-if="item === '7hdtw-jqaaa-aaaak-aaccq-cai'">
+                    &lt;!&ndash; <span v-if="item === '7hdtw-jqaaa-aaaak-aaccq-cai'">
                       (Blackhole)
                     </span>
                     <span v-if="item === token[0].toString()"> (Token) </span>
                     <span v-if="item === 'igm6s-dqaaa-aaaar-qaa3a-cai'">
                       (Factory)
                     </span>
-                    <span v-if="item === getPrincipalId"> (Your)</span>-->
+                    <span v-if="item === getPrincipalId"> (Your)</span>&ndash;&gt;
                   </div>
                 </div>
-              </td>
+              </td>-->
               <td class="total-supply">
                 <div>
                   Total:
@@ -103,9 +119,11 @@
                   }}
                 </div>
               </td>
-              <td>
-                <span v-if="token[11]">{{ token[11] }}</span>
-                <span v-else>-</span>
+              <td style="font-size: 12px; white-space: nowrap">
+                <div v-if="token[11]">
+                  {{ token[11] | bigintToFloat }} TCycles
+                </div>
+                <div v-else>-</div>
               </td>
               <td class="gas">{{ token[6] | filterGas(token) }}</td>
               <td class="metadata">
@@ -254,13 +272,13 @@
 import { Component, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
 import { ICTokenService } from '@/ic/ICTokens/ICTokenService';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { Identity } from '@dfinity/agent';
 import { namespace } from 'vuex-class';
-import { TokenItemGas, TokenList } from '@/ic/ICTokens/model';
+import { Token, TokenItemGas, TokenList } from '@/ic/ICTokens/model';
 import { Principal } from '@dfinity/principal';
 import {
+  BLACKHOLE_CANISTER_ID,
   IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
   IC_TOKEN_CANISTER_ID
 } from '@/ic/utils';
@@ -275,7 +293,7 @@ import {
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { toHttpError } from '@/ic/httpError';
 import { readState } from '@/ic/readState';
-import { BlackholeService } from '@/ic/Blackhole/BlackholeService';
+import { BlackholeService } from '@/ic/Blackhole/blackholeService';
 
 const commonModule = namespace('common');
 
@@ -305,9 +323,8 @@ export default class extends Vue {
   @commonModule.Getter('getIdentity') getIdentity?: Identity;
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
   private ICTokenService: ICTokenService;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
   private ICLighthouseService: ICLighthouseService;
-  private BlackholeService: BlackholeService;
+  private blackholeService: BlackholeService;
   private spinning = false;
   private showMore = false;
   // private principal: string;
@@ -323,10 +340,9 @@ export default class extends Vue {
   created(): void {
     // this.principal = localStorage.getItem('principal');
     this.ICTokenService = new ICTokenService();
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.ICLighthouseService = new ICLighthouseService();
     this.DRC20TokenService = new DRC20TokenService();
-    this.BlackholeService = new BlackholeService();
+    this.blackholeService = new BlackholeService();
     this.getTokenList();
     if (this.getPrincipalId) {
       this.getStarTokens();
@@ -338,20 +354,8 @@ export default class extends Vue {
     this.page = page - 1;
     this.getTokenList('pageChange');
   }
-  private async readState(token: TokenList): Promise<void> {
-    console.log(token);
-    const state = await readState(token[0].toString());
-    console.log(token[0].toString());
-    console.log(state);
-    if (state) {
-      this.$set(token, 10, state.controllers);
-      if (state.controllers.includes('7hdtw-jqaaa-aaaak-aaccq-cai')) {
-        this.tokenStatus(token);
-      }
-    }
-  }
   private async getIclDecimals(): Promise<void> {
-    this.decimals = await this.ICLighthouseTokenService.getDecimals(
+    this.decimals = await this.DRC20TokenService.decimals(
       IC_LIGHTHOUSE_TOKEN_CANISTER_ID
     );
   }
@@ -569,28 +573,41 @@ export default class extends Vue {
       this.spinning = false;
     }
   }
-  private async tokenStatus(token: TokenList): Promise<void> {
-    try {
-      const res = await this.BlackholeService.canister_status({
-        canister_id: token[0]
-      });
-      if (res && res.cycles) {
-        const cycles = new BigNumber(res.cycles.toString(10))
-          .div(10 ** 12)
-          .decimalPlaces(4, 1)
-          .toString(10);
-        this.$set(token, 11, `${cycles} T`);
-      } else {
-        this.$set(token, 11, '-');
+  private filterToken(controller: string, tokenId: string): string {
+    if (controller === 'y2b5k-gqaaa-aaaak-aacqq-cai') {
+      return 'constructor';
+    }
+    if (controller === '7hdtw-jqaaa-aaaak-aaccq-cai') {
+      return 'blackhole';
+    }
+    if (tokenId === controller) {
+      return 'tokenSelf';
+    }
+    return 'funder';
+  }
+  private async getCycles(token: TokenList): Promise<void> {
+    const res = await this.blackholeService.canister_status({
+      canister_id: token[0]
+    });
+    console.log(res);
+    if (res && res.cycles) {
+      this.$set(token, 11, res.cycles);
+    }
+  }
+  private async readState(token: TokenList): Promise<void> {
+    console.log(token);
+    const state = await readState(token[0].toString());
+    console.log(token[0].toString());
+    console.log(state);
+    if (state && state.controllers && state.controllers.length) {
+      this.$set(token, 10, state.controllers);
+      if (state.controllers.includes(BLACKHOLE_CANISTER_ID)) {
+        this.getCycles(token);
       }
-    } catch (e) {
-      console.log(e);
     }
   }
   private async getMetadata(token: TokenList): Promise<void> {
-    const metadata = await this.ICLighthouseTokenService.metadata(
-      token[0].toString()
-    );
+    const metadata = await this.DRC20TokenService.metadata(token[0].toString());
     const metadataType = [];
     metadata.some((val) => {
       metadataType.push(val.name);
@@ -616,7 +633,7 @@ export default class extends Vue {
   }
   private async getMaxSupply(token: TokenList): Promise<void> {
     try {
-      const maxSupply = await this.ICLighthouseTokenService.getMaxSupply(
+      const maxSupply = await this.DRC20TokenService.getMaxSupply(
         token[0].toString()
       );
       if (maxSupply && maxSupply[0]) {
@@ -627,7 +644,7 @@ export default class extends Vue {
     }
   }
   private async getTotalSupply(token: TokenList): Promise<void> {
-    let totalSupply = await this.ICLighthouseTokenService.totalSupply(
+    let totalSupply = await this.DRC20TokenService.totalSupply(
       token[0].toString()
     );
     // let supply = new BigNumber(totalSupply.toString())
@@ -636,7 +653,7 @@ export default class extends Vue {
     this.$set(token, 5, totalSupply);
   }
   private async getGas(token: TokenList): Promise<void> {
-    const res = await this.ICLighthouseTokenService.gas(token[0].toString());
+    const res = await this.DRC20TokenService.gas(token[0].toString());
     const gas = JSON.parse(
       JSON.stringify(
         res,
@@ -700,6 +717,9 @@ export default class extends Vue {
     text-align: center;
   }
   tr {
+    &:nth-child(2n-1) {
+      background: #161e26;
+    }
     td,
     th {
       vertical-align: middle;
@@ -711,6 +731,9 @@ export default class extends Vue {
         overflow: hidden;
         text-overflow: ellipsis;
         color: #1996c4;
+      }
+      &.metadata {
+        word-break: keep-all;
       }
       &.operation {
         div {
@@ -797,6 +820,10 @@ p {
 }
 .controller-red {
   color: #d13651 !important;
+  font-size: 12px;
+  dl {
+    line-height: 1.2;
+  }
 }
 /*.more-tokens {
   color: #1890ff;

@@ -30,7 +30,10 @@ export default class AuthClientAPi {
    */
   public login = (selectedAccount?: string): Promise<boolean> => {
     let derivationOrigin = 'https://7vkf4-jqaaa-aaaaj-azrua-cai.icp0.io';
-    if (window.location.origin.includes('avjzx-pyaaa-aaaaj-aadmq-cai')) {
+    if (
+      window.location.origin.includes('avjzx-pyaaa-aaaaj-aadmq-cai') ||
+      window.location.origin.includes('pk6zh-iiaaa-aaaaj-ainda-cai')
+    ) {
       derivationOrigin = window.location.origin;
     }
     return new Promise((resolve, reject) => {

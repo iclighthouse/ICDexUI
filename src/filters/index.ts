@@ -9,7 +9,8 @@ export {
   formatDateFromSecondUTCM,
   formatDateFromSecondUTCD,
   formatDateFromSecondUTCMD,
-  formatDateFromSecondUTCToHour
+  formatDateFromSecondUTCToHour,
+  formatDateToMinuteFilter
 } from './formatDateFromNanosecond';
 export { ratioGrade, ratioGradeBg } from './ratioGrade';
 export { formatTokenBalance } from './formatTokenBalance';

@@ -8,6 +8,7 @@ import Service, {
   ConfigMode,
   DexRole,
   DexSetting,
+  IDOConfig,
   KBar,
   KeepingBalance,
   LatestFilledRecord,
@@ -18,8 +19,10 @@ import Service, {
   OrderStatusResponse,
   OrderType,
   PairInfo,
+  Participant,
   ProOrderConfig,
   ProOrderConfigUpdate,
+  Qualification,
   Round,
   Setting,
   Soid,
@@ -32,10 +35,12 @@ import Service, {
   TrieList,
   TrieList_3,
   TxAccount,
-  TxnRecord, UpdateStopLossOrderConfig
+  TxnRecord,
+  UpdateStopLossOrderConfig
 } from '@/ic/ICDex/model';
 import ICDexIDL from './ICDex.did';
 import {
+  AccountId,
   AccountIdentifier,
   Icrc1Account,
   Time,
@@ -810,9 +815,9 @@ export class ICDexService {
       return null;
     }
   };
-  public sto_createStopLossOrder = async (
+  public sto_createStopLimitOrder = async (
     canisterId: string,
-    stopLossOrderConfig: StopLossOrderConfig,
+    stopLimitOrderConfig: StopLossOrderConfig,
     subAccountId = 0
   ): Promise<Soid> => {
     const service = await this.check(canisterId);
@@ -821,14 +826,14 @@ export class ICDexService {
       subAccount = [fromSubAccountId(subAccountId)];
     }
     return await service.sto_createStopLossOrder(
-      stopLossOrderConfig,
+      stopLimitOrderConfig,
       subAccount
     );
   };
-  public sto_updateStopLossOrder = async (
+  public sto_updateStopLimitOrder = async (
     canisterId: string,
     soid: Soid,
-    updateStopLossOrderConfig: UpdateStopLossOrderConfig,
+    updateStopLimitOrderConfig: UpdateStopLossOrderConfig,
     subAccountId = 0
   ): Promise<Soid> => {
     const service = await this.check(canisterId);
@@ -838,15 +843,15 @@ export class ICDexService {
     }
     return await service.sto_updateStopLossOrder(
       soid,
-      updateStopLossOrderConfig,
+      updateStopLimitOrderConfig,
       subAccount
     );
   };
-  public sto_getAccountStopLossOrders = async (
+  public sto_getAccountStopLimitOrders = async (
     canisterId: string,
     address: string
   ): Promise<{ pairId: string; orders: Array<STOrder> }> => {
-    const service = await this.check(canisterId);
+    const service = await this.check(canisterId, false, false);
     try {
       const res = await service.sto_getAccountStopLossOrders(address);
       const principal = localStorage.getItem('principal');
@@ -864,6 +869,76 @@ export class ICDexService {
       }
     } catch (e) {
       console.error(e);
+      return null;
+    }
+  };
+  public sto_getStratOrder = async (
+    canisterId: string,
+    soid: Soid
+  ): Promise<Array<STOrder>> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.sto_getStratOrder(soid);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public IDO_getConfig = async (canisterId: string): Promise<IDOConfig> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.IDO_getConfig();
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public IDO_qualification = async (
+    canisterId: string,
+    address: Array<string>
+  ): Promise<Qualification> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      return await service.IDO_qualification(address);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public IDO_updateQualification = async (
+    canisterId: string,
+    subaccount: Array<Array<number>> = []
+  ): Promise<Array<Participant>> => {
+    const service = await this.check(canisterId);
+    try {
+      return await service.IDO_updateQualification(subaccount);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getAdmins = async (
+    canisterId: string
+  ): Promise<Array<Principal>> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      return await service.ictc_getAdmins();
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public getAuctionMode = async (
+    canisterId: string
+  ): Promise<[boolean, AccountId]> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.getAuctionMode();
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
       return null;
     }
   };

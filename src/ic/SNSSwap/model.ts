@@ -12,7 +12,7 @@ export interface Swap {
   decentralization_sale_open_timestamp_seconds?: Array<bigint>;
   finalize_swap_in_progress?: Array<boolean>;
   cf_participants: Array<CfParticipant>;
-  init: Array<bigint>;
+  init: Array<Init>;
   already_tried_to_auto_finalize: Array<boolean>;
   neurons_fund_participation_icp_e8s: Array<bigint>;
   purge_old_tickets_last_completion_timestamp_nanoseconds?: Array<bigint>;

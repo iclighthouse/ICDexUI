@@ -1,10 +1,13 @@
 import Service, {
   DexCompetitionResponse,
   DexName,
+  ListingReferrers,
   PairRequest,
   PairResponse,
   Pairs,
   PairsTrieList,
+  StakedNFT,
+  SwapConfig,
   SwapTokenInfo,
   TraderData,
   TrieList,
@@ -13,10 +16,13 @@ import Service, {
   Verified
 } from '@/ic/ICSwapRouter/model';
 import { IC_SWAP_ROUTER_CANISTER_ID_Fiduciary } from '@/ic/utils';
-import ICSwapRouterIDL from './ICSwapRouter.did';
+import ICSwapRouterIDL from './ICSwapRouterFiduciary.did';
 import { TokenId } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal';
 import { createService } from '@/ic/createService';
+import { NFT } from '@/ic/ICDexRouter/model';
+import { fromSubAccountId } from '@/ic/converter';
+import { TokenIdentifier } from '@/ic/nft/model';
 
 export class ICSwapRouterFiduciaryService {
   private service: Service;
@@ -77,18 +83,11 @@ export class ICSwapRouterFiduciaryService {
     return await this.service.listingReferrer(referrer);
   };
   public setListingReferrerByNft = async (
-    referrer: Principal,
     name: string,
-    nftId: string,
-    collection = 'ICLighthouse Planet Cards'
+    nftId: string
   ): Promise<void> => {
     await this.check();
-    return await this.service.setListingReferrerByNft(
-      referrer,
-      name,
-      nftId,
-      collection
-    );
+    return await this.service.setListingReferrerByNft(name, nftId);
   };
   public getCompetitions = async (
     dexName: Array<DexName>,
@@ -140,6 +139,87 @@ export class ICSwapRouterFiduciaryService {
     const subAccount = [[]];
     try {
       return await this.service.registerDexCompetition(subAccount);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public getConfig = async (): Promise<SwapConfig> => {
+    await this.check(false, false);
+    try {
+      return await this.service.getConfig();
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public NFTBalance = async (address: string): Promise<Array<NFT>> => {
+    await this.check(false, false);
+    try {
+      return await this.service.NFTBalance(address);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public NFTDeposit = async (
+    principal: Principal,
+    tokenIdentifier: string,
+    subaccountId = 0
+  ): Promise<boolean> => {
+    await this.check(false, true);
+    try {
+      let subAccount = [];
+      if (subaccountId !== 0) {
+        subAccount = [fromSubAccountId(subaccountId)];
+      }
+      await this.service.NFTDeposit(principal, tokenIdentifier, subAccount);
+      return true;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public NFTWithdraw = async (
+    tokenIdentifier: Array<TokenIdentifier>,
+    subaccountId = 0
+  ): Promise<void> => {
+    await this.check();
+    try {
+      let subAccount = [[]];
+      if (subaccountId || subaccountId === 0) {
+        subAccount = [fromSubAccountId(subaccountId)];
+      }
+      return await this.service.NFTWithdraw(tokenIdentifier, subAccount);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public NFTStaked = async (address: string): Promise<Array<StakedNFT>> => {
+    await this.check(false, true);
+    try {
+      return await this.service.NFTStaked(address);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public propose = async (pairCanisterId: Principal): Promise<void> => {
+    await this.check();
+    try {
+      return await this.service.propose(pairCanisterId);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public getPairListingReferrers = async (
+    pairCanisterId: Principal
+  ): Promise<[boolean, ListingReferrers]> => {
+    await this.check(false, false);
+    try {
+      return await this.service.getPairListingReferrers(pairCanisterId);
     } catch (e) {
       console.error(e);
       return null;

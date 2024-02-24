@@ -2411,7 +2411,7 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    const MAX_COCURRENCY = 10;
+    const MAX_COCURRENCY = 20;
     let snsTokensAll = [];
     let snsTokens = [];
     listDeployedSnses.forEach((item, index) => {

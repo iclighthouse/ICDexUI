@@ -74,7 +74,6 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
 import BigNumber from 'bignumber.js';
@@ -92,6 +91,7 @@ import {
   toHexString
 } from '@/ic/converter';
 import { namespace } from 'vuex-class';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 const commonModule = namespace('common');
 
 @Component({
@@ -142,9 +142,9 @@ export default class extends Vue {
     }
   }
   private visible = false;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
+  private DRC20TokenService: DRC20TokenService;
   created(): void {
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
+    this.DRC20TokenService = new DRC20TokenService();
   }
   private principalToAccount(): string {
     return principalToAccountIdentifier(
@@ -169,7 +169,7 @@ export default class extends Vue {
     });
     try {
       const principal = localStorage.getItem('principal');
-      const nonceRes = await this.ICLighthouseTokenService.txnQuery(
+      const nonceRes = await this.DRC20TokenService.txnQuery(
         {
           txnCount: { owner: principal }
         },
@@ -203,7 +203,7 @@ export default class extends Vue {
           )
         };
       }
-      const res = await this.ICLighthouseTokenService.executeTransfer(
+      const res = await this.DRC20TokenService.executeTransfer(
         this.txid,
         executeType,
         to,

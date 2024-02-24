@@ -58,10 +58,13 @@ export const FunctionsName = {
   10: 'Node Provider Rewards',
   12: 'Subnet Replica Version Management',
   13: 'Replica Version Management',
+  15: 'API Boundary Node Management',
   2: 'Exchange Rate'
 };
-export const AllTopicsId = [4, 14, 3, 5, 6, 7, 8, 9, 10, 12, 13, 2];
-export const AllTopicsIdExcludeRate = [4, 14, 3, 5, 6, 7, 8, 9, 10, 12, 13];
+export const AllTopicsId = [4, 14, 1, 3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 2];
+export const AllTopicsIdExcludeRate = [
+  4, 14, 1, 3, 5, 6, 7, 8, 9, 10, 12, 13, 15
+];
 export const TopicInfo = [
   {
     id: 0,
@@ -154,6 +157,13 @@ export const TopicInfo = [
       title: 'Replica Version Management',
       subtitle:
         'Proposals dealing with blessing and retirement of replica versions'
+    }
+  },
+  {
+    id: 15,
+    info: {
+      title: 'API Boundary Node Management',
+      subtitle: 'Proposals related to the management of API Boundary Nodes'
     }
   },
   {

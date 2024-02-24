@@ -69,17 +69,19 @@
             <span v-show="type === 'toPro'">{{
               tokensBalance[tokenId]
                 | bigintToFloat(
-                  tokens[tokenId].decimals,
+                  isH5 ? 8 : tokens[tokenId].decimals,
                   tokens[tokenId].decimals
                 )
             }}</span>
-            <span v-show="type === 'toWallet'">{{
-              tokensBalanceSto[tokenId]
-                | bigintToFloat(
-                  tokens[tokenId].decimals,
-                  tokens[tokenId].decimals
-                )
-            }}</span>
+            <span v-show="type === 'toWallet'">
+              {{
+                tokensBalanceSto[tokenId]
+                  | bigintToFloat(
+                    isH5 ? 8 : tokens[tokenId].decimals,
+                    tokens[tokenId].decimals
+                  )
+              }}
+            </span>
             {{ tokens[tokenId].symbol }}
           </p>
           <p>
@@ -122,7 +124,6 @@ import { checkAuth } from '@/ic/CheckAuth';
 import { LedgerService } from '@/ic/ledger/ledgerService';
 import { fromSubAccountId, principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
-import { ICLighthouseTokenService } from '@/ic/ICLighthouseToken/ICLighthouseTokenService';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { IcrcTransferError } from '@/ic/DRC20Token/model';
@@ -140,7 +141,6 @@ export default class extends Vue {
   private tokens!: { [key: string]: TokenInfo };
 
   private ledgerService: LedgerService | undefined;
-  private ICLighthouseTokenService: ICLighthouseTokenService;
   private DRC20TokenService: DRC20TokenService;
   private visible = false;
   private tokenId = '';
@@ -155,6 +155,7 @@ export default class extends Vue {
       { validator: this.validateAmount, trigger: 'change' }
     ]
   };
+  private isH5 = true;
   private validateAmount(
     rule: ValidationRule,
     value: number,
@@ -185,8 +186,9 @@ export default class extends Vue {
   }
   created(): void {
     this.ledgerService = new LedgerService();
-    this.ICLighthouseTokenService = new ICLighthouseTokenService();
     this.DRC20TokenService = new DRC20TokenService();
+    const width = document.documentElement.clientWidth;
+    this.isH5 = width <= 768;
   }
   private onSubmit(): void {
     (this.$refs.transferForm as Vue & { validate: any }).validate(
@@ -240,7 +242,7 @@ export default class extends Vue {
                   Principal.from(principal),
                   new Uint8Array(fromSubAccountId(proSubaccount))
                 );
-                res = await this.ICLighthouseTokenService.transfer(
+                res = await this.DRC20TokenService.drc20_transfer(
                   to,
                   amount,
                   [],
@@ -250,7 +252,7 @@ export default class extends Vue {
                 );
               } else {
                 to = principalToAccountIdentifier(Principal.from(principal));
-                res = await this.ICLighthouseTokenService.transfer(
+                res = await this.DRC20TokenService.drc20_transfer(
                   to,
                   amount,
                   [],

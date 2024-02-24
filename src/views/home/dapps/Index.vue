@@ -66,7 +66,7 @@
 					</dl>
 				</router-link>
 			</li>-->
-        <li>
+        <!--<li>
           <router-link to="/icTokens">
             <dl>
               <dt class="recommended-img recommended-img-token">
@@ -75,7 +75,7 @@
               <dd>ICTokens</dd>
             </dl>
           </router-link>
-        </li>
+        </li>-->
         <!--<li>
 				<router-link to="/ICMonitor">
 					<dl>

@@ -22,7 +22,18 @@
           <router-link :to="menu.path">{{ menu.value }}</router-link>
         </li>
       </ul>
-      <account-info :menu-list="menuList"></account-info>
+      <div class="flex-center margin-left-auto">
+        <span
+          v-if="getPrincipalId"
+          @click="showLaunch"
+          class="base-font-title pointer pc-show"
+          style="font-size: 15px"
+          >+Launch</span
+        >
+        <div class="home-header-right-info">
+          <account-info :menu-list="menuList"></account-info>
+        </div>
+      </div>
     </div>
     <!--<ul class="token-list-menu">
       <li
@@ -442,6 +453,7 @@
       </div>
       <div v-else style="text-align: center; font-size: 16px">No record</div>
     </div>
+    <launch :tokens="tokens" ref="launch"></launch>
     <!--<div
       v-show="currentMenu === 'trade'"
       class="container-width container-common-style competitions-main"
@@ -794,13 +806,15 @@ import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
+import Launch from '@/views/home/ICDex/components/Launch.vue';
 
 const commonModule = namespace('common');
 
 @Component({
   name: 'Competitions',
   components: {
-    AccountInfo
+    AccountInfo,
+    Launch
   }
 })
 export default class extends Vue {
@@ -828,13 +842,18 @@ export default class extends Vue {
       path: '/ICDex/market'
     },
     {
-      value: 'Competitions',
-      path: '/ICDex/competitions'
+      value: 'Pools',
+      path: '/ICDex/pools'
     },
     {
-      value: 'Mining',
-      path: '/icl/tradingMining'
+      value: 'Competitions',
+      path: '/ICDex/competitions'
     }
+    // ,
+    // {
+    //   value: 'Mining',
+    //   path: '/icl/tradingMining'
+    // }
   ];
   private currentMenu = 'combined';
   private dexCompetitionResponse: DexCompetitionResponse = null;
@@ -887,12 +906,16 @@ export default class extends Vue {
       this.account = principalToAccountIdentifier(Principal.from(principal));
     }
   }
+  private showLaunch(): void {
+    (this.$refs.launch as any).init();
+  }
   private async registerDexCompetition(): Promise<void> {
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    const res = await this.ICSwapRouterFiduciaryService.registerDexCompetition();
+    const res =
+      await this.ICSwapRouterFiduciaryService.registerDexCompetition();
     loading.close();
     if (res) {
       this.$message.success('Register Success');
@@ -906,8 +929,11 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    this.round = await this.ICSwapRouterFiduciaryService.getDexCompetitionRound();
-    const res = await this.ICSwapRouterFiduciaryService.getDexCompetition(this.round);
+    this.round =
+      await this.ICSwapRouterFiduciaryService.getDexCompetitionRound();
+    const res = await this.ICSwapRouterFiduciaryService.getDexCompetition(
+      this.round
+    );
     console.log(this.round, res);
     if (res && res.length) {
       this.dexCompetitionResponse = res[0];
@@ -927,10 +953,11 @@ export default class extends Vue {
   private async getDexCompetition(): Promise<void> {
     const principal = localStorage.getItem('principal');
     if (principal) {
-      const res = await this.ICSwapRouterFiduciaryService.getDexCompetitionTrader(
-        this.round,
-        principalToAccountIdentifier(Principal.fromText(principal))
-      );
+      const res =
+        await this.ICSwapRouterFiduciaryService.getDexCompetitionTrader(
+          this.round,
+          principalToAccountIdentifier(Principal.fromText(principal))
+        );
       if (res && res.length) {
         this.traderData = res[0];
         if (this.traderData.length) {

@@ -4,10 +4,10 @@ import Service, {
   ApproveArgs,
   ApproveResponse,
   DRC207Support,
+  Drc20Allowance,
   IcrcMetadata,
   IcrcReceipt,
   TxnQueryRequest,
-  TxnQueryResponse,
   TxnRecord,
   TxReceipt
 } from './model';
@@ -17,6 +17,7 @@ import OGYICRCIDL from './OGYICRCToken.did';
 import {
   AccountIdentifier,
   BlockHeight,
+  CanisterId,
   Decimals,
   Gas,
   Icrc1Account,
@@ -26,14 +27,26 @@ import {
   TotalSupply,
   Txid
 } from '../common/icType';
-import { _data, Amount, Nonce, TxnResult } from '@/ic/ICLighthouseToken/model';
+import {
+  _data,
+  Amount,
+  CoinSeconds,
+  ExecuteType,
+  Nonce,
+  TxnQueryResponse,
+  TxnResult
+} from '@/ic/ICLighthouseToken/model';
 import {
   getSubAccountArray,
   IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
   IC_TOKEN_CANISTER_ID,
   OGY_CANISTER_ID
 } from '@/ic/utils';
-import { fromSubAccountId, SerializableIC } from '@/ic/converter';
+import {
+  fromSubAccountId,
+  principalToAccountIdentifier,
+  SerializableIC
+} from '@/ic/converter';
 import { isInfinity } from '@/ic/isInfinity';
 import { isPlug } from '@/ic/isPlug';
 import { Allowance, AllowanceArgs, SendICPTsRequest } from '@/ic/ledger/model';
@@ -55,27 +68,33 @@ export class DRC20TokenService {
     }
     return await createService<Service>(canisterId, idl, renew, isUpdate);
   };
-  public decimals = async (canisterId: string): Promise<Decimals> => {
+  public decimals = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<Decimals> => {
     const service = await this.check(canisterId, false, false);
     return await service.drc20_decimals();
   };
-  public gas = async (canisterId: string): Promise<Gas | bigint> => {
+  public gas = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<Gas> => {
     const service = await this.check(canisterId, false, false);
-    try {
-      return await service.drc20_fee();
-    } catch (e) {
-      try {
-        return await service.drc20_gas();
-      } catch (e) {
-        console.log(e);
-      }
-    }
+    return await service.drc20_gas();
   };
-  public metadata = async (canisterId: string): Promise<Array<Metadata>> => {
+  public fee = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<bigint> => {
+    const service = await this.check(canisterId, false, false);
+    return await service.drc20_fee();
+  };
+  public metadata = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<Array<Metadata>> => {
     const service = await this.check(canisterId, false, false);
     return await service.drc20_metadata();
   };
-  public name = async (canisterId: string): Promise<string> => {
+  public name = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<string> => {
     const service = await this.check(canisterId, false, false);
     return await service.drc20_name();
   };
@@ -83,17 +102,21 @@ export class DRC20TokenService {
     const service = await this.check(canisterId, false, false);
     return await service.name();
   };
-  public symbol = async (canisterId: string): Promise<string> => {
+  public symbol = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<string> => {
     const service = await this.check(canisterId, false, false);
     return await service.drc20_symbol();
   };
-  public totalSupply = async (canisterId: string): Promise<TotalSupply> => {
+  public totalSupply = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<TotalSupply> => {
     const service = await this.check(canisterId, false, false);
     return await service.drc20_totalSupply();
   };
   public txnQuery = async (
     request: TxnQueryRequest,
-    canisterId: string
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
   ): Promise<TxnQueryResponse> => {
     const service = await this.check(canisterId, false, false);
     const res = await service.drc20_txnQuery(request);
@@ -120,15 +143,16 @@ export class DRC20TokenService {
     return SerializableIC(res);
   };
   public drc20_balanceOf = async (
-    canisterId: string,
-    account: Address
-  ): Promise<bigint> => {
-    try {
-      const service = await this.check(canisterId, false, false);
-      return await service.drc20_balanceOf(account);
-    } catch (e) {
-      return null;
-    }
+    principal: PrincipalString,
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+    subAccount: Uint8Array = new Uint8Array(fromSubAccountId(0))
+  ): Promise<Amount> => {
+    const service = await this.check(canisterId, false, false);
+    const account = principalToAccountIdentifier(
+      Principal.fromText(principal),
+      subAccount
+    );
+    return await service.drc20_balanceOf(account);
   };
   public balanceOf = async (
     canisterId: string,
@@ -142,12 +166,12 @@ export class DRC20TokenService {
     }
   };
   public drc20_allowance = async (
-    canisterId: string,
-    address: string,
-    spender: PrincipalString
-  ): Promise<bigint> => {
+    ICTokensId: PrincipalString,
+    spender: PrincipalString = IC_TOKEN_CANISTER_ID,
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<Amount> => {
     const service = await this.check(canisterId, false, false);
-    return await service.drc20_allowance(address, spender);
+    return await service.drc20_allowance(ICTokensId, spender);
   };
   public allowance = async (
     canisterId: string,
@@ -212,38 +236,6 @@ export class DRC20TokenService {
     const service = await this.check(canisterId, false, false);
     return await service.getTokenFee();
   };
-  public drc20LockTransfer = async (
-    to: string,
-    amount: bigint,
-    timeout: bigint,
-    nonce: Array<Nonce> = [],
-    decider: Array<string>,
-    data: _data = [[]],
-    subAccountId: number,
-    canisterId: string
-  ): Promise<TxnResult> => {
-    const service = await this.check(canisterId);
-    let subAccount = [];
-    if (subAccountId || subAccountId === 0) {
-      subAccount = [fromSubAccountId(subAccountId)];
-    }
-    if (
-      (isPlug() && nonce && Number(nonce[0]) === 0) ||
-      (isInfinity() && nonce && Number(nonce[0]) === 0)
-    ) {
-      nonce = [];
-    }
-    const res = await service.drc20_lockTransfer(
-      to,
-      amount,
-      timeout,
-      decider,
-      nonce,
-      subAccount,
-      data
-    );
-    return SerializableIC(res);
-  };
   public icrcDecimals = async (canisterId: string): Promise<Decimals> => {
     const service = await this.check(canisterId, false, false);
     return await service.icrc1_decimals();
@@ -280,7 +272,7 @@ export class DRC20TokenService {
     const service = await this.check(canisterId);
     const transferArgs = {
       to: to,
-      fee: fee,
+      fee: [],
       memo: memo,
       from_subaccount: [getSubAccountArray(fromSubaccountId)],
       created_at_time: created_at_time,
@@ -313,6 +305,7 @@ export class DRC20TokenService {
     //   console.log(toHexString(new Uint8Array(res)));
     // });
     const res = await service.icrc1_transfer(transferArgs);
+    console.log(res);
     return SerializableIC(res);
   };
   public icrc1_balance_of = async (
@@ -322,7 +315,7 @@ export class DRC20TokenService {
     const service = await this.check(canisterId, false, false);
     return await service.icrc1_balance_of(to);
   };
-  public ictokens_maxSupply = async (canisterId: string): Promise<bigint> => {
+  public getMaxSupply = async (canisterId: string): Promise<bigint> => {
     const service = await this.check(canisterId, false, false);
     return await service.ictokens_maxSupply();
   };
@@ -358,13 +351,14 @@ export class DRC20TokenService {
   public icrc2_approve = async (
     canisterId: string,
     spender: Icrc1Account,
-    amount: Amount
+    amount: Amount,
+    from_subaccount = []
   ): Promise<ApproveResponse> => {
     const service = await this.check(canisterId);
     const approveArgs: ApproveArgs = {
       fee: [],
       memo: [],
-      from_subaccount: [],
+      from_subaccount: from_subaccount,
       created_at_time: [],
       amount: amount,
       expected_allowance: [],
@@ -389,5 +383,183 @@ export class DRC20TokenService {
       console.log(e);
       return null;
     }
+  };
+  public standard = async (canisterId: string): Promise<string> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      return await service.standard();
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public icrc1_supported_standards = async (
+    canisterId: string
+  ): Promise<Array<{ url: string; name: string }>> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      return await service.icrc1_supported_standards();
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public drc20_transfer = async (
+    to: PrincipalString,
+    amount: Amount,
+    nonce: Array<Nonce> = [],
+    subAccountId: number,
+    data: _data = [[]],
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<TxnResult> => {
+    const service = await this.check(canisterId);
+    let subAccount = [];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    if (
+      (isPlug() && nonce && Number(nonce[0]) === 0) ||
+      (isInfinity() && nonce && Number(nonce[0]) === 0)
+    ) {
+      nonce = [];
+    }
+    const res = await service.drc20_transfer(
+      to,
+      amount,
+      nonce,
+      subAccount,
+      data
+    );
+    return SerializableIC(res);
+  };
+  public executeTransfer = async (
+    txid: Txid,
+    executeType: ExecuteType,
+    to: Array<string>,
+    nonce: Array<Nonce> = [],
+    subAccountId: number,
+    data: _data = [[]],
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<TxnResult> => {
+    const service = await this.check(canisterId);
+    let subAccount = [];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    if (
+      (isPlug() && nonce && Number(nonce[0]) === 0) ||
+      (isInfinity() && nonce && Number(nonce[0]) === 0)
+    ) {
+      nonce = [];
+    }
+    const res = await service.drc20_executeTransfer(
+      txid,
+      executeType,
+      to,
+      nonce,
+      subAccount,
+      data
+    );
+    return SerializableIC(res);
+  };
+  public lockTransfer = async (
+    to: string,
+    amount: bigint,
+    timeout: bigint,
+    nonce: Array<Nonce> = [],
+    decider: Array<string>,
+    data: _data = [[]],
+    subAccountId: number,
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<TxnResult> => {
+    const service = await this.check(canisterId);
+    let subAccount = [];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    if (
+      (isPlug() && nonce && Number(nonce[0]) === 0) ||
+      (isInfinity() && nonce && Number(nonce[0]) === 0)
+    ) {
+      nonce = [];
+    }
+    const res = await service.drc20_lockTransfer(
+      to,
+      amount,
+      timeout,
+      decider,
+      nonce,
+      subAccount,
+      data
+    );
+    return SerializableIC(res);
+  };
+  public drc20_transferBatch = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+    to: Array<string>,
+    amount: Array<bigint>,
+    nonce: Array<Nonce> = [],
+    subAccountId: number,
+    data: _data = [[]]
+  ): Promise<Array<TxnResult>> => {
+    const service = await this.check(canisterId);
+    let subAccount = [];
+    if (subAccountId) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    if (
+      (isPlug() && nonce && Number(nonce[0]) === 0) ||
+      (isInfinity() && nonce && Number(nonce[0]) === 0)
+    ) {
+      nonce = [];
+    }
+    try {
+      const res = await service.drc20_transferBatch(
+        to,
+        amount,
+        nonce,
+        subAccount,
+        data
+      );
+      return SerializableIC(res);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public getCoinSeconds = async (
+    address: Array<string>,
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<[CoinSeconds, Array<CoinSeconds>]> => {
+    const service = await this.check(canisterId, false, false);
+    return await service.drc20_getCoinSeconds(address);
+  };
+  public approvals = async (
+    user: PrincipalString,
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<Array<Drc20Allowance>> => {
+    const service = await this.check(canisterId, false, false);
+    const res = await service.drc20_approvals(user);
+    return SerializableIC(res);
+  };
+  public setMetadata = async (
+    request: Array<Metadata>,
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<boolean> => {
+    const service = await this.check(canisterId);
+    return await service.ictokens_setMetadata(request);
+  };
+  public getOwner = async (
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<CanisterId> => {
+    const service = await this.check(canisterId, false);
+    return await service.ictokens_getOwner();
+  };
+  public changeOwner = async (
+    newOwner: Principal,
+    canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+  ): Promise<boolean> => {
+    const service = await this.check(canisterId);
+    return await service.ictokens_changeOwner(newOwner);
   };
 }

@@ -180,6 +180,7 @@ import { ConnectMetaMaskMixin } from '@/mixins';
 import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 const commonModule = namespace('common');
 const Ic = (window as any).ic;
 const ethers = require('ethers');
@@ -222,7 +223,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   private onRouteChange() {
     this.checkRiskWarning();
   }
-  mounted(): void {
+  async mounted(): Promise<void> {
     // todo new site
     const hostname = window.location.hostname;
     this.hostname = window.location.hostname;
@@ -281,11 +282,21 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     });
     localStorage.removeItem('icxCanisterIds');
     const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
+    // SNS1
+    const sns1TokenId = 'zfcdd-tqaaa-aaaaq-aaaga-cai';
+    if (tokens[sns1TokenId] && tokens[sns1TokenId].decimals === 8) {
+      const DRC20Token = new DRC20TokenService();
+      tokens[sns1TokenId].decimals = await DRC20Token.icrcDecimals(sns1TokenId);
+      tokens[sns1TokenId].fee = (
+        await DRC20Token.icrcFee(sns1TokenId)
+      ).toString(10);
+      console.log(tokens);
+    }
     if (!tokens[LEDGER_CANISTER_ID]) {
       tokens[LEDGER_CANISTER_ID] = {
         decimals: 8,
         fee: '10000',
-        name: 'Icp',
+        name: 'ICP',
         price: '',
         symbol: 'ICP',
         tokenStd: { icp: null }

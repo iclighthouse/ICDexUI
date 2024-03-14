@@ -14,7 +14,7 @@ export const createService = async <T>(
 ): Promise<T> => {
   const principal = localStorage.getItem('principal');
   const priList = JSON.parse(localStorage.getItem('priList')) || {};
-  if (principal) {
+  if (principal && isUpdate) {
     await checkAuth(renew, canisterId);
   }
   let service: T;

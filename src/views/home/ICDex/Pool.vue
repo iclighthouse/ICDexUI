@@ -973,6 +973,9 @@ import {
 } from '@/ic/ConnectInfinity';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
 import { readState } from '@/ic/readState';
+import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
+import { DeployedSns } from '@/ic/SNSWasm/model';
+import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 
 const commonModule = namespace('common');
 
@@ -1016,6 +1019,10 @@ export default class extends Vue {
     {
       value: 'Pools',
       path: '/ICDex/pools'
+    },
+    {
+      value: 'NFT',
+      path: '/ICDex/NFT'
     },
     {
       value: 'Competitions',
@@ -1068,6 +1075,8 @@ export default class extends Vue {
   private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService = null;
   private ICDexRouterService: ICDexRouterService = null;
   private makerConfigure: MakerConfigure = {};
+  private SNSWasmService: SNSWasmService = null;
+  private listDeployedSnses: Array<DeployedSns> = [];
 
   get buttonDisabledRemove(): boolean {
     let flag = false;
@@ -1256,13 +1265,14 @@ export default class extends Vue {
     this.timer = null;
     console.log(this.timer);
   }
-  created(): void {
+  private async created(): Promise<void> {
     this.makerPoolService = new makerPoolService();
     this.ledgerService = new LedgerService();
     this.ICDexService = new ICDexService();
     this.ICDexRouterService = new ICDexRouterService();
     this.NftService = new NftService();
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
+    this.SNSWasmService = new SNSWasmService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     console.log(this.$route.query);
     if (this.$route.params.type) {
@@ -1274,6 +1284,9 @@ export default class extends Vue {
       if (Object.keys(this.$route.query).includes('private')) {
         this.isPublic = false;
       }
+    }
+    if (!this.listDeployedSnses.length) {
+      this.listDeployedSnses = await this.SNSWasmService.listDeployedSnses();
     }
     this.getPairs();
     if (this.getPrincipalId) {
@@ -1317,12 +1330,13 @@ export default class extends Vue {
   }
   private async connectPlug(): Promise<void> {
     const poolId = this.$route.params.poolId;
-    const ids = [poolId];
+    let ids = [poolId];
     this.pairsMaker.forEach((pair) => {
       ids.push(pair[1].pair.canisterId.toString());
       ids.push(pair[1].pair.token0[0].toString());
       ids.push(pair[1].pair.token1[0].toString());
     });
+    ids = [...new Set(ids)];
     console.log(ids);
     const flag = needConnectPlug(ids);
     const connectInfinity = await needConnectInfinity(ids);
@@ -1903,6 +1917,8 @@ export default class extends Vue {
           (logo) => {
             if (logo) {
               this.$set(this.tokens[token0.toString()], 'logo', logo);
+            } else {
+              this.getIcrcMetadata(token0, token0Std);
             }
           }
         );
@@ -1915,6 +1931,8 @@ export default class extends Vue {
           (logo) => {
             if (logo) {
               this.$set(this.tokens[token1.toString()], 'logo', logo);
+            } else {
+              this.getIcrcMetadata(token1, token1Std);
             }
           }
         );
@@ -1937,6 +1955,34 @@ export default class extends Vue {
         token1.toString(),
         this.tokens[token1.toString()].tokenStd
       );
+    }
+  }
+  private async getIcrcMetadata(
+    token: Principal,
+    tokenStd: TokenStd
+  ): Promise<void> {
+    const std = Object.keys(tokenStd)[0];
+    let logo = '';
+    if (std.toLocaleLowerCase().includes('icrc')) {
+      let SNSGovernance = '';
+      this.listDeployedSnses.some((item) => {
+        if (
+          item.ledger_canister_id.length &&
+          item.ledger_canister_id[0].toString() === token.toString()
+        ) {
+          SNSGovernance = item.governance_canister_id[0].toString();
+          return true;
+        }
+      });
+      if (SNSGovernance) {
+        const snsGovernanceService = new SNSGovernanceService();
+        const metadata = await snsGovernanceService.getMetadata(SNSGovernance);
+        console.log(metadata);
+        if (metadata && metadata.logo && metadata.logo.length) {
+          logo = metadata.logo[0];
+          this.$set(this.tokens[token.toString()], 'logo', logo);
+        }
+      }
     }
   }
   private async poolStats(poolId: string): Promise<void> {

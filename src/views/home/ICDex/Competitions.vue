@@ -846,6 +846,10 @@ export default class extends Vue {
       path: '/ICDex/pools'
     },
     {
+      value: 'NFT',
+      path: '/ICDex/NFT'
+    },
+    {
       value: 'Competitions',
       path: '/ICDex/competitions'
     }

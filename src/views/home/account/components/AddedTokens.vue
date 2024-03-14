@@ -27,7 +27,7 @@
             <th class="pointer" @click="onSort('balance')">
               <span class="sort-table-main">
                 <span>Balance</span>
-                <span class="sort-table">
+                <span v-show="walletMenu === 'wallet'" class="sort-table">
                   <a-icon
                     :class="{ active: sortType === 'balanceUp' }"
                     type="caret-up"
@@ -100,21 +100,38 @@
                     <a-tooltip placement="top">
                       <template slot="title">
                         <span class="token-balance-span">
-                          {{ token.balance | formatNum }}
+                          <span v-show="walletMenu === 'wallet'">
+                            {{ token.balance | formatNum }}
+                          </span>
+                          <span v-show="walletMenu === 'proWallet'">
+                            {{ token.balance1 | formatNum }}
+                          </span>
                         </span>
                       </template>
                       <span
                         class="token-balance-span"
                         style="word-break: break-all"
                       >
-                        {{
-                          token.balance
-                            | bigintToFloat(
-                              Math.min(8, Number(token.decimals)),
-                              0
-                            )
-                            | formatTokenBalance
-                        }}
+                        <span v-show="walletMenu === 'wallet'">
+                          {{
+                            token.balance
+                              | bigintToFloat(
+                                Math.min(8, Number(token.decimals)),
+                                0
+                              )
+                              | formatTokenBalance
+                          }}
+                        </span>
+                        <span v-show="walletMenu === 'proWallet'">
+                          {{
+                            token.balance1
+                              | bigintToFloat(
+                                Math.min(8, Number(token.decimals)),
+                                0
+                              )
+                              | formatTokenBalance
+                          }}
+                        </span>
                       </span>
                     </a-tooltip>
                     <!--<a-icon
@@ -137,9 +154,14 @@
               <div>
                 <dl>
                   <dt>
-                    <span v-show="token.standard === 'DRC20'">{{
-                      token.lockedTxns.lockedBalance
-                    }}</span>
+                    <span v-show="token.standard === 'DRC20'">
+                      <span v-show="walletMenu === 'wallet'">
+                        {{ token.lockedTxns.lockedBalance }}
+                      </span>
+                      <span v-show="walletMenu === 'proWallet'">
+                        {{ token.lockedTxns1.lockedBalance }}
+                      </span>
+                    </span>
                     <span v-show="token.standard !== 'DRC20'">-</span>
                     <a-icon
                       v-show="token.standard === 'DRC20'"
@@ -155,9 +177,14 @@
               <div>
                 <dl>
                   <dt>
-                    <span v-show="token.standard === 'DRC20'">{{
-                      token.approvals
-                    }}</span>
+                    <span v-show="token.standard === 'DRC20'">
+                      <span v-show="walletMenu === 'wallet'">
+                        {{ token.approvals }}
+                      </span>
+                      <span v-show="walletMenu === 'proWallet'">
+                        {{ token.approvals1 }}
+                      </span>
+                    </span>
                     <span v-show="token.standard !== 'DRC20'">-</span>
                     <a-icon
                       v-show="token.standard === 'DRC20'"
@@ -173,9 +200,14 @@
               <div>
                 <dl>
                   <dt>
-                    <span v-show="token.standard === 'DRC20'">{{
-                      token.transactions
-                    }}</span>
+                    <span v-show="token.standard === 'DRC20'">
+                      <span v-show="walletMenu === 'wallet'">
+                        {{ token.transactions }}
+                      </span>
+                      <span v-show="walletMenu === 'proWallet'">
+                        {{ token.transactions1 }}
+                      </span>
+                    </span>
                     <span v-show="token.standard !== 'DRC20'">-</span>
                     <a-icon
                       v-show="token.standard === 'DRC20'"
@@ -196,7 +228,12 @@
                         token.standard === 'DRC20' && token && token.coinSeconds
                       "
                     >
-                      {{ token.coinSeconds }}
+                      <span v-show="walletMenu === 'wallet'">
+                        {{ token.coinSeconds }}
+                      </span>
+                      <span v-show="walletMenu === 'proWallet'">
+                        {{ token.coinSeconds1 }}
+                      </span>
                     </span>
                     <span v-show="token.standard !== 'DRC20'">-</span>
                   </dt>
@@ -207,18 +244,20 @@
             <td class="operation-td">
               <div class="operation">
                 <span
+                  v-show="walletMenu === 'wallet'"
                   class="operation-name pc-show"
                   @click="showReceive(token)"
                 >
                   Receive
                 </span>
                 <span
+                  v-show="walletMenu === 'wallet'"
                   @click="handleTransferToken(token, index)"
                   class="operation-name pc-show"
                 >
                   Transfer
                 </span>
-                <div class="operation-name">
+                <div v-show="walletMenu === 'wallet'" class="operation-name">
                   <a-dropdown
                     :trigger="['click']"
                     overlayClassName="operation-dropdown"
@@ -257,6 +296,15 @@
                       >
                     </a-menu>
                   </a-dropdown>
+                </div>
+                <div v-show="walletMenu === 'proWallet'">
+                  <button
+                    style="margin-right: 0 !important"
+                    type="button"
+                    @click="swapWallet(token, index)"
+                  >
+                    <span>Transfer</span>
+                  </button>
                 </div>
               </div>
             </td>
@@ -593,6 +641,13 @@
       :token-id="currentToken.canisterId && currentToken.canisterId.toString()"
       @approveIcrc2Success="approveIcrc2Success"
     ></approve-icrc2>
+    <pro-wallet-swap
+      :tokens-balance="tokensBalanceMain"
+      :tokens-balance-sto="tokensBalancePro"
+      :tokens="localTokens"
+      ref="proWalletSwap"
+      @proWalletSwapSuccess="proWalletSwapSuccess"
+    ></pro-wallet-swap>
   </div>
 </template>
 
@@ -629,6 +684,7 @@ import {
 } from '@/ic/ICLighthouseToken/model';
 import {
   formatDateToSecondUTC,
+  fromSubAccountId,
   principalToAccountIdentifier,
   toHexString
 } from '@/ic/converter';
@@ -653,6 +709,8 @@ import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
+import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
+import { TokenInfo, TokenStd } from '@/ic/common/icType';
 
 const commonModule = namespace('common');
 
@@ -665,7 +723,8 @@ const commonModule = namespace('common');
     TransferToken,
     ReceiveModal,
     TransferBatchToken,
-    ApproveIcrc2
+    ApproveIcrc2,
+    ProWalletSwap
   },
   filters: {
     filterCoinSeconds(val: string): string {
@@ -770,6 +829,10 @@ export default class extends Vue {
   };
   @Prop()
   private identity!: Identity;
+  @Prop()
+  private walletMenu!: string;
+  private tokensBalanceMain: { [key: string]: string } = {};
+  private tokensBalancePro: { [key: string]: string } = {};
   private currentToken: AddTokenItem = new AddTokenItemClass();
   private ICLTokenId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID;
   private currentIndex: number;
@@ -778,6 +841,7 @@ export default class extends Vue {
   private removeVisible = false;
   private tokenSpinning = false;
   private tokens: Array<AddTokenItem> = [];
+  private localTokens: { [key: string]: TokenInfo } = {};
   private ICLighthouseService: ICLighthouseService;
   private DRC20TokenService: DRC20TokenService;
   private sortType = '';
@@ -962,12 +1026,16 @@ export default class extends Vue {
     this.DRC20TokenService = new DRC20TokenService();
     this.ICTokensScanService = new ICTokensScanService();
     this.SNSWasmService = new SNSWasmService();
+    this.localTokens = JSON.parse(localStorage.getItem('tokens')) || {};
     if (this.getPrincipalId) {
       this.getTokens();
       this.getTokenList();
     }
   }
   private onSort(type: string): void {
+    if (this.walletMenu !== 'wallet') {
+      return;
+    }
     // this.page.currentPage = 1;
     if (type === 'name') {
       if (this.sortType === 'nameDown') {
@@ -1056,15 +1124,20 @@ export default class extends Vue {
       this.listDeployedSnses = await this.SNSWasmService.listDeployedSnses();
     }
     const promiseValue = [];
-    this.tokens.forEach((token, i) => {
+    this.tokens.forEach((token) => {
       if (token.standard === TokenStandard.DRC20) {
         promiseValue.push(
           this.getBalance(token),
+          this.getBalance(token, 1),
           this.getMetadata(token),
           this.getLocked(token),
+          this.getLocked(token, 1),
           this.txnCount(token),
+          this.txnCount(token, 1),
           this.getCoinSeconds(token),
-          this.getApprovalsAllowance(token)
+          this.getCoinSeconds(token, 1),
+          this.getApprovalsAllowance(token),
+          this.getApprovalsAllowance(token, 1)
         );
       } else if (token.standard === TokenStandard.DIP20) {
         promiseValue.push(
@@ -1077,11 +1150,12 @@ export default class extends Vue {
       ) {
         promiseValue.push(
           this.getICRCBalance(token),
+          this.getICRCBalance(token, 1),
           this.getIcrcMetadata(token)
         );
-        if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
-          this.getSNSLogo(token);
-        }
+        // if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
+        //   this.getSNSLogo(token);
+        // }
       }
     });
     await Promise.all(promiseValue);
@@ -1285,22 +1359,72 @@ export default class extends Vue {
     this.currentIndex = index;
     this.$refs.transferBatchToken.init(token);
   }
-  private async txnCount(token: AddTokenItem): Promise<void> {
+  private async txnCount(token: AddTokenItem, subaccountId = 0): Promise<void> {
+    let address = this.getPrincipalId;
+    if (subaccountId === 1) {
+      address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(1))
+      );
+    }
     try {
       const res = await this.DRC20TokenService.txnQuery(
         {
-          getEvents: { owner: [this.getPrincipalId] }
+          getEvents: { owner: [address] }
         },
         token.canisterId.toString()
       );
       const transition = (res as { getEvents: Array<TxnRecord> }).getEvents;
       if (transition && transition.length) {
         const txnCount = transition.length;
-        this.$set(token, 'transactions', txnCount);
+        if (subaccountId === 1) {
+          this.$set(token, 'transactions1', txnCount);
+        } else {
+          this.$set(token, 'transactions', txnCount);
+        }
       }
     } catch (e) {
       console.log(e);
     }
+  }
+  private swapWallet(token: AddTokenItem, index: number): void {
+    this.currentToken = token;
+    this.currentIndex = index;
+    (this.$refs as any).proWalletSwap.tokenId = token.canisterId.toString();
+    (this.$refs as any).proWalletSwap.type = 'toWallet';
+    (this.$refs as any).proWalletSwap.showSwap = true;
+    (this.$refs as any).proWalletSwap.visible = true;
+  }
+  private proWalletSwapSuccess(): void {
+    if (this.currentToken.standard.toLocaleLowerCase() === 'drc20') {
+      this.getBalance(this.currentToken);
+      this.getBalance(this.currentToken, 1);
+    } else if (
+      this.currentToken.standard.toLocaleLowerCase().includes('icrc')
+    ) {
+      this.getICRCBalance(this.currentToken);
+      this.getICRCBalance(this.currentToken, 1);
+    }
+  }
+  private async getGas(tokenId: string, standard: string): Promise<string> {
+    let fee = '0';
+    if (standard === TokenStandard.DRC20) {
+      try {
+        const gas = await this.DRC20TokenService.gas(tokenId);
+        fee = (gas as { token: bigint }).token.toString(10);
+      } catch (e) {
+        fee = (await this.DRC20TokenService.fee(tokenId)).toString(10);
+      }
+    } else if (standard === TokenStandard.DIP20) {
+      const res = await this.DRC20TokenService.getMetadata(tokenId);
+      fee = res.fee.toString(10);
+    } else if (
+      standard === TokenStandard['ICRC-1'] ||
+      standard === TokenStandard['ICRC-2']
+    ) {
+      fee = (await this.DRC20TokenService.icrcFee(tokenId)).toString(10);
+    }
+    return fee;
   }
   private async getTokens(type = false): Promise<void> {
     if (!type) {
@@ -1320,6 +1444,26 @@ export default class extends Vue {
         }
         if (tokenId === IC_SNS_TOKEN_CANISTER_ID) {
           hasDefaultToken = true;
+        }
+        if (!this.localTokens[tokenId]) {
+          this.getGas(tokenId, tokens[i].standard).then((fee) => {
+            let tokenStd: TokenStd;
+            if (tokens[i].standard === TokenStandard.DIP20) {
+              tokenStd = { dip20: null };
+            } else if (tokens[i].standard === TokenStandard.DRC20) {
+              tokenStd = { drc20: null };
+            } else if (
+              tokens[i].standard === TokenStandard['ICRC-1'] ||
+              tokens[i].standard === TokenStandard['ICRC-2']
+            ) {
+              tokenStd = { icrc1: null };
+            }
+            this.localTokens[tokenId] = {
+              decimals: Number(tokens[i].decimals),
+              fee: fee,
+              tokenStd: tokenStd
+            };
+          });
         }
         const principal = localStorage.getItem('principal');
         const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -1443,9 +1587,9 @@ export default class extends Vue {
     if (token.logo) {
       return;
     }
-    if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
-      return;
-    }
+    // if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
+    //   return;
+    // }
     let logo = await getTokenLogo(token.canisterId, {
       icrc1: null
     });
@@ -1492,10 +1636,20 @@ export default class extends Vue {
       }
     });
   }
-  private async getCoinSeconds(token: AddTokenItem): Promise<void> {
+  private async getCoinSeconds(
+    token: AddTokenItem,
+    subaccountId = 0
+  ): Promise<void> {
+    let address = this.getPrincipalId;
+    if (subaccountId === 1) {
+      address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(1))
+      );
+    }
     try {
       const res = await this.DRC20TokenService.getCoinSeconds(
-        [this.getPrincipalId],
+        [address],
         token.canisterId.toString()
       );
       let coinSeconds = new BigNumber(res[1][0].coinSeconds.toString(10))
@@ -1514,15 +1668,33 @@ export default class extends Vue {
       } else {
         coinSeconds = new BigNumber(coinSeconds).decimalPlaces(2, 1) + ' CS';
       }
-      this.$set(token, 'coinSeconds', coinSeconds);
+      if (subaccountId === 1) {
+        this.$set(token, 'coinSeconds1', coinSeconds);
+      } else {
+        this.$set(token, 'coinSeconds', coinSeconds);
+      }
     } catch (e) {
-      this.$set(token, 'coinSeconds', '-');
+      if (subaccountId === 1) {
+        this.$set(token, 'coinSeconds1', '-');
+      } else {
+        this.$set(token, 'coinSeconds', '-');
+      }
     }
   }
-  private async getLocked(token: AddTokenItem): Promise<void> {
+  private async getLocked(
+    token: AddTokenItem,
+    subaccountId = 0
+  ): Promise<void> {
+    let address = this.getPrincipalId;
+    if (subaccountId === 1) {
+      address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(1))
+      );
+    }
     const res = await this.DRC20TokenService.txnQuery(
       {
-        lockedTxns: { owner: this.getPrincipalId }
+        lockedTxns: { owner: address }
       },
       token.canisterId.toString()
     );
@@ -1538,17 +1710,38 @@ export default class extends Vue {
       .div(10 ** Number(token.decimals))
       .decimalPlaces(4, 1)
       .toString(10);
-    this.$set(token, 'lockedTxns', {
-      txns: lockedTxns.txns,
-      lockedBalance: lockedBalance
-    });
+    if (subaccountId === 1) {
+      this.$set(token, 'lockedTxns1', {
+        txns: lockedTxns.txns,
+        lockedBalance: lockedBalance
+      });
+    } else {
+      this.$set(token, 'lockedTxns', {
+        txns: lockedTxns.txns,
+        lockedBalance: lockedBalance
+      });
+    }
   }
-  private async getApprovalsAllowance(token: AddTokenItem): Promise<void> {
+  private async getApprovalsAllowance(
+    token: AddTokenItem,
+    subaccountId = 0
+  ): Promise<void> {
+    let address = this.getPrincipalId;
+    if (subaccountId === 1) {
+      address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(1))
+      );
+    }
     const res = await this.DRC20TokenService.approvals(
-      this.getPrincipalId,
+      address,
       token.canisterId.toString()
     );
-    this.$set(token, 'approvals', res.length);
+    if (subaccountId === 1) {
+      this.$set(token, 'approvals1', res.length);
+    } else {
+      this.$set(token, 'approvals', res.length);
+    }
   }
   private updateApprove(text: Allowance): void {
     this.$refs.approve.visible = true;
@@ -1615,10 +1808,17 @@ export default class extends Vue {
     this.lockTransactions = [];
     this.lockTransactionsModal = true;
     this.lockTransactionsLoading = true;
+    let address = this.getPrincipalId;
+    if (this.walletMenu === 'proWallet') {
+      address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(1))
+      );
+    }
     try {
       const res = await this.DRC20TokenService.txnQuery(
         {
-          lockedTxns: { owner: this.getPrincipalId }
+          lockedTxns: { owner: address }
         },
         token.canisterId.toString()
       );
@@ -1645,9 +1845,16 @@ export default class extends Vue {
     this.approvalsModal = true;
     this.approvalsLoading = true;
     this.approvals = [];
+    let address = this.getPrincipalId;
+    if (this.walletMenu === 'proWallet') {
+      address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(1))
+      );
+    }
     try {
       const res = await this.DRC20TokenService.approvals(
-        this.getPrincipalId,
+        address,
         token.canisterId.toString()
       );
       this.approvalsLoading = false;
@@ -1662,10 +1869,17 @@ export default class extends Vue {
     this.transactionsModal = true;
     this.transactionsLoading = true;
     this.transactions = [];
+    let address = this.getPrincipalId;
+    if (this.walletMenu === 'proWallet') {
+      address = principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId),
+        new Uint8Array(fromSubAccountId(1))
+      );
+    }
     try {
       const res = await this.DRC20TokenService.txnQuery(
         {
-          getEvents: { owner: [this.getPrincipalId] }
+          getEvents: { owner: [address] }
         },
         token.canisterId.toString()
       );
@@ -1689,27 +1903,47 @@ export default class extends Vue {
       .toString(10);
     this.$set(token, 'balance', balance);
   }
-  private async getICRCBalance(token: AddTokenItem): Promise<void> {
+  private async getICRCBalance(
+    token: AddTokenItem,
+    subaccountId = 0
+  ): Promise<void> {
     const res = await getTokenBalance(
       { icrc1: null },
-      token.canisterId.toString()
+      token.canisterId.toString(),
+      subaccountId
     );
     const balance = new BigNumber(res)
       .div(10 ** Number(token.decimals))
       .decimalPlaces(Number(token.decimals), 1)
       .toString(10);
-    this.$set(token, 'balance', balance);
+    if (subaccountId === 0) {
+      this.$set(token, 'balance', balance);
+      this.tokensBalanceMain[token.canisterId.toString()] = res;
+    } else {
+      this.$set(token, 'balance1', balance);
+      this.tokensBalancePro[token.canisterId.toString()] = res;
+    }
   }
-  private async getBalance(token: AddTokenItem): Promise<void> {
+  private async getBalance(
+    token: AddTokenItem,
+    subaccountId = 0
+  ): Promise<void> {
     const res = await getTokenBalance(
       { drc20: null },
-      token.canisterId.toString()
+      token.canisterId.toString(),
+      subaccountId
     );
     const balance = new BigNumber(res)
       .div(10 ** Number(token.decimals))
       .decimalPlaces(Number(token.decimals), 1)
       .toString(10);
-    this.$set(token, 'balance', balance);
+    if (subaccountId === 0) {
+      this.$set(token, 'balance', balance);
+      this.tokensBalanceMain[token.canisterId.toString()] = res;
+    } else {
+      this.$set(token, 'balance1', balance);
+      this.tokensBalancePro[token.canisterId.toString()] = res;
+    }
   }
   private async addToken(): Promise<void> {
     this.$refs.addTokenForm.validate(async (valid: any) => {
@@ -1867,9 +2101,9 @@ export default class extends Vue {
         ) {
           this.getICRCBalance(token);
           this.getIcrcMetadata(token);
-          if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
-            this.getSNSLogo(token);
-          }
+          // if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
+          //   this.getSNSLogo(token);
+          // }
         }
       }
     } catch (e) {

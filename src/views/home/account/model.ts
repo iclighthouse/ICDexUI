@@ -14,6 +14,14 @@ export interface AddTokenItem extends TokenItem {
   approvals?: number;
   transactions?: string;
   coinSeconds?: string;
+  balance1?: string;
+  lockedTxns1?: {
+    txns: Array<Txid>;
+    lockedBalance: string;
+  };
+  approvals1?: number;
+  transactions1?: string;
+  coinSeconds1?: string;
 }
 
 export class AddTokenItemClass {
@@ -31,6 +39,14 @@ export class AddTokenItemClass {
   public approvals = 0;
   public transactions = '0';
   public coinSeconds = null;
+  public balance1? = '-';
+  public lockedTxns1? = {
+    txns: [],
+    lockedBalance: '0'
+  };
+  public approvals1? = 0;
+  public transactions1? = '0';
+  public coinSeconds1? = null;
 }
 
 export enum TokenStandard {

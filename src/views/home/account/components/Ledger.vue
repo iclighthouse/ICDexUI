@@ -2,7 +2,7 @@
   <div>
     <div class="ic-balance-main">
       <div v-if="type === 'ic'" class="ic-balance-item-container-icp">
-        <div class="ic-balance-item">
+        <div v-show="walletMenu === 'wallet'" class="ic-balance-item">
           <p>
             ICP Balance
             <a-icon
@@ -41,6 +41,9 @@
               <button type="button" @click="showTopUp">
                 <span>Top-up</span>
               </button>
+              <button type="button" @click="showTraderAccounts">
+                <span>TraderAccounts</span>
+              </button>
               <router-link
                 class="button-history"
                 tag="button"
@@ -48,6 +51,45 @@
               >
                 <span>Transactions</span>
               </router-link>
+            </div>
+          </div>
+        </div>
+        <div
+          v-show="walletMenu === 'proWallet'"
+          class="ic-balance-item ic-balance-item-pro"
+        >
+          <p>
+            ICP Balance
+            <a-icon
+              @click="refreshBalance"
+              v-show="!refreshBalanceLoading"
+              type="reload"
+              class="reload-icon"
+            />
+            <a-icon
+              v-show="refreshBalanceLoading"
+              type="loading"
+              class="reload-icon"
+            />
+          </p>
+          <div class="icp-balance-main">
+            <span class="balance">
+              {{ balancePro | bigintToFloat(8, 0) | formatNum }}&nbsp;ICP
+            </span>
+            <div
+              style="padding-bottom: 20px; padding-top: 10px"
+              class="operation ic-token-operation"
+            >
+              <button type="button" @click="swapWallet">
+                <span>Transfer</span>
+              </button>
+              <button
+                style="margin-right: 0 !important"
+                type="button"
+                @click="showTraderAccounts"
+              >
+                <span>TraderAccounts</span>
+              </button>
             </div>
           </div>
         </div>
@@ -4073,6 +4115,13 @@
       :balance="balance"
       @approveIcrc2Success="approveIcrc2Success"
     ></approve-icrc2>
+    <pro-wallet-swap
+      :tokens-balance="tokensBalanceMain"
+      :tokens-balance-sto="tokensBalancePro"
+      :tokens="tokens"
+      ref="proWalletSwap"
+      @proWalletSwapSuccess="proWalletSwapSuccess"
+    ></pro-wallet-swap>
   </div>
 </template>
 
@@ -4166,6 +4215,7 @@ import { getTokenLogo } from '@/ic/getTokenLogo';
 import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
 import { principalToBytes32 } from '@/ic/principal_to_bytes';
 import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
+import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 
 const { Web3 } = require('web3');
 
@@ -4185,7 +4235,8 @@ let timer: number;
     TransferIcp,
     TopUp,
     TransferToken,
-    ApproveIcrc2
+    ApproveIcrc2,
+    ProWalletSwap
   },
   filters: {
     filterTime(val: number): string {
@@ -4207,6 +4258,8 @@ export default class extends Mixins(BalanceMixin) {
   public principal!: string;
   @Prop()
   public type!: string;
+  @Prop()
+  private walletMenu!: string;
   private ckETHMinterDfiService: ckETHMinterDfiService;
   private DRC20TokenService: DRC20TokenService;
   private BTCTypeEnum = BTCTypeEnum;
@@ -4605,6 +4658,9 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+  private showTraderAccounts(): void {
+    this.$emit('showTraderAccounts');
+  }
   private changeDepositMethod(depositMethod: number): void {
     if (this.changeMethodDisabled) {
       return;
@@ -4624,6 +4680,15 @@ export default class extends Mixins(BalanceMixin) {
       return;
     }
     this.depositMethod = depositMethod;
+  }
+  private swapWallet(): void {
+    (this.$refs as any).proWalletSwap.tokenId = LEDGER_CANISTER_ID;
+    (this.$refs as any).proWalletSwap.type = 'toWallet';
+    (this.$refs as any).proWalletSwap.showSwap = true;
+    (this.$refs as any).proWalletSwap.visible = true;
+  }
+  private proWalletSwapSuccess(): void {
+    this.getBalance();
   }
   private accountToAddress(account: Icrc1Account): string {
     if (account.subaccount[0]) {
@@ -9998,7 +10063,7 @@ export default class extends Mixins(BalanceMixin) {
   }
 }
 button {
-  width: 110px;
+  width: 100px;
   height: 30px;
   margin-right: 10px !important;
   border-radius: 5px;

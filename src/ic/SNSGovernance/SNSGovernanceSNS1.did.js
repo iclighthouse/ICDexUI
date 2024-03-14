@@ -36,6 +36,10 @@ export default ({ IDL }) => {
     dissolving_neurons_e8s_buckets: IDL.Vec(IDL.Tuple(IDL.Nat64, IDL.Float64)),
     timestamp_seconds: IDL.Nat64
   });
+  const MaturityModulation = IDL.Record({
+    current_basis_points: IDL.Opt(IDL.Int32),
+    updated_at_timestamp_seconds: IDL.Opt(IDL.Nat64)
+  });
   const NeuronId = IDL.Record({ id: IDL.Vec(IDL.Nat8) });
   const Followees = IDL.Record({ followees: IDL.Vec(NeuronId) });
   const DefaultFollowees = IDL.Record({
@@ -69,6 +73,7 @@ export default ({ IDL }) => {
     max_age_bonus_percentage: IDL.Opt(IDL.Nat64),
     neuron_grantable_permissions: IDL.Opt(NeuronPermissionList),
     voting_rewards_parameters: IDL.Opt(VotingRewardsParameters),
+    maturity_modulation_disabled: IDL.Opt(IDL.Bool),
     max_number_of_principals_per_neuron: IDL.Opt(IDL.Nat64)
   });
   const Version = IDL.Record({
@@ -81,7 +86,9 @@ export default ({ IDL }) => {
   });
   const ProposalId = IDL.Record({ id: IDL.Nat64 });
   const RewardEvent = IDL.Record({
+    rounds_since_last_distribution: IDL.Opt(IDL.Nat64),
     actual_timestamp_seconds: IDL.Nat64,
+    end_timestamp_seconds: IDL.Opt(IDL.Nat64),
     distributed_e8s_equivalent: IDL.Nat64,
     round: IDL.Nat64,
     settled_proposals: IDL.Vec(ProposalId)
@@ -101,11 +108,20 @@ export default ({ IDL }) => {
     cast_timestamp_seconds: IDL.Nat64,
     voting_power: IDL.Nat64
   });
+  const Percentage = IDL.Record({ basis_points: IDL.Opt(IDL.Nat64) });
   const Tally = IDL.Record({
     no: IDL.Nat64,
     yes: IDL.Nat64,
     total: IDL.Nat64,
     timestamp_seconds: IDL.Nat64
+  });
+  const ManageDappCanisterSettings = IDL.Record({
+    freezing_threshold: IDL.Opt(IDL.Nat64),
+    canister_ids: IDL.Vec(IDL.Principal),
+    reserved_cycles_limit: IDL.Opt(IDL.Nat64),
+    log_visibility: IDL.Opt(IDL.Int32),
+    memory_allocation: IDL.Opt(IDL.Nat64),
+    compute_allocation: IDL.Opt(IDL.Nat64)
   });
   const RegisterDappCanisters = IDL.Record({
     canister_ids: IDL.Vec(IDL.Principal)
@@ -120,12 +136,19 @@ export default ({ IDL }) => {
   });
   const UpgradeSnsControlledCanister = IDL.Record({
     new_canister_wasm: IDL.Vec(IDL.Nat8),
+    mode: IDL.Opt(IDL.Int32),
     canister_id: IDL.Opt(IDL.Principal),
     canister_upgrade_arg: IDL.Opt(IDL.Vec(IDL.Nat8))
   });
   const DeregisterDappCanisters = IDL.Record({
     canister_ids: IDL.Vec(IDL.Principal),
     new_controllers: IDL.Vec(IDL.Principal)
+  });
+  const MintSnsTokens = IDL.Record({
+    to_principal: IDL.Opt(IDL.Principal),
+    to_subaccount: IDL.Opt(Subaccount),
+    memo: IDL.Opt(IDL.Nat64),
+    amount_e8s: IDL.Opt(IDL.Nat64)
   });
   const ManageSnsMetadata = IDL.Record({
     url: IDL.Opt(IDL.Text),
@@ -137,19 +160,25 @@ export default ({ IDL }) => {
     function_id: IDL.Nat64,
     payload: IDL.Vec(IDL.Nat8)
   });
+  const ManageLedgerParameters = IDL.Record({
+    transfer_fee: IDL.Opt(IDL.Nat64)
+  });
   const Motion = IDL.Record({ motion_text: IDL.Text });
   const Action = IDL.Variant({
     ManageNervousSystemParameters: NervousSystemParameters,
     AddGenericNervousSystemFunction: NervousSystemFunction,
+    ManageDappCanisterSettings: ManageDappCanisterSettings,
     RemoveGenericNervousSystemFunction: IDL.Nat64,
     UpgradeSnsToNextVersion: IDL.Record({}),
     RegisterDappCanisters: RegisterDappCanisters,
     TransferSnsTreasuryFunds: TransferSnsTreasuryFunds,
     UpgradeSnsControlledCanister: UpgradeSnsControlledCanister,
     DeregisterDappCanisters: DeregisterDappCanisters,
+    MintSnsTokens: MintSnsTokens,
     Unspecified: IDL.Record({}),
     ManageSnsMetadata: ManageSnsMetadata,
     ExecuteGenericNervousSystemFunction: ExecuteGenericNervousSystemFunction,
+    ManageLedgerParameters: ManageLedgerParameters,
     Motion: Motion
   });
   const Proposal = IDL.Record({
@@ -167,8 +196,10 @@ export default ({ IDL }) => {
     action: IDL.Nat64,
     failure_reason: IDL.Opt(GovernanceError),
     ballots: IDL.Vec(IDL.Tuple(IDL.Text, Ballot)),
+    minimum_yes_proportion_of_total: IDL.Opt(Percentage),
     reward_event_round: IDL.Nat64,
     failed_timestamp_seconds: IDL.Nat64,
+    reward_event_end_timestamp_seconds: IDL.Opt(IDL.Nat64),
     proposal_creation_timestamp_seconds: IDL.Nat64,
     initial_voting_period_seconds: IDL.Nat64,
     reject_cost_e8s: IDL.Nat64,
@@ -178,6 +209,7 @@ export default ({ IDL }) => {
     proposal: IDL.Opt(Proposal),
     proposer: IDL.Opt(NeuronId),
     wait_for_quiet_state: IDL.Opt(WaitForQuietState),
+    minimum_yes_proportion_of_exercised: IDL.Opt(Percentage),
     is_eligible_for_rewards: IDL.Bool,
     executed_timestamp_seconds: IDL.Nat64
   });
@@ -272,7 +304,8 @@ export default ({ IDL }) => {
   const DisburseMaturityInProgress = IDL.Record({
     timestamp_of_disbursement_seconds: IDL.Nat64,
     amount_e8s: IDL.Nat64,
-    account_to_disburse_to: IDL.Opt(Account)
+    account_to_disburse_to: IDL.Opt(Account),
+    finalize_disbursement_timestamp_seconds: IDL.Opt(IDL.Nat64)
   });
   const Neuron = IDL.Record({
     id: IDL.Opt(NeuronId),
@@ -297,6 +330,7 @@ export default ({ IDL }) => {
       IDL.Tuple(IDL.Nat64, NervousSystemFunction)
     ),
     metrics: IDL.Opt(GovernanceCachedMetrics),
+    maturity_modulation: IDL.Opt(MaturityModulation),
     mode: IDL.Int32,
     parameters: IDL.Opt(NervousSystemParameters),
     is_finalizing_disburse_maturity: IDL.Opt(IDL.Bool),
@@ -315,18 +349,31 @@ export default ({ IDL }) => {
   const NeuronParameters = IDL.Record({
     controller: IDL.Opt(IDL.Principal),
     dissolve_delay_seconds: IDL.Opt(IDL.Nat64),
-    memo: IDL.Opt(IDL.Nat64),
     source_nns_neuron_id: IDL.Opt(IDL.Nat64),
     stake_e8s: IDL.Opt(IDL.Nat64),
-    hotkey: IDL.Opt(IDL.Principal)
+    followees: IDL.Vec(NeuronId),
+    hotkey: IDL.Opt(IDL.Principal),
+    neuron_id: IDL.Opt(NeuronId)
   });
   const ClaimSwapNeuronsRequest = IDL.Record({
     neuron_parameters: IDL.Vec(NeuronParameters)
   });
+  const SwapNeuron = IDL.Record({
+    id: IDL.Opt(NeuronId),
+    status: IDL.Int32
+  });
+  const ClaimedSwapNeurons = IDL.Record({
+    swap_neurons: IDL.Vec(SwapNeuron)
+  });
+  const ClaimSwapNeuronsResult = IDL.Variant({
+    Ok: ClaimedSwapNeurons,
+    Err: IDL.Int32
+  });
   const ClaimSwapNeuronsResponse = IDL.Record({
-    skipped_claims: IDL.Nat32,
-    successful_claims: IDL.Nat32,
-    failed_claims: IDL.Nat32
+    claim_swap_neurons_result: IDL.Opt(ClaimSwapNeuronsResult)
+  });
+  const GetMaturityModulationResponse = IDL.Record({
+    maturity_modulation: IDL.Opt(MaturityModulation)
   });
   const GetMetadataResponse = IDL.Record({
     url: IDL.Opt(IDL.Text),
@@ -350,17 +397,13 @@ export default ({ IDL }) => {
     running: IDL.Null
   });
   const DefiniteCanisterSettingsArgs = IDL.Record({
-    controller: IDL.Principal,
     freezing_threshold: IDL.Nat,
     controllers: IDL.Vec(IDL.Principal),
     memory_allocation: IDL.Nat,
     compute_allocation: IDL.Nat
   });
   const CanisterStatusResultV2 = IDL.Record({
-    controller: IDL.Principal,
     status: CanisterStatusType,
-    freezing_threshold: IDL.Nat,
-    balance: IDL.Vec(IDL.Tuple(IDL.Vec(IDL.Nat8), IDL.Nat)),
     memory_size: IDL.Nat,
     cycles: IDL.Nat,
     settings: DefiniteCanisterSettingsArgs,
@@ -417,7 +460,8 @@ export default ({ IDL }) => {
   });
   const SplitResponse = IDL.Record({ created_neuron_id: IDL.Opt(NeuronId) });
   const DisburseMaturityResponse = IDL.Record({
-    amount_disbursed_e8s: IDL.Nat64
+    amount_disbursed_e8s: IDL.Nat64,
+    amount_deducted_e8s: IDL.Opt(IDL.Nat64)
   });
   const ClaimOrRefreshResponse = IDL.Record({
     refreshed_neuron_id: IDL.Opt(NeuronId)
@@ -454,7 +498,18 @@ export default ({ IDL }) => {
       [ClaimSwapNeuronsResponse],
       []
     ),
+    fail_stuck_upgrade_in_progress: IDL.Func(
+      [IDL.Record({})],
+      [IDL.Record({})],
+      []
+    ),
     get_build_metadata: IDL.Func([], [IDL.Text], ['query']),
+    get_latest_reward_event: IDL.Func([], [RewardEvent], ['query']),
+    get_maturity_modulation: IDL.Func(
+      [IDL.Record({})],
+      [GetMaturityModulationResponse],
+      []
+    ),
     get_metadata: IDL.Func([IDL.Record({})], [GetMetadataResponse], ['query']),
     get_mode: IDL.Func([IDL.Record({})], [GetModeResponse], ['query']),
     get_nervous_system_parameters: IDL.Func(

@@ -14,7 +14,7 @@
       <div>
         <p class="base-font-title" style="font-size: 15px">Token Listing</p>
         <div class="base-font-light" v-if="sysConfig">
-          Token listing is c and anyone can spend
+          Token listing is permissionless and anyone can spend
           {{ sysConfig.creatingPairFee | bigintToFloat(8, 8) }} ICL to list an
           ICRC1 or DRC20 token on ICDex. The pair's score is calculated from a
           combination of volume, TVL, and the number of sponsors of the listing
@@ -493,13 +493,14 @@ export default class extends Vue {
       const amount = new BigNumber(this.sysConfig.creatingPairFee.toString(10))
         .div(10 ** tokenInfo.decimals)
         .toString(10);
-      this.$info({
+      (this.$info as any)({
         title: 'Launch a new trading pair',
         content: `Token listing is permissionless and anyone can spend ${amount} ICL to list an ICRC1 or DRC20 token on ICDex.`,
-        class: 'connect-plug register-mining-confirm',
+        class: 'connect-plug register-mining-confirm launch-info-button',
         icon: 'connect-plug',
-        okText: 'Confirm',
+        okText: 'Insufficient ICL balance',
         centered: true,
+        closable: true,
         onOk() {
           //
         }

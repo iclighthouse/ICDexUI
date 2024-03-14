@@ -106,7 +106,10 @@ export interface Follow {
   followees: Array<SNSNeuronId>;
 }
 export interface DisburseMaturity {
-  to_account: Array<{owner: Array<Principal>, subaccount: Array<{subaccount: Array<number>}>}>;
+  to_account: Array<{
+    owner: Array<Principal>;
+    subaccount: Array<{ subaccount: Array<number> }>;
+  }>;
   percentage_to_disburse: bigint;
 }
 export interface ClaimOrRefresh {
@@ -413,6 +416,11 @@ export interface ProposalData {
   is_eligible_for_rewards: boolean;
   executed_timestamp_seconds: bigint;
   reward_event_end_timestamp_seconds?: Array<bigint>;
+  minimum_yes_proportion_of_total: Array<Percentage>;
+  minimum_yes_proportion_of_exercised: Array<Percentage>;
+}
+export interface Percentage {
+  basis_points: Array<bigint>;
 }
 export interface Ballot {
   vote: bigint;

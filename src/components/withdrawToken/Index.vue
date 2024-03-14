@@ -2,7 +2,7 @@
   <a-modal
     v-model="visibleTransfer"
     centered
-    :title="'Withdraw' + ' ' + currentToken.symbol"
+    :title="isWallets ? '' : 'Withdraw' + ' ' + currentToken.symbol"
     width="550px"
     :footer="null"
     :keyboard="false"
@@ -11,6 +11,30 @@
     :after-close="afterClose"
     :z-index="1400"
   >
+    <ul v-show="isWallets" class="withdraw-token-list">
+      <li
+        v-if="currentPair && currentToken && currentToken.canisterId"
+        :class="{
+          active:
+            currentToken.canisterId.toString() ===
+            currentPair[1][0].token0[0].toString()
+        }"
+        @click="changeWithdrawToken(true)"
+      >
+        Withdraw {{ currentPair[1][0].token0[1] }}
+      </li>
+      <li
+        v-if="currentPair && currentToken && currentToken.canisterId"
+        :class="{
+          active:
+            currentToken.canisterId.toString() ===
+            currentPair[1][0].token1[0].toString()
+        }"
+        @click="changeWithdrawToken(false)"
+      >
+        Withdraw {{ currentPair[1][0].token1[1] }}
+      </li>
+    </ul>
     <a-form-model :model="form" ref="form" :rules="formRules">
       <a-form-model-item label="Amount" prop="amount">
         <a-input
@@ -60,6 +84,9 @@ import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { DePairs } from '@/views/home/ICDex/model';
 import { checkAuth } from '@/ic/CheckAuth';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
+import { TokenInfo } from '@/ic/common/icType';
+import { getFee } from '@/ic/getTokenFee';
+import { toHttpError } from '@/ic/httpError';
 
 @Component({
   name: 'Index',
@@ -68,6 +95,8 @@ import { ICDexService } from '@/ic/ICDex/ICDexService';
 export default class extends Vue {
   @Prop({ type: Array, default: () => [] })
   public currentPair!: DePairs;
+  @Prop({ type: Boolean, default: false })
+  public isWallets!: boolean;
 
   private DRC20TokenService: DRC20TokenService;
   private currentICDexService: ICDexService;
@@ -85,6 +114,7 @@ export default class extends Vue {
       { validator: this.validateAmount, trigger: 'change' }
     ]
   };
+  private tokens: { [key: string]: TokenInfo } = {};
   private validateAmount(
     rule: ValidationRule,
     value: number,
@@ -113,20 +143,29 @@ export default class extends Vue {
             .times(10 ** Number(this.currentToken.decimals))
             .toString(10);
           console.log(amount);
-          const res = await this.currentICDexService.withdraw(
-            this.currentPair[0].toString(),
-            this.isToken0 ? [BigInt(amount)] : [BigInt(0)],
-            this.isToken0 ? [BigInt(0)] : [BigInt(amount)],
-            this.subaccountId
-          );
-          console.log(res);
-          if (res && res.length) {
-            this.$message.success('Success');
-          } else {
-            this.$message.success('Error');
+          try {
+            const res = await this.currentICDexService.withdraw(
+              this.currentPair[0].toString(),
+              this.isToken0 ? [BigInt(amount)] : [BigInt(0)],
+              this.isToken0 ? [BigInt(0)] : [BigInt(amount)],
+              this.subaccountId
+            );
+            console.log(res);
+            if (
+              res &&
+              res.length &&
+              (Number(res[0]) !== 0 || Number(res[1]) !== 0)
+            ) {
+              this.$message.success('Success');
+            } else {
+              this.$message.error('Error');
+            }
+            this.visibleTransfer = false;
+            this.$emit('withdrawSuccess', this.isToken0, this.subaccountId);
+          } catch (e) {
+            console.log(e);
+            this.$message.error(toHttpError(e).message);
           }
-          this.visibleTransfer = false;
-          this.$emit('withdrawSuccess', this.isToken0, this.subaccountId);
           loading.close();
         }
       }
@@ -155,11 +194,21 @@ export default class extends Vue {
     this.isToken0 = isToken0;
     this.DRC20TokenService = new DRC20TokenService();
     this.currentICDexService = new ICDexService();
+    this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     this.getGas();
+  }
+  private changeWithdrawToken(isToken0 = true): void {
+    this.$emit('changeWithdrawToken', this.currentPair, isToken0);
   }
   private async getGas(): Promise<void> {
     let fee;
-    if (this.currentToken.standard.toLocaleLowerCase() === 'icp') {
+    if (
+      this.tokens &&
+      this.tokens[this.currentToken.canisterId.toString()] &&
+      this.tokens[this.currentToken.canisterId.toString()].fee
+    ) {
+      fee = getFee(this.tokens[this.currentToken.canisterId.toString()]);
+    } else if (this.currentToken.standard.toLocaleLowerCase() === 'icp') {
       fee = 10000;
     } else if (this.currentToken.standard === TokenStandard.DRC20) {
       try {
@@ -206,4 +255,21 @@ export default class extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.withdraw-token-list {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  margin: 50px 0 20px;
+  li {
+    margin-right: 20px;
+    padding-bottom: 10px;
+    cursor: pointer;
+    color: #adb3c4;
+    border-bottom: 1px solid transparent;
+    &.active {
+      border-color: #51b7c3;
+    }
+  }
+}
+</style>

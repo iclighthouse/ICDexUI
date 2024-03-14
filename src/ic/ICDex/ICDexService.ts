@@ -681,17 +681,11 @@ export class ICDexService {
     subAccountId = 0
   ): Promise<[Amount, Amount]> => {
     const service = await this.check(canisterId);
-    try {
-      let subAccount = [[]];
-      if (subAccountId) {
-        subAccount = [fromSubAccountId(subAccountId)];
-      }
-      console.log(subAccount);
-      return await service.withdraw(token0Amount, token1Amount, subAccount);
-    } catch (e) {
-      console.error(e);
-      return null;
+    let subAccount = [[]];
+    if (subAccountId) {
+      subAccount = [fromSubAccountId(subAccountId)];
     }
+    return await service.withdraw(token0Amount, token1Amount, subAccount);
   };
   public getRole = async (
     canisterId: string,

@@ -194,43 +194,12 @@
           <span>
             © {{ year }}
             <a
-              v-if="$route.fullPath.toLocaleLowerCase().startsWith('/icdex')"
-              href="https://github.com/iclighthouse/ICDex"
+              href="https://iclight.house/"
               rel="nofollow noreferrer noopener"
               target="_blank"
             >
-              ICDex
+              ICLight.house
             </a>
-            <span
-              v-if="$route.fullPath.toLocaleLowerCase().startsWith('/icsns')"
-              >ICSNS.io</span
-            >
-            <span
-              v-if="
-                !$route.fullPath.toLocaleLowerCase().startsWith('/icdex') &&
-                !$route.fullPath.toLocaleLowerCase().startsWith('/icsns')
-              "
-              >ICLight.IO</span
-            >
-            <span
-              v-if="$route.fullPath.toLocaleLowerCase().startsWith('/icdex')"
-              class="container-width-copy-powered"
-              >Powered by
-              <a
-                href="https://github.com/iclighthouse/ICOrderbook"
-                rel="nofollow noreferrer noopener"
-                target="_blank"
-              >
-                ICOrderbook</a
-              >,
-              <a
-                href="https://github.com/iclighthouse/ICTC"
-                rel="nofollow noreferrer noopener"
-                target="_blank"
-              >
-                ICTC
-              </a></span
-            >
           </span>
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
@@ -238,19 +207,6 @@
               ICDexMaker v{{ version.maker }}; ICDexUI v2.0.1
             </span>
           </span>
-          <a
-            class="old-version"
-            v-if="
-              hostname &&
-              hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
-              hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
-            "
-            href="https://avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app/"
-            target="_blank"
-            rel="nofollow noreferrer noopener"
-          >
-            <a-icon type="arrow-left" /> Old Version</a
-          >
         </span>
         <ul>
           <li>
@@ -384,6 +340,37 @@
             </a>
           </li>
         </ul>
+      </div>
+      <div class="container-width-domains">
+        The dApp domains:
+        <span style="color: #646e79"
+          >(Add them to your favorites to prevent scamming risks)</span
+        >
+        <div>
+          <a
+            style="color: #2b8cb0"
+            href="https://iclight.io/"
+            rel="nofollow noreferrer noopener"
+            target="_blank"
+            >iclight.io</a
+          >,
+          <a
+            style="color: #2b8cb0"
+            href="https://7vkf4-jqaaa-aaaaj-azrua-cai.icp0.io/"
+            rel="nofollow noreferrer noopener"
+            target="_blank"
+            >7vkf4-jqaaa-aaaaj-azrua-cai.icp0.io</a
+          >
+          <span style="color: #646e79">(recommended)</span>,
+          <a
+            style="color: #2b8cb0"
+            href="https://avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app/"
+            rel="nofollow noreferrer noopener"
+            target="_blank"
+            >avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app</a
+          >
+          <span style="color: #646e79">(to be discarded)</span>
+        </div>
       </div>
       <div
         v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
@@ -966,6 +953,12 @@ export default class extends Vue {
       color: #51b7c3;
     }
   }
+}
+.container-width-domains {
+  width: 1000px;
+  margin: 5px auto 0;
+  font-size: 12px;
+  line-height: 1.5;
 }
 @media screen and (max-width: 1000px) {
   .home-footer {

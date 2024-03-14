@@ -278,7 +278,7 @@
                                   (pair && showReminder1(pair)) ||
                                   showReminder2(pair)
                                 "
-                                style="opacity: 0.8"
+                                style="opacity: 0.8; color: #727a87"
                                 class="pair-name"
                               >
                                 * {{ pair[1][0].token0[1]
@@ -315,7 +315,9 @@
                               @click.stop="onStar(pair)"
                               type="star"
                               :class="{
-                                'main-color': star.includes(pair[0].toString())
+                                'base-font-title': star.includes(
+                                  pair[0].toString()
+                                )
                               }"
                             />
                             <span v-show="oldPairs.includes(pair[0].toString())"
@@ -10223,7 +10225,7 @@
                         @click.stop="onStar(pair)"
                         type="star"
                         :class="{
-                          'main-color': star.includes(pair[0].toString())
+                          'base-font-title': star.includes(pair[0].toString())
                         }"
                       />
                       {{ pair[1][0].token0[1]
@@ -12419,10 +12421,12 @@ const ProSubaccountId = 1;
 const dayjs = require('dayjs');
 let lastCallTime = null;
 const interval = 10 * 1000;
+const SNS1Token = 'zfcdd-tqaaa-aaaaq-aaaga-cai';
 const ICRC2Token = [
   CK_BTC_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
-  LEDGER_CANISTER_ID
+  LEDGER_CANISTER_ID,
+  SNS1Token
 ];
 
 @Component({
@@ -13010,6 +13014,10 @@ export default class extends Vue {
       path: '/icdex/pools'
     },
     {
+      value: 'NFT',
+      path: '/ICDex/NFT'
+    },
+    {
       value: 'Competitions',
       path: '/icdex/competitions'
     }
@@ -13072,11 +13080,12 @@ export default class extends Vue {
     {
       name: 'THIRD',
       value: 'Third'
-    },
-    {
-      name: 'Pre-ver',
-      value: 'Old'
     }
+    // ,
+    // {
+    //   name: 'Pre-ver',
+    //   value: 'Old'
+    // }
   ];
   private swapConfig: SwapConfig = null;
   private currentTradeMarketSort: string = null;
@@ -15862,13 +15871,18 @@ export default class extends Vue {
       }
     } else if (tokenStd.toLocaleLowerCase() === PairTokenStdMenu.icrc2) {
       try {
+        let subaccount = [];
+        if (subAccountId) {
+          subaccount = [fromSubAccountId(subAccountId)];
+        }
         const res = await currentDrc20Token.icrc2_approve(
           tokenId,
           {
             owner: spender,
             subaccount: []
           },
-          amount
+          amount,
+          subaccount
         );
         if (
           (
@@ -17499,7 +17513,7 @@ export default class extends Vue {
       }
       this.currentToken = Object.assign(currentToken, {
         balance: balance,
-        canisterId: token[0].toString(),
+        canisterId: token[0],
         decimals: decimals,
         name: this.tokens[token[0].toString()].name,
         symbol: this.tokens[token[0].toString()].symbol,
@@ -18775,8 +18789,8 @@ export default class extends Vue {
     const pairs = [
       { type: 'Main', value: this.tradePairs.Main },
       { type: 'Second', value: this.tradePairs.Second },
-      { type: 'Third', value: this.tradePairs.Third },
-      { type: 'Old', value: this.tradePairs.Old }
+      { type: 'Third', value: this.tradePairs.Third }
+      // { type: 'Old', value: this.tradePairs.Old }
     ];
     for (let i = 0; i < pairs.length; i++) {
       for (let j = 0; j < pairs[i].value.length; j++) {
@@ -18993,9 +19007,9 @@ export default class extends Vue {
     // this.tradePairs.USDT.forEach((pair) => {
     //   canisterIds.push(pair[0].toString());
     // });
-    this.tradePairs.Old.forEach((pair) => {
-      canisterIds.push(pair[0].toString());
-    });
+    // this.tradePairs.Old.forEach((pair) => {
+    //   canisterIds.push(pair[0].toString());
+    // });
     res.forEach((item) => {
       if (item[0].toString() !== LEDGER_CANISTER_ID) {
         canisterIds.push(item[0].toString());
@@ -19243,10 +19257,11 @@ export default class extends Vue {
       } else if (stageType && stageType === 'STAGE0') {
         this.currentTradeMarketSort = 'Third';
         this.pairs = this.tradePairs.Third;
-      } else {
-        this.currentTradeMarketSort = 'Old';
-        this.pairs = this.tradePairs.Old;
       }
+      // else {
+      //   this.currentTradeMarketSort = 'Old';
+      //   this.pairs = this.tradePairs.Old;
+      // }
       // if (pair[1][0].token1[1].toLocaleLowerCase() === 'icp') {
       //   console.log(this.currentTradeMarketSort);
       //   if (this.currentTradeMarketSort === 'ICP') {
@@ -19500,7 +19515,6 @@ export default class extends Vue {
   }
   private async getFavorites(): Promise<Array<string>> {
     const res = await this.ICLighthouseService.getFavorites();
-    console.log(res);
     return res.map((item) => item.toString());
   }
   private async addFavorites(pairId: Principal): Promise<void> {
@@ -19615,7 +19629,6 @@ export default class extends Vue {
             { ...swapPair.pair }
           );
           delete newPair.pair;
-          console.log(newPair);
           const currentPair = [pair[0], [newPair, score], null, ''];
           // todo ICRC-2
           if (ICRC2Token.includes(currentPair[1][0].token0[0].toString())) {
@@ -19624,7 +19637,6 @@ export default class extends Vue {
           if (ICRC2Token.includes(currentPair[1][0].token1[0].toString())) {
             currentPair[1][0].token1[2] = { icrc2: null };
           }
-          console.log(currentPair);
           const marketBoard = newPair.marketBoard;
           let stage: string;
           if (marketBoard) {
@@ -19645,7 +19657,6 @@ export default class extends Vue {
             pair[3] = 'Star';
             this.tradePairs.Star.unshift(pair);
           }
-          console.log(this.tradePairs.Star);
           // const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
           // if (token1Symbol === 'icp') {
           //   this.tradePairs.ICP.push(currentPair);
@@ -19675,17 +19686,28 @@ export default class extends Vue {
           console.log(token0, token1);
           for (let i = 0; i < pairs.length; i++) {
             const currentPair = pairs[i][1] as TrieListData1SwapPair;
-            if (
-              (currentPair.pair.token0[1].toLocaleLowerCase() ===
-                token0.toLocaleLowerCase() ||
-                currentPair.pair.token0[0].toString() === token0) &&
-              (currentPair.pair.token1[1].toLocaleLowerCase() ===
-                token1.toLocaleLowerCase() ||
-                currentPair.pair.token1[0].toString() === token1)
-            ) {
-              currentPairId = pairs[i][0].toString();
-              currentStage = Object.keys(currentPair.marketBoard)[0];
-              break;
+            if (token0 === 'pair') {
+              if (
+                currentPair.pair.canisterId.toString() ===
+                token1.toLocaleLowerCase()
+              ) {
+                currentPairId = pairs[i][0].toString();
+                currentStage = Object.keys(currentPair.marketBoard)[0];
+                break;
+              }
+            } else {
+              if (
+                (currentPair.pair.token0[1].toLocaleLowerCase() ===
+                  token0.toLocaleLowerCase() ||
+                  currentPair.pair.token0[0].toString() === token0) &&
+                (currentPair.pair.token1[1].toLocaleLowerCase() ===
+                  token1.toLocaleLowerCase() ||
+                  currentPair.pair.token1[0].toString() === token1)
+              ) {
+                currentPairId = pairs[i][0].toString();
+                currentStage = Object.keys(currentPair.marketBoard)[0];
+                break;
+              }
             }
           }
           console.log(currentPairId, currentStage, this.star);
@@ -19733,17 +19755,28 @@ export default class extends Vue {
           //   this.pairs = this.tradePairs.USDT;
           // }
           for (let i = 0; i < this.pairs.length; i++) {
-            if (
-              (this.pairs[i][1][0].token0[1].toLocaleLowerCase() ===
-                token0.toLocaleLowerCase() ||
-                this.pairs[i][1][0].token0[0].toString() === token0) &&
-              (this.pairs[i][1][0].token1[1].toLocaleLowerCase() ===
-                token1.toLocaleLowerCase() ||
-                this.pairs[i][1][0].token1[0].toString() === token1)
-            ) {
-              this.currentPairIndex = i;
-              this.currentPair = this.pairs[this.currentPairIndex];
-              break;
+            if (token0 === 'pair') {
+              if (
+                this.pairs[i][1][0].canisterId.toString() ===
+                token1.toLocaleLowerCase()
+              ) {
+                this.currentPairIndex = i;
+                this.currentPair = this.pairs[this.currentPairIndex];
+                break;
+              }
+            } else {
+              if (
+                (this.pairs[i][1][0].token0[1].toLocaleLowerCase() ===
+                  token0.toLocaleLowerCase() ||
+                  this.pairs[i][1][0].token0[0].toString() === token0) &&
+                (this.pairs[i][1][0].token1[1].toLocaleLowerCase() ===
+                  token1.toLocaleLowerCase() ||
+                  this.pairs[i][1][0].token1[0].toString() === token1)
+              ) {
+                this.currentPairIndex = i;
+                this.currentPair = this.pairs[this.currentPairIndex];
+                break;
+              }
             }
           }
           if (!this.currentPair && this.$route.name === 'ICDex') {
@@ -19827,28 +19860,28 @@ export default class extends Vue {
           }
         }
       }
-      const res1 = await this.iCSwapRouterService.getPairs2([dexName], [], []);
-      if (res1.data && res1.data.length) {
-        const pairs = res1.data.sort(
-          (a, b) => Number(b[1].score) - Number(a[1].score)
-        );
-        pairs.forEach((pair) => {
-          const currentPair = [
-            pair[0],
-            [pair[1].pair, pair[1].score],
-            null,
-            'Old'
-          ];
-          this.prePairs.push(pair[0].toString());
-          const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
-          if (token1Symbol === 'icp') {
-            this.tradePairs.Old.push(currentPair);
-          }
-        });
-      }
-      if (!this.pairs.length) {
-        this.pairs = this.tradePairs.Old;
-      }
+      // const res1 = await this.iCSwapRouterService.getPairs2([dexName], [], []);
+      // if (res1.data && res1.data.length) {
+      //   const pairs = res1.data.sort(
+      //     (a, b) => Number(b[1].score) - Number(a[1].score)
+      //   );
+      //   pairs.forEach((pair) => {
+      //     const currentPair = [
+      //       pair[0],
+      //       [pair[1].pair, pair[1].score],
+      //       null,
+      //       'Old'
+      //     ];
+      //     this.prePairs.push(pair[0].toString());
+      //     const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
+      //     if (token1Symbol === 'icp') {
+      //       this.tradePairs.Old.push(currentPair);
+      //     }
+      //   });
+      // }
+      // if (!this.pairs.length) {
+      //   this.pairs = this.tradePairs.Old;
+      // }
       const type = this.$route.query.type;
       if (type && type === 'referrer') {
         this.tradeCompetitionsMenu = TradeCompetitionsEnum.Referral;
@@ -21545,7 +21578,6 @@ export default class extends Vue {
 .trade-market-sort {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 280px;
   height: 28px;
   margin-bottom: 5px;
@@ -21673,6 +21705,9 @@ export default class extends Vue {
       tr.active {
         background: #1f2b37;
         color: #adb7c2;
+        .pair-name {
+          color: #adb7c2 !important;
+        }
       }
       td {
         vertical-align: top;
@@ -21736,6 +21771,7 @@ export default class extends Vue {
   transform: scale(0.5);
   transform-origin: left top;
   white-space: nowrap;
+  color: #adb7c2;
 }
 .de-swap-list-item-search {
   display: flex;

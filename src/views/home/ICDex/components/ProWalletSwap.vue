@@ -87,7 +87,7 @@
           <p>
             Fee:
             {{
-              tokens[tokenId].fee
+              getTokenFee(tokens[tokenId])
                 | bigintToFloat(
                   tokens[tokenId].decimals,
                   tokens[tokenId].decimals
@@ -363,6 +363,9 @@ export default class extends Vue {
     this.tokenId = '';
     this.type = 'toPro';
     (this.$refs.transferForm as Vue & WrappedFormUtils).resetFields();
+  }
+  private getTokenFee(token: TokenInfo): string | bigint {
+    return getFee(token);
   }
 }
 </script>

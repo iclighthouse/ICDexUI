@@ -100,7 +100,10 @@
                       announcement.
                     </div>
                   </template>
-                  <span style="margin-left: 10px" class="base-font-title">
+                  <span
+                    style="margin-left: 10px; font-size: 12px"
+                    class="base-font-title pc-show"
+                  >
                     LPs yield <a-icon type="question-circle" />
                   </span>
                 </a-tooltip>
@@ -165,7 +168,10 @@
                       announcement.
                     </div>
                   </template>
-                  <span style="margin-left: 10px" class="base-font-title">
+                  <span
+                    style="margin-left: 10px; font-size: 12px"
+                    class="base-font-title pc-show"
+                  >
                     LPs yield <a-icon type="question-circle" />
                   </span>
                 </a-tooltip>
@@ -2649,6 +2655,9 @@ import {
 } from '@/ic/ICDex/model';
 import { PoolEvent } from '@/ic/makerPool/model';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
+import { DeployedSns } from '@/ic/SNSWasm/model';
+import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
+import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
@@ -2704,6 +2713,10 @@ export default class extends Vue {
       path: '/ICDex/pools'
     },
     {
+      value: 'NFT',
+      path: '/ICDex/NFT'
+    },
+    {
       value: 'Competitions',
       path: '/ICDex/competitions'
     }
@@ -2735,6 +2748,8 @@ export default class extends Vue {
   private pairToSymbol: { [key: string]: PairTrieResponse } = {};
   private tokens: { [key: string]: TokenInfo } = {};
   private timer: { [key: number]: number } = {};
+  private SNSWasmService: SNSWasmService = null;
+  private listDeployedSnses: Array<DeployedSns> = [];
   private pairPools = '';
   private poolsMenu = [
     {
@@ -2834,7 +2849,7 @@ export default class extends Vue {
       this.initPools();
     }
   }
-  private initPools(): void {
+  private async initPools(): Promise<void> {
     if (this.$route.query.pair) {
       this.pairPools = this.$route.query.pair as string;
     } else {
@@ -2844,6 +2859,9 @@ export default class extends Vue {
     this.poolsHold = [];
     this.poolsLoad = [];
     this.poolsPri = [];
+    if (!this.listDeployedSnses.length) {
+      this.listDeployedSnses = await this.SNSWasmService.listDeployedSnses();
+    }
     this.getPairs();
     this.getPools([], 1);
     this.getTokensExt();
@@ -2855,6 +2873,7 @@ export default class extends Vue {
     this.ICDexRouterService = new ICDexRouterService();
     this.NftService = new NftService();
     this.ICDexService = new ICDexService();
+    this.SNSWasmService = new SNSWasmService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     this.clearTimeout();
     if (this.$route.query.pair) {
@@ -3100,21 +3119,52 @@ export default class extends Vue {
       if (!this.tokens[token.id.toString()]) {
         getTokenInfo(token.id, token.std).then((tokenInfo) => {
           if (!tokenInfo.logo) {
-            tokenInfo.logo = null;
+            this.getIcrcMetadata(token);
+          } else {
+            this.$set(this.tokens, token.id.toString(), tokenInfo);
           }
-          this.$set(this.tokens, token.id.toString(), tokenInfo);
         });
       } else if (!this.tokens[token.id.toString()].logo) {
         getTokenLogo(token.id, this.tokens[token.id.toString()].tokenStd).then(
           (logo) => {
             if (logo) {
               this.$set(this.tokens[token.id.toString()], 'logo', logo);
+            } else {
+              this.getIcrcMetadata(token);
             }
           }
         );
       }
     });
     console.log(this.tokens);
+  }
+  private async getIcrcMetadata(token: {
+    id: Principal;
+    std: TokenStd;
+  }): Promise<void> {
+    const std = Object.keys(token.std)[0];
+    let logo = '';
+    if (std.toLocaleLowerCase().includes('icrc')) {
+      let SNSGovernance = '';
+      this.listDeployedSnses.some((item) => {
+        if (
+          item.ledger_canister_id.length &&
+          item.ledger_canister_id[0].toString() === token.id.toString()
+        ) {
+          SNSGovernance = item.governance_canister_id[0].toString();
+          return true;
+        }
+      });
+      if (SNSGovernance) {
+        const snsGovernanceService = new SNSGovernanceService();
+        const metadata = await snsGovernanceService.getMetadata(SNSGovernance);
+        console.log(metadata);
+        if (metadata && metadata.logo && metadata.logo.length) {
+          logo = metadata.logo[0];
+        }
+      }
+    }
+    this.$set(this.tokens[token.id.toString()], 'logo', logo);
   }
   private async getPairs(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
@@ -3335,7 +3385,6 @@ export default class extends Vue {
             std: item[2].pairInfo.token1[2]
           });
         }
-        this.getTokenInfo(tokens);
       }
       if (
         item &&
@@ -3386,9 +3435,9 @@ export default class extends Vue {
             std: item[2].pairInfo.token1[2]
           });
         }
-        this.getTokenInfo(tokens);
       }
     });
+    this.getTokenInfo(tokens);
   }
   private async getPoolInfo(
     pool: string,

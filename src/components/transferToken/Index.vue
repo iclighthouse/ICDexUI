@@ -2,7 +2,7 @@
   <a-modal
     v-model="visibleTransfer"
     centered
-    :title="type + ' ' + currentToken.symbol"
+    :title="isWallets ? '' : type + ' ' + currentToken.symbol"
     width="550px"
     :footer="null"
     :keyboard="false"
@@ -11,6 +11,30 @@
     :after-close="afterClose"
     :z-index="1400"
   >
+    <ul v-if="isWallets" class="withdraw-token-list">
+      <li
+        v-if="currentPair && currentToken && currentToken.canisterId"
+        :class="{
+          active:
+            currentToken.canisterId.toString() ===
+            currentPair[1][0].token0[0].toString()
+        }"
+        @click="changeDepositToken(true)"
+      >
+        Deposit {{ currentPair[1][0].token0[1] }}
+      </li>
+      <li
+        v-if="currentPair && currentToken && currentToken.canisterId"
+        :class="{
+          active:
+            currentToken.canisterId.toString() ===
+            currentPair[1][0].token1[0].toString()
+        }"
+        @click="changeDepositToken(false)"
+      >
+        Deposit {{ currentPair[1][0].token1[1] }}
+      </li>
+    </ul>
     <a-form-model
       :model="transferForm"
       ref="transferForm"
@@ -111,6 +135,7 @@ import wicpIdl from '@/ic/wicp/wicp.did';
 import store from '@/store';
 import { isInfinity } from '@/ic/isInfinity';
 import { validateAccount } from '@/ic/utils';
+import { DePairs } from '@/views/home/ICDex/model';
 
 const OGYTokenId = 'jwcfb-hyaaa-aaaaj-aac4q-cai';
 const ProSubaccountId = 1;
@@ -124,6 +149,10 @@ export default class extends Vue {
   private identity!: Identity;
   @Prop({ type: String, default: 'Transfer' })
   public type!: string;
+  @Prop({ type: Boolean, default: false })
+  public isWallets!: boolean;
+  @Prop({ type: Array, default: () => [] })
+  public currentPair!: DePairs;
   public currentToken: AddTokenItem = new AddTokenItemClass();
   public subaccountId = 0;
   private DRC20TokenService: DRC20TokenService;
@@ -333,6 +362,9 @@ export default class extends Vue {
         this.fee = new BigNumber(this.fee).times(2).toString(10);
       }
     }
+  }
+  private changeDepositToken(isToken0 = true): void {
+    this.$emit('changeDepositToken', this.currentPair, isToken0);
   }
   private setMaxBalance(): void {
     let max = new BigNumber(this.currentToken.balance).minus(this.fee);
@@ -707,6 +739,22 @@ export default class extends Vue {
     margin-left: auto;
     color: #1996c4;
     cursor: pointer;
+  }
+}
+.withdraw-token-list {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  margin: 50px 0 20px;
+  li {
+    margin-right: 20px;
+    padding-bottom: 10px;
+    cursor: pointer;
+    color: #adb3c4;
+    border-bottom: 1px solid transparent;
+    &.active {
+      border-color: #51b7c3;
+    }
   }
 }
 </style>

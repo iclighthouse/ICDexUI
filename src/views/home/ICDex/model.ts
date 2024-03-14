@@ -25,7 +25,11 @@ export enum TradeCompetitionsEnum {
   Referral = 'Referral'
   // Competitions = 'Competitions'
 }
-export type TradeCompetitionsMenu = 'Pools' | 'Info' | 'Referral' | 'Competitions';
+export type TradeCompetitionsMenu =
+  | 'Pools'
+  | 'Info'
+  | 'Referral'
+  | 'Competitions';
 
 export enum OrderTypeEnum {
   LMT = 'LMT',
@@ -79,3 +83,15 @@ export enum NFTRole {
   CreateMaker = 'CreateMaker',
   ListingReferrer = 'ListingReferrer'
 }
+export type TraderAccountsType = {
+  [key: string]: {
+    token0: {
+      available: string;
+      locked: string;
+    };
+    token1: {
+      available: string;
+      locked: string;
+    };
+  };
+};

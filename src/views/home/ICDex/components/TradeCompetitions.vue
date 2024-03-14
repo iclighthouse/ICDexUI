@@ -1728,7 +1728,7 @@ export default class extends Vue {
           }
         } catch (e) {
           console.log(e);
-          this.$message.success('Error');
+          this.$message.error('Error');
         }
         this.ta_getReferrer();
         loading.close();

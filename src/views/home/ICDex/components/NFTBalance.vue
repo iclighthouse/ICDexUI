@@ -97,6 +97,12 @@
             ICL to create a Private OAMM pool.
           </p>
         </div>
+        <div v-if="type === 'BecomeVipMaker'">
+          You grant vip-maker status to an account through ICLighthouse NEPTUNE
+          NFT, then the account will have Maker rebate (rebate = 90%), and if
+          the account is an OAMM Pool, it will be eligible to create and update
+          grid orders without ICL fees.
+        </div>
         <p class="flex-center base-color-w mt20">
           NFTs:
           <span

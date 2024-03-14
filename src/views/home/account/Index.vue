@@ -43,14 +43,60 @@
           @addTokenSuccess="addTokenSuccess"
         ></ledger>
       </div>
+      <ul class="flex-center base-color-w wallet-header-menu">
+        <li
+          v-for="item in walletMenu"
+          :key="item.value"
+          :class="{ active: currentWalletMenu === item.value }"
+          @click="changeWalletMenu(item.value)"
+        >
+          {{ item.name }}
+        </li>
+      </ul>
       <div class="wallet-item">
-        <p class="base-title-size">IC network</p>
+        <p class="base-title-size flex-center">
+          IC network
+          <span
+            v-show="currentWalletMenu === 'proWallet'"
+            class="
+              flex-center
+              base-tip-size
+              margin-left-auto
+              base-font-title
+              pc-show
+            "
+            style="display: flex"
+          >
+            subaccount:&nbsp;<copy-account
+              account="0000000000000000000000000000000000000000000000000000000000000001"
+              copyText="Subaccount"
+              :front="64"
+            ></copy-account>
+          </span>
+          <span
+            v-show="currentWalletMenu === 'proWallet'"
+            class="
+              flex-center
+              base-tip-size
+              margin-left-auto
+              base-font-title
+              h5-show
+            "
+          >
+            subaccount:&nbsp;<copy-account
+              account="0000000000000000000000000000000000000000000000000000000000000001"
+              copyText="Subaccount"
+            ></copy-account>
+          </span>
+        </p>
         <ledger
           :identity="getIdentity"
           :principal="getPrincipalId"
+          :wallet-menu="currentWalletMenu"
           type="ic"
           ref="ledger"
           @topUpSuccess="topUpSuccess"
+          @showTraderAccounts="showTraderAccounts"
         ></ledger>
         <div class="ic-token-item">
           <p class="wallet-title token-title">
@@ -68,13 +114,22 @@
                 class="reload-icon"
               />
             </span>
+            <button
+              style="margin-left: auto"
+              type="button"
+              @click="showTraderAccounts"
+            >
+              TraderAccounts
+            </button>
             <button type="button" @click="onAddToken">Add Token</button>
           </p>
           <div class="wallet-item-table">
             <added-tokens
               :principal="getPrincipalId"
+              :wallet-menu="currentWalletMenu"
               ref="addedTokens"
               :identity="getIdentity"
+              @showTraderAccounts="showTraderAccounts"
             ></added-tokens>
           </div>
         </div>
@@ -299,6 +354,303 @@
         </button>
       </div>
     </div>
+    <a-modal
+      v-model="traderAccountsModal"
+      width="90%"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
+    >
+      <a-spin :spinning="spinning">
+        <table style="margin-top: 40px">
+          <thead>
+            <tr>
+              <th>Pair</th>
+              <th>Canister-id</th>
+              <th>Token0 Balance</th>
+              <th>Token1 Balance</th>
+              <th>Operations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(item, index) in pairList.slice(
+                (pairListPage - 1) * 10,
+                pairListPage * 10
+              )"
+              :key="index"
+            >
+              <td>{{ item[1][0].token0[1] }}/{{ item[1][0].token1[1] }}</td>
+              <td>
+                <copy-account
+                  :account="item[1][0].canisterId.toString()"
+                  copyText="Canister ID"
+                ></copy-account>
+              </td>
+              <td>
+                <dl>
+                  <dt>
+                    <span class="balance-left">Available:</span>
+                    <span v-show="currentWalletMenu === 'wallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token0[0].toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token0 &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.available
+                        "
+                      >
+                        {{
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.available
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token0[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                    <span v-show="currentWalletMenu === 'proWallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token0[0].toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token0 &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.available
+                        "
+                      >
+                        {{
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.available
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token0[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                  </dt>
+                  <dd>
+                    <span class="balance-left">Locked:</span>
+                    <span v-show="currentWalletMenu === 'wallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token0[0].toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token0 &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.locked
+                        "
+                      >
+                        {{
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.locked
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token0[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                    <span v-show="currentWalletMenu === 'proWallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token0[0].toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token0 &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.locked
+                        "
+                      >
+                        {{
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token0.locked
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token0[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                  </dd>
+                </dl>
+              </td>
+              <td>
+                <dl>
+                  <dt>
+                    <span class="balance-left">Available:</span>
+                    <span v-show="currentWalletMenu === 'wallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token1[0].toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token1 &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.available
+                        "
+                      >
+                        {{
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.available
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token1[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                    <span v-show="currentWalletMenu === 'proWallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token1[0].toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token1 &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.available
+                        "
+                      >
+                        {{
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.available
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token1[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                  </dt>
+                  <dd>
+                    <span class="balance-left">Locked:</span>
+                    <span v-show="currentWalletMenu === 'wallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token1[0].toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()] &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token1 &&
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.locked
+                        "
+                      >
+                        {{
+                          mainTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.locked
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token1[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                    <span v-show="currentWalletMenu === 'proWallet'">
+                      <span
+                        v-if="
+                          tokens &&
+                          tokens[item[1][0].token1[0].toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()] &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token1 &&
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.locked
+                        "
+                      >
+                        {{
+                          proTokensBalance[item[1][0].canisterId.toString()]
+                            .token1.locked
+                            | bigintToFloat(
+                              8,
+                              tokens[item[1][0].token1[0].toString()].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                      <span v-else>-</span>
+                    </span>
+                  </dd>
+                </dl>
+              </td>
+              <td class="operation-td">
+                <div class="operation">
+                  <span
+                    class="operation-name pointer"
+                    @click="onWithdraw(item)"
+                  >
+                    Withdraw
+                  </span>
+                  <span
+                    :class="{ disabled: !item[2].main }"
+                    class="operation-name"
+                    @click="onDepositKeepingBalance(item)"
+                  >
+                    Deposit
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="nft-main-pagination">
+          <a-pagination
+            v-if="pairList.length > 10"
+            class="pagination"
+            :defaultPageSize="10"
+            :current="pairListPage"
+            :total="pairList.length"
+            @change="pairListPageChange"
+          />
+        </div>
+      </a-spin>
+    </a-modal>
+    <withdraw-token
+      ref="withdrawToken"
+      :current-pair="currentPair"
+      :is-wallets="true"
+      @withdrawSuccess="withdrawSuccess"
+      @changeWithdrawToken="onWithdraw"
+    >
+    </withdraw-token>
+    <transfer-token
+      :current-token="currentToken"
+      :current-pair="currentPair"
+      :is-wallets="true"
+      ref="transferToken"
+      type="Deposit"
+      transferButton="Deposit"
+      @transferTokenSuccess="transferTokenSuccess"
+      @changeDepositToken="changeDepositToken"
+    ></transfer-token>
   </div>
 </template>
 
@@ -317,6 +669,7 @@ import {
   validatePrincipal
 } from '@/ic/utils';
 import {
+  fromSubAccountId,
   getTokenIdentifier,
   principalToAccountIdentifier
 } from '@/ic/converter';
@@ -332,7 +685,7 @@ import {
   recoverTypedSignature,
   SignTypedDataVersion
 } from '@metamask/eth-sig-util';
-import { PrincipalString } from '@/ic/common/icType';
+import { PrincipalString, TokenInfo } from '@/ic/common/icType';
 import Identicon from 'identicon.js';
 import { manageAddressBook } from '@/ic/manageAddressBook';
 import { validateCanister, validateCanisterOrAccount } from '@/utils/validate';
@@ -365,14 +718,29 @@ import ConnectInfinity, {
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
 import { ckETHMinterService } from '@/ic/ckETHMinter/ckETHMinterService';
+import {
+  SwapTokenInfo,
+  TrieListData,
+  TrieListData1
+} from '@/ic/ICSwapRouter/model';
+import { DePairs, TraderAccountsType } from '@/views/home/ICDex/model';
+import { getTokenInfo } from '@/ic/getTokenInfo';
+import { AddTokenItem, AddTokenItemClass } from '@/views/home/account/model';
+import { ICDexService } from '@/ic/ICDex/ICDexService';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
+import WithdrawToken from '@/components/withdrawToken/Index.vue';
+import TransferToken from '@/components/transferToken/Index.vue';
+import { getFee } from '@/ic/getTokenFee';
+import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { PairTokenStdMenu } from '@/views/home/ICSwap/model';
+import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
+import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 // const plugIc = (window as any).ic;
 
 const commonModule = namespace('common');
 let ethereum = (window as any).ethereum;
 if (ethereum && ethereum.providers) {
-  ethereum = ethereum.providers.find(
-    (provider) => provider.isMetaMask
-  );
+  ethereum = ethereum.providers.find((provider) => provider.isMetaMask);
 }
 
 @Component({
@@ -381,7 +749,9 @@ if (ethereum && ethereum.providers) {
     CyclesWallet,
     Ledger,
     CreateWallet,
-    AddedTokens
+    AddedTokens,
+    WithdrawToken,
+    TransferToken
   }
 })
 export default class extends Mixins(BalanceMixin) {
@@ -454,6 +824,30 @@ export default class extends Mixins(BalanceMixin) {
     MetaMask: require('@/assets/img/MetaMask.png'),
     'Internet Identity': require('@/assets/img/dfinity.png')
   };
+  private walletMenu = [
+    {
+      value: 'wallet',
+      name: 'Main-Wallet'
+    },
+    {
+      value: 'proWallet',
+      name: 'Pro-Wallet'
+    }
+  ];
+  private ICSwapRouterService: ICSwapRouterFiduciaryService;
+  private ICDexService: ICDexService;
+  private tokens: { [key: string]: TokenInfo } = {};
+  private pairList: Array<[...TrieListData, { main: boolean; pro: boolean }]> =
+    [];
+  private currentPair: DePairs = null;
+  private mainTokensBalance: TraderAccountsType = {};
+  private proTokensBalance: TraderAccountsType = {};
+  private pairListPage = 1;
+  private traderAccountsModal = false;
+  private spinning = false;
+  private isToken0 = true;
+  private currentToken: AddTokenItem = null;
+  private currentWalletMenu: 'wallet' | 'proWallet' = 'wallet';
   get identiconImg(): string {
     if (this.account) {
       return (
@@ -467,11 +861,15 @@ export default class extends Mixins(BalanceMixin) {
     this.ckETHMinterService = new ckETHMinterService();
     this.walletService = new WalletService();
     this.NftService = new NftService();
+    this.ICSwapRouterService = new ICSwapRouterFiduciaryService();
+    this.ICDexService = new ICDexService();
+    this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const principal = localStorage.getItem('principal');
     if ((window as any).icx) {
       this.isIcx = !!(window as any).icx;
-      EventBus.$on('initSuccess', () => {
+      EventBus.$on('initSuccess', async () => {
+        await this.getPairs();
         this.init();
       });
       if (principal) {
@@ -493,6 +891,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
     if (principal) {
+      await this.getPairs();
       this.init();
     }
   }
@@ -502,6 +901,553 @@ export default class extends Mixins(BalanceMixin) {
     // this.getEthConnect();
     this.openNotification();
     this.getTokensExt();
+  }
+  private changeDepositToken(pair, isToken0): void {
+    this.onDepositKeepingBalance(pair, isToken0);
+  }
+  private onDepositKeepingBalance(
+    pair: [...TrieListData, { main: boolean; pro: boolean }],
+    isToken0 = true
+  ): void {
+    this.currentToken = null;
+    this.currentPair = [pair[0], pair[1]];
+    this.isToken0 = isToken0;
+    let subaccount = new Uint8Array(fromSubAccountId(0));
+    if (this.currentWalletMenu === 'proWallet') {
+      subaccount = new Uint8Array(fromSubAccountId(1));
+    }
+    const currentAddress = principalToAccountIdentifier(
+      Principal.fromText(this.getPrincipalId),
+      subaccount
+    );
+    let std = Object.keys(pair[1][0].token0[2])[0];
+    if (!isToken0) {
+      std = Object.keys(pair[1][0].token1[2])[0];
+    }
+    let tokenId = pair[1][0].token0[0].toString();
+    if (!isToken0) {
+      tokenId = pair[1][0].token1[0].toString();
+    }
+    const currentToken = new AddTokenItemClass();
+    let standard;
+    if (std.toLocaleLowerCase() === 'drc20') {
+      standard = 'DRC20';
+    } else if (std.toLocaleLowerCase() === 'icrc1') {
+      standard = 'ICRC-1';
+    } else if (
+      std.toLocaleLowerCase() === 'icrc2' ||
+      std.toLocaleLowerCase() === 'icp'
+    ) {
+      standard = 'ICRC-2';
+    } else {
+      return;
+    }
+    const decimals = this.tokens[tokenId].decimals;
+    this.currentToken = Object.assign(currentToken, {
+      balance: '',
+      canisterId: Principal.fromText(tokenId),
+      decimals: decimals,
+      name: this.tokens[tokenId].name,
+      symbol: this.tokens[tokenId].symbol,
+      standard: standard
+    });
+    console.log(this.currentToken);
+    (this.$refs as any).transferToken.transferForm.to =
+      this.currentPair[0] + '.' + currentAddress;
+    if (this.currentWalletMenu === 'proWallet') {
+      (this.$refs as any).transferToken.init(this.currentToken, 1);
+    } else {
+      (this.$refs as any).transferToken.init(this.currentToken);
+    }
+  }
+  private async transferTokenSuccess(
+    amount: string,
+    loading,
+    subAccountId: number
+  ): Promise<void> {
+    // Need Approve
+    let tokenInfo: SwapTokenInfo;
+    if (this.isToken0) {
+      tokenInfo = this.currentPair[1][0].token0;
+    } else {
+      tokenInfo = this.currentPair[1][0].token1;
+    }
+    let allowance = BigInt(0);
+    if (subAccountId === 0) {
+      allowance = await this.allowance(tokenInfo, this.currentPair);
+    } else if (subAccountId === 1) {
+      allowance = await this.allowance(
+        tokenInfo,
+        this.currentPair,
+        subAccountId
+      );
+    }
+    const std = Object.keys(tokenInfo[2])[0];
+    let needApprove = new BigNumber(amount)
+      .plus(getFee(this.tokens[tokenInfo[0].toString()]).toString(10))
+      .toString(10);
+    // todo approve
+    needApprove = new BigNumber(amount)
+      .plus(getFee(this.tokens[tokenInfo[0].toString()]).toString(10))
+      .plus(getFee(this.tokens[tokenInfo[0].toString()]).toString(10))
+      .toString(10);
+    if (
+      (std.toLocaleLowerCase() === 'drc20' ||
+        std.toLocaleLowerCase() === 'icrc2' ||
+        std.toLocaleLowerCase() === 'icp') &&
+      new BigNumber(allowance.toString(10)).lt(needApprove)
+    ) {
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
+      await this.approve(
+        BigInt(needApprove),
+        tokenInfo[0].toString(),
+        this.currentPair,
+        address,
+        Object.keys(tokenInfo[2])[0],
+        subAccountId
+      );
+    }
+    this.depositSuccess(amount, loading, true, subAccountId);
+  }
+  private async approve(
+    amount: bigint,
+    tokenId: string,
+    currentPair: DePairs,
+    address: string,
+    tokenStd: string,
+    subAccountId = 0
+  ): Promise<boolean> {
+    const principal = localStorage.getItem('principal');
+    if (principal) {
+      const currentAddress = principalToAccountIdentifier(
+        Principal.fromText(principal)
+      );
+      if (currentAddress !== address) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+    const spender = Principal.fromText(currentPair[0].toString());
+    const currentDrc20Token = new DRC20TokenService();
+    if (tokenStd.toLocaleLowerCase() === PairTokenStdMenu.dip20) {
+      try {
+        const res = await currentDrc20Token.approve(tokenId, spender, amount);
+        if (
+          (
+            res as {
+              Ok: bigint;
+            }
+          ).Ok
+        ) {
+          // this.tokenAllowance[currentPair[0].toString()][tokenId] = amount;
+          return true;
+        } else {
+          const err = Object.keys(
+            (
+              res as {
+                Err: TxReceiptErr;
+              }
+            ).Err
+          )[0];
+          this.$message.error(err);
+          return false;
+        }
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    } else if (
+      tokenStd.toLocaleLowerCase() === PairTokenStdMenu.icrc2 ||
+      tokenStd.toLocaleLowerCase() === PairTokenStdMenu.icp
+    ) {
+      try {
+        const res = await currentDrc20Token.icrc2_approve(
+          tokenId,
+          {
+            owner: spender,
+            subaccount: []
+          },
+          amount,
+          [fromSubAccountId(subAccountId)]
+        );
+        if (
+          (
+            res as {
+              Ok: bigint;
+            }
+          ).Ok
+        ) {
+          // this.tokenAllowance[currentPair[0].toString()][tokenId] = amount;
+          return true;
+        } else {
+          const err = Object.keys(
+            (
+              res as {
+                Err: ApproveError;
+              }
+            ).Err
+          )[0];
+          this.$message.error(err);
+          return false;
+        }
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    } else {
+      try {
+        const res = await currentDrc20Token.drc20Approve(
+          amount,
+          [],
+          spender.toString(),
+          [],
+          subAccountId,
+          tokenId
+        );
+        if (
+          (
+            res as {
+              ok: Txid;
+            }
+          ).ok
+        ) {
+          // this.tokenAllowance[currentPair[0].toString()][tokenId] = amount;
+          return true;
+        } else {
+          this.$message.error((res as TxnResultErr).err.message);
+          return false;
+        }
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    }
+  }
+  private async allowance(
+    tokenInfo: SwapTokenInfo,
+    currentPair: DePairs,
+    subaccountId = 0
+  ): Promise<bigint> {
+    const tokenStd = Object.keys(tokenInfo[2])[0];
+    const tokenId = tokenInfo[0].toString();
+    const currentPairId = currentPair[0].toString();
+    if (tokenStd === 'icrc1' || tokenStd === 'cycles') {
+      return BigInt(0);
+    }
+    const currentDrc20Token = new DRC20TokenService();
+    const spender = currentPairId;
+    const principal = localStorage.getItem('principal');
+    if (principal) {
+      let account = principalToAccountIdentifier(Principal.fromText(principal));
+      if (tokenStd === 'drc20') {
+        if (subaccountId === 1) {
+          account = principalToAccountIdentifier(
+            Principal.fromText(principal),
+            new Uint8Array(fromSubAccountId(subaccountId))
+          );
+        }
+        return await currentDrc20Token.drc20_allowance(
+          account,
+          spender,
+          tokenId
+        );
+      } else if (tokenStd === 'dip20') {
+        return await currentDrc20Token.allowance(
+          tokenId,
+          Principal.fromText(principal),
+          Principal.fromText(currentPairId)
+        );
+      } else if (
+        tokenStd === 'icrc2' ||
+        tokenStd.toLocaleLowerCase() === 'icp'
+      ) {
+        let subaccount = [];
+        if (subaccountId === 1) {
+          subaccount = [fromSubAccountId(subaccountId)];
+        }
+        const res = await currentDrc20Token.icrc2_allowance(tokenId, {
+          account: {
+            owner: Principal.fromText(principal),
+            subaccount: subaccount
+          },
+          spender: {
+            owner: Principal.fromText(currentPairId),
+            subaccount: []
+          }
+        });
+        return res.allowance;
+      }
+    }
+  }
+  private async depositSuccess(
+    amount: string,
+    loading,
+    isToken = true,
+    subAccountId: number
+  ): Promise<void> {
+    let token;
+    if (this.isToken0) {
+      token = { token0: null };
+    } else {
+      token = { token1: null };
+    }
+    const address = principalToAccountIdentifier(
+      Principal.from(this.getPrincipalId)
+    );
+    await this.deposit(
+      address,
+      this.currentPair,
+      token,
+      BigInt(amount),
+      subAccountId
+    );
+    this.setTokenBalance(this.currentPair[1][0].canisterId.toString());
+    this.setTokenBalance(this.currentPair[1][0].canisterId.toString(), 1);
+    this.$refs.addedTokens.init();
+    if (isToken) {
+      (this.$refs as any).transferToken.visibleTransfer = false;
+    } else {
+      (this.$refs as any).transferIcp.visibleTransfer = false;
+    }
+    loading.close();
+    this.$message.success('Deposit Success');
+  }
+  private async deposit(
+    address: string,
+    currentPair: DePairs,
+    token: { token0: null } | { token1: null },
+    amount: bigint,
+    subAccount = 0
+  ): Promise<void | string> {
+    const principal = localStorage.getItem('principal');
+    if (principal) {
+      const currentAddress = principalToAccountIdentifier(
+        Principal.fromText(principal)
+      );
+      if (currentAddress !== address) {
+        return 'ErrAddress';
+      }
+    } else {
+      return 'ErrAddress';
+    }
+    console.time('deposit');
+    console.log(token);
+    console.log('amount: ' + amount);
+    const dexId = currentPair[0].toString();
+    await this.ICDexService.deposit(dexId, token, amount, subAccount);
+    console.timeEnd('deposit');
+  }
+  private showTraderAccounts(): void {
+    this.pairListPage = 1;
+    this.getTokenBalance();
+    this.traderAccountsModal = true;
+  }
+  private async getPairs(): Promise<void> {
+    const res = await this.ICSwapRouterService.getPairs(['icdex']);
+    if (res && res.data) {
+      const pairList = (res.data as Array<TrieListData1>).sort(
+        (a: TrieListData1, b: TrieListData1) =>
+          new BigNumber(b[1].score1.toString(10))
+            .plus(b[1].score2.toString(10))
+            .plus(b[1].score3.toString(10))
+            .minus(a[1].score1.toString(10))
+            .minus(a[1].score2.toString(10))
+            .minus(a[1].score3.toString(10))
+            .toNumber()
+      );
+      const pairs = [];
+      pairList.forEach((pair) => {
+        const score = BigInt(
+          new BigNumber(pair[1].score1.toString(10))
+            .plus(pair[1].score2.toString(10))
+            .plus(pair[1].score3.toString(10))
+            .toString(10)
+        );
+        const newPair = Object.assign({}, { ...pair[1] }, { ...pair[1].pair });
+        const currentPair: [...TrieListData, { main: boolean; pro: boolean }] =
+          [pair[0], [newPair, score], { main: false, pro: false }];
+        const mainAccount = this.getPrincipalId;
+        this.ICDexService.accountSetting(
+          pair[1].pair.canisterId.toString(),
+          mainAccount
+        ).then((res) => {
+          this.$set(
+            currentPair[2],
+            'main',
+            res.accountSetting.enKeepingBalance
+          );
+        });
+        const proAccount = principalToAccountIdentifier(
+          Principal.fromText(this.getPrincipalId),
+          new Uint8Array(fromSubAccountId(1))
+        );
+        this.ICDexService.accountSetting(
+          pair[1].pair.canisterId.toString(),
+          proAccount
+        ).then((res) => {
+          this.$set(currentPair[2], 'pro', res.accountSetting.enKeepingBalance);
+        });
+        this.pairList.push(currentPair);
+        const token0 = pair[1].pair.token0[0].toString();
+        const token0Std = pair[1].pair.token0[2];
+        const token1 = pair[1].pair.token1[0].toString();
+        const token1Std = pair[1].pair.token1[2];
+        if (!pairs.includes(token0)) {
+          pairs.push(token0);
+          if (!this.tokens[token0]) {
+            getTokenInfo(Principal.fromText(token0), token0Std).then((info) => {
+              this.$set(this.tokens, token0, info);
+            });
+          }
+        }
+        if (!pairs.includes(token1)) {
+          pairs.push(token1);
+          if (!this.tokens[token1]) {
+            getTokenInfo(Principal.fromText(token1), token1Std).then((info) => {
+              this.$set(this.tokens, token1, info);
+            });
+          }
+        }
+      });
+      this.getTokenBalance();
+    } else {
+      this.pairList = [];
+    }
+    console.log(this.pairList);
+  }
+  private async getTokenBalance(): Promise<void> {
+    this.spinning = true;
+    const currentPairs = this.pairList.slice(
+      (this.pairListPage - 1) * 10,
+      this.pairListPage * 10
+    );
+    const promiseValue = [];
+    currentPairs.forEach((pair) => {
+      promiseValue.push(
+        this.setTokenBalance(pair[1][0].canisterId.toString()),
+        this.setTokenBalance(pair[1][0].canisterId.toString(), 1)
+      );
+    });
+    await Promise.all(promiseValue);
+    this.spinning = false;
+    console.log(this.mainTokensBalance);
+    console.log(this.proTokensBalance);
+  }
+  private onWithdraw(pair, isToken0 = true): void {
+    let subaccountId = 0;
+    let tokenId = pair[1][0].token0[0].toString();
+    if (!isToken0) {
+      tokenId = pair[1][0].token1[0].toString();
+    }
+    const decimals = this.tokens[tokenId].decimals;
+    let balance = new BigNumber(
+      this.mainTokensBalance[pair[1][0].canisterId.toString()].token0.available
+    )
+      .div(10 ** decimals)
+      .toString(10);
+    if (!isToken0) {
+      balance = new BigNumber(
+        this.mainTokensBalance[
+          pair[1][0].canisterId.toString()
+        ].token1.available
+      )
+        .div(10 ** decimals)
+        .toString(10);
+    }
+    if (this.currentWalletMenu === 'proWallet') {
+      subaccountId = 1;
+      balance = new BigNumber(
+        this.proTokensBalance[pair[1][0].canisterId.toString()].token0.available
+      )
+        .div(10 ** decimals)
+        .toString(10);
+      if (!isToken0) {
+        balance = new BigNumber(
+          this.proTokensBalance[
+            pair[1][0].canisterId.toString()
+          ].token1.available
+        )
+          .div(10 ** decimals)
+          .toString(10);
+      }
+    }
+    let std = Object.keys(pair[1][0].token0[2])[0];
+    if (!isToken0) {
+      std = Object.keys(pair[1][0].token1[2])[0];
+    }
+    let standard;
+    if (std.toLocaleLowerCase() === 'icp') {
+      standard = 'ICP';
+    } else if (std.toLocaleLowerCase() === 'drc20') {
+      standard = 'DRC20';
+    } else if (std.toLocaleLowerCase() === 'icrc1') {
+      standard = 'ICRC-1';
+    } else if (std.toLocaleLowerCase() === 'icrc2') {
+      standard = 'ICRC-2';
+    } else {
+      return;
+    }
+    const currentToken = Object.assign(new AddTokenItemClass(), {
+      balance: balance,
+      canisterId: tokenId,
+      decimals: decimals,
+      name: this.tokens[tokenId].name,
+      symbol: this.tokens[tokenId].symbol,
+      standard: standard
+    });
+    this.currentPair = pair;
+    (this.$refs as any).withdrawToken.init(
+      currentToken,
+      isToken0,
+      subaccountId
+    );
+  }
+  private async withdrawSuccess(): Promise<void> {
+    this.setTokenBalance(this.currentPair[1][0].canisterId.toString());
+    this.setTokenBalance(this.currentPair[1][0].canisterId.toString(), 1);
+    this.$refs.addedTokens.init();
+  }
+  private async setTokenBalance(
+    pairId: string,
+    subaccountId = 0
+  ): Promise<void> {
+    const currentICDexService = new ICDexService();
+    const res = await currentICDexService.accountBalance(pairId, subaccountId);
+    if (res) {
+      if (subaccountId === 0) {
+        this.$set(this.mainTokensBalance, pairId, {
+          token0: {
+            available: res.keepingBalance.token0.available.toString(10),
+            locked: res.keepingBalance.token0.locked.toString(10)
+          },
+          token1: {
+            available: res.keepingBalance.token1.available.toString(10),
+            locked: res.keepingBalance.token1.locked.toString(10)
+          }
+        });
+      } else if (subaccountId === 1) {
+        this.$set(this.proTokensBalance, pairId, {
+          token0: {
+            available: res.keepingBalance.token0.available.toString(10),
+            locked: res.keepingBalance.token0.locked.toString(10)
+          },
+          token1: {
+            available: res.keepingBalance.token1.available.toString(10),
+            locked: res.keepingBalance.token1.locked.toString(10)
+          }
+        });
+      }
+    }
+  }
+  private changeWalletMenu(menu: 'wallet' | 'proWallet'): void {
+    this.currentWalletMenu = menu;
+  }
+  private pairListPageChange(page: number): void {
+    this.pairListPage = page;
+    this.getTokenBalance();
   }
   private pageChange(page: number): void {
     this.extPage = page - 1;
@@ -1089,6 +2035,12 @@ export default class extends Mixins(BalanceMixin) {
         canisterIds.push(item[1].ckLedgerId.toString());
       }
     });
+    this.pairList.forEach((item) => {
+      const pair = item[1][0].canisterId.toString();
+      if (!canisterIds.includes(pair)) {
+        canisterIds.push(pair);
+      }
+    });
     canisterIds = [...new Set(canisterIds)];
     const flag = needConnectPlug(canisterIds);
     console.log(flag, this.$route);
@@ -1419,11 +2371,6 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
 }
-.token-title {
-  button {
-    margin-left: auto;
-  }
-}
 .no-wallet {
   width: 100%;
   text-align: center;
@@ -1503,7 +2450,56 @@ export default class extends Mixins(BalanceMixin) {
   padding-top: 20px;
   border-top: 1px solid #383e4e;
 }
+.wallet-header-menu {
+  margin-bottom: 10px;
+  font-size: 20px;
+  li {
+    margin-right: 20px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+    &.active {
+      border-color: #51b7c3;
+    }
+  }
+}
+.operation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 120px;
+  color: #1996c4;
+  i {
+    margin-right: 5px;
+    font-size: 12px;
+  }
+  .operation-name {
+    margin-right: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    &.disabled {
+      color: #adb3c4;
+      cursor: not-allowed;
+    }
+  }
+}
+.balance-left {
+  display: inline-block;
+  width: 62px;
+}
+.pc-show {
+  display: block;
+}
+.h5-show {
+  display: none;
+}
 @media screen and (max-width: 768px) {
+  .pc-show {
+    display: none;
+  }
+  .h5-show {
+    display: block;
+  }
   .wallet-main {
     margin-top: 20px;
     padding: 0 10px 20px 10px;

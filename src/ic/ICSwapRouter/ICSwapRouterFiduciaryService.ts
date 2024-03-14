@@ -73,7 +73,7 @@ export class ICSwapRouterFiduciaryService {
     page: Array<number> = [],
     size: Array<number> = []
   ): Promise<PairsTrieList> => {
-    await this.check();
+    await this.check(false, false);
     return await this.service.getPairs2(dexName, lr, page, size);
   };
   public listingReferrer = async (

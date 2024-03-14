@@ -453,16 +453,22 @@
       </div>
       <div>
         <div>
-          <span class="base-font-title">Conversion Ratio:</span>
-          <span class="base-color-w"
-            >&nbsp;
+          <span class="base-color-w">
             <span v-if="getConversionRatio">
-              <span v-if="filterState(currentToken) === 'Pending'">
+              <!--<span v-if="filterState(currentToken) === 'Pending'">
                 <span>
                   At least.
                   {{ getConversionRatio }} {{ currentToken.symbol }} per 1 ICP
                 </span>
-              </span>
+              </span>-->
+              <span
+                v-if="
+                  filterState(currentToken) === 'Open' ||
+                  filterState(currentToken) === 'Committed'
+                "
+                class="base-font-title"
+                >Conversion Ratio:&nbsp;</span
+              >
               <span
                 v-if="
                   filterState(currentToken) === 'Open' ||
@@ -474,8 +480,8 @@
                   {{ currentToken.buyersTotal | filterRatio(currentToken) }}
                   {{ currentToken.symbol }} per 1 ICP
                 </span>
-                (At least. {{ getConversionRatio }}
-                {{ currentToken.symbol }} per 1 ICP)
+                <!--(At least. {{ getConversionRatio }}
+                {{ currentToken.symbol }} per 1 ICP)-->
               </span>
               <span v-if="filterState(currentToken) === 'Committed'">
                 {{ currentToken.buyersTotal | filterRatio(currentToken) }}

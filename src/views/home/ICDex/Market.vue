@@ -112,7 +112,7 @@
                     <th class="text-right">Latest price</th>
                     <th class="text-right pointer" @click="onSort('24')">
                       <span class="sort-table-main">
-                        <span>24h %&nbsp;</span>
+                        <span>24h %</span>
                         <span class="sort-table">
                           <a-icon
                             :class="{ active: sortType === '24Up' }"
@@ -2098,10 +2098,10 @@ export default class extends Vue {
       value: 'Pools',
       path: '/ICDex/pools'
     },
-    // {
-    //   value: 'NFT',
-    //   path: '/ICDex/NFT'
-    // },
+    {
+      value: 'NFT',
+      path: '/ICDex/NFT'
+    },
     {
       value: 'Competitions',
       path: '/ICDex/competitions'

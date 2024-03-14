@@ -54,6 +54,8 @@ export default class ConnectPlug {
         });
       }
       store.commit('common/SET_IS_OPEN', true);
+      const identity = await plugIc.plug.agent._identity;
+      store.commit('common/SET_IDENTITY', identity);
       await this.setLocalStorage(whitelist);
       loading && loading.text && loading.close();
       return true;

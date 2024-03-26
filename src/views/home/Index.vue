@@ -110,14 +110,14 @@
         >
           <span>NFT</span>
         </li>
-        <!--<li
+        <li
           @click="changeMenu('Airdrop', '/Airdrop')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
           }"
         >
           <span>Airdrop</span>
-        </li>-->
+        </li>
         <li
           @click="changeMenu('dapps', '/dapps')"
           :class="{
@@ -221,7 +221,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.2
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.3
             </span>
           </span>
         </span>

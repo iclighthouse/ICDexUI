@@ -23,7 +23,7 @@
           <span v-for="pair in setting.pairs" :key="pair[0].toString()">
             <span v-if="pairs && pairs[pair[0].toString()]">
               <router-link
-                :to="`/icdex/${getDexRouter(pairs[pair[0].toString()])}`"
+                :to="`/ICDex/${getDexRouter(pairs[pair[0].toString()])}`"
               >
                 {{ getDexRouter(pairs[pair[0].toString()]) }} (weight:
                 {{ pair[1] | filterWeight }})
@@ -283,7 +283,7 @@
                 pairs[setting.pairs[0][0].toString()] &&
                 currentStep === 3
               "
-              to="/icdex"
+              to="/ICDex"
               >Go trading on ICDex.
             </router-link>
             <span v-show="currentStep !== 3">Go trading on ICDex.</span>
@@ -345,7 +345,7 @@
                 pairs[setting.pairs[0][0].toString()] &&
                 currentStep1 === 1
               "
-              to="/icdex"
+              to="/ICDex"
               >Go trading on ICDex.
             </router-link>
             <span v-show="currentStep1 !== 1">Go trading on ICDex.</span>

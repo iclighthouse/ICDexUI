@@ -83,7 +83,7 @@
               :key="index"
             >
               <router-link
-                :to="`/icdex/${item[1].token0[1]}/${item[1].token1[1]}`"
+                :to="`/ICDex/${item[1].token0[1]}/${item[1].token1[1]}`"
               >
                 {{ item[1].dexName }}:{{ item[1].token0[1] }}/{{
                   item[1].token1[1]
@@ -844,10 +844,6 @@ export default class extends Vue {
     {
       value: 'Pools',
       path: '/ICDex/pools'
-    },
-    {
-      value: 'NFT',
-      path: '/ICDex/NFT'
     },
     {
       value: 'Competitions',

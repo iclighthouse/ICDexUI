@@ -4,7 +4,7 @@
       v-model="visible"
       centered
       title="Launch a new trading pair"
-      width="676px"
+      width="800px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
@@ -12,20 +12,46 @@
       :after-close="afterClose"
     >
       <div>
-        <p class="base-font-title" style="font-size: 15px">Token Listing</p>
+        <p class="base-font-title" style="font-size: 15px">
+          Listing Your Token on ICDex: A Step-by-Step Process
+        </p>
         <div class="base-font-light" v-if="sysConfig">
-          Token listing is permissionless and anyone can spend
-          {{ sysConfig.creatingPairFee | bigintToFloat(8, 8) }} ICL to list an
-          ICRC1 or DRC20 token on ICDex. The pair's score is calculated from a
-          combination of volume, TVL, and the number of sponsors of the listing
-          referrer, which affects the ranking in the list.
-          <div>
-            In order to meet the requirement for transparency of the token's
-            transaction records, the token should implement the DRC202 standard,
-            or implemented the query method get_transactions. Otherwise it
-            cannot be listed on ICDex.
+          ICDex allows for permissionless listing, enabling anyone to list a
+          token, provided it meets specified principles and technical
+          requirements.
+          <div class="listing-main">
+            <div>
+              <span class="dots"></span>Development Completion: The core
+              functionality of the project must be fully developed and the code
+              open-sourced.
+            </div>
+            <div>
+              <span class="dots"></span>Whitepaper Disclosure: The project’s
+              whitepaper, detailing the economic model of the token, must be
+              publicly accessible.
+            </div>
+            <div>
+              <span class="dots"></span>Controller Assignment: The token’s
+              control must be vested in a DAO contract, or its controllers
+              removed, to avert malicious modifications or issuance.
+            </div>
+            <div>
+              <span class="dots"></span>Standard Compliance: Tokens must conform
+              to either the ICRC1 or DRC20 standards.
+            </div>
+            <div>
+              <span class="dots"></span>Transaction Transparency: Adherence to
+              the DRC202 standard or implementation of the get_transactions
+              query method (according to the SNS ICRC1 specification) is
+              required for transparent transaction records.
+            </div>
+            <div>
+              <span class="dots"></span>Additional Conditions for DeFi Projects:
+              Require the submission of an audit report conducted by a reputable
+              security firm. Transition the DApp’s controller to a DAO or SNS.
+            </div>
           </div>
-          <div class="base-warning">
+          <div style="margin-top: 10px" class="base-warning">
             WARNING: The creator may face constraints from the local legal
             framework, please verify that you are in compliance with local laws
             and do not commit fraud or other criminal activities through the
@@ -134,7 +160,7 @@ import { namespace } from 'vuex-class';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { readState } from '@/ic/readState';
 import { getCandidInterfaceTmpHack } from '@/ic/getCandidInterfaceTmpHack';
-import { toHttpError } from '@/ic/httpError';
+import { toHttpRejectError } from '@/ic/httpError';
 
 const commonModule = namespace('common');
 
@@ -559,7 +585,7 @@ export default class extends Vue {
           }
         } catch (e) {
           console.log(e);
-          this.$message.error(toHttpError(e).message);
+          this.$message.error(toHttpRejectError(e));
         }
         loading.close();
       }
@@ -625,6 +651,20 @@ export default class extends Vue {
   ::v-deep .ant-calendar-picker-clear {
     background: transparent;
     color: #adb3c4;
+  }
+}
+.dots {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-bottom: 1px;
+  margin-right: 5px;
+  border-radius: 3px;
+  background: #adb3c4;
+}
+.listing-main {
+  > div {
+    margin-top: 5px;
   }
 }
 </style>

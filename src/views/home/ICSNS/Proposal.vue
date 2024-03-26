@@ -150,11 +150,14 @@
               </div>
             </div>
             <div class="proposal-result-progress">
-              <div class="voting-least">
+              <div class="voting-least" :style="{ left: `${votingLeast}` }">
                 <a-icon type="down" />
                 <span></span>
               </div>
-              <div class="voting-least voting-absolute">
+              <div
+                class="voting-least voting-absolute"
+                :style="{ left: `${votingAbsolute}` }"
+              >
                 <a-icon type="caret-down" />
                 <span></span>
               </div>
@@ -292,22 +295,31 @@
           <div class="proposal-tip base-font-tip mt20">
             <div>There are two ways a proposal can be decided:</div>
             <div style="margin-top: 10px">
-              1.Absolute Majority: Before the voting period ends, a proposal is
-              adopted or rejected if an absolute majority (more than half of the
-              total voting power, indicated by
-              <a-icon type="caret-down" /> delimiter above) has voted Yes or No
-              on the proposal, respectively.
+              1.Immediate Majority Decision:
+              <span v-show="parseFloat(votingLeast) <= 3">
+                A proposal is immediately adopted or rejected if, before the
+                voting period ends, more than half of the total voting power
+                votes Yes, or at least half votes No, respectively (indicated by
+                <a-icon type="caret-down" />).
+              </span>
+              <span v-show="parseFloat(votingLeast) > 3">
+                A critical proposal is immediately adopted or rejected if,
+                before the voting period ends, more than {{ votingAbsolute }} of
+                the total voting power votes Yes, or at least
+                {{ votingLeast }} votes No, respectively (indicated by
+                <a-icon type="caret-down" />).
+              </span>
             </div>
             <div>
               2.Simple Majority: When the voting period ends, a proposal is
-              adopted if a simple majority (more than half of the votes cast)
-              has voted Yes and those votes constitute at least 3% of the total
-              voting power (indicated by <a-icon type="down" /> delimiter
-              above). Otherwise, the proposal is rejected. Before a proposal is
-              decided by Simple Majority, the voting period can be extended in
-              order to “wait for quiet”. Such voting period extensions occur
-              when a proposal’s voting results turn from either a Yes majority
-              to a No majority or vice versa.
+              adopted if a simple majority (more than {{ votingAbsolute }} of
+              the votes cast) has voted Yes and those votes constitute at least
+              {{ votingLeast }} of the total voting power (indicated by
+              <a-icon type="down" /> delimiter above). Otherwise, the proposal
+              is rejected. Before a proposal is decided by Simple Majority, the
+              voting period can be extended in order to “wait for quiet”. Such
+              voting period extensions occur when a proposal’s voting results
+              turn from either a Yes majority to a No majority or vice versa.
             </div>
           </div>
         </div>
@@ -523,6 +535,8 @@ export default class extends Vue {
   private votingList: Array<{ id: string; ballot: Ballot }> = [];
   private busy = true;
   private hasPath = '';
+  private votingLeast = '3%';
+  private votingAbsolute = '50%';
   get votingYes(): string {
     if (this.proposal) {
       const total = this.proposal.latest_tally[0].total;
@@ -690,10 +704,11 @@ export default class extends Vue {
   }
   private back(): void {
     if (
+      !this.hasPath ||
       this.hasPath === '/' ||
-      this.hasPath.includes('login') ||
-      this.hasPath.includes('sign') ||
-      this.hasPath.includes('error')
+      this.hasPath.toLocaleLowerCase().includes('login') ||
+      this.hasPath.toLocaleLowerCase().includes('sign') ||
+      this.hasPath.toLocaleLowerCase().includes('error')
     ) {
       this.$router.replace(
         `/icsns/proposals?id=${this.$route.params.tokenId.trim()}`
@@ -976,6 +991,38 @@ export default class extends Vue {
       }
     } catch (e) {
       console.log(e);
+    }
+    if (
+      this.proposal &&
+      this.proposal.minimum_yes_proportion_of_total &&
+      this.proposal.minimum_yes_proportion_of_total.length &&
+      this.proposal.minimum_yes_proportion_of_total[0].basis_points &&
+      this.proposal.minimum_yes_proportion_of_total[0].basis_points.length
+    ) {
+      this.votingLeast =
+        new BigNumber(
+          this.proposal.minimum_yes_proportion_of_total[0].basis_points[0].toString(
+            10
+          )
+        )
+          .div(100)
+          .toString(10) + '%';
+    }
+    if (
+      this.proposal &&
+      this.proposal.minimum_yes_proportion_of_exercised &&
+      this.proposal.minimum_yes_proportion_of_exercised.length &&
+      this.proposal.minimum_yes_proportion_of_exercised[0].basis_points &&
+      this.proposal.minimum_yes_proportion_of_exercised[0].basis_points.length
+    ) {
+      this.votingAbsolute =
+        new BigNumber(
+          this.proposal.minimum_yes_proportion_of_exercised[0].basis_points[0].toString(
+            10
+          )
+        )
+          .div(100)
+          .toString(10) + '%';
     }
   }
   private async getNeurons(

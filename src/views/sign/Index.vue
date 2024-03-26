@@ -90,6 +90,7 @@
               loginType !== 'Infinity' &&
               loginType !== 'MetaMask'
             "
+            type="button"
             class="primary large-primary large-primary form-button"
             @click="onSubmit"
             :disabled="spinning"
@@ -120,8 +121,8 @@
         you remember the mnemonic phrase.
       </div>
       <div class="reset-modal-bottom">
-        <button @click="resetModal = false">Cancel</button
-        ><button @click="reset">Reset</button>
+        <button type="button" @click="resetModal = false">Cancel</button
+        ><button type="button" @click="reset">Reset</button>
       </div>
     </a-modal>
     <switch-plug-account
@@ -341,48 +342,47 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       this.$router.replace('/login');
     }
   }
-  public onSubmit(): void {
+  public async onSubmit(): Promise<void> {
     this.spinning = true;
-    setTimeout(async () => {
-      try {
-        const principal = localStorage.getItem('principal');
-        const encryptIdentity = JSON.parse(
-          JSON.parse(localStorage.getItem('priList'))[principal]
-        );
-        let salt = 'ICLightHouse';
-        let data = encryptIdentity;
-        if (encryptIdentity.salt) {
-          salt = encryptIdentity.salt;
-          data = encryptIdentity.encryptIdentity;
-        }
-        const identityJson = await decrypt(data, this.password, salt);
-        let identity;
-        if (JSON.parse(identityJson)[1].length > 64) {
-          identity = Ed25519KeyIdentity.fromJSON(identityJson as string);
-        } else {
-          identity = Secp256k1KeyIdentity.fromJSON(identityJson as string);
-        }
-        this.setIdentity(identity);
-        localStorage.setItem('identity', localStorage.getItem('principal'));
-        // sessionStorage.setItem('identity', JSON.stringify(identity));
-        this.spinning = false;
-        this.setCheckAuth(false);
-        if (this.$route.query.redirect) {
-          this.$router.push(this.$route.query.redirect as any).catch(() => {
-            return;
-          });
-        } else {
-          this.$router.push('/account').catch(() => {
-            return;
-          });
-        }
-      } catch (e) {
-        this.spinning = false;
-        console.log(e);
-        this.$message.config({ top: '45%' });
-        this.$message.error("Password doesn't match");
+    try {
+      const principal = localStorage.getItem('principal');
+      const encryptIdentity = JSON.parse(
+        JSON.parse(localStorage.getItem('priList'))[principal]
+      );
+      let salt = 'ICLightHouse';
+      let data = encryptIdentity;
+      if (encryptIdentity.salt) {
+        salt = encryptIdentity.salt;
+        data = encryptIdentity.encryptIdentity;
       }
-    }, 20);
+      const identityJson = await decrypt(data, this.password, salt);
+      let identity;
+      if (JSON.parse(identityJson)[1].length > 64) {
+        identity = Ed25519KeyIdentity.fromJSON(identityJson as string);
+      } else {
+        identity = Secp256k1KeyIdentity.fromJSON(identityJson as string);
+      }
+      this.setIdentity(identity);
+      localStorage.setItem('identity', localStorage.getItem('principal'));
+      // sessionStorage.setItem('identity', JSON.stringify(identity));
+      this.spinning = false;
+      this.setCheckAuth(false);
+      console.log(this.$route.query.redirect);
+      if (this.$route.query.redirect) {
+        this.$router.push(this.$route.query.redirect as any).catch(() => {
+          return;
+        });
+      } else {
+        this.$router.push('/account').catch(() => {
+          return;
+        });
+      }
+    } catch (e) {
+      this.spinning = false;
+      console.log(e);
+      this.$message.config({ top: '45%' });
+      this.$message.error("Password doesn't match");
+    }
   }
 }
 </script>

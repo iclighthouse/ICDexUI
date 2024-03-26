@@ -197,13 +197,23 @@ export default class extends Vue {
       const listDeployedSnses = await this.SNSWasmService.listDeployedSnses();
       loading.close();
       let canisterIds: Array<string> = [];
-      listDeployedSnses.forEach((item) => {
+      let ICLIndex = null;
+      const ICLToken = 'hhaaz-2aaaa-aaaaq-aacla-cai';
+      listDeployedSnses.forEach((item, index) => {
+        if (item.ledger_canister_id.toString() === ICLToken) {
+          ICLIndex = index;
+        }
         canisterIds = canisterIds.concat([
           item.swap_canister_id.toString(),
           item.governance_canister_id.toString(),
           item.ledger_canister_id.toString()
         ]);
       });
+      if (typeof ICLIndex === 'number') {
+        const item = listDeployedSnses[ICLIndex];
+        listDeployedSnses.splice(ICLIndex, 1);
+        listDeployedSnses.unshift(item);
+      }
       canisterIds = [...new Set(canisterIds)];
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');

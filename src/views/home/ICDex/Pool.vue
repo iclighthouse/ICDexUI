@@ -183,7 +183,7 @@
               </span>
             </span>
             <span v-if="!pool[2] && isBusy" class="loading-spinner"> </span>
-            <span v-if="!pool[2] && !isBusy">0</span>
+            <span v-if="!pool[2] && !isBusy">-</span>
           </div>
         </div>
         <div class="pool-item-l pool-item-l-shares">
@@ -369,6 +369,10 @@
             </span>
           </div>
           <span v-if="!makerConfigure.ICTCAdmins.length">-</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px">
+          <span>Canister id: </span>
+          <span v-if="pool[0]">{{ pool[0] }}</span>
         </div>
         <div style="margin-top: 10px; font-size: 12px">
           <span>Creator: </span>
@@ -569,7 +573,7 @@
           </div>
           <div class="swap-button w100">
             <button
-              v-if="getPrincipalId"
+              v-if="getIdentity"
               :disabled="buttonDisabledRemove"
               class="primary large-primary w100"
               @click="onRemove"
@@ -858,7 +862,7 @@
           </div>
           <div class="swap-button w100">
             <button
-              v-if="getPrincipalId"
+              v-if="getIdentity"
               class="primary large-primary w100"
               :disabled="buttonDisabled"
               @click="onAdd"
@@ -985,7 +989,7 @@ const commonModule = namespace('common');
   filters: {
     stoUpdateFee(poFee1: bigint, decimals: number): string {
       return new BigNumber(poFee1.toString(10))
-        .times(0.2)
+        .times(0.05)
         .div(10 ** decimals)
         .toString(10);
     },
@@ -1019,10 +1023,6 @@ export default class extends Vue {
     {
       value: 'Pools',
       path: '/ICDex/pools'
-    },
-    {
-      value: 'NFT',
-      path: '/ICDex/NFT'
     },
     {
       value: 'Competitions',

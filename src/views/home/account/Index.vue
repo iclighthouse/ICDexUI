@@ -56,21 +56,22 @@
       <div class="wallet-item">
         <p class="base-title-size flex-center">
           IC network
+          <button
+            v-show="currentWalletMenu === 'wallet'"
+            type="button"
+            class="margin-left-auto"
+            @click="showTraderAccounts"
+          >
+            <span>TraderAccounts</span>
+          </button>
           <span
             v-show="currentWalletMenu === 'proWallet'"
-            class="
-              flex-center
-              base-tip-size
-              margin-left-auto
-              base-font-title
-              pc-show
-            "
-            style="display: flex"
+            class="flex-center base-tip-size base-font-title pc-show"
+            style="display: flex; margin-left: 10px"
           >
             subaccount:&nbsp;<copy-account
               account="0000000000000000000000000000000000000000000000000000000000000001"
               copyText="Subaccount"
-              :front="64"
             ></copy-account>
           </span>
           <span
@@ -88,6 +89,14 @@
               copyText="Subaccount"
             ></copy-account>
           </span>
+          <button
+            v-show="currentWalletMenu === 'proWallet'"
+            type="button"
+            class="margin-left-auto"
+            @click="showTraderAccounts"
+          >
+            <span>TraderAccounts</span>
+          </button>
         </p>
         <ledger
           :identity="getIdentity"
@@ -114,14 +123,9 @@
                 class="reload-icon"
               />
             </span>
-            <button
-              style="margin-left: auto"
-              type="button"
-              @click="showTraderAccounts"
-            >
-              TraderAccounts
+            <button style="margin-left: auto" type="button" @click="onAddToken">
+              Add Token
             </button>
-            <button type="button" @click="onAddToken">Add Token</button>
           </p>
           <div class="wallet-item-table">
             <added-tokens
@@ -368,7 +372,7 @@
           <thead>
             <tr>
               <th>Pair</th>
-              <th>Canister-id</th>
+              <th>Canister Id</th>
               <th>Token0 Balance</th>
               <th>Token1 Balance</th>
               <th>Operations</th>
@@ -610,7 +614,12 @@
                     Withdraw
                   </span>
                   <span
-                    :class="{ disabled: !item[2].main }"
+                    :class="{
+                      disabled:
+                        currentWalletMenu === 'wallet'
+                          ? !item[2].main
+                          : !item[2].pro
+                    }"
                     class="operation-name"
                     @click="onDepositKeepingBalance(item)"
                   >

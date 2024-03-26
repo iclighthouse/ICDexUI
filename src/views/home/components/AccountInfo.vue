@@ -153,6 +153,28 @@
         </a-menu-item>
         <a-menu-item
           class="user-setting-item"
+          @click="changeMenu('NFT', '/NFT')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
+          }"
+        >
+          <router-link to="/nft">
+            <span>NFT</span>
+          </router-link>
+        </a-menu-item>
+        <!--<a-menu-item
+          class="user-setting-item"
+          @click="changeMenu('Airdrop', '/Airdrop')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
+          }"
+        >
+          <router-link to="/nft">
+            <span>Airdrop</span>
+          </router-link>
+        </a-menu-item>-->
+        <a-menu-item
+          class="user-setting-item"
           @click="changeMenu('dapps', '/dapps')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/dapps')
@@ -600,8 +622,7 @@ export default class extends Vue {
     });
     setTimeout(async () => {
       try {
-        const phraseList =
-          JSON.parse(localStorage.getItem('phraseList')) || {};
+        const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
         let encryptSeedPhrase = phraseList[this.getPrincipalId];
         if (typeof encryptSeedPhrase === 'string') {
           encryptSeedPhrase = JSON.parse(encryptSeedPhrase);

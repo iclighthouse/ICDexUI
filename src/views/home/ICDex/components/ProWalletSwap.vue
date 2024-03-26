@@ -15,8 +15,39 @@
       <div>
         <span class="swap-main-type">From</span>
         <span class="base-font-title">
-          <span v-show="type === 'toPro'">Main-Wallet</span>
-          <span v-show="type === 'toWallet'">Pro-wallet</span>
+          <span v-show="type === 'toPro'"
+            >Main-Wallet
+            <span
+              v-if="
+                tokens &&
+                tokenId &&
+                tokens[tokenId] &&
+                tokensBalance &&
+                tokensBalanceSto
+              "
+              >&nbsp;({{
+                tokensBalance[tokenId]
+                  | bigintToFloat(8, tokens[tokenId].decimals)
+              }}
+              {{ tokens[tokenId].symbol }})</span
+            ></span
+          >
+          <span v-show="type === 'toWallet'"
+            >Pro-wallet<span
+              v-if="
+                tokens &&
+                tokenId &&
+                tokens[tokenId] &&
+                tokensBalance &&
+                tokensBalanceSto
+              "
+              >&nbsp;({{
+                tokensBalanceSto[tokenId]
+                  | bigintToFloat(8, tokens[tokenId].decimals)
+              }}
+              {{ tokens[tokenId].symbol }})</span
+            ></span
+          >
         </span>
       </div>
       <div class="swap-main-icon">
@@ -31,8 +62,38 @@
       <div>
         <span class="swap-main-type">To</span>
         <span class="base-font-title">
-          <span v-show="type === 'toWallet'">Main-Wallet</span>
-          <span v-show="type === 'toPro'">Pro-wallet</span>
+          <span v-show="type === 'toWallet'"
+            >Main-Wallet<span
+              v-if="
+                tokens &&
+                tokenId &&
+                tokens[tokenId] &&
+                tokensBalance &&
+                tokensBalanceSto
+              "
+              >&nbsp;({{
+                tokensBalance[tokenId]
+                  | bigintToFloat(8, tokens[tokenId].decimals)
+              }}
+              {{ tokens[tokenId].symbol }})</span
+            ></span
+          >
+          <span v-show="type === 'toPro'"
+            >Pro-wallet<span
+              v-if="
+                tokens &&
+                tokenId &&
+                tokens[tokenId] &&
+                tokensBalance &&
+                tokensBalanceSto
+              "
+              >&nbsp;({{
+                tokensBalanceSto[tokenId]
+                  | bigintToFloat(8, tokens[tokenId].decimals)
+              }}
+              {{ tokens[tokenId].symbol }})</span
+            ></span
+          >
         </span>
       </div>
     </div>

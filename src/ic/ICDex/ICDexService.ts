@@ -647,16 +647,11 @@ export class ICDexService {
     subAccountId = 0
   ): Promise<void> => {
     const service = await this.check(canisterId);
-    try {
-      let subAccount = [[]];
-      if (subAccountId || subAccountId === 0) {
-        subAccount = [fromSubAccountId(subAccountId)];
-      }
-      return await service.deposit(token, amount, subAccount);
-    } catch (e) {
-      console.error(e);
-      return null;
+    let subAccount = [[]];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
     }
+    return await service.deposit(token, amount, subAccount);
   };
   public depositFallback = async (
     canisterId: string,

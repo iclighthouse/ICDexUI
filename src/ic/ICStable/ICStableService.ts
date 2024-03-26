@@ -1,6 +1,3 @@
-import { checkAuth } from '@/ic/CheckAuth';
-import { buildService } from '@/ic/Service';
-import store from '@/store';
 import ICStableIDL from './ICStable.did';
 import Service, {
   BorrowerResult,
@@ -21,9 +18,6 @@ import { _data, Nonce } from '@/ic/ICLighthouseToken/model';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { Amount } from '@/ic/ICSwap/model';
 import { Address } from '@/ic/DRC20Token/model';
-import { createPlugActor } from '@/ic/createPlugActor';
-import { createIcxActor } from '@/ic/createIcxActor';
-import { createInfinityActor } from '@/ic/createInfinityActor';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
 import { createService } from '@/ic/createService';

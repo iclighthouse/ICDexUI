@@ -1,40 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-      </ul>
-      <div class="flex-center margin-left-auto">
-        <span
-          v-if="getPrincipalId"
-          @click="showLaunch"
-          class="base-font-title pointer pc-show"
-          style="font-size: 15px"
-          >+Launch</span
-        >
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
     <div class="nft-main container-width">
       <div class="w100" style="margin: 30px 0 20px; font-size: 16px">
         <a
@@ -444,33 +409,6 @@ const commonModule = namespace('common');
 })
 export default class extends Vue {
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
-  private menuList: Menu[] = [
-    {
-      value: 'Trade',
-      path: '/ICDex'
-    },
-    {
-      value: 'Market',
-      path: '/ICDex/market'
-    },
-    {
-      value: 'Pools',
-      path: '/ICDex/pools'
-    },
-    {
-      value: 'NFT',
-      path: '/ICDex/NFT'
-    },
-    {
-      value: 'Competitions',
-      path: '/ICDex/competitions'
-    }
-    // ,
-    // {
-    //   value: 'Mining',
-    //   path: '/icl/tradingMining'
-    // }
-  ];
   private tokens: { [key: string]: TokenInfo } = {};
   private nftSpinning = false;
   private nftICDexRouterSpinning = false;
@@ -609,23 +547,36 @@ export default class extends Vue {
       loading.close();
       return;
     }
-    this.ICSwapRouterFiduciaryService.NFTWithdraw([nft[1]])
-      .then(() => {
-        this.$message.success('Success');
-        this.getTokensExt();
-        this.getTokensExtDexAggregator();
-      })
-      .finally(() => {
-        loading.close();
-      });
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
+    this.$confirm({
+      content:
+        'Withdrawing this NFT may cause the function it is bound to to be disabled.',
+      class: 'connect-plug',
+      icon: 'connect-plug',
+      centered: true,
+      okText: 'Confirm',
+      cancelText: 'Cancel',
+      onOk() {
+        that.ICSwapRouterFiduciaryService.NFTWithdraw([nft[1]])
+          .then(() => {
+            that.$message.success('Success');
+            that.getTokensExt();
+            that.getTokensExtDexAggregator();
+          })
+          .finally(() => {
+            loading.close();
+          });
+      }
+    });
   }
   private onWithdraw(nft: NFT): void {
     const type = Object.keys(nft[3])[0];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
     if (type === 'NEPTUNE') {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const that = this;
       this.$confirm({
-        content: 'Withdraw NFT will unbind Makers.',
+        content: 'Withdrawing this NFT will unbind Makers.',
         class: 'connect-plug',
         icon: 'connect-plug',
         centered: true,
@@ -648,20 +599,31 @@ export default class extends Vue {
         }
       });
     } else {
-      console.log(nft[1]);
-      const loading = this.$loading({
-        lock: true,
-        background: 'rgba(0, 0, 0, 0.5)'
+      this.$confirm({
+        content:
+          'Withdrawing this NFT may cause the function it is bound to to be disabled.',
+        class: 'connect-plug',
+        icon: 'connect-plug',
+        centered: true,
+        okText: 'Confirm',
+        cancelText: 'Cancel',
+        onOk() {
+          console.log(nft[1]);
+          const loading = that.$loading({
+            lock: true,
+            background: 'rgba(0, 0, 0, 0.5)'
+          });
+          that.ICDexRouterService.NFTWithdraw([nft[1]])
+            .then(() => {
+              that.$message.success('Success');
+              that.getTokensExt();
+              that.getTokensExtICDedRouter();
+            })
+            .finally(() => {
+              loading.close();
+            });
+        }
       });
-      this.ICDexRouterService.NFTWithdraw([nft[1]])
-        .then(() => {
-          this.$message.success('Success');
-          this.getTokensExt();
-          this.getTokensExtICDedRouter();
-        })
-        .finally(() => {
-          loading.close();
-        });
     }
   }
   private async depositToDexAggregator(NFTIndex: bigint): Promise<void> {

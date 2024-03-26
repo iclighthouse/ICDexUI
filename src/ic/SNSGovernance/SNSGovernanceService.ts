@@ -31,10 +31,7 @@ export class SNSGovernanceService {
     renew = true,
     isUpdate = true
   ): Promise<Service> => {
-    let idl = SNSGovernanceIDL;
-    if (canisterId === 'zqfso-syaaa-aaaaq-aaafq-cai') {
-      idl = SNSGovernanceSNS1IDL;
-    }
+    let idl = SNSGovernanceSNS1IDL;
     return await createService<Service>(canisterId, idl, renew, isUpdate);
   };
   public getMetadata = async (

@@ -71,6 +71,13 @@
                     <dl>
                       <dt class="token-symbol-td">
                         {{ token.symbol }}
+                        <span
+                          v-show="
+                            token.canisterId.toString() ===
+                            '5573k-xaaaa-aaaak-aacnq-cai'
+                          "
+                          >(drc20)</span
+                        >
                       </dt>
                       <dd
                         v-if="token.name.includes('(')"

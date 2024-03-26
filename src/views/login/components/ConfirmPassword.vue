@@ -183,120 +183,121 @@ export default class extends Vue {
   private createNewAccount(): void {
     this.encryptIdentity(this.passwordForm.password, true);
   }
-  public encryptIdentity(password: string, newAccount = false): void {
+  public async encryptIdentity(
+    password: string,
+    newAccount = false
+  ): Promise<void> {
     this.passwordSpinning = true;
-    setTimeout(async () => {
-      let currentIdentity: Identity;
-      let mnemonic;
-      let isNewAccount = newAccount;
-      if (!this.mnemonic && this.signature) {
-        let seed;
-        let mnemonicString;
-        let metaMaskInfo: Array<MetaMaskInfo>;
-        if (!newAccount) {
-          const iCLighthouseService = new ICLighthouseService();
-          metaMaskInfo = await iCLighthouseService.getMetaMask(this.ethAccount);
-          console.log(metaMaskInfo);
-        }
-        if (!newAccount && metaMaskInfo && metaMaskInfo.length) {
-          for (let i = 0; i < metaMaskInfo[0].mnemonic.length; i++) {
-            try {
-              let info = metaMaskInfo[0].mnemonic[i];
-              let salt = 'ICLightHouse';
-              let data = info;
-              if (info.includes('salt')) {
-                salt = JSON.parse(info).salt;
-                data = JSON.parse(info).encryptSeedPhrase;
-              }
-              mnemonic = await decrypt(data, password, salt);
-              if (mnemonic) {
-                break;
-              }
-            } catch (e) {
-              console.log(e);
+    let currentIdentity: Identity;
+    let mnemonic;
+    let isNewAccount = newAccount;
+    if (!this.mnemonic && this.signature) {
+      let seed;
+      let mnemonicString;
+      let metaMaskInfo: Array<MetaMaskInfo>;
+      if (!newAccount) {
+        const iCLighthouseService = new ICLighthouseService();
+        metaMaskInfo = await iCLighthouseService.getMetaMask(this.ethAccount);
+        console.log(metaMaskInfo);
+      }
+      if (!newAccount && metaMaskInfo && metaMaskInfo.length) {
+        for (let i = 0; i < metaMaskInfo[0].mnemonic.length; i++) {
+          try {
+            let info = metaMaskInfo[0].mnemonic[i];
+            let salt = 'ICLightHouse';
+            let data = info;
+            if (info.includes('salt')) {
+              salt = JSON.parse(info).salt;
+              data = JSON.parse(info).encryptSeedPhrase;
             }
+            mnemonic = await decrypt(data, password, salt);
+            if (mnemonic) {
+              break;
+            }
+          } catch (e) {
+            console.log(e);
           }
-          if (!mnemonic) {
-            this.wrongPassword = true;
-            this.passwordSpinning = false;
-            return;
-          }
-        } else {
-          isNewAccount = true;
-          // MetaMask
-          seed = generateMeatMaskSeed(password, this.signature);
-          mnemonicString = ethers.utils.entropyToMnemonic(seed);
-          mnemonic = mnemonicString
-            .replace(/^\s+|\s+$/g, '')
-            .replace(/\s+/g, ' ');
         }
-        const root = ethers.utils.HDNode.fromMnemonic(mnemonic);
-        const path = "m/44'/223'/0'/0/0";
-        const keyPair = root.derivePath(path);
-        currentIdentity = Secp256k1KeyIdentity.generate(
-          new Uint8Array(hexToBytes(keyPair.privateKey))
-        );
-        this.passwordSpinning = false;
-        this.$emit(
-          'showMnemonic',
-          mnemonic,
-          currentIdentity,
-          password,
-          isNewAccount
-        );
-        return;
-      }
-      if (this.mnemonic) {
-        mnemonic = this.mnemonic.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
-        const root = ethers.utils.HDNode.fromMnemonic(mnemonic);
-        const path = "m/44'/223'/0'/0/0";
-        const keyPair = root.derivePath(path);
-        currentIdentity = Secp256k1KeyIdentity.generate(
-          new Uint8Array(hexToBytes(keyPair.privateKey))
-        );
-      } else if (this.identity) {
-        currentIdentity = this.identity;
-      }
-      const arr = new Uint8Array(64);
-      const salt = toHexString(window.crypto.getRandomValues(arr));
-      const encryptIdentity = await encrypt(
-        JSON.stringify(currentIdentity),
-        password,
-        salt
-      );
-      const principal = currentIdentity.getPrincipal().toString();
-      // localStorage.setItem(principal, JSON.stringify(encryptIdentity));
-      localStorage.setItem('principal', principal);
-      this.setPrincipalId(principal);
-      const principalList = JSON.parse(localStorage.getItem('priList')) || {};
-      principalList[principal] = JSON.stringify({
-        salt: salt,
-        encryptIdentity: encryptIdentity
-      });
-      localStorage.setItem('priList', JSON.stringify(principalList));
-      this.setIdentity(currentIdentity);
-      localStorage.setItem('identity', localStorage.getItem('principal'));
-      if (this.mnemonic) {
-        const encryptSeedPhrase = await encrypt(mnemonic, password, salt);
-        const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
-        phraseList[principal] = JSON.stringify({
-          salt: salt,
-          encryptSeedPhrase: encryptSeedPhrase
-        });
-        localStorage.setItem('phraseList', JSON.stringify(phraseList));
-      }
-      // sessionStorage.setItem('identity', JSON.stringify(currentIdentity));
-      this.passwordSpinning = false;
-      if (this.$route.query.redirect) {
-        this.$router.push(this.$route.query.redirect as any).catch(() => {
+        if (!mnemonic) {
+          this.wrongPassword = true;
+          this.passwordSpinning = false;
           return;
-        });
+        }
       } else {
-        this.$router.push('/account').catch(() => {
-          return;
-        });
+        isNewAccount = true;
+        // MetaMask
+        seed = generateMeatMaskSeed(password, this.signature);
+        mnemonicString = ethers.utils.entropyToMnemonic(seed);
+        mnemonic = mnemonicString
+          .replace(/^\s+|\s+$/g, '')
+          .replace(/\s+/g, ' ');
       }
-    }, 20);
+      const root = ethers.utils.HDNode.fromMnemonic(mnemonic);
+      const path = "m/44'/223'/0'/0/0";
+      const keyPair = root.derivePath(path);
+      currentIdentity = Secp256k1KeyIdentity.generate(
+        new Uint8Array(hexToBytes(keyPair.privateKey))
+      );
+      this.passwordSpinning = false;
+      this.$emit(
+        'showMnemonic',
+        mnemonic,
+        currentIdentity,
+        password,
+        isNewAccount
+      );
+      return;
+    }
+    if (this.mnemonic) {
+      mnemonic = this.mnemonic.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
+      const root = ethers.utils.HDNode.fromMnemonic(mnemonic);
+      const path = "m/44'/223'/0'/0/0";
+      const keyPair = root.derivePath(path);
+      currentIdentity = Secp256k1KeyIdentity.generate(
+        new Uint8Array(hexToBytes(keyPair.privateKey))
+      );
+    } else if (this.identity) {
+      currentIdentity = this.identity;
+    }
+    const arr = new Uint8Array(64);
+    const salt = toHexString(window.crypto.getRandomValues(arr));
+    const encryptIdentity = await encrypt(
+      JSON.stringify(currentIdentity),
+      password,
+      salt
+    );
+    const principal = currentIdentity.getPrincipal().toString();
+    // localStorage.setItem(principal, JSON.stringify(encryptIdentity));
+    localStorage.setItem('principal', principal);
+    this.setPrincipalId(principal);
+    const principalList = JSON.parse(localStorage.getItem('priList')) || {};
+    principalList[principal] = JSON.stringify({
+      salt: salt,
+      encryptIdentity: encryptIdentity
+    });
+    localStorage.setItem('priList', JSON.stringify(principalList));
+    this.setIdentity(currentIdentity);
+    localStorage.setItem('identity', localStorage.getItem('principal'));
+    if (this.mnemonic) {
+      const encryptSeedPhrase = await encrypt(mnemonic, password, salt);
+      const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
+      phraseList[principal] = JSON.stringify({
+        salt: salt,
+        encryptSeedPhrase: encryptSeedPhrase
+      });
+      localStorage.setItem('phraseList', JSON.stringify(phraseList));
+    }
+    // sessionStorage.setItem('identity', JSON.stringify(currentIdentity));
+    this.passwordSpinning = false;
+    if (this.$route.query.redirect) {
+      this.$router.push(this.$route.query.redirect as any).catch(() => {
+        return;
+      });
+    } else {
+      this.$router.push('/account').catch(() => {
+        return;
+      });
+    }
   }
   public confirmPasswordBack(): void {
     this.wrongPassword = false;

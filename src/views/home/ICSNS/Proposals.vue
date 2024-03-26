@@ -493,15 +493,25 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
+      let ICLIndex = null;
+      const ICLToken = 'hhaaz-2aaaa-aaaaq-aacla-cai';
       this.deployedSnses = await this.SNSWasmService.listDeployedSnses();
       let canisterIds: Array<string> = [];
-      this.deployedSnses.forEach((item) => {
+      this.deployedSnses.forEach((item, index) => {
+        if (item.ledger_canister_id.toString() === ICLToken) {
+          ICLIndex = index;
+        }
         canisterIds = canisterIds.concat([
           item.swap_canister_id.toString(),
           item.governance_canister_id.toString(),
           item.ledger_canister_id.toString()
         ]);
       });
+      if (typeof ICLIndex === 'number') {
+        const item = this.deployedSnses[ICLIndex];
+        this.deployedSnses.splice(ICLIndex, 1);
+        this.deployedSnses.unshift(item);
+      }
       canisterIds = [...new Set(canisterIds)];
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');

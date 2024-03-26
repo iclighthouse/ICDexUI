@@ -76,11 +76,22 @@ const ICDexRouter: RouteConfig[] = [
     }
   },
   {
-    path: '/ICDex/NFT',
+    path: '/NFT',
     name: 'NFT',
     component: () => import('@/views/home/ICDex/NFT.vue'),
     meta: {
       title: 'NFT',
+      version: '0.5test',
+      requireAuth: true,
+      measurementId: 'G-056B85Q2L0'
+    }
+  },
+  {
+    path: '/Airdrop',
+    name: 'Airdrop',
+    component: () => import('@/views/home/ICDex/Airdrop.vue'),
+    meta: {
+      title: 'Airdrop',
       version: '0.5test',
       requireAuth: true,
       measurementId: 'G-056B85Q2L0'

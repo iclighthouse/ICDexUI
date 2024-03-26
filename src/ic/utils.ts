@@ -40,8 +40,9 @@ let IC_CANISTER_ID = 'foios-saaaa-aaaai-qa7aq-cai';
 // let IC_CANISTER_ID = 'n5ndw-aqaaa-aaaai-qohhq-cai';
 // let IC_TOKEN_CANISTER_ID = 'y2b5k-gqaaa-aaaak-aacqq-cai';
 // let IC_TOKEN_CANISTER_ID = 'hac2z-3yaaa-aaaai-qfkwq-cai';
+// let IC_TOKEN_CANISTER_ID = 'hac2z-3yaaa-aaaai-qfkwq-cai';
 let IC_TOKEN_CANISTER_ID = 'igm6s-dqaaa-aaaar-qaa3a-cai';
-let IC_LIGHTHOUSE_TOKEN_CANISTER_ID = '5573k-xaaaa-aaaak-aacnq-cai';
+let IC_LIGHTHOUSE_TOKEN_CANISTER_ID = 'hhaaz-2aaaa-aaaaq-aacla-cai';
 const IC_SNS_TOKEN_CANISTER_ID = 'zfcdd-tqaaa-aaaaq-aaaga-cai';
 // let IC_LIGHTHOUSE_TOKEN_CANISTER_ID = '2x2bb-qyaaa-aaaak-aaoqa-cai';
 let CYCLES_FINANCE_CANISTER_ID = '6nmrm-laaaa-aaaak-aacfq-cai';
@@ -61,6 +62,8 @@ const QUESTS_CANISTER_ID = 'iairp-iiaaa-aaaao-ahryq-cai';
 const IC_TOKENS_SCAN_CANISTER_ID = 'ytcww-qyaaa-aaaak-aacra-cai';
 const BLACKHOLE_CANISTER_ID = '7hdtw-jqaaa-aaaak-aaccq-cai';
 const DID_CANISTER_ID = 'a4gq6-oaaaa-aaaab-qaa4q-cai';
+const AIRDROP_CANISTER_ID = '76a3l-5qaaa-aaaak-afqhq-cai';
+// const AIRDROP_CANISTER_ID = 'r43hs-lqaaa-aaaak-afoca-cai';
 const ETHHttps = [
   'https://eth-goerli.g.alchemy.com/v2/gm4OKMIz91Ca1w5WoKT3xXafUtQtdJd9',
   'https://eth-goerli.g.alchemy.com/v2/wREEsnLaFrPgZaXy3Kfhgx2bJ04spvfc',
@@ -96,7 +99,7 @@ if (process.env.NODE_ENV === 'production') {
   IC_WALLET_ID = 'eife2-cqaaa-aaaai-qatkq-cai';
   IC_CANISTER_ID = 'foios-saaaa-aaaai-qa7aq-cai';
   IC_TOKEN_CANISTER_ID = 'igm6s-dqaaa-aaaar-qaa3a-cai';
-  IC_LIGHTHOUSE_TOKEN_CANISTER_ID = '5573k-xaaaa-aaaak-aacnq-cai';
+  IC_LIGHTHOUSE_TOKEN_CANISTER_ID = 'hhaaz-2aaaa-aaaaq-aacla-cai';
   CYCLES_FINANCE_CANISTER_ID = '6nmrm-laaaa-aaaak-aacfq-cai';
   IC_MINING_CANISTER_ID = '5iykh-wiaaa-aaaak-aacoa-cai';
   IC_STABLE_CANISTER_ID = '26zk5-gqaaa-aaaak-aaorq-cai';
@@ -136,7 +139,8 @@ const plugWhitelist = [
   CK_ETH_MINTER_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
-  BLACKHOLE_CANISTER_ID
+  BLACKHOLE_CANISTER_ID,
+  AIRDROP_CANISTER_ID
 ];
 const ICXWhitelist = [
   NNS_DAPP_CANISTER_ID,
@@ -163,7 +167,8 @@ const ICXWhitelist = [
   CK_ETH_MINTER_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
-  BLACKHOLE_CANISTER_ID
+  BLACKHOLE_CANISTER_ID,
+  AIRDROP_CANISTER_ID
 ];
 const SUB_ACCOUNT_BYTE_LENGTH = 32;
 const ICLighthouseNeuronId =
@@ -471,6 +476,7 @@ export {
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
   BLACKHOLE_CANISTER_ID,
   DID_CANISTER_ID,
+  AIRDROP_CANISTER_ID,
   isHex,
   isHexString,
   getEthereumAccount,

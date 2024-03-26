@@ -164,13 +164,13 @@ export default class extends Vue {
     this.getBalance();
     this.getIcl();
     this.currentToken = {
-      canisterId: Principal.fromHex(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
+      canisterId: Principal.fromText(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
       balance: this.ICL.toString(),
       decimals: Number(this.decimals),
       name: '',
       symbol: 'ICL',
       logo: '',
-      standard: 'DRC20',
+      standard: 'ICRC-1',
       lockedTxns: {
         txns: [],
         lockedBalance: '0'

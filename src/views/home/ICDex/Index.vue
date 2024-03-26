@@ -49,6 +49,18 @@
           style="font-size: 15px"
           >+Launch</span
         >
+        <a
+          v-if="getPrincipalId"
+          href="https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471"
+          rel="nofollow noreferrer noopener"
+          target="_blank"
+          style="
+            margin-left: 15px;
+            margin-right: 5px;
+            color: #adb3c4 !important;
+          "
+          >Guide</a
+        >
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -187,6 +199,27 @@
                   </td>
                 </tr>
                 <tr
+                  v-if="
+                    currentTradeMarketSort === 'Main' &&
+                    !tradePairs[currentTradeMarketSort].length
+                  "
+                >
+                  <td colspan="3" style="line-height: 1.5; padding-left: 10px">
+                    There are no pairs on the MAIN board. Check out the
+                    <span
+                      @click="
+                        changeTradeMarketSort({
+                          name: 'SECOND',
+                          value: 'Second'
+                        })
+                      "
+                      style="color: #51b7c3"
+                      >SECOND</span
+                    >
+                    board.
+                  </td>
+                </tr>
+                <tr
                   v-for="(pair, index) in tradePairs[currentTradeMarketSort]"
                   :key="index"
                   @click="changePair(pair, index)"
@@ -202,7 +235,12 @@
                 >
                   <a-tooltip placement="right">
                     <template slot="title">
-                      <dl>
+                      <dl
+                        v-show="
+                          currentPair[1][0].token1[0].toString() !==
+                          'hhaaz-2aaaa-aaaaq-aacla-cai'
+                        "
+                      >
                         <dt>
                           <span
                             class="tabular-nums"
@@ -1387,7 +1425,16 @@
                               .decimals
                           )
                           | formatNum
-                      }}<span>&nbsp;{{ currentPair[1][0].token1[1] }}</span>
+                      }}<span
+                        >&nbsp;{{ currentPair[1][0].token1[1] }}
+                        <span
+                          class="old-icl-type"
+                          v-show="
+                            currentPair[1][0].token0[0].toString() === oldICL
+                          "
+                          >drc20</span
+                        ></span
+                      >
                     </router-link>
                   </a-tooltip>
                   <span
@@ -1851,6 +1898,12 @@
                         ></span>
                         Buy&nbsp;
                         <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span
+                          v-show="
+                            currentPair[1][0].token0[0].toString() === oldICL
+                          "
+                          >(drc20)</span
+                        >
                         <span v-show="orderType === 'FAK'"
                           >&nbsp;(Fill-And-Kill order)</span
                         >
@@ -2010,7 +2063,15 @@
                           class="loading-spinner"
                         ></span>
                         Buy&nbsp;
-                        <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span
+                          >{{ currentPair[1][0].token0[1] }}
+                          <span
+                            v-show="
+                              currentPair[1][0].token0[0].toString() === oldICL
+                            "
+                            >(drc20)</span
+                          ></span
+                        >
                       </span>
                     </span>
                   </button>
@@ -2069,7 +2130,16 @@
                               .decimals
                           )
                           | formatNum
-                      }}<span>&nbsp;{{ currentPair[1][0].token0[1] }} </span>
+                      }}<span
+                        >&nbsp;{{ currentPair[1][0].token0[1] }}
+                        <span
+                          class="old-icl-type"
+                          v-show="
+                            currentPair[1][0].token0[0].toString() === oldICL
+                          "
+                          >drc20</span
+                        ></span
+                      >
                     </router-link>
                   </a-tooltip>
                   <span
@@ -2095,6 +2165,11 @@
                         )
                         | formatNum
                     }}&nbsp;{{ currentPair[1][0].token0[1] }}
+                    <span
+                      class="old-icl-type"
+                      v-show="currentPair[1][0].token0[0].toString() === oldICL"
+                      >drc20</span
+                    >
                   </span>
                 </span>
                 <span v-else>-</span>
@@ -2531,6 +2606,12 @@
                         ></span>
                         Sell&nbsp;
                         <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span
+                          v-show="
+                            currentPair[1][0].token0[0].toString() === oldICL
+                          "
+                          >(drc20)</span
+                        >
                         <span v-show="orderType === 'FAK'"
                           >&nbsp;(Fill-And-Kill order)</span
                         >
@@ -2671,7 +2752,15 @@
                           class="loading-spinner"
                         ></span>
                         Sell&nbsp;
-                        <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span
+                          >{{ currentPair[1][0].token0[1] }}
+                          <span
+                            v-show="
+                              currentPair[1][0].token0[0].toString() === oldICL
+                            "
+                            >(drc20)</span
+                          ></span
+                        >
                       </span>
                     </span>
                   </button>
@@ -3272,7 +3361,14 @@
                         type="arrow-down"
                       />
                     </span>
-                    <span>≈ ${{ token0Price }}</span>
+                    <span
+                      v-if="
+                        currentPair &&
+                        currentPair[1][0].token1[0].toString() !==
+                          'hhaaz-2aaaa-aaaaq-aacla-cai'
+                      "
+                      >≈ ${{ token0Price }}</span
+                    >
                     <span
                       :class="{
                         'bid-price': Number(currentPair[2].change24h) > 0,
@@ -10377,15 +10473,7 @@
                     v-for="(item, index) in orderTypeEnum"
                     :key="index"
                   >
-                    <span
-                      v-if="
-                        !(
-                          item === 'Stop-limit' &&
-                          currentPair &&
-                          prePairs.includes(currentPair[0].toString())
-                        )
-                      "
-                    >
+                    <span v-if="item !== 'Stop-limit'">
                       {{ item }}
                     </span>
                   </a-select-option>
@@ -10793,7 +10881,13 @@
                           class="loading-spinner"
                         ></span>
                         Buy&nbsp;
-                        <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span>{{ currentPair[1][0].token0[1] }} </span>
+                        <span
+                          v-show="
+                            currentPair[1][0].token0[0].toString() === oldICL
+                          "
+                          >(drc20)</span
+                        >
                         <span v-show="orderType === 'FAK'">&nbsp;(FAK)</span>
                         <span v-show="orderType === 'FOK'">&nbsp;(FOK)</span>
                       </span>
@@ -10849,7 +10943,15 @@
                           class="loading-spinner"
                         ></span>
                         Buy&nbsp;
-                        <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span
+                          >{{ currentPair[1][0].token0[1] }}
+                          <span
+                            v-show="
+                              currentPair[1][0].token0[0].toString() === oldICL
+                            "
+                            >(drc20)</span
+                          ></span
+                        >
                       </span>
                     </span>
                   </button>
@@ -11132,6 +11234,13 @@
                     <span v-else>-</span>
                     <span v-if="currentPair">
                       {{ currentPair[1][0].token0[1] }}
+                      <span
+                        class="old-icl-type"
+                        v-show="
+                          currentPair[1][0].token0[0].toString() === oldICL
+                        "
+                        >drc20</span
+                      >
                     </span>
                     <a-tooltip placement="top">
                       <template slot="title">
@@ -11172,6 +11281,13 @@
                           )
                           | formatNum
                       }}&nbsp;{{ currentPair[1][0].token0[1] }}
+                      <span
+                        class="old-icl-type"
+                        v-show="
+                          currentPair[1][0].token0[0].toString() === oldICL
+                        "
+                        >drc20</span
+                      >
                     </span>
                     <span
                       class="margin-left-auto"
@@ -11247,6 +11363,12 @@
                         ></span>
                         Sell&nbsp;
                         <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span
+                          v-show="
+                            currentPair[1][0].token0[0].toString() === oldICL
+                          "
+                          >(drc20)</span
+                        >
                         <span v-show="orderType === 'FAK'">&nbsp;(FAK)</span>
                         <span v-show="orderType === 'FOK'">&nbsp;(FOK)</span>
                       </span>
@@ -11296,7 +11418,15 @@
                           class="loading-spinner"
                         ></span>
                         Sell&nbsp;
-                        <span>{{ currentPair[1][0].token0[1] }}</span>
+                        <span
+                          >{{ currentPair[1][0].token0[1] }}
+                          <span
+                            v-show="
+                              currentPair[1][0].token0[0].toString() === oldICL
+                            "
+                            >(drc20)</span
+                          ></span
+                        >
                       </span>
                     </span>
                   </button>
@@ -11403,7 +11533,14 @@
                       type="arrow-down"
                     />
                   </span>
-                  <span>≈ ${{ token0Price }}</span>
+                  <span
+                    v-if="
+                      currentPair &&
+                      currentPair[1][0].token1[0].toString() !==
+                        'hhaaz-2aaaa-aaaaq-aacla-cai'
+                    "
+                    >≈ ${{ token0Price }}</span
+                  >
                 </div>
                 <ul
                   v-for="(item, index) in bidTrade"
@@ -12386,6 +12523,7 @@ import { connectIcx, initIcx } from '@/ic/connectIcx';
 import {
   CK_BTC_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
+  IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
   LEDGER_CANISTER_ID
 } from '@/ic/utils';
 import TradingMining from '@/views/home/ICDex/components/TradingMining.vue';
@@ -12422,11 +12560,14 @@ const dayjs = require('dayjs');
 let lastCallTime = null;
 const interval = 10 * 1000;
 const SNS1Token = 'zfcdd-tqaaa-aaaaq-aaaga-cai';
+const OCToken = '2ouva-viaaa-aaaaq-aaamq-cai';
 const ICRC2Token = [
   CK_BTC_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   LEDGER_CANISTER_ID,
-  SNS1Token
+  IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
+  SNS1Token,
+  OCToken
 ];
 
 @Component({
@@ -12447,7 +12588,7 @@ const ICRC2Token = [
   filters: {
     stoUpdateFee(poFee1: bigint, decimals: number): string {
       return new BigNumber(poFee1.toString(10))
-        .times(0.2)
+        .times(0.05)
         .div(10 ** decimals)
         .toString(10);
     },
@@ -13007,19 +13148,15 @@ export default class extends Vue {
     },
     {
       value: 'Market',
-      path: '/icdex/market'
+      path: '/ICDex/market'
     },
     {
       value: 'Pools',
-      path: '/icdex/pools'
-    },
-    {
-      value: 'NFT',
-      path: '/ICDex/NFT'
+      path: '/ICDex/pools'
     },
     {
       value: 'Competitions',
-      path: '/icdex/competitions'
+      path: '/ICDex/competitions'
     }
     // ,
     // {
@@ -13049,7 +13186,8 @@ export default class extends Vue {
   private oldPairs = [
     'scjza-fiaaa-aaaak-ac2kq-cai',
     'ig3ej-haaaa-aaaak-adrva-cai',
-    'oru4a-nqaaa-aaaak-acufa-cai'
+    'oru4a-nqaaa-aaaak-acufa-cai',
+    '5t3ek-haaaa-aaaar-qadia-cai'
   ];
   private prePairs: Array<string> = [];
   private star: Array<string> = [];
@@ -13109,6 +13247,7 @@ export default class extends Vue {
   // Tour
   private steps = [];
   private myCallbacks = {};
+  private oldICL = '5573k-xaaaa-aaaak-aacnq-cai';
   @Watch('buyTotal')
   private onBuyTotalChange() {
     if (Number(this.buyTotal)) {
@@ -14898,10 +15037,10 @@ export default class extends Vue {
       return;
     }
     if (this.currentProOrderMenu === 'Iceberg') {
-      const flag = this.canRun();
-      if (!flag) {
-        return;
-      }
+      // const flag = this.canRun();
+      // if (!flag) {
+      //   return;
+      // }
     }
     (this.$refs as any).proOrder.init(this.currentProOrderMenu);
   }
@@ -16712,7 +16851,7 @@ export default class extends Vue {
           this.$message.error('Order fail');
           return false;
         }
-        if (res === 'ErrAddress') {
+        if (res === 'ErrAddress' || res === 'ErrDeposit') {
           this.initPending(currentPair, prepare, address);
           return false;
         }
@@ -16769,6 +16908,9 @@ export default class extends Vue {
               BigInt(needDeposit)
             );
             if (depositRes === 'ErrAddress') {
+              return false;
+            }
+            if (depositRes === 'ErrDeposit') {
               return false;
             }
           }
@@ -17424,13 +17566,19 @@ export default class extends Vue {
     const address = principalToAccountIdentifier(
       Principal.from(this.getPrincipalId)
     );
-    await this.deposit(
+    const depositRes = await this.deposit(
       address,
       this.currentPair,
       token,
       BigInt(amount),
       subAccountId
     );
+    if (depositRes === 'ErrAddress') {
+      return;
+    }
+    if (depositRes === 'ErrDeposit') {
+      return;
+    }
     if (this.isToken0) {
       const token0Info = this.currentPair[1][0].token0;
       if (subAccountId === 0) {
@@ -17838,7 +17986,12 @@ export default class extends Vue {
     console.log(token);
     console.log('amount: ' + amount);
     const dexId = currentPair[0].toString();
-    await this.currentICDexService.deposit(dexId, token, amount, subAccount);
+    try {
+      await this.currentICDexService.deposit(dexId, token, amount, subAccount);
+    } catch (e) {
+      this.$message.error(toHttpRejectError(e));
+      return 'ErrDeposit';
+    }
     console.timeEnd('deposit');
   }
   private async onBuyMKT(): Promise<void> {
@@ -18340,6 +18493,9 @@ export default class extends Vue {
       );
       if (depositRes === 'ErrAddress') {
         return 'ErrAddress';
+      }
+      if (depositRes === 'ErrDeposit') {
+        return 'ErrDeposit';
       }
     } else {
       const res = await currentDrc20Token.icrc1Transfer(
@@ -19518,8 +19674,10 @@ export default class extends Vue {
     return res.map((item) => item.toString());
   }
   private async addFavorites(pairId: Principal): Promise<void> {
-    const res = await this.ICLighthouseService.addFavorites(pairId);
-    console.log(res);
+    if (pairId.toString() !== '5t3ek-haaaa-aaaar-qadia-cai') {
+      const res = await this.ICLighthouseService.addFavorites(pairId);
+      console.log(res);
+    }
   }
   private async removeFavorites(pairId: Principal): Promise<void> {
     const res = await this.ICLighthouseService.removeFavorites(pairId);
@@ -19534,10 +19692,18 @@ export default class extends Vue {
       console.log(res);
       if (res) {
         const favorites = await this.getFavorites();
+        if (favorites.includes('5t3ek-haaaa-aaaar-qadia-cai')) {
+          await this.removeFavorites(
+            Principal.fromText('5t3ek-haaaa-aaaar-qadia-cai')
+          );
+        }
         console.log(favorites);
         this.star = [].concat(favorites);
         for (let i = 0; i < star.length; i++) {
-          if (!favorites.includes(star[i])) {
+          if (
+            !favorites.includes(star[i]) &&
+            star[i] !== '5t3ek-haaaa-aaaar-qadia-cai'
+          ) {
             this.star.push(star[i]);
             this.addFavorites(Principal.fromText(star[i]));
           }
@@ -21117,6 +21283,11 @@ export default class extends Vue {
 </script>
 
 <style scoped lang="scss">
+.old-icl-type {
+  padding: 1px 4px;
+  background: #2a303a;
+  border-radius: 20px;
+}
 .set-pool {
   display: flex;
   align-items: center;

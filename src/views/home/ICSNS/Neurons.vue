@@ -338,11 +338,13 @@
               <template slot="title">
                 <span
                   v-if="
-                    neuron.vesting_period_seconds &&
-                    neuron.vesting_period_seconds[0] &&
-                    isVesting(
-                      neuron.created_timestamp_seconds,
-                      neuron.vesting_period_seconds[0]
+                    !!(
+                      neuron.vesting_period_seconds &&
+                      neuron.vesting_period_seconds[0] &&
+                      isVesting(
+                        neuron.created_timestamp_seconds,
+                        neuron.vesting_period_seconds[0]
+                      )
                     )
                   "
                 >
@@ -373,16 +375,18 @@
                 <button
                   @click="dissolve(currentNeuronInfoIndex, index)"
                   :disabled="
-                    neuron.vesting_period_seconds &&
-                    neuron.vesting_period_seconds[0] &&
-                    isVesting(
-                      neuron.created_timestamp_seconds,
-                      neuron.vesting_period_seconds[0]
+                    !!(
+                      neuron.vesting_period_seconds &&
+                      neuron.vesting_period_seconds[0] &&
+                      isVesting(
+                        neuron.created_timestamp_seconds,
+                        neuron.vesting_period_seconds[0]
+                      )
                     )
                   "
                   type="button"
                 >
-                  <span>Dissolve</span>
+                  <span>Dissolve </span>
                 </button>
               </div>
             </a-tooltip>
@@ -480,8 +484,14 @@
                 )
               "
               :disabled="
-                neuron.vesting_period_seconds &&
-                neuron.vesting_period_seconds[0]
+                !!(
+                  neuron.vesting_period_seconds &&
+                  neuron.vesting_period_seconds[0] &&
+                  isVesting(
+                    neuron.created_timestamp_seconds,
+                    neuron.vesting_period_seconds[0]
+                  )
+                )
               "
               type="button"
             >
@@ -2310,13 +2320,23 @@ export default class extends Vue {
       console.log(this.deployedSnses);
       let canisterIds: Array<string> = [];
       // this.currentNeuronInfoIndex = 0;
-      this.deployedSnses.forEach((item) => {
+      let ICLIndex = null;
+      const ICLToken = 'hhaaz-2aaaa-aaaaq-aacla-cai';
+      this.deployedSnses.forEach((item, index) => {
+        if (item.ledger_canister_id.toString() === ICLToken) {
+          ICLIndex = index;
+        }
         canisterIds = canisterIds.concat([
           item.swap_canister_id.toString(),
           item.governance_canister_id.toString(),
           item.ledger_canister_id.toString()
         ]);
       });
+      if (typeof ICLIndex === 'number') {
+        const item = this.deployedSnses[ICLIndex];
+        this.deployedSnses.splice(ICLIndex, 1);
+        this.deployedSnses.unshift(item);
+      }
       canisterIds = [...new Set(canisterIds)];
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');

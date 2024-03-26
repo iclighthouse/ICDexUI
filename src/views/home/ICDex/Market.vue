@@ -1006,7 +1006,7 @@
                           <span v-if="index === 0">Pairs:</span>
                           <router-link
                             v-if="pairToSymbol[item.pair]"
-                            :to="`/icdex/${
+                            :to="`/ICDex/${
                               pairToSymbol[item.pair].pair.token0[1]
                             }/${pairToSymbol[item.pair].pair.token1[1]}`"
                             style="color: #1996c4"
@@ -1204,7 +1204,7 @@
                         <span v-if="index === 0">Pairs:</span>
                         <router-link
                           v-if="pairToSymbol[item.pair]"
-                          :to="`/icdex/${
+                          :to="`/ICDex/${
                             pairToSymbol[item.pair].pair.token0[1]
                           }/${pairToSymbol[item.pair].pair.token1[1]}`"
                           style="color: #1996c4"
@@ -1299,7 +1299,7 @@
                     <td>
                       <router-link
                         v-if="pairToSymbol[item[1].toString()]"
-                        :to="`/icdex/${
+                        :to="`/ICDex/${
                           pairToSymbol[item[1].toString()].pair.token0[1]
                         }/${pairToSymbol[item[1].toString()].pair.token1[1]}`"
                       >
@@ -1474,7 +1474,7 @@
                   <span class="margin-left-auto">
                     <router-link
                       v-if="pairToSymbol[item[1].toString()]"
-                      :to="`/icdex/${
+                      :to="`/ICDex/${
                         pairToSymbol[item[1].toString()].pair.token0[1]
                       }/${pairToSymbol[item[1].toString()].pair.token1[1]}`"
                     >
@@ -1927,28 +1927,36 @@
       :keyboard="false"
       :maskClosable="false"
     >
-      <p>
+      <p style="margin-bottom: 10px">
+        ICLighthouse
         <a
           href="https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai"
           target="_blank"
           rel="nofollow noreferrer noopener"
           class="link"
-          >URANUS NFT (ICLighthouse Planet NFT)</a
+          >URANUS NFT</a
         >
-        holders are eligible to sponsor pairs. Sponsoring a trading pair
-        increases its "Pair Score", which in turn increases its ranking and
-        board position on the Pair List. The rules are.
+        holders, acting as listing referrers, play a pivotal role in influencing
+        the Pair Score through sponsorships. The impact of sponsorship varies
+        based on the status of the sponsor and the number of sponsors involved:
       </p>
       <p>
-        <span class="dots"></span> (Not verified) ListingReferrer Propose: +10
-        per Sponsor.
+        <span class="dots"></span> Unverified Listing Referrer Sponsor: Each
+        sponsorship adds +10 to the Pair Score.
       </p>
       <p>
-        <span class="dots"></span> Verified ListingReferrer Propose: +15 per
-        Sponsor.
+        <span class="dots"></span> Verified Listing Referrer Sponsor: Each
+        verified sponsorship contributes +15 to the Pair Score.
       </p>
-      <p><span class="dots"></span> Sponsored (Sponsors >= 5): +10.</p>
-      <p><span class="dots"></span> The highest total sponsor score is 70.</p>
+      <p>
+        <span class="dots"></span> Group Sponsorship Bonus: If a trading pair is
+        supported by 5 or more sponsors, it receives an additional +10 to its
+        Pair Score.
+      </p>
+      <p>
+        <span class="dots"></span> Maximum Sponsorship Influence: The total
+        score a pair can gain from sponsorships alone is capped at 70.
+      </p>
       <button
         type="button"
         class="primary ambassadors-visible-button"
@@ -2097,10 +2105,6 @@ export default class extends Vue {
     {
       value: 'Pools',
       path: '/ICDex/pools'
-    },
-    {
-      value: 'NFT',
-      path: '/ICDex/NFT'
     },
     {
       value: 'Competitions',

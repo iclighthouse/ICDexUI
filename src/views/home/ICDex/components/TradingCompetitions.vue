@@ -69,7 +69,7 @@ export default class extends Vue {
     }
   }
   private jumpCompetitions(): void {
-    this.$emit('/icdex/competitions');
+    this.$emit('/ICDex/competitions');
   }
   private async getRoundInfo(): Promise<void> {
     this.canTradeCompetitions = false;

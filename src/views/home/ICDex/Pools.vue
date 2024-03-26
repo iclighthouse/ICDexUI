@@ -49,55 +49,63 @@
         </li>
       </ul>
       <div>
-        <div class="flex-center">
+        <div class="flex-center" style="align-items: flex-start">
           <span class="base-color-w" style="font-size: 16px">
             <span v-show="!pairPools || currentPoolsMenu === 'private'"
               >OAMM pools
               <span>
-                <a-tooltip placement="bottom">
+                <a-tooltip overlayClassName="yield-tooltip" placement="bottom">
                   <template slot="title">
                     <div
-                      style="font-size: 16px"
-                      class="base-font-title base-color-w"
+                      style="
+                        background: #141b23;
+                        padding: 20px 25px;
+                        border-radius: 6px;
+                      "
                     >
-                      LPs yield
-                    </div>
-                    <div class="base-font-title">
-                      LPs may benefit from adding liquidity to the liquidity
-                      pool, but it is risky and does not result in a stable gain
-                      or may result in a loss. Possible gains include:
-                    </div>
-                    <div>
-                      <span class="dots"></span> Grid spread gain: ICDexMaker
-                      opens a grid strategy in the trading pair, there exists a
-                      spread between every two grids, if the price shows upward
-                      and downward fluctuations, ICDexMaker can get the grid
-                      spread gain. However, if the price fluctuates in one
-                      direction, the number of ICDexMaker's one token will
-                      become more and the number of the other token will become
-                      less, and it will not get the spread gain. Therefore, the
-                      amount of grid spread gain is related to the volatility of
-                      the trading pair.
-                    </div>
-                    <div>
-                      <span class="dots"></span> Vip-maker rebate: When
-                      ICDexMaker has the role of vip-maker, it can get the
-                      trading fee rebate, and this part of the gain will be
-                      added to the liquidity pool.
-                    </div>
-                    <div>
-                      <span class="dots"></span> Withdrawal fee on removal of
-                      liquidity: When an LP withdraws liquidity, he will be
-                      charged a withdrawal fee to be added to the liquidity
-                      pool.
-                    </div>
-                    <div>
-                      <span class="dots"></span> Liquidity mining/airdrop: this
-                      is a contingent benefit, ICDexMaker itself does not
-                      provide liquidity mining or token airdrop, which requires
-                      LPs to pay attention to the Dex platform side or the
-                      project side of the liquidity mining or airdrop activity
-                      announcement.
+                      <div
+                        style="font-size: 16px; margin-bottom: 10px"
+                        class="base-font-title base-color-w"
+                      >
+                        LPs yield
+                      </div>
+                      <div style="margin-bottom: 10px" class="base-font-title">
+                        LPs may benefit from adding liquidity to the liquidity
+                        pool, but it is risky and does not result in a stable
+                        gain or may result in a loss. Possible gains include:
+                      </div>
+                      <div style="margin-bottom: 10px">
+                        <span class="dots"></span> Grid spread gain: ICDexMaker
+                        opens a grid strategy in the trading pair, there exists
+                        a spread between every two grids, if the price shows
+                        upward and downward fluctuations, ICDexMaker can get the
+                        grid spread gain. However, if the price fluctuates in
+                        one direction, the number of ICDexMaker's one token will
+                        become more and the number of the other token will
+                        become less, and it will not get the spread gain.
+                        Therefore, the amount of grid spread gain is related to
+                        the volatility of the trading pair.
+                      </div>
+                      <div style="margin-bottom: 10px">
+                        <span class="dots"></span> Vip-maker rebate: When
+                        ICDexMaker has the role of vip-maker, it can get the
+                        trading fee rebate, and this part of the gain will be
+                        added to the liquidity pool.
+                      </div>
+                      <div style="margin-bottom: 10px">
+                        <span class="dots"></span> Withdrawal fee on removal of
+                        liquidity: When an LP withdraws liquidity, he will be
+                        charged a withdrawal fee to be added to the liquidity
+                        pool.
+                      </div>
+                      <div style="margin-bottom: 10px">
+                        <span class="dots"></span> Liquidity mining/airdrop:
+                        this is a contingent benefit, ICDexMaker itself does not
+                        provide liquidity mining or token airdrop, which
+                        requires LPs to pay attention to the Dex platform side
+                        or the project side of the liquidity mining or airdrop
+                        activity announcement.
+                      </div>
                     </div>
                   </template>
                   <span
@@ -178,20 +186,37 @@
               </span>
             </span>
           </span>
-          <button
-            v-if="getPrincipalId"
-            type="button"
-            class="primary margin-left-auto"
-            @click="onCreatePool"
-            style="width: 150px; height: 32px"
+          <div
+            class="margin-left-auto"
+            style="display: flex; flex-direction: column; align-items: flex-end"
           >
-            <span v-show="currentPoolsMenu === 'public'">
-              Create a public pool
+            <button
+              v-if="getPrincipalId"
+              type="button"
+              class="primary"
+              @click="onCreatePool"
+              style="width: 150px; height: 32px"
+            >
+              <span v-show="currentPoolsMenu === 'public'">
+                Create a public pool
+              </span>
+              <span v-show="currentPoolsMenu === 'private'">
+                Create a private pool
+              </span>
+            </button>
+            <span
+              v-show="currentPoolsMenu === 'public'"
+              style="margin-top: 10px"
+            >
+              <a
+                href="https://github.com/iclighthouse/ICDex-Trader/blob/main/docs/Guide_for_SNS_treasury.md"
+                target="_blank"
+                rel="nofollow noreferrer noopener"
+                style="color: #adb3c4 !important"
+                >How to add liquidity from SNS treasury?</a
+              >
             </span>
-            <span v-show="currentPoolsMenu === 'private'">
-              Create a private pool
-            </span>
-          </button>
+          </div>
         </div>
         <div v-show="currentPoolsMenu === 'public'">
           <ul v-if="!poolLoad && poolsLoad.length > 0" class="pool-main mt20">
@@ -821,7 +846,7 @@
           <div
             v-show="!morePools && pools.length && pools.length > 6"
             class="main-color pointer"
-            style="margin-top: 10px; font-size: 16px"
+            style="margin: 25px 0 10px; font-size: 16px; text-align: center"
             @click="morePools = true"
           >
             More Pools
@@ -2661,6 +2686,7 @@ import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
+const ICLToken = 'hhaaz-2aaaa-aaaaq-aacla-cai';
 
 let loading;
 
@@ -2713,10 +2739,6 @@ export default class extends Vue {
       path: '/ICDex/pools'
     },
     {
-      value: 'NFT',
-      path: '/ICDex/NFT'
-    },
-    {
       value: 'Competitions',
       path: '/ICDex/competitions'
     }
@@ -2731,6 +2753,9 @@ export default class extends Vue {
   private ICDexRouterService: ICDexRouterService;
   private NftService: NftService = null;
   private ICDexService: ICDexService = null;
+  private icpPrice = '';
+  private BTCPrice = '';
+  private ETHPrice = '';
   private poolLoad = false;
   private morePools = false;
   private poolsLoad: Array<Pool> = [];
@@ -2816,14 +2841,23 @@ export default class extends Vue {
                     (item[3] && item[3].poolShares))
                 ) {
                   if (item[4] && item[4][0]) {
-                    poolsHold.push(item);
+                    if (item[2].pairInfo.token0[0].toString() === ICLToken) {
+                      poolsHold.unshift(item);
+                    } else {
+                      poolsHold.push(item);
+                    }
                   } else {
-                    pools.push(item);
+                    if (item[2].pairInfo.token0[0].toString() === ICLToken) {
+                      pools.unshift(item);
+                    } else {
+                      pools.push(item);
+                    }
                   }
                 }
               });
               this.poolsHold = poolsHold;
               this.pools = pools;
+              this.initSort();
             });
           break;
         }
@@ -3264,7 +3298,6 @@ export default class extends Vue {
       loading && loading.close();
       this.poolLoad = false;
       const canisterIds: Array<string> = [];
-      console.log(pools);
       pools.forEach((pool) => {
         pool[1].forEach((item) => {
           canisterIds.unshift(pool[0].toString());
@@ -3391,13 +3424,46 @@ export default class extends Vue {
         (!item[3] || !item[2].initialized || (item[3] && item[3].poolShares))
       ) {
         if (item[4] && item[4][0]) {
-          this.poolsHold.push(item);
+          if (item[2].pairInfo.token0[0].toString() === ICLToken) {
+            this.poolsHold.unshift(item);
+          } else {
+            this.poolsHold.push(item);
+          }
         } else {
-          this.pools.push(item);
+          if (item[2].pairInfo.token0[0].toString() === ICLToken) {
+            this.pools.unshift(item);
+          } else {
+            this.pools.push(item);
+          }
         }
       }
     });
     console.log(this.poolsLoad);
+    const fetchRes = await fetch(
+      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/2'
+    );
+    if (fetchRes && fetchRes.status === 200) {
+      const icpRes = await fetchRes.json();
+      this.icpPrice = (icpRes as any).success[0].rate;
+      console.log(this.icpPrice);
+    }
+    const BTCfetchRes = await fetch(
+      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12'
+    );
+    if (BTCfetchRes && BTCfetchRes.status === 200) {
+      const BTCRes = await BTCfetchRes.json();
+      this.BTCPrice = (BTCRes as any).success[0].rate;
+      console.log(this.BTCPrice);
+    }
+    const ETHfetchRes = await fetch(
+      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16'
+    );
+    if (ETHfetchRes && ETHfetchRes.status === 200) {
+      const ETHRes = await ETHfetchRes.json();
+      this.ETHPrice = (ETHRes as any).success[0].rate;
+      console.log(this.ETHPrice);
+    }
+    this.initSort();
     promiseAll = [];
     for (let i = 0; i < this.poolsPri.length; i++) {
       for (let j = 0; j < this.poolsPri[i][1].length; j++) {
@@ -3470,6 +3536,74 @@ export default class extends Vue {
         this.poolStats(pair, i, isPublic);
       }, 5 * 1000);
     }
+  }
+  private initSort(): void {
+    // this.poolsHold.sort((a, b) => {
+    //   const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
+    //   const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
+    //   const balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
+    //     .times(price0)
+    //     .div(10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals);
+    //   const balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
+    //     .times(price1)
+    //     .div(10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals);
+    //   if (balance0.gt(balance1)) {
+    //     return -1;
+    //   } else {
+    //     return 1;
+    //   }
+    // });
+    let ICLPool = [];
+    let lIndex = null;
+    this.pools.some((item, index) => {
+      if (item[2].pairInfo.token0[0].toString() === ICLToken) {
+        ICLPool.push(item);
+      } else {
+        lIndex = index;
+        return true;
+      }
+    });
+    console.log(lIndex);
+    let pools = [];
+    if (lIndex !== null) {
+      pools = this.pools.slice(lIndex);
+    }
+    pools.sort((a, b) => {
+      const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
+      const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
+      let balance0 = new BigNumber(0);
+      let balance1 = new BigNumber(0);
+      if (a[3] && a[3].poolBalance && b[3] && b[3].poolBalance) {
+        balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
+          .times(price0)
+          .div(10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals);
+        balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
+          .times(price1)
+          .div(10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals);
+      }
+      if (balance0.gt(balance1)) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    this.pools = ICLPool.concat(pools);
+  }
+  private getBasePrice(tokenSymbol: string): string {
+    let price = this.icpPrice;
+    if (tokenSymbol.toLocaleLowerCase().includes('btc')) {
+      price = this.BTCPrice;
+    }
+    if (tokenSymbol.toLocaleLowerCase().includes('eth')) {
+      price = this.ETHPrice;
+    }
+    if (
+      tokenSymbol.toLocaleLowerCase().includes('usdt') ||
+      tokenSymbol.toLocaleLowerCase().includes('usdc')
+    ) {
+      price = '1';
+    }
+    return price;
   }
   private isCreator(item: Array<[Principal, AccountId]>): boolean {
     if (item && item.length && this.getPrincipalId) {
@@ -3894,6 +4028,13 @@ export default class extends Vue {
         width: 80px;
       }
     }
+  }
+}
+</style>
+<style lang="scss">
+.yield-tooltip {
+  .ant-tooltip-inner {
+    padding: 0;
   }
 }
 </style>

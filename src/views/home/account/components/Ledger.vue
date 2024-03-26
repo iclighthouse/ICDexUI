@@ -41,9 +41,6 @@
               <button type="button" @click="showTopUp">
                 <span>Top-up</span>
               </button>
-              <button type="button" @click="showTraderAccounts">
-                <span>TraderAccounts</span>
-              </button>
               <router-link
                 class="button-history"
                 tag="button"
@@ -80,15 +77,12 @@
               style="padding-bottom: 20px; padding-top: 10px"
               class="operation ic-token-operation"
             >
-              <button type="button" @click="swapWallet">
-                <span>Transfer</span>
-              </button>
               <button
                 style="margin-right: 0 !important"
                 type="button"
-                @click="showTraderAccounts"
+                @click="swapWallet"
               >
-                <span>TraderAccounts</span>
+                <span>Transfer</span>
               </button>
             </div>
           </div>

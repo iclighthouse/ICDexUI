@@ -103,6 +103,22 @@
           <span>ICDex</span>
         </li>
         <li
+          @click="changeMenu('NFT', '/NFT')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
+          }"
+        >
+          <span>NFT</span>
+        </li>
+        <!--<li
+          @click="changeMenu('Airdrop', '/Airdrop')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
+          }"
+        >
+          <span>Airdrop</span>
+        </li>-->
+        <li
           @click="changeMenu('dapps', '/dapps')"
           :class="{
             active:
@@ -156,6 +172,7 @@
             hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
             hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
           "
+          style="padding: 0 20px; font-size: 12px"
         >
           <a
             :href="
@@ -204,7 +221,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.1
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.2
             </span>
           </span>
         </span>

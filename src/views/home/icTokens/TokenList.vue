@@ -291,7 +291,7 @@ import {
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
-import { toHttpError } from '@/ic/httpError';
+import { toHttpRejectError } from '@/ic/httpError';
 import { readState } from '@/ic/readState';
 import { BlackholeService } from '@/ic/Blackhole/blackholeService';
 
@@ -427,7 +427,7 @@ export default class extends Vue {
             );
           } catch (e) {
             console.log(e);
-            this.$message.error(toHttpError(e).message);
+            this.$message.error(toHttpRejectError(e));
           }
           this.spinning = false;
         } else {

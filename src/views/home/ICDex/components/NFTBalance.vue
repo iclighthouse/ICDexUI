@@ -144,7 +144,7 @@
               >Only Planet NEPTUNE cards can continue to operate.
             </span>
             <span v-if="type === 'CreateMaker'">
-              Only Planet NEPTUNE/URANUS/SATURN cards can continue to operate.
+              NEPTUNE/URANUS/SATURN cards can create OAMM at a discount.
             </span>
             <span v-if="type === 'ListingReferrer'">
               Only Planet URANUS cards can continue to operate.
@@ -230,8 +230,7 @@
               >Only Planet NEPTUNE cards can continue to operate.</span
             >
             <span v-if="type === 'CreateMaker'"
-              >Only Planet NEPTUNE, URANUS or SATURN cards can continue to
-              operate.</span
+              >NEPTUNE/URANUS/SATURN cards can create OAMM at a discount.</span
             >
             <span v-if="type === 'ListingReferrer'"
               >Only Planet URANUS cards can continue to operate.</span
@@ -715,8 +714,8 @@ export default class extends Vue {
     lowerLimit: '',
     upperLimit: '',
     spreadRate: '',
-    threshold: '',
-    volFactor: ''
+    threshold: '100000',
+    volFactor: '2'
   };
   private createMakerPoolFormRules = {
     pair: [
@@ -948,8 +947,8 @@ export default class extends Vue {
         this.createMakerPoolForm.threshold = '1000000.00';
         this.createMakerPoolForm.volFactor = '10000';
       } else {
-        this.createMakerPoolForm.threshold = '';
-        this.createMakerPoolForm.volFactor = '';
+        this.createMakerPoolForm.threshold = '100000';
+        this.createMakerPoolForm.volFactor = '2';
       }
     });
   }
@@ -1486,9 +1485,9 @@ export default class extends Vue {
   }
   private onWithdraw(nft: NFT): void {
     const type = Object.keys(nft[3])[0];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
     if (type === 'NEPTUNE') {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const that = this;
       this.$confirm({
         content: 'Withdraw NFT will unbind Makers.',
         class: 'connect-plug',
@@ -1525,52 +1524,63 @@ export default class extends Vue {
         }
       });
     } else {
-      console.log(nft[1]);
-      const loading = this.$loading({
-        lock: true,
-        background: 'rgba(0, 0, 0, 0.5)'
-      });
-      if (this.type === 'ListingReferrer') {
-        let flag = false;
-        this.NFTStaked.some((item) => {
-          if (item[1] === nft[1]) {
-            if (
-              new BigNumber(item[2].toString(10))
-                .div(10 ** 6)
-                .gt(new Date().getTime())
-            ) {
-              flag = true;
+      this.$confirm({
+        content:
+          'Withdrawing this NFT may cause the function it is bound to to be disabled.',
+        class: 'connect-plug',
+        icon: 'connect-plug',
+        centered: true,
+        okText: 'Confirm',
+        cancelText: 'Cancel',
+        onOk() {
+          console.log(nft[1]);
+          const loading = that.$loading({
+            lock: true,
+            background: 'rgba(0, 0, 0, 0.5)'
+          });
+          if (that.type === 'ListingReferrer') {
+            let flag = false;
+            that.NFTStaked.some((item) => {
+              if (item[1] === nft[1]) {
+                if (
+                  new BigNumber(item[2].toString(10))
+                    .div(10 ** 6)
+                    .gt(new Date().getTime())
+                ) {
+                  flag = true;
+                }
+                return true;
+              }
+            });
+            if (flag) {
+              that.$message
+                .warning(`Your NFT has sponsored ${that.NFTStakedPairs} trading pairs with a
+            lockup period of ${that.lockedTime} days.`);
+              loading.close();
+              return;
             }
-            return true;
+            that.ICSwapRouterFiduciaryService.NFTWithdraw([nft[1]])
+              .then(() => {
+                that.$message.success('Success');
+                that.$emit('NFTWithdrawSuccess');
+                that.currentDepositedNft = null;
+              })
+              .finally(() => {
+                loading.close();
+              });
+          } else {
+            that.ICDexRouterService.NFTWithdraw([nft[1]])
+              .then(() => {
+                that.$message.success('Success');
+                that.$emit('NFTWithdrawSuccess');
+                that.currentDepositedNft = null;
+              })
+              .finally(() => {
+                loading.close();
+              });
           }
-        });
-        if (flag) {
-          this.$message
-            .warning(`Your NFT has sponsored ${this.NFTStakedPairs} trading pairs with a
-            lockup period of ${this.lockedTime} days.`);
-          loading.close();
-          return;
         }
-        this.ICSwapRouterFiduciaryService.NFTWithdraw([nft[1]])
-          .then(() => {
-            this.$message.success('Success');
-            this.$emit('NFTWithdrawSuccess');
-            this.currentDepositedNft = null;
-          })
-          .finally(() => {
-            loading.close();
-          });
-      } else {
-        this.ICDexRouterService.NFTWithdraw([nft[1]])
-          .then(() => {
-            this.$message.success('Success');
-            this.$emit('NFTWithdrawSuccess');
-            this.currentDepositedNft = null;
-          })
-          .finally(() => {
-            loading.close();
-          });
-      }
+      });
     }
   }
   private getImg(nftType: NFTType): string {

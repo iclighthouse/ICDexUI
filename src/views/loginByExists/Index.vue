@@ -411,48 +411,46 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
     this.spinning = false;
   }
-  private onSubmit(e): void {
+  private async onSubmit(e): Promise<void> {
     e.preventDefault();
     this.spinning = true;
-    setTimeout(async () => {
-      try {
-        const encryptIdentity = JSON.parse(this.priList[this.selectedAccount]);
-        let salt = 'ICLightHouse';
-        let data = encryptIdentity;
-        if (encryptIdentity.salt) {
-          salt = encryptIdentity.salt;
-          data = encryptIdentity.encryptIdentity;
-        }
-        const identityJson = await decrypt(data, this.password, salt);
-        let identity;
-        if (JSON.parse(identityJson)[1].length > 64) {
-          identity = Ed25519KeyIdentity.fromJSON(identityJson as string);
-        } else {
-          identity = Secp256k1KeyIdentity.fromJSON(identityJson as string);
-        }
-        localStorage.setItem('principal', this.selectedAccount);
-        this.setPrincipalId(this.selectedAccount);
-        this.setIdentity(identity);
-        localStorage.setItem('identity', localStorage.getItem('principal'));
-        // sessionStorage.setItem('identity', JSON.stringify(identity));
-        this.spinning = false;
-        this.setCheckAuth(false);
-        if (this.$route.query.redirect) {
-          this.$router.push(this.$route.query.redirect as any).catch(() => {
-            return;
-          });
-        } else {
-          this.$router.push('/account').catch(() => {
-            return;
-          });
-        }
-      } catch (e) {
-        this.spinning = false;
-        console.log(e);
-        this.$message.config({ top: '45%' });
-        this.$message.error("Password doesn't match");
+    try {
+      const encryptIdentity = JSON.parse(this.priList[this.selectedAccount]);
+      let salt = 'ICLightHouse';
+      let data = encryptIdentity;
+      if (encryptIdentity.salt) {
+        salt = encryptIdentity.salt;
+        data = encryptIdentity.encryptIdentity;
       }
-    }, 20);
+      const identityJson = await decrypt(data, this.password, salt);
+      let identity;
+      if (JSON.parse(identityJson)[1].length > 64) {
+        identity = Ed25519KeyIdentity.fromJSON(identityJson as string);
+      } else {
+        identity = Secp256k1KeyIdentity.fromJSON(identityJson as string);
+      }
+      localStorage.setItem('principal', this.selectedAccount);
+      this.setPrincipalId(this.selectedAccount);
+      this.setIdentity(identity);
+      localStorage.setItem('identity', localStorage.getItem('principal'));
+      // sessionStorage.setItem('identity', JSON.stringify(identity));
+      this.spinning = false;
+      this.setCheckAuth(false);
+      if (this.$route.query.redirect) {
+        this.$router.push(this.$route.query.redirect as any).catch(() => {
+          return;
+        });
+      } else {
+        this.$router.push('/account').catch(() => {
+          return;
+        });
+      }
+    } catch (e) {
+      this.spinning = false;
+      console.log(e);
+      this.$message.config({ top: '45%' });
+      this.$message.error("Password doesn't match");
+    }
   }
 }
 </script>

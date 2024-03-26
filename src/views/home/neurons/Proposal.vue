@@ -649,10 +649,11 @@ export default class extends Vue {
   }
   private back(): void {
     if (
+      !this.hasPath ||
       this.hasPath === '/' ||
-      this.hasPath.includes('login') ||
-      this.hasPath.includes('sign') ||
-      this.hasPath.includes('error')
+      this.hasPath.toLocaleLowerCase().includes('login') ||
+      this.hasPath.toLocaleLowerCase().includes('sign') ||
+      this.hasPath.toLocaleLowerCase().includes('error')
     ) {
       this.$router.replace(`/nns/proposals`);
     } else {

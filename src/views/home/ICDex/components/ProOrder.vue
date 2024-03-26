@@ -1479,7 +1479,7 @@ const ProSubaccountId = 1;
   filters: {
     stoUpdateFee(poFee1: bigint, decimals: number): string {
       return new BigNumber(poFee1.toString(10))
-        .times(0.2)
+        .times(0.05)
         .div(10 ** decimals)
         .toString(10);
     },
@@ -3037,6 +3037,10 @@ export default class extends Vue {
     (this.$refs.iceForm as any).validate(async (valid: any) => {
       console.log(this.iceForm);
       if (valid) {
+        const flag = this.canRun();
+        if (!flag) {
+          return;
+        }
         await checkAuth();
         const loading = this.$loading({
           lock: true,
@@ -3148,6 +3152,75 @@ export default class extends Vue {
         loading.close();
       }
     });
+  }
+  private canRun(item: STOrder = null): boolean {
+    if (
+      this.currentPair &&
+      this.tokens &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()].decimals &&
+      this.tokens[this.currentPair[1][0].token1[0].toString()].decimals
+    ) {
+      const token0Id = this.currentPair[1][0].token0[0].toString();
+      const token1Id = this.currentPair[1][0].token1[0].toString();
+      const unitSize100 = new BigNumber(this.unit.toString(10))
+        .times(100)
+        .toString(10);
+      const unitSize100Token1 = new BigNumber(unitSize100)
+        .times(this.currentTokenPrice)
+        .toString(10);
+      if (
+        !item &&
+        new BigNumber(this.tokensBalanceSto[token0Id]).lt(unitSize100) &&
+        new BigNumber(this.tokensBalanceSto[token1Id]).lt(unitSize100Token1) &&
+        new BigNumber(this.keepingBalanceSto[token0Id]).lt(unitSize100) &&
+        new BigNumber(this.keepingBalanceSto[token1Id]).lt(unitSize100Token1)
+      ) {
+        const value = new BigNumber(unitSize100)
+          .div(10 ** this.tokens[token0Id].decimals)
+          .toString(10);
+        this.$message.error(
+          `Pro-orders require that the Trader Account's ${this.tokens[token0Id].symbol} or ${this.tokens[token1Id].symbol} balance is not less than the value of ${value} ${this.tokens[token0Id].symbol}.`
+        );
+        return false;
+      } else if (item) {
+        const type = Object.keys(
+          (item.strategy as { IcebergOrder: IcebergOrder }).IcebergOrder.setting
+            .order.side
+        )[0];
+        if (type === 'Buy') {
+          if (
+            new BigNumber(this.keepingBalanceSto[token1Id]).lt(
+              unitSize100Token1
+            )
+          ) {
+            const value = new BigNumber(unitSize100Token1)
+              .div(10 ** this.tokens[token1Id].decimals)
+              .toString(10);
+            this.$message.error(
+              `The Trader Account's ${this.tokens[token1Id].symbol} balance is not less than the value of ${value} ${this.tokens[token1Id].symbol}.`
+            );
+            return false;
+          } else {
+            return true;
+          }
+        } else if (type === 'Sell') {
+          if (new BigNumber(this.keepingBalanceSto[token0Id]).lt(unitSize100)) {
+            const value = new BigNumber(unitSize100)
+              .div(10 ** this.tokens[token0Id].decimals)
+              .toString(10);
+            this.$message.error(
+              `The Trader Account's ${this.tokens[token0Id].symbol} balance is not less than the value of ${value} ${this.tokens[token0Id].symbol}.`
+            );
+            return false;
+          } else {
+            return true;
+          }
+        }
+      } else {
+        return true;
+      }
+    }
+    return false;
   }
   private async onSubmit(): Promise<void> {
     await checkAuth();

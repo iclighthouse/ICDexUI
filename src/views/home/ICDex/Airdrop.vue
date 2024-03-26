@@ -18,7 +18,7 @@
                 v-model="queryForm.owner"
                 autocomplete="off"
                 placeholder="Owner(Principal)"
-                @change="queryIcl = ''"
+                @change="queryIcl = null"
               />
             </a-form-model-item>
             <a-form-model-item label="Subaccount (Hex)" prop="subaccount">
@@ -26,28 +26,44 @@
                 v-model="queryForm.subaccount"
                 autocomplete="off"
                 placeholder="Subaccount (optional)"
-                @change="queryIcl = ''"
+                @change="queryIcl = null"
               />
             </a-form-model-item>
           </div>
           <a-form-model-item>
             <button
+              :disabled="!canClaim"
               @click="queryAirdrop"
-              class="primary large-primary w100 mt20"
+              class="primary large-primary w100"
             >
               Query
             </button>
+            <div
+              v-if="queryIcl && queryForm.owner"
+              class="base-font-title"
+              style="margin-top: 8px"
+            >
+              <span
+                v-show="
+                  (queryIcl.available && queryIcl.credit) || !queryIcl.credit
+                "
+              >
+                Available: {{ queryIcl.available | bigintToFloat(8, 8) }} ICL
+              </span>
+              <span v-show="!queryIcl.available && queryIcl.credit">
+                Claimed: {{ queryIcl.credit | bigintToFloat(8, 8) }} ICL
+              </span>
+              <div style="margin-top: 8px" v-if="claimLog.length">
+                Status: {{ Object.keys(claimLog[0].status)[0] }}; Value:
+                {{ claimLog[0].value | bigintToFloat(8, 8) }} ICL; Time:
+                {{
+                  Math.floor(Number(claimLog[0].time) / 1000)
+                    | formatDateFromSecondUTC
+                }}
+              </div>
+            </div>
           </a-form-model-item>
         </a-form-model>
-        <div v-show="queryIcl && queryForm.owner">
-          <div v-show="claimLog.length">Claim log</div>
-          <div>
-
-					</div>
-          <span>
-            &nbsp;({{ queryIcl | bigintToFloat(8, 8) }} ICL available)
-          </span>
-        </div>
       </div>
       <div class="airdrops-item" style="margin-top: 40px">
         <a-form-model
@@ -73,8 +89,9 @@
           </div>
           <a-form-model-item>
             <button
+              :disabled="!canClaim"
               @click="claimAirdrop"
-              class="primary large-primary w100 mt20"
+              class="primary large-primary w100"
             >
               Claim
             </button>
@@ -115,36 +132,50 @@
           </div>
           <a-form-model-item>
             <button
+              :disabled="!canClaim"
               @click="queryNFTAirdrop"
-              class="primary large-primary w100 mt20"
+              class="primary large-primary w100"
             >
               Query
-              <span
+            </button>
+            <div class="base-font-title" style="margin-top: 8px">
+              <div
                 v-if="
                   queryNFTIcl &&
                   queryNFTIcl.available &&
+                  queryNFTIcl.credit &&
                   queryNFTForm.NFTId &&
                   queryNFTForm.NFTId <= 2021
                 "
               >
-                &nbsp;({{ queryNFTIcl | bigintToFloat(8, 8) }} ICL can be
-                claimed with NFT)
-              </span>
-              <span
+                Available: {{ queryNFTIcl.available | bigintToFloat(8, 8) }} ICL
+              </div>
+              <div
                 v-if="
                   queryNFTIcl &&
                   !queryNFTIcl.available &&
-                  queryNFTIcl.message &&
+                  queryNFTIcl.credit &&
                   queryNFTForm.NFTId &&
                   queryNFTForm.NFTId <= 2021
                 "
               >
-                &nbsp;({{ queryNFTIcl.message }})
-              </span>
-              <span v-show="queryNFTForm.NFTId > 2021">
-                &nbsp;(This NFT does not exist)
-              </span>
-            </button>
+                Claimed: {{ queryNFTIcl.credit | bigintToFloat(8, 8) }} ICL
+              </div>
+              <div v-show="queryNFTForm.NFTId > 2021">
+                This NFT does not exist
+              </div>
+              <div
+                style="margin-top: 8px"
+                v-if="queryNFTIcl && claimNFTLog.length"
+              >
+                Status: {{ Object.keys(claimNFTLog[0].status)[0] }}; Value:
+                {{ claimNFTLog[0].value | bigintToFloat(8, 8) }} ICL; Time:
+                {{
+                  Math.floor(Number(claimNFTLog[0].time) / 1000)
+                    | formatDateFromSecondUTC
+                }}
+              </div>
+            </div>
           </a-form-model-item>
         </a-form-model>
       </div>
@@ -180,8 +211,9 @@
           </div>
           <a-form-model-item>
             <button
+              :disabled="!canClaim"
               @click="claimNFTAirdrop"
-              class="primary large-primary w100 mt20"
+              class="primary large-primary w100"
             >
               Claim
             </button>
@@ -196,12 +228,17 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { validateCanister } from '@/utils/validate';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
-import { NFT_CANISTER_ID, validateAccount } from '@/ic/utils';
+import {
+  AIRDROP_CANISTER_ID,
+  NFT_CANISTER_ID,
+  validateAccount
+} from '@/ic/utils';
 import { AirdropService } from '@/ic/airdrop/airdropService';
 import { toHttpRejectError } from '@/ic/httpError';
 import { Principal } from '@dfinity/principal';
 import { getTokenIdentifier, hexToBytes } from '@/ic/converter';
 import { AirDrop, ClaimLog, ClaimWithNftLog } from '@/ic/airdrop/model';
+import { getCandidInterfaceTmpHack } from '@/ic/getCandidInterfaceTmpHack';
 
 @Component({
   name: 'Airdrop',
@@ -220,7 +257,7 @@ export default class extends Vue {
       callback();
     }
   };
-  private queryIcl = '';
+  private queryIcl: AirDrop = null;
   private queryNFTIcl: AirDrop = null;
   private queryForm = {
     owner: '',
@@ -295,11 +332,18 @@ export default class extends Vue {
   };
   private claimLog: Array<ClaimLog> = [];
   private claimNFTLog: Array<ClaimWithNftLog> = [];
+  private canClaim = false;
   created(): void {
     this.airdropService = new AirdropService();
+    this.check();
+  }
+  private async check(): Promise<void> {
+    const params = await getCandidInterfaceTmpHack(AIRDROP_CANISTER_ID);
+    console.log(params);
+    this.canClaim = !!params.checkAirDropWithNft;
   }
   private queryAirdrop(): void {
-    this.queryIcl = '';
+    this.queryIcl = null;
     (this.$refs.queryForm as any).validate(async (valid: any) => {
       if (valid) {
         const loading = this.$loading({
@@ -317,7 +361,7 @@ export default class extends Vue {
             subaccount
           );
           console.log(res);
-          this.queryIcl = res.available.toString(10);
+          this.queryIcl = res;
         } catch (e) {
           console.log(e);
           this.$message.error(toHttpRejectError(e));
@@ -359,7 +403,7 @@ export default class extends Vue {
   private queryNFTAirdrop(): void {
     this.queryNFTIcl = null;
     (this.$refs.queryNFTForm as any).validate(async (valid: any) => {
-      if (valid) {
+      if (valid && this.queryNFTForm.NFTId <= 2021) {
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'

@@ -162,7 +162,7 @@
             <span>NFT</span>
           </router-link>
         </a-menu-item>
-        <!--<a-menu-item
+        <a-menu-item
           class="user-setting-item"
           @click="changeMenu('Airdrop', '/Airdrop')"
           :class="{
@@ -172,7 +172,7 @@
           <router-link to="/nft">
             <span>Airdrop</span>
           </router-link>
-        </a-menu-item>-->
+        </a-menu-item>
         <a-menu-item
           class="user-setting-item"
           @click="changeMenu('dapps', '/dapps')"

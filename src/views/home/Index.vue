@@ -389,10 +389,7 @@
           <span style="color: #646e79">(to be discarded)</span>
         </div>
       </div>
-      <div
-        v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
-        class="container-width-disclaimers"
-      >
+      <div class="container-width-disclaimers">
         <span class="disclaimers">
           ICLighthouse is a community-driven decentralised project, which is
           considered a community collaboration dedicated to developing

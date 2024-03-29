@@ -1,4 +1,3 @@
-import { createService } from '@/ic/createService';
 import Service, { AirDrop, ClaimLog, ClaimWithNftLog } from '@/ic/airdrop/model';
 import airdropIDL from './airdrop.did';
 import { AIRDROP_CANISTER_ID } from '@/ic/utils';

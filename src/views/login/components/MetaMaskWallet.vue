@@ -202,7 +202,7 @@ export default class extends Vue {
           return;
         });
       } else {
-        this.$router.push('/account').catch(() => {
+        this.$router.push('/ICDex').catch(() => {
           return;
         });
       }

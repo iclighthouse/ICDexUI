@@ -583,6 +583,7 @@ export class PairsMixin extends Vue {
     this.wallets.forEach((item) => {
       canisterIds.push(item.walletId.toString());
     });
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     if (flag) {
       // const h = this.$createElement;
@@ -731,7 +732,7 @@ export class PairsMixin extends Vue {
   }
   public async initLiquidity(): Promise<void> {
     if (this.currentPool && this.currentPool.length) {
-      const info = this.currentPool[1] as [SwapPair, bigint]
+      const info = this.currentPool[1] as [SwapPair, bigint];
       if (!this.swapId) {
         this.tokenSwapFrom = [
           ...info[0].token0,
@@ -742,9 +743,7 @@ export class PairsMixin extends Vue {
           this.tokens[info[0].token1[0].toString()]
         ];
         this.swapId = this.currentPool[0].toString();
-        this.currentRoute = [
-          [Principal.fromText(this.swapId), info]
-        ];
+        this.currentRoute = [[Principal.fromText(this.swapId), info]];
       }
       const promiseAllValue = [];
       promiseAllValue.push(

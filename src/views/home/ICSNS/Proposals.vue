@@ -92,7 +92,14 @@
               ></vue-markdown>
             </div>
             <div class="proposals-list-item-footer">
-              <span v-if="SNSTokens && SNSTokens[currentIndex]">
+              <span
+                v-if="
+                  SNSTokens &&
+                  SNSTokens[currentIndex] &&
+                  SNSTokens[currentIndex].types &&
+                  SNSTokens[currentIndex].types[item.action.toString(10)]
+                "
+              >
                 {{
                   SNSTokens[currentIndex].types[item.action.toString(10)]
                     .name === 'Deegister Dapp Canisters'
@@ -244,6 +251,7 @@ import MakerProposal from '@/views/home/ICSNS/components/MakerProposal.vue';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { namespace } from 'vuex-class';
 import { SNSSwapService } from '@/ic/SNSSwap/SNSSwapService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -513,6 +521,7 @@ export default class extends Vue {
         this.deployedSnses.unshift(item);
       }
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};

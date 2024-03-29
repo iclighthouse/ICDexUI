@@ -294,6 +294,7 @@ import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { toHttpRejectError } from '@/ic/httpError';
 import { readState } from '@/ic/readState';
 import { BlackholeService } from '@/ic/Blackhole/blackholeService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -468,6 +469,7 @@ export default class extends Vue {
     res.forEach((item) => {
       canisterIds.push(item[0].toString());
     });
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     const connectInfinity = await needConnectInfinity(canisterIds);
     // eslint-disable-next-line @typescript-eslint/no-this-alias

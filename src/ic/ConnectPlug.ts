@@ -26,10 +26,10 @@ export default class ConnectPlug {
     if (requireAuth) {
       loading = Vue.prototype.$loading({
         lock: true,
-        text: 'Initialized Plug...',
+        text: 'Connecting Plug...',
         background: 'rgba(0, 0, 0, 0.5)'
       });
-      loading.setText('Initialized Plug...');
+      loading.setText('Connecting Plug...');
     }
     try {
       const connected = await plugIc.plug.isConnected();

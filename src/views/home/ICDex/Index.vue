@@ -228,7 +228,8 @@
                       !(currentTradeMarketSort === 'Third' && !showThird) &&
                       currentPairIndex !== null &&
                       pairs[currentPairIndex] &&
-                      currentPair[3] === currentTradeMarketSort &&
+                      (currentPair[3] === currentTradeMarketSort ||
+                        !pair[1][0].marketBoard) &&
                       pair[1][0].canisterId.toString() ===
                         currentPair[1][0].canisterId.toString()
                   }"
@@ -237,7 +238,7 @@
                     <template slot="title">
                       <dl
                         v-show="
-                          currentPair[1][0].token1[0].toString() !==
+                          pair[1][0].token1[0].toString() !==
                           'hhaaz-2aaaa-aaaaq-aacla-cai'
                         "
                       >
@@ -10300,7 +10301,8 @@
                     !(currentTradeMarketSort === 'Third' && !showThird) &&
                     currentPairIndex !== null &&
                     pairs[currentPairIndex] &&
-                    currentPair[3] === currentTradeMarketSort &&
+                    (currentPair[3] === currentTradeMarketSort ||
+                      !pair[1][0].marketBoard) &&
                     pair[1][0].canisterId.toString() ===
                       currentPair[1][0].canisterId.toString()
                 }"
@@ -12510,6 +12512,8 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
 import {
+  DexName,
+  SwapCanister,
   SwapConfig,
   SwapTokenInfo,
   TrieListData1,
@@ -19172,6 +19176,7 @@ export default class extends Vue {
       }
     });
     canisterIds = [...new Set(canisterIds)];
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -19853,10 +19858,7 @@ export default class extends Vue {
           for (let i = 0; i < pairs.length; i++) {
             const currentPair = pairs[i][1] as TrieListData1SwapPair;
             if (token0 === 'pair') {
-              if (
-                currentPair.pair.canisterId.toString() ===
-                token1.toLocaleLowerCase()
-              ) {
+              if (currentPair.pair.canisterId.toString() === token1) {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
                 break;
@@ -19873,6 +19875,39 @@ export default class extends Vue {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
                 break;
+              }
+            }
+          }
+          if (token0 === 'pair' && !currentPairId) {
+            if (!currentPairId) {
+              try {
+                const res = await this.currentICDexService.info(token1);
+                console.log(res);
+                if (res) {
+                  this.tradePairs.Third.push([
+                    Principal.fromText(token1),
+                    [
+                      {
+                        feeRate: new BigNumber(
+                          res.pairInfo.setting.TRADING_FEE.toString(10)
+                        )
+                          .div(10 ** 6)
+                          .toString(10),
+                        token0: res.pairInfo.token0,
+                        token1: res.pairInfo.token1,
+                        dexName: res.pairInfo.name,
+                        canisterId: Principal.fromText(token1)
+                      },
+                      BigInt(0)
+                    ],
+                    null,
+                    'Old'
+                  ]);
+                  currentPairId = token1;
+                  currentStage = 'STAGE0';
+                }
+              } catch (e) {
+                console.log(e);
               }
             }
           }
@@ -19922,10 +19957,7 @@ export default class extends Vue {
           // }
           for (let i = 0; i < this.pairs.length; i++) {
             if (token0 === 'pair') {
-              if (
-                this.pairs[i][1][0].canisterId.toString() ===
-                token1.toLocaleLowerCase()
-              ) {
+              if (this.pairs[i][1][0].canisterId.toString() === token1) {
                 this.currentPairIndex = i;
                 this.currentPair = this.pairs[this.currentPairIndex];
                 break;
@@ -19945,6 +19977,8 @@ export default class extends Vue {
               }
             }
           }
+          console.log(this.currentPairIndex);
+          console.log(this.currentPair);
           if (!this.currentPair && this.$route.name === 'ICDex') {
             if (this.tradePairs.Main.length) {
               this.currentTradeMarketSort = 'Main';

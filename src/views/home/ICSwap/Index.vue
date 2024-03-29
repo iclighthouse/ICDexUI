@@ -67,6 +67,7 @@ import {
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 @Component({
   name: 'Index',
@@ -205,6 +206,7 @@ export default class extends Mixins(BalanceMixin) {
           });
         }
         canisterIds = [...new Set(canisterIds)];
+        await checkAuth();
         const flag = needConnectPlug(canisterIds);
         const principal = localStorage.getItem('principal');
         const priList = JSON.parse(localStorage.getItem('priList')) || {};

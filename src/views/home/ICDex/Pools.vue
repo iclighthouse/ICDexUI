@@ -2683,6 +2683,7 @@ import Launch from '@/views/home/ICDex/components/Launch.vue';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
+import { checkAuth } from '@/ic/CheckAuth';
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
@@ -3317,6 +3318,7 @@ export default class extends Vue {
   }
   private async needConnect(canisterIds: Array<string>): Promise<void> {
     console.log(canisterIds);
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     const principal = localStorage.getItem('principal');
     // if (!principal) {

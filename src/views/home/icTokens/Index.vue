@@ -36,6 +36,7 @@ import {
   currentPageConnectInfinity,
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
+import { checkAuth } from '@/ic/CheckAuth';
 
 @Component({
   name: 'Index',
@@ -93,6 +94,7 @@ export default class extends Vue {
       canisterIds.push(item[0].toString());
     });
     canisterIds = [...new Set(canisterIds)];
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     if (flag && this.$route.name === 'icTokens') {
       // const h = this.$createElement;

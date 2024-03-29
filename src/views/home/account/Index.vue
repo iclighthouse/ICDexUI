@@ -2051,6 +2051,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
     canisterIds = [...new Set(canisterIds)];
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     console.log(flag, this.$route);
     const priList = JSON.parse(localStorage.getItem('priList')) || {};

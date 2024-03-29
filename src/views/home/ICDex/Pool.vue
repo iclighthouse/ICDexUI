@@ -980,6 +980,7 @@ import { readState } from '@/ic/readState';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -1338,6 +1339,7 @@ export default class extends Vue {
     });
     ids = [...new Set(ids)];
     console.log(ids);
+    await checkAuth();
     const flag = needConnectPlug(ids);
     const connectInfinity = await needConnectInfinity(ids);
     const principal = localStorage.getItem('principal');

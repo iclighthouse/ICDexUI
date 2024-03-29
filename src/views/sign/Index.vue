@@ -219,7 +219,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         return;
       });
     } else {
-      this.$router.push('/account').catch(() => {
+      this.$router.push('/ICDex').catch(() => {
         return;
       });
     }
@@ -258,7 +258,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
               return;
             });
           } else {
-            this.$router.push('/account').catch(() => {
+            this.$router.push('/ICDex').catch(() => {
               return;
             });
           }
@@ -293,7 +293,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
               return;
             });
           } else {
-            this.$router.push('/account').catch(() => {
+            this.$router.push('/ICDex').catch(() => {
               return;
             });
           }
@@ -322,7 +322,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           return;
         });
       } else {
-        this.$router.push('/account').catch(() => {
+        this.$router.push('/ICDex').catch(() => {
           return;
         });
       }
@@ -373,7 +373,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           return;
         });
       } else {
-        this.$router.push('/account').catch(() => {
+        this.$router.push('/ICDex').catch(() => {
           return;
         });
       }

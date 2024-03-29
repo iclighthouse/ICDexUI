@@ -2969,6 +2969,7 @@ export default class extends Mixins(BalanceMixin) {
     this.wallets.forEach((item) => {
       canisterIds.push(item.walletId.toString());
     });
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     const connectInfinity = await needConnectInfinity(canisterIds);
     if (flag && this.$route.name === 'CyclesFinance') {

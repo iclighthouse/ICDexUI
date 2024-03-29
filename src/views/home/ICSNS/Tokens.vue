@@ -114,6 +114,7 @@ import {
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
 import { SNSSwapService } from '@/ic/SNSSwap/SNSSwapService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -215,6 +216,7 @@ export default class extends Vue {
         listDeployedSnses.unshift(item);
       }
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};

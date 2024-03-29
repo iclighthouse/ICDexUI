@@ -114,6 +114,18 @@
             </span>
           </div>
         </div>
+        <div
+          class="proposal-item"
+          style="line-height: 1.2"
+          v-if="
+            proposal &&
+            getStatus(proposal) === 'Failed' &&
+            proposal.failure_reason.length
+          "
+        >
+          <div class="proposal-item-title">Failure reason</div>
+          <div>{{ proposal.failure_reason[0].error_message }}</div>
+        </div>
         <div class="proposal-item pc-show" v-if="proposal">
           <div class="proposal-item-title">Summary</div>
           <vue-markdown
@@ -782,6 +794,7 @@ export default class extends Vue {
         ]);
       });
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};

@@ -1,7 +1,7 @@
 <template>
   <div class="container-width">
     <div class="airdrops-main">
-      <div class="airdrops-main-title">Airdrop Event 2024</div>
+      <div class="airdrops-main-title">Airdrop Event 24-02</div>
       <div>
         The amount of airdrops is calculated based on the ICDex volume of
         earlier versions and the CoinSeconds of the DRC20 ICL.
@@ -31,11 +31,7 @@
             </a-form-model-item>
           </div>
           <a-form-model-item>
-            <button
-              :disabled="!canClaim"
-              @click="queryAirdrop"
-              class="primary large-primary w100"
-            >
+            <button @click="queryAirdrop" class="primary large-primary">
               Query
             </button>
             <div
@@ -91,9 +87,17 @@
             <button
               :disabled="!canClaim"
               @click="claimAirdrop"
-              class="primary large-primary w100"
+              class="primary large-primary flex-center"
             >
               Claim
+              <span class="flex-center" v-show="!canClaim"
+                >&nbsp;(starting soon&nbsp;
+                <a-statistic-countdown
+                  class="voting-power-countdown"
+                  :value="deadline"
+                  format="DD:HH:mm:ss"
+                />)</span
+              >
             </button>
           </a-form-model-item>
         </a-form-model>
@@ -120,7 +124,7 @@
           :rules="queryNFTFormRules"
         >
           <div class="flex-center airdrops-item-flex airdrops-item-flex-nft">
-            <a-form-model-item label="NFT Index or NFT ID" prop="NFTId">
+            <a-form-model-item label="NFT Index" prop="NFTId">
               <a-input
                 v-model="queryNFTForm.NFTId"
                 autocomplete="off"
@@ -131,11 +135,7 @@
             </a-form-model-item>
           </div>
           <a-form-model-item>
-            <button
-              :disabled="!canClaim"
-              @click="queryNFTAirdrop"
-              class="primary large-primary w100"
-            >
+            <button @click="queryNFTAirdrop" class="primary large-primary">
               Query
             </button>
             <div class="base-font-title" style="margin-top: 8px">
@@ -185,7 +185,7 @@
           ref="claimNFTForm"
           :rules="claimNFTFormRules"
         >
-          <a-form-model-item label="NFT Index or NFT ID" prop="NFTId">
+          <a-form-model-item label="NFT Index" prop="NFTId">
             <a-input
               v-model="claimNFTForm.NFTId"
               autocomplete="off"
@@ -209,13 +209,29 @@
               />
             </a-form-model-item>
           </div>
+          <div
+            class="base-warning"
+            style="margin: -5px 0 20px; font-size: 12px; line-height: 1.2"
+          >
+            WARNING: Airdrops will be sent to the above account, make sure your
+            wallet (e.g. ICLight, Plug) supports ICRC1 ICL token. It is
+            recommended to transfer NFTs to a wallet such as ICLight, Plug, etc.
+            and then log in here to claim it.
+          </div>
           <a-form-model-item>
             <button
               :disabled="!canClaim"
               @click="claimNFTAirdrop"
-              class="primary large-primary w100"
+              class="primary large-primary"
             >
-              Claim
+              Claim<span class="flex-center" v-show="!canClaim"
+                >&nbsp;(starting soon&nbsp;
+                <a-statistic-countdown
+                  class="voting-power-countdown"
+                  :value="deadline"
+                  format="DD:HH:mm:ss"
+                />)</span
+              >
             </button>
           </a-form-model-item>
         </a-form-model>
@@ -228,17 +244,13 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { validateCanister } from '@/utils/validate';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
-import {
-  AIRDROP_CANISTER_ID,
-  NFT_CANISTER_ID,
-  validateAccount
-} from '@/ic/utils';
+import { NFT_CANISTER_ID, validateAccount } from '@/ic/utils';
 import { AirdropService } from '@/ic/airdrop/airdropService';
 import { toHttpRejectError } from '@/ic/httpError';
 import { Principal } from '@dfinity/principal';
 import { getTokenIdentifier, hexToBytes } from '@/ic/converter';
 import { AirDrop, ClaimLog, ClaimWithNftLog } from '@/ic/airdrop/model';
-import { getCandidInterfaceTmpHack } from '@/ic/getCandidInterfaceTmpHack';
+import BigNumber from 'bignumber.js';
 
 @Component({
   name: 'Airdrop',
@@ -333,14 +345,20 @@ export default class extends Vue {
   private claimLog: Array<ClaimLog> = [];
   private claimNFTLog: Array<ClaimWithNftLog> = [];
   private canClaim = false;
+  private deadline = null;
   created(): void {
     this.airdropService = new AirdropService();
     this.check();
   }
   private async check(): Promise<void> {
-    const params = await getCandidInterfaceTmpHack(AIRDROP_CANISTER_ID);
-    console.log(params);
-    this.canClaim = !!params.checkAirDropWithNft;
+    const time = 1711612800000;
+    const now = new Date().getTime();
+    this.canClaim = now > time;
+    console.log(this.canClaim);
+    if (!this.canClaim) {
+      this.deadline = time;
+    }
+    console.log(this.deadline);
   }
   private queryAirdrop(): void {
     this.queryIcl = null;
@@ -455,14 +473,18 @@ export default class extends Vue {
     });
   }
   private async getClaimLog(): Promise<void> {
-    let subaccount = [];
-    if (this.queryForm.subaccount) {
-      subaccount = [hexToBytes(this.queryForm.subaccount)];
+    try {
+      let subaccount = [];
+      if (this.queryForm.subaccount) {
+        subaccount = [hexToBytes(this.queryForm.subaccount)];
+      }
+      this.claimLog = await this.airdropService.claimLog(
+        Principal.fromText(this.queryForm.owner),
+        subaccount
+      );
+    } catch (e) {
+      console.log(e);
     }
-    this.claimLog = await this.airdropService.claimLog(
-      Principal.fromText(this.queryForm.owner),
-      subaccount
-    );
   }
   private async getClaimNFTLog(): Promise<void> {
     this.claimNFTLog = await this.airdropService.claimWithNftLog(
@@ -499,6 +521,9 @@ export default class extends Vue {
     }
   }
 }
+button {
+  width: 280px;
+}
 @media screen and (max-width: 768px) {
   .airdrops-item-flex {
     display: block;
@@ -510,6 +535,16 @@ export default class extends Vue {
         }
       }
     }
+  }
+}
+</style>
+<style lang="scss">
+.voting-power-countdown {
+  line-height: 1;
+  .ant-statistic-content {
+    color: #ccc;
+    font-size: 14px;
+    text-align: center;
   }
 }
 </style>

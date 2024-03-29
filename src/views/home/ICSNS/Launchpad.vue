@@ -484,6 +484,7 @@ import {
   OpenSnsTokenSwap,
   ProposalInfo
 } from '@/ic/governance/model';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -614,6 +615,7 @@ export default class extends Vue {
         ]);
       });
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};

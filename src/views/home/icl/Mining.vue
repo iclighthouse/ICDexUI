@@ -750,6 +750,7 @@ export default class extends Vue {
     this.cyclesWallets.forEach((item) => {
       canisterIds.push(item.walletId.toString());
     });
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     if (flag && this.$route.name === 'mining') {
       // const h = this.$createElement;

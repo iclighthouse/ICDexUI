@@ -254,6 +254,7 @@
                             'hhaaz-2aaaa-aaaaq-aacla-cai'
                             ? 'order-book-type-list-tooltip hide-order-book-type-list-tooltip'
                             : 'order-book-type-list-tooltip'
+
                         "
                         placement="right"
                       >
@@ -12536,6 +12537,8 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
 import {
+  DexName,
+  SwapCanister,
   SwapConfig,
   SwapTokenInfo,
   TrieListData1,

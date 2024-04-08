@@ -50,7 +50,6 @@
     </div>
     <div v-show="step === 3">
       <confirm-password
-        :identity="identity"
         :mnemonic="mnemonic"
         @confirmPasswordBack="confirmPasswordBack"
       ></confirm-password>

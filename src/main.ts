@@ -154,7 +154,7 @@ router.beforeEach(async (to, from, next) => {
     priList &&
     store.getters['common/getIdentity']
   ) {
-    next('/account');
+    next('/ICDex');
   } else if (
     from.path === '/' &&
     to.path === '/login' &&

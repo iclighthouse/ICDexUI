@@ -288,6 +288,7 @@ import { namespace } from 'vuex-class';
 import { Icrc1Account, TokenInfo, TokenStd } from '@/ic/common/icType';
 import { getCompetitionsBalance, getDepositing } from '@/ic/getTokenBalance';
 import { checkAuth } from '@/ic/CheckAuth';
+import { getFee } from '@/ic/getTokenFee';
 
 const commonModule = namespace('common');
 
@@ -473,7 +474,7 @@ export default class extends Vue {
     }
   }
   private canFallback(balance: string, token: TokenInfo): boolean {
-    return new BigNumber(token.fee.toString(10)).lt(balance);
+    return new BigNumber(getFee(token).toString(10)).lt(balance);
   }
   private isPending(nonce: number): boolean {
     let flag: boolean;

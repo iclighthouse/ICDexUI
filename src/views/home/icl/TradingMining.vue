@@ -905,6 +905,7 @@ export default class extends Vue {
     this.setting.pairs.forEach((pair: TradingMiningPairs) => {
       pairIds.push(pair[0].toString());
     });
+    await checkAuth();
     const flag = needConnectPlug(pairIds);
     const connectInfinity = await needConnectInfinity(pairIds);
     if (isPlug() && flag) {

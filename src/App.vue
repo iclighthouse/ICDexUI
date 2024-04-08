@@ -169,7 +169,12 @@
 
 <script lang="ts">
 import { Component, Mixins, Vue, Watch } from 'vue-property-decorator';
-import { decrypt, LEDGER_CANISTER_ID, plugWhitelist } from '@/ic/utils';
+import {
+  decrypt,
+  IC_SNS_TOKEN_CANISTER_ID,
+  LEDGER_CANISTER_ID,
+  plugWhitelist
+} from '@/ic/utils';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
 import { namespace } from 'vuex-class';
@@ -181,6 +186,8 @@ import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { getTokenInfo } from '@/ic/getTokenInfo';
+import { Principal } from '@dfinity/principal';
 const commonModule = namespace('common');
 const Ic = (window as any).ic;
 const ethers = require('ethers');
@@ -247,7 +254,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           // eslint-disable-next-line @typescript-eslint/no-this-alias
           const that = this;
           this.$info({
-            content: 'your account has changed, please refresh the web.',
+            content: 'your account has changed, please refresh the page.',
             class: 'connect-plug',
             icon: 'connect-plug',
             okText: 'OK',
@@ -283,14 +290,21 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     localStorage.removeItem('icxCanisterIds');
     const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     // SNS1
-    const sns1TokenId = 'zfcdd-tqaaa-aaaaq-aaaga-cai';
-    if (tokens[sns1TokenId] && tokens[sns1TokenId].decimals === 8) {
-      const DRC20Token = new DRC20TokenService();
-      tokens[sns1TokenId].decimals = await DRC20Token.icrcDecimals(sns1TokenId);
-      tokens[sns1TokenId].fee = (
-        await DRC20Token.icrcFee(sns1TokenId)
-      ).toString(10);
+    const sns1TokenId = IC_SNS_TOKEN_CANISTER_ID;
+    if (
+      tokens[sns1TokenId] &&
+      tokens[sns1TokenId].symbol.toLocaleLowerCase() === 'sns1'
+    ) {
+      tokens[sns1TokenId] = await getTokenInfo(
+        Principal.fromText(sns1TokenId),
+        {
+          icrc1: null
+        }
+      );
+      tokens[sns1TokenId].fee = tokens[sns1TokenId].fee.toString();
+      delete tokens[sns1TokenId].totalSupply;
       console.log(tokens);
+      localStorage.setItem('tokens', JSON.stringify(tokens));
     }
     if (!tokens[LEDGER_CANISTER_ID]) {
       tokens[LEDGER_CANISTER_ID] = {
@@ -301,8 +315,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         symbol: 'ICP',
         tokenStd: { icp: null }
       };
+      localStorage.setItem('tokens', JSON.stringify(tokens));
     }
-    localStorage.setItem('tokens', JSON.stringify(tokens));
   }
   private skip(): void {
     localStorage.setItem('skip', 'true');
@@ -389,9 +403,30 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           const connectPlug = new ConnectPlug();
           if (!Ic.plug.agent && checkAuth && !this.isInit) {
             this.isInit = true;
-            await connectPlug.connect(whitelist, false);
-            await createPlugWhiteActor();
-            this.setCheckAuth(false);
+            const plugIc = (window as any).ic?.plug;
+            const plugPrincipalId = (await plugIc.getPrincipal()).toString();
+            console.log(principal);
+            console.log(plugPrincipalId);
+            if (plugPrincipalId && principal !== plugPrincipalId) {
+              // eslint-disable-next-line @typescript-eslint/no-this-alias
+              const _that = this;
+              Vue.prototype.$info({
+                content: `Please check if you are logged into Plug with account ${principal}.`,
+                class: 'connect-plug',
+                icon: 'connect-plug',
+                centered: true,
+                okText: 'Confirm',
+                async onOk() {
+                  await connectPlug.connect(whitelist, false);
+                  await createPlugWhiteActor();
+                  _that.setCheckAuth(false);
+                }
+              });
+            } else {
+              await connectPlug.connect(whitelist, false);
+              await createPlugWhiteActor();
+              this.setCheckAuth(false);
+            }
           }
         }
       } else if (priList[this.getPrincipalId] === 'Infinity') {

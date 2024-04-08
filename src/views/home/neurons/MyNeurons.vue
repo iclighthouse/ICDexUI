@@ -373,7 +373,6 @@
       transfer-button="Increase Neuron Stake"
       type="Increase"
       :balance="balance"
-      :identity="identity"
       @transferSuccess="transferSuccess"
     ></transfer-icp>
     <increase-dissolve-delay
@@ -389,7 +388,6 @@
       transfer-button="Stake Neuron"
       type="topUpNeuron"
       :balance="balance"
-      :identity="identity"
       :memo="stakeMemo"
       @transferSuccess="stakeSuccess"
     ></transfer-icp>

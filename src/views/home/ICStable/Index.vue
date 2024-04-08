@@ -265,6 +265,7 @@ export default class extends Mixins(StableTokensMixin) {
     this.collaterals.forEach((item) => {
       canisterIds.push(item[0].toString());
     });
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     if (flag && this.$route.name === 'ICStable') {
       // const h = this.$createElement;

@@ -24,13 +24,7 @@
         </li>
       </ul>
       <div class="flex-center margin-left-auto">
-        <span
-          v-if="getPrincipalId"
-          @click="showLaunch"
-          class="base-font-title pointer pc-show"
-          style="font-size: 15px"
-          >+Launch</span
-        >
+        <launch :tokens="tokens" ref="launch"></launch>
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -869,8 +863,20 @@
             >
               <span>{{ buttonName }}</span>
             </button>
+            <span
+              style="
+                position: relative;
+                right: -100%;
+                top: -28px;
+                margin-left: 5px;
+              "
+              v-if="getIdentity && canFallback"
+              class="pointer base-font-title"
+              @click="fallback"
+              >Fallback</span
+            >
             <button
-              v-else
+              v-if="!getIdentity"
               class="primary large-primary w100"
               @click="connectWallet"
             >
@@ -912,7 +918,6 @@
     </div>
     <transfer-token
       ref="transferToken"
-      :identity="getIdentity"
       :current-token="currentToken"
       @transferTokenSuccess="transferTokenSuccess"
     ></transfer-token>
@@ -927,7 +932,6 @@
       @bindSuccess="bindSuccess"
       @NFTWithdrawSuccess="NFTWithdrawSuccess"
     ></nft-balance>
-    <launch :tokens="tokens" ref="launch"></launch>
   </div>
 </template>
 
@@ -946,7 +950,7 @@ import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import { namespace } from 'vuex-class';
 import BigNumber from 'bignumber.js';
 import { getTokenInfo } from '@/ic/getTokenInfo';
-import { getTokenBalance } from '@/ic/getTokenBalance';
+import { getDepositing, getTokenBalance } from '@/ic/getTokenBalance';
 import { getFee } from '@/ic/getTokenFee';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
@@ -980,6 +984,7 @@ import { readState } from '@/ic/readState';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -1059,6 +1064,7 @@ export default class extends Vue {
   private token0fee = '';
   private token1fee = '';
   private depositAccount: [Icrc1Account, string] = null;
+  private depositAccountBalance: { [key: string]: string } = {};
   private ledgerService: LedgerService | undefined = null;
   private timer = null;
   private type: 'Add' | 'Remove' = 'Add';
@@ -1255,6 +1261,28 @@ export default class extends Vue {
     }
     return flag;
   }
+  get canFallback(): boolean {
+    let flag = false;
+    if (this.pool[1] && this.token0fee && this.token1fee && this.tokens) {
+      const token0 = this.pool[1].pairInfo.token0[0].toString();
+      const token1 = this.pool[1].pairInfo.token1[0].toString();
+      if (
+        (this.tokens[token0] &&
+          this.depositAccountBalance[token0] &&
+          new BigNumber(this.depositAccountBalance[token0])
+            .div(10 ** this.tokens[token0].decimals)
+            .gt(this.token0fee)) ||
+        (this.tokens[token1] &&
+          this.depositAccountBalance[token1] &&
+          new BigNumber(this.depositAccountBalance[token1])
+            .div(10 ** this.tokens[token1].decimals)
+            .gt(this.token1fee))
+      ) {
+        flag = true;
+      }
+    }
+    return flag;
+  }
   deactivated(): void {
     window.clearInterval(this.timer);
     this.timer = null;
@@ -1288,16 +1316,16 @@ export default class extends Vue {
     if (!this.listDeployedSnses.length) {
       this.listDeployedSnses = await this.SNSWasmService.listDeployedSnses();
     }
-    this.getPairs();
     if (this.getPrincipalId) {
       const currentInfo =
         JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
       this.tokensBalance = currentInfo.tokensBalance || {};
-      this.getDepositAccount();
+      await this.getDepositAccount();
       this.getUnitNetValues();
       this.getTokensExt();
       this.NFTBalance();
     }
+    this.getPairs();
   }
   private onBindMaker(pair?: string, pool?: string): void {
     (this.$refs.nftBalance as any).bindMMPoolInit(pair, pool);
@@ -1338,6 +1366,7 @@ export default class extends Vue {
     });
     ids = [...new Set(ids)];
     console.log(ids);
+    await checkAuth();
     const flag = needConnectPlug(ids);
     const connectInfinity = await needConnectInfinity(ids);
     const principal = localStorage.getItem('principal');
@@ -1649,40 +1678,35 @@ export default class extends Vue {
       .then((res) => {
         console.timeEnd();
         if (res) {
-          if (!flag) {
-            this.$message.success('Success');
-          }
+          this.$message.success('Success');
           this.initAdd();
           this.getPoolInfo(poolId);
           this.poolStats(poolId);
           this.getAccountShares(poolId);
         } else {
           this.getPoolInfo(poolId);
-          if (!flag) {
-            this.$message.error('Error');
-          }
+          this.$message.error('Error');
         }
+        this.getDepositAccountBalance();
       })
       .catch((e) => {
         console.log(e);
         this.getTokenBalance(token0Id, this.tokens[token0Id].tokenStd);
         this.getTokenBalance(token1Id, this.tokens[token1Id].tokenStd);
-        if (!flag) {
-          if (toHttpRejectError(e).includes('401')) {
-            this.$message.error(
-              'The system is processing, please try again later.'
-            );
-          } else if (toHttpRejectError(e).includes('410')) {
-            this.$message.error(toHttpRejectError(e));
-          } else if (toHttpRejectError(e).includes('411')) {
-            this.$message.error(toHttpRejectError(e));
-          } else if (toHttpRejectError(e).includes('413')) {
-            this.$message.error(
-              'Liquidity cannot be added or removed until the pair has completed its transactions. Please try again later.'
-            );
-          } else {
-            this.$message.error(toHttpRejectError(e));
-          }
+        if (toHttpRejectError(e).includes('401')) {
+          this.$message.error(
+            'The system is processing, please try again later.'
+          );
+        } else if (toHttpRejectError(e).includes('410')) {
+          this.$message.error(toHttpRejectError(e));
+        } else if (toHttpRejectError(e).includes('411')) {
+          this.$message.error(toHttpRejectError(e));
+        } else if (toHttpRejectError(e).includes('413')) {
+          this.$message.error(
+            'Liquidity cannot be added or removed until the pair has completed its transactions. Please try again later.'
+          );
+        } else {
+          this.$message.error(toHttpRejectError(e));
         }
       })
       .finally(() => {
@@ -1805,7 +1829,9 @@ export default class extends Vue {
     }
   }
   private async getPool(poolId: string): Promise<void> {
-    this.getPoolInfo(poolId);
+    this.getPoolInfo(poolId).then(() => {
+      this.getDepositAccountBalance();
+    });
     this.poolStats(poolId);
     this.getAccountShares(poolId);
     this.getMakerConfig(poolId);
@@ -1888,6 +1914,25 @@ export default class extends Vue {
       this.getPrincipalId
     );
     console.log(this.depositAccount);
+  }
+  private async getDepositAccountBalance(): Promise<void> {
+    getDepositing(
+      this.pool[1].pairInfo.token0[2],
+      this.pool[1].pairInfo.token0[0].toString(),
+      this.depositAccount[0]
+    ).then((res) => {
+      this.depositAccountBalance[this.pool[1].pairInfo.token0[0].toString()] =
+        res;
+    });
+    getDepositing(
+      this.pool[1].pairInfo.token1[2],
+      this.pool[1].pairInfo.token1[0].toString(),
+      this.depositAccount[0]
+    ).then((res) => {
+      this.depositAccountBalance[this.pool[1].pairInfo.token1[0].toString()] =
+        res;
+    });
+    console.log(this.depositAccountBalance);
   }
   private async getPoolInfo(poolId: string): Promise<void> {
     const res = await this.makerPoolService.info(poolId);
@@ -1998,10 +2043,14 @@ export default class extends Vue {
     pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?, DexRole?],
     used: string
   ): string {
-    return new BigNumber(this.pairVol)
+    let available = new BigNumber(this.pairVol)
       .times(pool[1].volFactor.toString(10))
       .minus(used)
       .toString(10);
+    if (new BigNumber(available).lt(0)) {
+      available = '0';
+    }
+    return available;
   }
   private getAvailable(
     pool: [string?, PoolInfo?, PoolStats?, [bigint, ShareWeighted]?, DexRole?]
@@ -2308,8 +2357,26 @@ export default class extends Vue {
       this.$router.replace(`/ICDex/pools?id=${poolId}&private`);
     }
   }
-  private showLaunch(): void {
-    (this.$refs.launch as any).init();
+  private async fallback(): Promise<void> {
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      const poolId = this.$route.params.poolId;
+      const res = await this.makerPoolService.fallback(poolId);
+      console.log(res);
+      if (res) {
+        this.$message.success('Success');
+      } else {
+        this.$message.error('Error');
+      }
+      this.getDepositAccountBalance();
+    } catch (e) {
+      console.error(e);
+      this.$message.error(e);
+    }
+    loading.close();
   }
 }
 </script>

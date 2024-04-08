@@ -99,4 +99,5 @@ export default interface Service {
   getAccountVolUsed(address: string): Promise<bigint>;
   get_events(page: Array<bigint>, size: Array<bigint>): Promise<TrieListEvents>;
   ictc_getAdmins(): Promise<Array<Principal>>;
+  fallback(subaccount: Array<Array<number>>): Promise<[bigint, bigint]>;
 }

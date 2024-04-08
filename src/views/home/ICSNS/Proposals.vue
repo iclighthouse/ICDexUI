@@ -65,18 +65,26 @@
             :key="index"
             @click="jumpProposal(item)"
           >
-            <div class="proposals-list-item-header">
+            <div
+              class="proposals-list-item-header"
+              style="align-items: center; margin-bottom: 10px"
+            >
+              <span class="base-font-title"
+                >ID: {{ item.id[0].id.toString(10) }}</span
+              >
+              <span
+                class="proposals-list-item-header-status margin-left-auto"
+                :class="getStatus(item)"
+              >
+                {{ getStatus(item) }}
+              </span>
+            </div>
+            <div>
               <span class="proposals-list-item-title">
                 <span class="base-color-w">
                   {{ item.proposal[0].title }}
                 </span>
                 <!--{{ item.proposal[0].action | filterAction }}-->
-              </span>
-              <span
-                class="proposals-list-item-header-status"
-                :class="getStatus(item)"
-              >
-                {{ getStatus(item) }}
               </span>
             </div>
             <!--<div class="proposals-list-item-type base-font-title">
@@ -92,7 +100,14 @@
               ></vue-markdown>
             </div>
             <div class="proposals-list-item-footer">
-              <span v-if="SNSTokens && SNSTokens[currentIndex]">
+              <span
+                v-if="
+                  SNSTokens &&
+                  SNSTokens[currentIndex] &&
+                  SNSTokens[currentIndex].types &&
+                  SNSTokens[currentIndex].types[item.action.toString(10)]
+                "
+              >
                 {{
                   SNSTokens[currentIndex].types[item.action.toString(10)]
                     .name === 'Deegister Dapp Canisters'
@@ -244,6 +259,7 @@ import MakerProposal from '@/views/home/ICSNS/components/MakerProposal.vue';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { namespace } from 'vuex-class';
 import { SNSSwapService } from '@/ic/SNSSwap/SNSSwapService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -513,6 +529,7 @@ export default class extends Vue {
         this.deployedSnses.unshift(item);
       }
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -579,7 +596,7 @@ export default class extends Vue {
   ): Promise<void> {
     console.log(listDeployedSnses);
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
-    const MAX_COCURRENCY = 20;
+    const MAX_COCURRENCY = 40;
     let snsTokensAll = [];
     let snsTokens = [];
     listDeployedSnses.forEach((item, index) => {

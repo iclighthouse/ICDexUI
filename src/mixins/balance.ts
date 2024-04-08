@@ -14,7 +14,6 @@ export class BalanceMixin extends Vue {
   @commonModule.Getter('getCheckAuth') getCheckAuth?: boolean;
   @commonModule.Getter('getIdentity') getIdentity?: Identity;
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
-  public identity: Identity;
   // public account: string;
   public balance = '';
   private balancePro = '';
@@ -31,7 +30,6 @@ export class BalanceMixin extends Vue {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
     this.balance = currentInfo.balance || '0';
-    this.identity = this.getIdentity;
     this.ledgerService = new LedgerService();
     // this.account = principalToAccountIdentifier(Principal.fromText(principal));
     if (principal) {

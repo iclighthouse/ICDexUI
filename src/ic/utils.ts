@@ -62,8 +62,8 @@ const QUESTS_CANISTER_ID = 'iairp-iiaaa-aaaao-ahryq-cai';
 const IC_TOKENS_SCAN_CANISTER_ID = 'ytcww-qyaaa-aaaak-aacra-cai';
 const BLACKHOLE_CANISTER_ID = '7hdtw-jqaaa-aaaak-aaccq-cai';
 const DID_CANISTER_ID = 'a4gq6-oaaaa-aaaab-qaa4q-cai';
-const AIRDROP_CANISTER_ID = '76a3l-5qaaa-aaaak-afqhq-cai';
-// const AIRDROP_CANISTER_ID = 'r43hs-lqaaa-aaaak-afoca-cai';
+// const AIRDROP_CANISTER_ID = '76a3l-5qaaa-aaaak-afqhq-cai';
+const AIRDROP_CANISTER_ID = 'r43hs-lqaaa-aaaak-afoca-cai';
 const ETHHttps = [
   'https://eth-goerli.g.alchemy.com/v2/gm4OKMIz91Ca1w5WoKT3xXafUtQtdJd9',
   'https://eth-goerli.g.alchemy.com/v2/wREEsnLaFrPgZaXy3Kfhgx2bJ04spvfc',

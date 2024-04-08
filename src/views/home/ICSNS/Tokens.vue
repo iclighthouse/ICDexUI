@@ -82,7 +82,6 @@
     <receive-modal ref="receiveModal"></receive-modal>
     <transfer-token
       ref="transferToken"
-      :identity="getIdentity"
       :current-token="currentToken"
       @transferTokenSuccess="transferTokenSuccess"
     ></transfer-token>
@@ -114,6 +113,7 @@ import {
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
 import { SNSSwapService } from '@/ic/SNSSwap/SNSSwapService';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -215,6 +215,7 @@ export default class extends Vue {
         listDeployedSnses.unshift(item);
       }
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -279,7 +280,7 @@ export default class extends Vue {
     listDeployedSnses: Array<DeployedSns>
   ): Promise<void> {
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
-    const MAX_COCURRENCY = 20;
+    const MAX_COCURRENCY = 40;
     let promiseAll = [];
     let snsTokens = [];
     for (let i = 0; i < listDeployedSnses.length; i++) {

@@ -95,10 +95,24 @@ export default ({ IDL }) => {
     ),
     cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),
     deleteDappInfo: IDL.Func([IDL.Nat], [], ['oneway']),
+    getAccountName: IDL.Func(
+      [IDL.Principal],
+      [IDL.Principal, IDL.Opt(IDL.Text)],
+      ['query']
+    ),
     getAddressBookItems: IDL.Func([], [IDL.Vec(AddressBookItem)], ['query']),
+    getAllFavoritesCount: IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Nat32))],
+      ['query']
+    ),
     getCyclesWallet: IDL.Func([], [IDL.Principal], ['query']),
     getDappsList: IDL.Func([IDL.Bool], [IDL.Vec(DappInfo)], ['query']),
-    getFavorites: IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    getFavorites: IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(IDL.Principal)],
+      ['query']
+    ),
     getMessage: IDL.Func([], [Message], ['query']),
     getMetaMask: IDL.Func([IDL.Vec(IDL.Nat8)], [IDL.Opt(MetaMask)], ['query']),
     getTokens: IDL.Func([], [IDL.Vec(TokenItem)], ['query']),
@@ -116,6 +130,8 @@ export default ({ IDL }) => {
     ),
     manageWallet: IDL.Func([IDL.Principal, Operation], [IDL.Bool], []),
     removeFavorites: IDL.Func([IDL.Principal], [IDL.Bool], []),
+    updateAccountlName: IDL.Func([IDL.Text], [], []),
+    updateFavoritesListOrder: IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     updateMessage: IDL.Func([Message], [IDL.Bool], []),
     updateWalletId: IDL.Func([IDL.Principal], [], ['oneway']),
     walletCreatedOf: IDL.Func([IDL.Principal], [IDL.Bool], ['query']),

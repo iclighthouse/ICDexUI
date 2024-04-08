@@ -153,7 +153,9 @@ export class makerPoolService {
       return null;
     }
   };
-  public ictc_getAdmins = async (canisterId: string): Promise<Array<Principal>> => {
+  public ictc_getAdmins = async (
+    canisterId: string
+  ): Promise<Array<Principal>> => {
     const service = await createService<Service>(
       canisterId,
       makerPoolIDL,
@@ -161,10 +163,26 @@ export class makerPoolService {
       false
     );
     try {
-      return  await service.ictc_getAdmins();
+      return await service.ictc_getAdmins();
     } catch (e) {
       console.log(e);
       return null;
     }
+  };
+  public fallback = async (
+    canisterId: string,
+    subAccountId = 0
+  ): Promise<[bigint, bigint]> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      true,
+      true
+    );
+    let subAccount = [[]];
+    if (subAccountId || subAccountId === 0) {
+      subAccount = [fromSubAccountId(subAccountId)];
+    }
+    return await service.fallback(subAccount);
   };
 }

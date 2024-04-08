@@ -3,7 +3,6 @@ import store from '@/store';
 import router from '@/router';
 import Vue from 'vue';
 import { isPlug } from '@/ic/isPlug';
-// import { Loading } from 'element-ui';
 
 const plugIc = (window as any).ic;
 export default class ConnectPlug {
@@ -26,10 +25,10 @@ export default class ConnectPlug {
     if (requireAuth) {
       loading = Vue.prototype.$loading({
         lock: true,
-        text: 'Initialized Plug...',
+        text: 'Connecting Plug...',
         background: 'rgba(0, 0, 0, 0.5)'
       });
-      loading.setText('Initialized Plug...');
+      loading.setText('Connecting Plug...');
     }
     try {
       const connected = await plugIc.plug.isConnected();
@@ -54,8 +53,6 @@ export default class ConnectPlug {
         });
       }
       store.commit('common/SET_IS_OPEN', true);
-      const identity = await plugIc.plug.agent._identity;
-      store.commit('common/SET_IDENTITY', identity);
       await this.setLocalStorage(whitelist);
       loading && loading.text && loading.close();
       return true;

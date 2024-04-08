@@ -109,8 +109,6 @@ import { validateAccount, validatePrincipal } from '@/ic/utils';
   components: {}
 })
 export default class extends Vue {
-  @Prop()
-  private identity!: Identity;
   public currentToken: AddTokenItem = new AddTokenItemClass();
   private DRC20TokenService: DRC20TokenService;
   public visibleTransfer = false;

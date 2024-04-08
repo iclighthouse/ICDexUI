@@ -359,7 +359,6 @@
         </a-form-model>
       </div>
     </a-modal>
-    <launch :tokens="tokens" ref="launch"></launch>
   </div>
 </template>
 

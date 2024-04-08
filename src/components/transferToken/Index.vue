@@ -145,8 +145,6 @@ const ProSubaccountId = 1;
   components: {}
 })
 export default class extends Vue {
-  @Prop()
-  private identity!: Identity;
   @Prop({ type: String, default: 'Transfer' })
   public type!: string;
   @Prop({ type: Boolean, default: false })

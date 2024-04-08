@@ -484,6 +484,7 @@ import {
   OpenSnsTokenSwap,
   ProposalInfo
 } from '@/ic/governance/model';
+import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');
 
@@ -614,6 +615,7 @@ export default class extends Vue {
         ]);
       });
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -681,7 +683,7 @@ export default class extends Vue {
     this.loading = true;
     const SNSProposals = await this.getSNSProposals();
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
-    const MAX_COCURRENCY = 20;
+    const MAX_COCURRENCY = 40;
     let promiseAll = [];
     let snsTokens = [];
     for (let i = 0; i < listDeployedSnses.length; i++) {

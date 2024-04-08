@@ -126,7 +126,7 @@
         </p>
       </div>
       <div class="security-tips-modal-confirm" @click="securityTips = false">
-        <button type="button" class="default">confirm</button>
+        <button type="button" class="default">Confirm</button>
       </div>
     </a-modal>
   </div>

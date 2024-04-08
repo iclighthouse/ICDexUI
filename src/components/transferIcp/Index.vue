@@ -84,7 +84,6 @@ import {
 import { Principal } from '@dfinity/principal';
 import { LedgerService } from '@/ic/ledger/ledgerService';
 import BigNumber from 'bignumber.js';
-import { Identity } from '@dfinity/agent';
 import { checkAuth } from '@/ic/CheckAuth';
 import { validateCanisterOrAccount } from '@/utils/validate';
 import {
@@ -102,8 +101,6 @@ import { LEDGER_CANISTER_ID } from '@/ic/utils';
   components: {}
 })
 export default class extends Vue {
-  @Prop()
-  private identity!: Identity;
   @Prop({ type: String, default: 'Transfer ICP' })
   public title!: string;
   @Prop({ type: String, default: 'Transfer' })
@@ -120,7 +117,6 @@ export default class extends Vue {
   private isIcx = false;
   public subaccountId = 0;
   public ledgerService: LedgerService | undefined;
-  private DRC20TokenService: DRC20TokenService;
   public visibleTransfer = false;
   public transferForm = {
     to: '',

@@ -809,19 +809,16 @@
     <transfer-icp
       ref="transferIcp"
       :balance="balance"
-      :identity="identity"
       @transferSuccess="transferSuccess"
     ></transfer-icp>
     <transfer-token
       ref="transferToken"
-      :identity="identity"
       :current-token="currentToken"
       @transferTokenSuccess="transferTokenSuccess"
     ></transfer-token>
     <top-up
       ref="topUp"
       :balance="balance"
-      :identity="identity"
       :walletId="walletId"
       :type="topUpType"
       @topUpSuccess="topUpSuccess"

@@ -110,14 +110,14 @@
         >
           <span>NFT</span>
         </li>
-        <!--<li
+        <li
           @click="changeMenu('Airdrop', '/Airdrop')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
           }"
         >
           <span>Airdrop</span>
-        </li>-->
+        </li>
         <li
           @click="changeMenu('dapps', '/dapps')"
           :class="{
@@ -221,7 +221,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.2
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.3
             </span>
           </span>
         </span>
@@ -276,79 +276,6 @@
           </li>
           <li>
             <a
-              href="https://az5sd-cqaaa-aaaae-aaarq-cai.ic0.app/u/ICLight.house"
-              target="_blank"
-              rel="nofollow noreferrer noopener"
-            >
-              <i aria-hidden="true" class="icon-svg">
-                <svg
-                  width="30"
-                  height="30"
-                  viewBox="0 0 30 30"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <rect
-                    width="30"
-                    height="30"
-                    fill="white"
-                    fill-opacity="0.01"
-                  />
-                  <rect
-                    x="22.5514"
-                    y="3"
-                    width="4.51128"
-                    height="4.51128"
-                    fill="currentColor"
-                  />
-                  <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M16.7368 8.11279H7.11278V12.6241H16.7368V22.2481H21.2481V12.6241V8.11279H16.7368Z"
-                    fill="currentColor"
-                  />
-                  <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M6.51128 27H16.1353V22.4887H6.51128V12.8647H2.00001V22.4887V27H6.51128Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </i>
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://dscvr.one/p/iclighthouse"
-              rel="nofollow noreferrer noopener"
-              target="_blank"
-            >
-              <i aria-hidden="true" class="icon-svg">
-                <svg
-                  width="30"
-                  height="30"
-                  viewBox="0 0 30 30"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <rect
-                    width="30"
-                    height="30"
-                    fill="white"
-                    fill-opacity="0.01"
-                  />
-                  <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M10.5844 17.6681C10.5844 17.6681 11.6661 18.7028 13.56 19.1011C13.5387 19.1177 13.56 10.844 13.56 10.844C13.56 10.844 17.1516 9.90868 19.056 12.7316C19.0818 12.7482 20.7261 15.2306 18.8163 17.9607C18.809 17.9825 17.2456 20.1851 14.2001 19.9308C14.1736 19.9239 10.6941 20.1739 8.4701 16.4527C8.45531 16.4397 6.18572 12.292 8.78575 8.29579C8.76459 8.27371 10.7906 4.78819 15.5016 5.08591C15.5091 5.08049 21.6741 5.07978 24.3109 11.7246C24.3302 11.7632 26.1397 16.4156 23.1886 20.2629C23.1837 20.2961 20.6239 25.1962 14.0056 24.7089C13.9984 24.7412 7.66749 24.9651 4.83068 17.6681C4.83522 17.6682 3.46507 14.7501 4.83068 10.0649C4.85401 10.0165 4.73886 9.41188 4.39773 9.41188C4.38459 9.42057 3.54166 10.4821 3.14557 13.0914C3.12683 13.0652 2.39524 17.11 4.39773 20.6525C4.39634 20.6608 6.84493 25.6326 13.1492 26.8853C13.1557 26.82 19.8084 28.282 24.5199 22.3673C24.5143 22.3327 28.1416 18.5797 26.4989 11.4286C26.4461 11.4004 24.5005 3.86138 15.7857 3.03051C15.7798 3.04245 9.81078 2.28159 6.68528 7.68649C6.67393 7.6703 3.95817 12.1526 6.4641 17.1087C6.45871 17.1269 9.34793 23.115 15.7857 22.3673C15.8014 22.3815 22.0772 21.7042 22.6329 15C22.6167 14.9786 22.3547 7.69133 15.3059 7.32829C15.245 7.31706 13.1252 7.2828 10.4102 8.82628C10.3775 8.84875 10.5844 17.6681 10.5844 17.6681Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </i>
-            </a>
-          </li>
-          <li>
-            <a
               href="https://github.com/iclighthouse"
               rel="nofollow noreferrer noopener"
               target="_blank"
@@ -389,10 +316,7 @@
           <span style="color: #646e79">(to be discarded)</span>
         </div>
       </div>
-      <div
-        v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
-        class="container-width-disclaimers"
-      >
+      <div class="container-width-disclaimers">
         <span class="disclaimers">
           ICLighthouse is a community-driven decentralised project, which is
           considered a community collaboration dedicated to developing

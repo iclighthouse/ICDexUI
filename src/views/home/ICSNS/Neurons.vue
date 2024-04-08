@@ -2091,15 +2091,6 @@ export default class extends Vue {
     this.currentNeuronIndex = index;
     this.currentNeuronInfoIndex = SNSIndex;
     this.currentNeuron = neuronInfo;
-    if (
-      this.SNSNeuronsList[SNSIndex].SNSNeurons[index].auto_stake_maturity[0]
-    ) {
-      this.changeAutoStakeMaturityMessage =
-        'Are you sure that you would like to stop automatically staking new maturity of this neuron?';
-    } else {
-      this.changeAutoStakeMaturityMessage =
-        'Are you sure that you would like to automatically stake new maturity of this neuron?';
-    }
     this.splitVisible = true;
   }
   private async stakeMaturity(): Promise<void> {
@@ -2193,6 +2184,15 @@ export default class extends Vue {
     SNSIndex: number,
     index: number
   ): Promise<void> {
+    if (
+      this.SNSNeuronsList[SNSIndex].SNSNeurons[index].auto_stake_maturity[0]
+    ) {
+      this.changeAutoStakeMaturityMessage =
+        'Are you sure that you would like to stop automatically staking new maturity of this neuron?';
+    } else {
+      this.changeAutoStakeMaturityMessage =
+        'Are you sure that you would like to automatically stake new maturity of this neuron?';
+    }
     const neuronInfo = this.SNSNeuronsList[SNSIndex];
     this.currentNeuronIndex = index;
     this.currentNeuronInfoIndex = SNSIndex;
@@ -2338,6 +2338,7 @@ export default class extends Vue {
         this.deployedSnses.unshift(item);
       }
       canisterIds = [...new Set(canisterIds)];
+      await checkAuth();
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -2431,7 +2432,7 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    const MAX_COCURRENCY = 20;
+    const MAX_COCURRENCY = 40;
     let snsTokensAll = [];
     let snsTokens = [];
     listDeployedSnses.forEach((item, index) => {

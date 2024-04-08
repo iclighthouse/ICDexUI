@@ -23,13 +23,7 @@
         </li>
       </ul>
       <div class="flex-center margin-left-auto">
-        <span
-          v-if="getPrincipalId"
-          @click="showLaunch"
-          class="base-font-title pointer pc-show"
-          style="font-size: 15px"
-          >+Launch</span
-        >
+				<launch :tokens="tokens" ref="launch"></launch>
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -2632,7 +2626,6 @@
       @bindSuccess="bindSuccess"
       @NFTWithdrawSuccess="NFTWithdrawSuccess"
     ></nft-balance>
-    <launch :tokens="tokens" ref="launch"></launch>
   </div>
 </template>
 
@@ -2683,6 +2676,7 @@ import Launch from '@/views/home/ICDex/components/Launch.vue';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
+import { checkAuth } from '@/ic/CheckAuth';
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
@@ -3317,6 +3311,7 @@ export default class extends Vue {
   }
   private async needConnect(canisterIds: Array<string>): Promise<void> {
     console.log(canisterIds);
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     const principal = localStorage.getItem('principal');
     // if (!principal) {

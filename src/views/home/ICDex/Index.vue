@@ -42,13 +42,12 @@
         </li>-->
       </ul>
       <div class="flex-center margin-left-auto">
-        <span
-          v-if="getPrincipalId"
-          @click="showLaunch"
-          class="base-font-title pointer pc-show"
-          style="font-size: 15px"
-          >+Launch</span
-        >
+        <launch
+          :tokens="tokens"
+          ref="launch"
+          @launchSuccess="launchSuccess"
+          @changeLaunch="changeLaunch"
+        ></launch>
         <a
           v-if="getPrincipalId"
           href="https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471"
@@ -128,6 +127,7 @@
                 placeholder="Search"
                 v-model="pairSearch"
                 @change="pairSearchChange"
+                @focus="pairSearchChange"
               >
                 <a-icon style="color: #adb3c4" slot="prefix" type="search" />
               </a-input>
@@ -135,7 +135,6 @@
             <ul class="trade-market-sort">
               <li
                 :class="[
-                  pairSearch ? 'disabled' : '',
                   item.value === currentTradeMarketSort ? 'active' : '',
                   item.value === 'Old' ? 'trade-market-old' : '',
                   item.value
@@ -219,235 +218,266 @@
                     board.
                   </td>
                 </tr>
-                <tr
-                  v-for="(pair, index) in tradePairs[currentTradeMarketSort]"
-                  :key="index"
-                  @click="changePair(pair, index)"
-                  :class="{
-                    active:
-                      !(currentTradeMarketSort === 'Third' && !showThird) &&
-                      currentPairIndex !== null &&
-                      pairs[currentPairIndex] &&
-                      currentPair[3] === currentTradeMarketSort &&
-                      pair[1][0].canisterId.toString() ===
-                        currentPair[1][0].canisterId.toString()
-                  }"
+                <draggable
+                  @start="draggableStar"
+                  @end="draggableEnd"
+                  v-model="tradePairs[currentTradeMarketSort]"
+                  v-bind="dragOptions"
+                  draggable=".draggable"
                 >
-                  <a-tooltip placement="right">
-                    <template slot="title">
-                      <dl
-                        v-show="
-                          currentPair[1][0].token1[0].toString() !==
-                          'hhaaz-2aaaa-aaaaq-aacla-cai'
-                        "
-                      >
-                        <dt>
-                          <span
-                            class="tabular-nums"
-                            v-if="
-                              tokens &&
-                              tokens[pair[1][0].token1[0].toString()] &&
-                              pair[2]
-                            "
-                          >
-                            24h: ${{
-                              pair[2].vol24h.value1
-                                | icpToUsdt(
-                                  currentMarketPrice,
-                                  pair[1][0].token1[1],
-                                  tokens[pair[1][0].token1[0].toString()]
-                                    .decimals
-                                )
-                                | formatNum
-                            }}
-                          </span>
-                        </dt>
-                        <dd>
-                          <span
-                            class="tabular-nums"
-                            v-if="
-                              tokens &&
-                              tokens[pair[1][0].token1[0].toString()] &&
-                              pair[2]
-                            "
-                          >
-                            Total: ${{
-                              pair[2].totalVol.value1
-                                | icpToUsdt(
-                                  currentMarketPrice,
-                                  pair[1][0].token1[1],
-                                  tokens[pair[1][0].token1[0].toString()]
-                                    .decimals
-                                )
-                                | formatNum
-                            }}
-                          </span>
-                        </dd>
-                      </dl>
-                    </template>
-                    <div
-                      style="display: table; width: 100%; table-layout: fixed"
-                      v-if="!(currentTradeMarketSort === 'Third' && !showThird)"
+                  <transition-group
+                    type="transition"
+                    :name="!drag ? 'flip-list' : null"
+                  >
+                    <tr
+                      v-for="(pair, index) in tradePairs[
+                        currentTradeMarketSort
+                      ]"
+                      :key="pair[1][0].canisterId.toString()"
+                      @click="changePair(pair, index)"
+                      :class="{
+                        active:
+                          !(currentTradeMarketSort === 'Third' && !showThird) &&
+                          currentPairIndex !== null &&
+                          pairs[currentPairIndex] &&
+                          (currentPair[3] === currentTradeMarketSort ||
+                            !pair[1][0].marketBoard) &&
+                          pair[1][0].canisterId.toString() ===
+                            currentPair[1][0].canisterId.toString(),
+                        draggable: pair[3] === 'Star'
+                      }"
                     >
-                      <td style="width: 100px">
-                        <dl>
-                          <dt
-                            :class="{
-                              'usdt-test-dt': currentTradeMarketSort === 'USDT'
-                            }"
-                          >
-                            <a-tooltip placement="right">
-                              <template slot="title">
-                                <span v-if="showReminder2(pair)">
-                                  REMINDER: This trading pair with a score below
-                                  the MAIN board requirement for
-                                  {{ getMainDay(pair) }} days may be downgraded
-                                  to the SECOND board.
-                                </span>
-                                <span v-if="showReminder1(pair)">
-                                  REMINDER: This trading pair with a score below
-                                  the SECOND board requirement for
-                                  {{ getSecondDay(pair) }} days may be
-                                  downgraded to the THIRD board.
-                                </span>
-                              </template>
+                      <a-tooltip
+                        :overlayClassName="
+                          drag ||
+                          pair[1][0].token1[0].toString() ===
+                            'hhaaz-2aaaa-aaaaq-aacla-cai'
+                            ? 'order-book-type-list-tooltip hide-order-book-type-list-tooltip'
+                            : 'order-book-type-list-tooltip'
+                        "
+                        placement="right"
+                      >
+                        <template slot="title">
+                          <dl>
+                            <dt>
                               <span
+                                class="tabular-nums"
                                 v-if="
-                                  (pair && showReminder1(pair)) ||
-                                  showReminder2(pair)
+                                  tokens &&
+                                  tokens[pair[1][0].token1[0].toString()] &&
+                                  pair[2]
                                 "
-                                style="opacity: 0.8; color: #727a87"
-                                class="pair-name"
                               >
-                                * {{ pair[1][0].token0[1]
-                                }}<span class="pair-icp"
-                                  >/{{ pair[1][0].token1[1] }}</span
-                                >
+                                24h: ${{
+                                  pair[2].vol24h.value1
+                                    | icpToUsdt(
+                                      currentMarketPrice,
+                                      pair[1][0].token1[1],
+                                      tokens[pair[1][0].token1[0].toString()]
+                                        .decimals
+                                    )
+                                    | formatNum
+                                }}
                               </span>
-                            </a-tooltip>
-                            <span
-                              v-if="
-                                pair &&
-                                !showReminder1(pair) &&
-                                !showReminder2(pair)
-                              "
-                              class="pair-name"
-                            >
-                              {{ pair[1][0].token0[1]
-                              }}<span class="pair-icp"
-                                >/{{ pair[1][0].token1[1] }}</span
+                            </dt>
+                            <dd>
+                              <span
+                                class="tabular-nums"
+                                v-if="
+                                  tokens &&
+                                  tokens[pair[1][0].token1[0].toString()] &&
+                                  pair[2]
+                                "
                               >
-                            </span>
-                          </dt>
-                          <dd>
-                            <a-icon
-                              v-show="
-                                !oldPairs.includes(pair[0].toString()) &&
-                                pair[1][0].marketBoard
-                              "
-                              :theme="
-                                star.includes(pair[0].toString())
-                                  ? 'filled'
-                                  : 'outlined'
-                              "
-                              @click.stop="onStar(pair)"
-                              type="star"
-                              :class="{
-                                'base-font-title': star.includes(
-                                  pair[0].toString()
-                                )
-                              }"
-                            />
-                            <span v-show="oldPairs.includes(pair[0].toString())"
-                              >(Old)</span
-                            >
-                          </dd>
-                        </dl>
-                      </td>
-                      <td>
-                        <dl>
-                          <dt>
-                            <span
-                              class="tabular-nums"
-                              v-if="
-                                tokens &&
-                                tokens[pair[1][0].token0[0].toString()] &&
-                                tokens[pair[1][0].token1[0].toString()] &&
-                                pair[2]
-                              "
-                            >
-                              {{
-                                pair[2].price
-                                  | filterPairTokenPrice(
-                                    tokens[pair[1][0].token0[0].toString()]
-                                      .decimals,
-                                    tokens[pair[1][0].token1[0].toString()]
-                                      .decimals
-                                  )
-                              }}
-                            </span>
-                          </dt>
-                          <dd>
-                            <span
-                              :class="{
-                                'bid-pair-price': Number(pair[2].change24h) > 0,
-                                'ask-pair-price': Number(pair[2].change24h) < 0
-                              }"
-                              class="tabular-nums"
-                              v-if="pair[2]"
-                            >
-                              {{ pair[2].change24h | filterChange }}%
-                            </span>
-                          </dd>
-                        </dl>
-                      </td>
-                      <td class="text-right">
-                        <dl>
-                          <dt>
-                            <span
-                              class="tabular-nums"
-                              v-if="
-                                tokens &&
-                                tokens[pair[1][0].token1[0].toString()] &&
-                                pair[2]
-                              "
-                            >
-                              {{
-                                pair[2].vol24h.value1
-                                  | bigintToFloat(
-                                    2,
-                                    tokens[pair[1][0].token1[0].toString()]
-                                      .decimals
-                                  )
-                                  | formatNum
-                              }}
-                            </span>
-                          </dt>
-                          <dd>
-                            <span
-                              class="tabular-nums"
-                              v-if="
-                                tokens &&
-                                tokens[pair[1][0].token1[0].toString()] &&
-                                pair[2]
-                              "
-                            >
-                              {{
-                                pair[2].totalVol.value1
-                                  | bigintToFloat(
-                                    2,
-                                    tokens[pair[1][0].token1[0].toString()]
-                                      .decimals
-                                  )
-                                  | formatNum
-                              }}
-                            </span>
-                          </dd>
-                        </dl>
-                      </td>
-                    </div>
-                  </a-tooltip>
-                </tr>
+                                Total: ${{
+                                  pair[2].totalVol.value1
+                                    | icpToUsdt(
+                                      currentMarketPrice,
+                                      pair[1][0].token1[1],
+                                      tokens[pair[1][0].token1[0].toString()]
+                                        .decimals
+                                    )
+                                    | formatNum
+                                }}
+                              </span>
+                            </dd>
+                          </dl>
+                        </template>
+                        <div
+                          style="
+                            display: table;
+                            width: 100%;
+                            table-layout: fixed;
+                          "
+                          v-if="
+                            !(currentTradeMarketSort === 'Third' && !showThird)
+                          "
+                        >
+                          <td style="width: 100px">
+                            <dl>
+                              <dt
+                                :class="{
+                                  'usdt-test-dt':
+                                    currentTradeMarketSort === 'USDT'
+                                }"
+                              >
+                                <a-tooltip placement="right">
+                                  <template slot="title">
+                                    <span v-if="showReminder2(pair)">
+                                      REMINDER: This trading pair with a score
+                                      below the MAIN board requirement for
+                                      {{ getMainDay(pair) }} days may be
+                                      downgraded to the SECOND board.
+                                    </span>
+                                    <span v-if="showReminder1(pair)">
+                                      REMINDER: This trading pair with a score
+                                      below the SECOND board requirement for
+                                      {{ getSecondDay(pair) }} days may be
+                                      downgraded to the THIRD board.
+                                    </span>
+                                  </template>
+                                  <span
+                                    v-if="
+                                      (pair && showReminder1(pair)) ||
+                                      showReminder2(pair)
+                                    "
+                                    style="opacity: 0.8; color: #727a87"
+                                    class="pair-name"
+                                  >
+                                    * {{ pair[1][0].token0[1]
+                                    }}<span class="pair-icp"
+                                      >/{{ pair[1][0].token1[1] }}</span
+                                    >
+                                  </span>
+                                </a-tooltip>
+                                <span
+                                  v-if="
+                                    pair &&
+                                    !showReminder1(pair) &&
+                                    !showReminder2(pair)
+                                  "
+                                  class="pair-name"
+                                >
+                                  {{ pair[1][0].token0[1]
+                                  }}<span class="pair-icp"
+                                    >/{{ pair[1][0].token1[1] }}</span
+                                  >
+                                </span>
+                              </dt>
+                              <dd>
+                                <a-icon
+                                  v-show="
+                                    !oldPairs.includes(pair[0].toString()) &&
+                                    pair[1][0].marketBoard
+                                  "
+                                  :theme="
+                                    star.includes(pair[0].toString())
+                                      ? 'filled'
+                                      : 'outlined'
+                                  "
+                                  @click.stop="onStar(pair)"
+                                  type="star"
+                                  :class="{
+                                    'base-font-title': star.includes(
+                                      pair[0].toString()
+                                    )
+                                  }"
+                                />
+                                <span
+                                  v-show="oldPairs.includes(pair[0].toString())"
+                                  >(Old)</span
+                                >
+                              </dd>
+                            </dl>
+                          </td>
+                          <td>
+                            <dl>
+                              <dt>
+                                <span
+                                  class="tabular-nums"
+                                  v-if="
+                                    tokens &&
+                                    tokens[pair[1][0].token0[0].toString()] &&
+                                    tokens[pair[1][0].token1[0].toString()] &&
+                                    pair[2]
+                                  "
+                                >
+                                  {{
+                                    pair[2].price
+                                      | filterPairTokenPrice(
+                                        tokens[pair[1][0].token0[0].toString()]
+                                          .decimals,
+                                        tokens[pair[1][0].token1[0].toString()]
+                                          .decimals
+                                      )
+                                  }}
+                                </span>
+                              </dt>
+                              <dd>
+                                <span
+                                  :class="{
+                                    'bid-pair-price':
+                                      Number(pair[2].change24h) > 0,
+                                    'ask-pair-price':
+                                      Number(pair[2].change24h) < 0
+                                  }"
+                                  class="tabular-nums"
+                                  v-if="pair[2]"
+                                >
+                                  {{ pair[2].change24h | filterChange }}%
+                                </span>
+                              </dd>
+                            </dl>
+                          </td>
+                          <td class="text-right">
+                            <dl>
+                              <dt>
+                                <span
+                                  class="tabular-nums"
+                                  v-if="
+                                    tokens &&
+                                    tokens[pair[1][0].token1[0].toString()] &&
+                                    pair[2]
+                                  "
+                                >
+                                  {{
+                                    pair[2].vol24h.value1
+                                      | bigintToFloat(
+                                        2,
+                                        tokens[pair[1][0].token1[0].toString()]
+                                          .decimals
+                                      )
+                                      | formatNum
+                                  }}
+                                </span>
+                              </dt>
+                              <dd>
+                                <span
+                                  class="tabular-nums"
+                                  v-if="
+                                    tokens &&
+                                    tokens[pair[1][0].token1[0].toString()] &&
+                                    pair[2]
+                                  "
+                                >
+                                  {{
+                                    pair[2].totalVol.value1
+                                      | bigintToFloat(
+                                        2,
+                                        tokens[pair[1][0].token1[0].toString()]
+                                          .decimals
+                                      )
+                                      | formatNum
+                                  }}
+                                </span>
+                              </dd>
+                            </dl>
+                          </td>
+                        </div>
+                      </a-tooltip>
+                    </tr>
+                  </transition-group>
+                </draggable>
               </tbody>
             </table>
           </div>
@@ -10239,6 +10269,7 @@
               placeholder="Search"
               v-model="pairSearch"
               @change="pairSearchChange"
+              @focus="pairSearchChange"
             >
               <a-icon style="color: #adb3c4" slot="prefix" type="search" />
             </a-input>
@@ -10246,7 +10277,6 @@
           <ul class="trade-market-sort">
             <li
               :class="[
-                pairSearch ? 'disabled' : '',
                 item.value === currentTradeMarketSort ? 'active' : '',
                 item.value
               ]"
@@ -10300,7 +10330,8 @@
                     !(currentTradeMarketSort === 'Third' && !showThird) &&
                     currentPairIndex !== null &&
                     pairs[currentPairIndex] &&
-                    currentPair[3] === currentTradeMarketSort &&
+                    (currentPair[3] === currentTradeMarketSort ||
+                      !pair[1][0].marketBoard) &&
                     pair[1][0].canisterId.toString() ===
                       currentPair[1][0].canisterId.toString()
                 }"
@@ -12409,12 +12440,7 @@
       @withdrawSuccess="withdrawSuccess"
     >
     </withdraw-token>
-    <launch
-      :tokens="tokens"
-      ref="launch"
-      @launchSuccess="launchSuccess"
-    ></launch>
-    <v-tour
+    <!--<v-tour
       name="myTour"
       :steps="steps"
       :options="{
@@ -12427,7 +12453,7 @@
         }
       }"
       :callbacks="myCallbacks"
-    ></v-tour>
+    ></v-tour>-->
   </div>
 </template>
 
@@ -12553,6 +12579,7 @@ import Launch from '@/views/home/ICDex/components/Launch.vue';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { NftService } from '@/ic/nft/Service';
 import { TokenExt, TokensExt } from '@/ic/nft/model';
+import draggable from 'vuedraggable';
 
 const commonModule = namespace('common');
 const ProSubaccountId = 1;
@@ -12569,6 +12596,7 @@ const ICRC2Token = [
   SNS1Token,
   OCToken
 ];
+let timer = null;
 
 @Component({
   name: 'Index',
@@ -12583,7 +12611,8 @@ const ICRC2Token = [
     ProOrder,
     ProWalletSwap,
     WithdrawToken,
-    Launch
+    Launch,
+    draggable
   },
   filters: {
     stoUpdateFee(poFee1: bigint, decimals: number): string {
@@ -12895,7 +12924,6 @@ export default class extends Vue {
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
   @commonModule.Getter('getIcx') getIcx?: AstroXWebViewHandler;
   @commonModule.Getter('getCheckAuth') getCheckAuth?: boolean;
-  @commonModule.Getter('getIdentity') getIdentity?: boolean;
 
   private poolVisible = false;
   private showPrepareOrder = false;
@@ -13189,6 +13217,7 @@ export default class extends Vue {
     'oru4a-nqaaa-aaaak-acufa-cai',
     '5t3ek-haaaa-aaaar-qadia-cai'
   ];
+  private dragPair: DePairs = null;
   private prePairs: Array<string> = [];
   private star: Array<string> = [];
   private tradePairs = {
@@ -13245,9 +13274,16 @@ export default class extends Vue {
   private stoConfig: StoSetting = null;
   private sysConfig: SysConfig = null;
   // Tour
-  private steps = [];
+  // private steps = [];
   private myCallbacks = {};
   private oldICL = '5573k-xaaaa-aaaak-aacnq-cai';
+  private drag = false;
+  private dragOptions = {
+    animation: 200,
+    group: 'description',
+    disabled: false,
+    ghostClass: 'ghost'
+  };
   @Watch('buyTotal')
   private onBuyTotalChange() {
     if (Number(this.buyTotal)) {
@@ -13638,12 +13674,12 @@ export default class extends Vue {
     try {
       this.getSysConfig();
       this.getDexPairs('icdex').then(() => {
-        const tour = localStorage.getItem('confirmOldTrade');
-        if (!tour) {
-          this.$nextTick(() => {
-            this.$tours['myTour'].start();
-          });
-        }
+        // const tour = localStorage.getItem('confirmOldTrade');
+        // if (!tour) {
+        //   this.$nextTick(() => {
+        //     this.$tours['myTour'].start();
+        //   });
+        // }
       });
       this.getIcpPrice();
       this.initFallbackInfo();
@@ -13657,17 +13693,17 @@ export default class extends Vue {
     } catch (e) {
       console.error(e);
     }
-    this.steps = [
-      {
-        target: '.trade-market-old',
-        content:
-          'These are trading pairs from the previous version and will be closed after one month, please cancel all unfilled orders.',
-        params: {
-          enableScrolling: false
-          // placement: 'right'
-        }
-      }
-    ];
+    // this.steps = [
+    //   {
+    //     target: '.trade-market-old',
+    //     content:
+    //       'These are trading pairs from the previous version and will be closed after one month, please cancel all unfilled orders.',
+    //     params: {
+    //       enableScrolling: false
+    //       // placement: 'right'
+    //     }
+    //   }
+    // ];
     this.myCallbacks = {
       onFinish: this.stepCallbacks
     };
@@ -19172,6 +19208,7 @@ export default class extends Vue {
       }
     });
     canisterIds = [...new Set(canisterIds)];
+    await checkAuth();
     const flag = needConnectPlug(canisterIds);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -19318,19 +19355,18 @@ export default class extends Vue {
       );
     }
   }
+  private changeLaunch(pair: string): void {
+    this.$router.push(`/ICDex/${pair}`).then(() => {
+      this.getDexPairs('icdex');
+    });
+  }
   private launchSuccess(token0: string, token1: string): void {
     this.$router.push(`/ICDex/${token0}/${token1}`).then(() => {
       this.getDexPairs('icdex');
     });
   }
-  private showLaunch(): void {
-    (this.$refs.launch as any).init();
-  }
   private changeTradeMarketSort(val): void {
-    if (!this.pairSearch) {
-      this.currentTradeMarketSort = val.value;
-      // this.showThird = false;
-    }
+    this.currentTradeMarketSort = val.value;
   }
   private initFallbackInfo(): void {
     if (this.getPrincipalId) {
@@ -19642,7 +19678,7 @@ export default class extends Vue {
       currentPair[3] = 'Star';
       this.star.unshift(pairId);
       this.tradePairs.Star.unshift(currentPair);
-      if (this.getIdentity) {
+      if (this.getPrincipalId) {
         this.addFavorites(pair[0]);
       }
     } else {
@@ -19653,7 +19689,7 @@ export default class extends Vue {
           return true;
         }
       });
-      if (this.getIdentity) {
+      if (this.getPrincipalId) {
         this.removeFavorites(pair[0]);
       }
     }
@@ -19670,7 +19706,9 @@ export default class extends Vue {
     localStorage.setItem('star', JSON.stringify(this.star));
   }
   private async getFavorites(): Promise<Array<string>> {
-    const res = await this.ICLighthouseService.getFavorites();
+    const res = await this.ICLighthouseService.getFavorites(
+      this.getPrincipalId
+    );
     return res.map((item) => item.toString());
   }
   private async addFavorites(pairId: Principal): Promise<void> {
@@ -19818,10 +19856,11 @@ export default class extends Vue {
             currentPair[3] = 'Third';
             this.tradePairs.Third.push(currentPair);
           }
-          if (this.star.includes(currentPair[0].toString())) {
+          const starIndex = this.star.indexOf(currentPair[0].toString());
+          if (starIndex > -1) {
             let pair = [].concat(currentPair);
             pair[3] = 'Star';
-            this.tradePairs.Star.unshift(pair);
+            this.tradePairs.Star.splice(starIndex, 0, pair);
           }
           // const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
           // if (token1Symbol === 'icp') {
@@ -19838,12 +19877,12 @@ export default class extends Vue {
           //   this.tradePairs.USDT.push(currentPair);
           // }
         });
-        this.tradePairs.Star.sort((a, b) => {
-          return (
-            this.star.indexOf(b[0].toString()) -
-            this.star.indexOf(a[0].toString())
-          );
-        });
+        // this.tradePairs.Star.sort((a, b) => {
+        //   return (
+        //     this.star.indexOf(b[0].toString()) -
+        //     this.star.indexOf(a[0].toString())
+        //   );
+        // });
         let token0 = this.$route.params.token0;
         let token1 = this.$route.params.token1;
         let currentStage: string;
@@ -19853,10 +19892,7 @@ export default class extends Vue {
           for (let i = 0; i < pairs.length; i++) {
             const currentPair = pairs[i][1] as TrieListData1SwapPair;
             if (token0 === 'pair') {
-              if (
-                currentPair.pair.canisterId.toString() ===
-                token1.toLocaleLowerCase()
-              ) {
+              if (currentPair.pair.canisterId.toString() === token1) {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
                 break;
@@ -19873,6 +19909,39 @@ export default class extends Vue {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
                 break;
+              }
+            }
+          }
+          if (token0 === 'pair' && !currentPairId) {
+            if (!currentPairId) {
+              try {
+                const res = await this.currentICDexService.info(token1);
+                console.log(res);
+                if (res) {
+                  this.tradePairs.Third.push([
+                    Principal.fromText(token1),
+                    [
+                      {
+                        feeRate: new BigNumber(
+                          res.pairInfo.setting.TRADING_FEE.toString(10)
+                        )
+                          .div(10 ** 6)
+                          .toString(10),
+                        token0: res.pairInfo.token0,
+                        token1: res.pairInfo.token1,
+                        dexName: res.pairInfo.name,
+                        canisterId: Principal.fromText(token1)
+                      },
+                      BigInt(0)
+                    ],
+                    null,
+                    'Old'
+                  ]);
+                  currentPairId = token1;
+                  currentStage = 'STAGE0';
+                }
+              } catch (e) {
+                console.log(e);
               }
             }
           }
@@ -19922,10 +19991,7 @@ export default class extends Vue {
           // }
           for (let i = 0; i < this.pairs.length; i++) {
             if (token0 === 'pair') {
-              if (
-                this.pairs[i][1][0].canisterId.toString() ===
-                token1.toLocaleLowerCase()
-              ) {
+              if (this.pairs[i][1][0].canisterId.toString() === token1) {
                 this.currentPairIndex = i;
                 this.currentPair = this.pairs[this.currentPairIndex];
                 break;
@@ -19945,6 +20011,8 @@ export default class extends Vue {
               }
             }
           }
+          console.log(this.currentPairIndex);
+          console.log(this.currentPair);
           if (!this.currentPair && this.$route.name === 'ICDex') {
             if (this.tradePairs.Main.length) {
               this.currentTradeMarketSort = 'Main';
@@ -21279,6 +21347,54 @@ export default class extends Vue {
       console.log(this.orderExpirationDuration);
     }
   }
+  private draggableStar(event): void {
+    this.drag = true;
+    this.dragPair =
+      this.tradePairs[this.currentTradeMarketSort][event.oldIndex];
+  }
+  private draggableEnd(event): void {
+    console.log(event.oldIndex);
+    console.log(event.newIndex);
+    this.drag = false;
+    if (
+      event.oldIndex !== event.newIndex &&
+      this.dragPair[1][0].canisterId.toString() !==
+        this.tradePairs[this.currentTradeMarketSort][
+          event.newIndex
+        ][1][0].canisterId.toString()
+    ) {
+      // const pair = this.tradePairs[this.currentTradeMarketSort][event.oldIndex];
+      console.log(this.dragPair[1][0].token0);
+      this.tradePairs[this.currentTradeMarketSort].splice(event.oldIndex, 1);
+      this.tradePairs[this.currentTradeMarketSort].splice(
+        event.newIndex,
+        0,
+        this.dragPair
+      );
+    }
+    this.throttle();
+    this.dragPair = null;
+  }
+  private async updateFavoritesListOrder(): Promise<void> {
+    const favoritesList: Array<Principal> = [];
+    const star: Array<string> = [];
+    this.tradePairs[this.currentTradeMarketSort].forEach((item) => {
+      favoritesList.push(item[1][0].canisterId);
+      star.push(item[1][0].canisterId.toString());
+    });
+    localStorage.setItem('star', JSON.stringify(star));
+    console.log(star);
+    await this.ICLighthouseService.updateFavoritesListOrder(favoritesList);
+  }
+  private throttle() {
+    if (!timer) {
+      timer = setTimeout(() => {
+        this.updateFavoritesListOrder();
+        timer = null;
+        clearTimeout(timer);
+      }, 6 * 1000);
+    }
+  }
 }
 </script>
 
@@ -21432,7 +21548,7 @@ export default class extends Vue {
 .home-header {
   top: 14px;
   .home-header-right-info {
-    width: 280px;
+    min-width: 280px;
   }
 }
 .taker-fee {

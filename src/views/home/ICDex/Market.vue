@@ -23,13 +23,7 @@
         </li>
       </ul>
       <div class="flex-center margin-left-auto">
-        <span
-          v-if="getPrincipalId"
-          @click="showLaunch"
-          class="base-font-title pointer pc-show"
-          style="font-size: 15px"
-          >+Launch</span
-        >
+				<launch :tokens="tokens" ref="launch"></launch>
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -44,6 +38,7 @@
           <span>Total Pairs: {{ pairs.length }}</span>
           <span>Total Vol: {{ totalVol | formatNum }} USD</span>
           <span>Total TVL: {{ totalTVL | formatNum }} USD</span>
+          <span>24h Vol: {{ Vol24 | formatNum }} USD</span>
         </div>
         <div class="margin-left-auto flex-center">
           <div
@@ -64,6 +59,7 @@
         <span>Total Pairs: {{ pairs.length }}</span>
         <span>Total Vol: {{ totalVol | formatNum }} USD</span>
         <span>Total TVL: {{ totalTVL | formatNum }} USD</span>
+        <span>24h Vol: {{ Vol24 | formatNum }} USD</span>
       </div>
       <div class="market-main-container">
         <div v-show="marketType === 'pairs'" class="table-main">
@@ -2070,6 +2066,7 @@ export default class extends Vue {
   private pairsTVL: { [key: string]: string } = {};
   private totalTVL = '0';
   private totalVol = '0';
+  private Vol24 = '0';
   private pairs: Array<PairTrie> = [];
   private launches: Array<PairTrie> = [];
   private IDOs: Array<[PairTrie, IDOConfig]> = [];
@@ -2747,7 +2744,6 @@ export default class extends Vue {
       console.log(this.ETHPrice);
     }
     const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
-    let total = '0';
     if (res && res.data && res.data.length) {
       res.data.forEach((item) => {
         const id = `${item[1].pair.token0[0].toString()}_${item[1].pair.token1[0].toString()}`;
@@ -2777,24 +2773,29 @@ export default class extends Vue {
         return a[1].pair.token0[1].localeCompare(b[1].pair.token0[1]);
       });
       this.total = this.pairs.length;
-      this.getTokenDecimals().then(() => {
-        this.pairs.forEach((item) => {
-          if (
-            !item[1].pair.token0[1].toLocaleLowerCase().includes('test') &&
-            !item[1].pair.token1[1].toLocaleLowerCase().includes('test') &&
-            item[1].liquidity.length
-          ) {
-            const token1Decimals =
-              this.tokens[item[1].pair.token1[0].toString()].decimals;
-            const basePrice = this.getBasePrice(item[1].pair.token1[1]);
-            total = new BigNumber(item[1].liquidity[0].vol.value1.toString(10))
-              .div(10 ** token1Decimals)
-              .times(basePrice)
-              .plus(total)
-              .toString(10);
+      this.getTokenDecimals().then(async () => {
+        let total = '0';
+        let Vol24 = '0';
+        try {
+          const res = await axios.get(
+            'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
+          );
+          console.log(res);
+          if (res && res.data) {
+            for (let key in res.data) {
+              const totalVol = res.data[key].usd_volume;
+              Vol24 = new BigNumber(Vol24)
+                .plus(res.data[key].usd_24h_volume)
+                .toString(10);
+              total = new BigNumber(total).plus(totalVol).toString(10);
+            }
           }
-        });
+        } catch (e) {
+          console.log(e);
+        }
         this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
+        this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
+        console.log(this.Vol24);
       });
       this.getIDOs();
       this.getStats();
@@ -2812,11 +2813,11 @@ export default class extends Vue {
       board = Object.keys(marketBoard[0])[0];
     }
     if (board === 'STAGE2') {
-      return 'Main';
+      return 'MAIN';
     } else if (board === 'STAGE1') {
-      return 'Second';
+      return 'SECOND';
     } else {
-      return 'Third';
+      return 'THIRD';
     }
   }
   private async getIDOs(): Promise<void> {

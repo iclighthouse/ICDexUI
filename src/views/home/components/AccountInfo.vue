@@ -2,12 +2,32 @@
   <div class="account-info">
     <slot></slot>
     <div class="current-account" v-if="getPrincipalId">
-      <img :src="accountImg" alt="account" />
-      <copy-account
-        :front="8"
-        :account="getPrincipalId"
-        copy-text="Principal ID"
-      ></copy-account>
+      <span class="flex-center" v-show="!accountName[getPrincipalId]">
+        <img :src="accountImg" alt="account" />
+        <copy-account
+          :front="8"
+          :account="getPrincipalId"
+          copy-text="Principal ID"
+        ></copy-account>
+      </span>
+      <span class="flex-center" v-show="accountName[getPrincipalId]">
+        <img :src="accountImg" alt="account" />
+        <span>{{ accountName[getPrincipalId] }}</span>
+        <span class="flex-center" style="margin-left: 5px; font-size: 12px">
+          (<copy-account
+            :front="4"
+            :account="getPrincipalId"
+            copy-text="Principal ID"
+          ></copy-account
+          >)
+        </span>
+      </span>
+      <a-icon
+        @click="setName"
+        style="margin-left: 5px"
+        class="pointer"
+        type="setting"
+      />
       <router-link
         v-show="!$route.fullPath.toLocaleLowerCase().startsWith('/account')"
         to="/account"
@@ -52,14 +72,30 @@
             class="user-principal user-setting-item-setting"
             v-if="principal !== getPrincipalId"
           >
-            <img :src="getAccountImg(principal)" alt="" />
-            <copy-account
-              :account="principal"
-              placement="left"
-              :is-copy="false"
-              copy-text="Principal ID"
-              class="user-setting-item-setting-copy"
-            ></copy-account>
+            <span class="flex-center" v-show="!accountName[principal]">
+              <img :src="getAccountImg(principal)" alt="" />
+              <copy-account
+                :account="principal"
+                placement="left"
+                :is-copy="false"
+                copy-text="Principal ID"
+                class="user-setting-item-setting-copy"
+              ></copy-account>
+            </span>
+            <span class="flex-center" v-show="accountName[principal]">
+              <img :src="getAccountImg(getPrincipalId)" alt="" />
+              <span>{{ accountName[principal] }}</span>
+              <span class="flex-center" style="margin-left: 3px">
+                (<copy-account
+                  :front="4"
+                  placement="left"
+                  :is-copy="false"
+                  :account="principal"
+                  copy-text="Principal ID"
+                ></copy-account
+                >)
+              </span>
+            </span>
             <img class="source-img" :src="getSourceImg(principal)" alt="" />
           </div>
           <a-tooltip
@@ -71,10 +107,30 @@
               <span>{{ getPrincipalId }}</span>
             </template>
             <div class="user-setting-item-setting">
-              <img :src="getAccountImg(getPrincipalId)" alt="" /><span>{{
-                getPrincipalId | ellipsisAccount
-              }}</span
-              ><a-icon class="check-account-icon" type="check-circle" />
+              <span class="flex-center" v-show="!accountName[principal]">
+                <img :src="getAccountImg(principal)" alt="" /><span>{{
+                  getPrincipalId | ellipsisAccount
+                }}</span>
+              </span>
+              <span class="flex-center" v-show="accountName[principal]">
+                <img :src="getAccountImg(getPrincipalId)" alt="" />
+                <span>{{ accountName[principal] }}</span>
+                <span class="flex-center" style="margin-left: 3px">
+                  (<copy-account
+                    :front="4"
+                    :account="principal"
+                    copy-text="Principal ID"
+                  ></copy-account
+                  >)
+                </span>
+              </span>
+              <a-icon
+                @click="setName"
+                style="margin-left: 5px"
+                class="pointer"
+                type="setting"
+              />
+              <a-icon class="check-account-icon" type="check-circle" />
               <img class="source-img" :src="getSourceImg(principal)" alt="" />
             </div>
           </a-tooltip>
@@ -162,7 +218,7 @@
             <span>NFT</span>
           </router-link>
         </a-menu-item>
-        <!--<a-menu-item
+        <a-menu-item
           class="user-setting-item"
           @click="changeMenu('Airdrop', '/Airdrop')"
           :class="{
@@ -172,7 +228,7 @@
           <router-link to="/nft">
             <span>Airdrop</span>
           </router-link>
-        </a-menu-item>-->
+        </a-menu-item>
         <a-menu-item
           class="user-setting-item"
           @click="changeMenu('dapps', '/dapps')"
@@ -415,6 +471,35 @@
         </div>
       </div>
     </a-modal>
+    <a-modal
+      v-model="nameVisible"
+      centered
+      :title="nameVisibleTitle"
+      width="550px"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      :after-close="close"
+    >
+      <a-form-model :model="nameForm" ref="nameForm" :rules="nameRules">
+        <a-form-model-item label="Name" prop="name">
+          <a-input
+            v-model="nameForm.name"
+            autocomplete="off"
+            placeholder="Name"
+          />
+        </a-form-model-item>
+        <a-form-model-item>
+          <button
+            @click="onSubmitName"
+            type="button"
+            class="primary large-primary w100 mt20"
+          >
+            Submit
+          </button>
+        </a-form-model-item>
+      </a-form-model>
+    </a-modal>
   </div>
 </template>
 
@@ -431,6 +516,8 @@ import AuthClientAPi from '@/ic/AuthClientApi';
 import { Menu } from '@/components/menu/model';
 import { connectIcx } from '@/ic/connectIcx';
 import EventBus from '@/utils/Event';
+import { WrappedFormUtils } from 'ant-design-vue/types/form/form';
+import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 
 const commonModule = namespace('common');
 const KeyEncoder = require('key-encoder').default;
@@ -449,6 +536,8 @@ export default class extends Vue {
   @commonModule.Getter('getIdentity') getIdentity?:
     | Secp256k1KeyIdentity
     | Ed25519KeyIdentity;
+  @commonModule.Getter('getAccountName') getAccountName?: string;
+  @commonModule.Mutation('SET_ACCOUNT_NAME') setAccountName?: any;
   private principalList: Array<string> = [];
   private priList = {};
   private isIcx = false;
@@ -462,6 +551,22 @@ export default class extends Vue {
   public defaultSelectedKeys = 'account';
   private hostname = '';
   private hostHref = '';
+  private nameVisible = false;
+  private nameVisibleTitle = 'Set account name';
+  private nameForm = {
+    name: ''
+  };
+  private nameRules = {
+    name: [
+      {
+        required: true,
+        message: 'Please enter name',
+        trigger: 'change'
+      }
+    ]
+  };
+  private ICLighthouseService: ICLighthouseService;
+  private accountName: { [key: string]: string } = {};
   get accountImg(): string {
     if (this.getPrincipalId) {
       return this.getAccountImg(this.getPrincipalId);
@@ -474,7 +579,12 @@ export default class extends Vue {
     this.isIcx = !!(window as any).icx;
   }
   created(): void {
+    this.ICLighthouseService = new ICLighthouseService();
     this.getAccountInfo();
+    if (this.getPrincipalId) {
+      this.getCAccountName(this.getPrincipalId);
+      this.accountName = JSON.parse(localStorage.getItem('accountName')) || {};
+    }
   }
   private async connectWallet(): Promise<void> {
     if ((window as any).icx) {
@@ -508,6 +618,9 @@ export default class extends Vue {
     }
     this.priList = JSON.parse(localStorage.getItem('priList')) || {};
     this.principalList = Object.keys(this.priList);
+    this.principalList.forEach((principal) => {
+      this.getCAccountName(principal);
+    });
     if (
       this.priList[this.getPrincipalId] !== 'Plug' &&
       this.priList[this.getPrincipalId] !== 'Infinity' &&
@@ -575,6 +688,9 @@ export default class extends Vue {
     this.$message.success('Copied!');
   }
   private async changeAccount(principal: string): Promise<void> {
+    if (principal === this.getPrincipalId) {
+      return;
+    }
     if (this.priList[principal] && this.priList[principal] === 'AuthClient') {
       const authClientAPi = await AuthClientAPi.create();
       const identity = authClientAPi.tryGetIdentity();
@@ -716,6 +832,49 @@ export default class extends Vue {
     this.setCheckAuth(false);
     this.setIdentity(null);
     await this.$router.replace('/loginByExists');
+  }
+  private setName(): void {
+    if (this.getAccountName) {
+      this.nameVisibleTitle = 'Update account name';
+      this.nameForm.name = this.getAccountName;
+    }
+    this.nameVisible = true;
+  }
+  private onSubmitName(): void {
+    (this.$refs.nameForm as any).validate(async (valid: any) => {
+      if (valid) {
+        const loading = this.$loading({
+          lock: true,
+          background: 'rgba(0, 0, 0, 0.5)'
+        });
+        await this.ICLighthouseService.updateAccountName(this.nameForm.name);
+        this.$message.success('Success');
+        this.getCAccountName(this.getPrincipalId);
+        this.nameVisible = false;
+        loading.close();
+      }
+    });
+  }
+  private close(): void {
+    (this.$refs.nameForm as Vue & WrappedFormUtils).resetFields();
+  }
+  private async getCAccountName(principalId: string): Promise<void> {
+    const res = await this.ICLighthouseService.getAccountName(
+      Principal.fromText(principalId)
+    );
+    console.log(res);
+    if (res && res[1]) {
+      this.setAccountName(res[1][0]);
+      const accountName = JSON.parse(localStorage.getItem('accountName')) || {};
+      if (
+        !accountName[principalId] ||
+        (accountName[principalId] && accountName[principalId] !== res[1][0])
+      ) {
+        accountName[principalId] = res[1][0];
+        localStorage.setItem('accountName', JSON.stringify(accountName));
+        this.accountName = accountName;
+      }
+    }
   }
 }
 </script>

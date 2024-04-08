@@ -60,7 +60,8 @@ export const checkAuth = (
         if (Ic.plug.agent) {
           Ic.plug.agent.getPrincipal().then((currentPrincipal) => {
             if (currentPrincipal.toString() !== principal) {
-              router.go(0);
+              // router.go(0);
+              resolve(false);
             } else {
               resolve(true);
             }
@@ -92,14 +93,18 @@ export const checkAuth = (
         }
       });
     } else {
-      const t = store.getters['common/getExpireSessionTimeout'];
-      if (t < new Date().getTime() && router.app.$route.meta.requireAuth) {
-        refreshing(resolve);
-      } else {
-        if (renew) {
-          store.commit('common/SET_EXPIRE_SESSION_TIMEOUT');
-        }
+      if (!principal) {
         resolve(true);
+      } else {
+        const t = store.getters['common/getExpireSessionTimeout'];
+        if (t < new Date().getTime() && router.app.$route.meta.requireAuth) {
+          refreshing(resolve);
+        } else {
+          if (renew) {
+            store.commit('common/SET_EXPIRE_SESSION_TIMEOUT');
+          }
+          resolve(true);
+        }
       }
     }
   });

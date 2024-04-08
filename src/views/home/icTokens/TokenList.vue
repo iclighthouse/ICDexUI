@@ -293,7 +293,7 @@ import {
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { toHttpRejectError } from '@/ic/httpError';
 import { readState } from '@/ic/readState';
-import { BlackholeService } from '@/ic/Blackhole/blackholeService';
+import { BlackholeService } from '@/ic/Blackhole/BlackholeService';
 import { checkAuth } from '@/ic/CheckAuth';
 
 const commonModule = namespace('common');

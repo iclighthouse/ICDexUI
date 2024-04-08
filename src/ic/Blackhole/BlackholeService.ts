@@ -1,6 +1,6 @@
 import Service, { CanisterStatus } from '@/ic/Blackhole/model';
 import { createService } from '@/ic/createService';
-import ICTokenIDL from './blackhole.did';
+import ICTokenIDL from './Blackhole.did';
 import { BLACKHOLE_CANISTER_ID } from '@/ic/utils';
 import { Principal } from '@dfinity/principal';
 

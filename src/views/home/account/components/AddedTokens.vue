@@ -586,13 +586,11 @@
     </a-modal>
     <transfer-token
       ref="transferToken"
-      :identity="identity"
       :current-token="currentToken"
       @transferTokenSuccess="transferTokenSuccess"
     ></transfer-token>
     <transfer-batch-token
       ref="transferBatchToken"
-      :identity="identity"
       :current-token="currentToken"
       @transferTokenSuccess="transferBatchTokenSuccess"
     ></transfer-batch-token>
@@ -834,8 +832,6 @@ export default class extends Vue {
     transferBatchToken: HTMLFormElement;
     approveIcrc2;
   };
-  @Prop()
-  private identity!: Identity;
   @Prop()
   private walletMenu!: string;
   private tokensBalanceMain: { [key: string]: string } = {};
@@ -1451,6 +1447,10 @@ export default class extends Vue {
         }
         if (tokenId === IC_SNS_TOKEN_CANISTER_ID) {
           hasDefaultToken = true;
+          if (tokens[i].symbol.toLocaleLowerCase() === 'sns1') {
+            tokens[i].symbol = 'DKP';
+            tokens[i].name = 'Draggin Karma Points';
+          }
         }
         if (!this.localTokens[tokenId]) {
           this.getGas(tokenId, tokens[i].standard).then((fee) => {
@@ -1540,9 +1540,7 @@ export default class extends Vue {
         };
         this.tokens.push(token);
         this.getICRCBalance(token);
-        if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
-          this.getSNSLogo(token);
-        }
+        this.getIcrcMetadata(token);
       }
     } catch (e) {
       console.log(e);
@@ -1584,6 +1582,7 @@ export default class extends Vue {
         };
         this.tokens.push(token);
         this.getICRCBalance(token);
+        this.getICRCBalance(token, 1);
         this.getIcrcMetadata(token);
       }
     } catch (e) {

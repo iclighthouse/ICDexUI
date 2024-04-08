@@ -1340,7 +1340,6 @@
     <top-up
       ref="topUp"
       :balance="balance"
-      :identity="identity"
       @topUpSuccess="topUpSuccess"
     ></top-up>
   </div>

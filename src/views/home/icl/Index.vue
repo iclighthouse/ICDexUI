@@ -19,7 +19,6 @@
       <icl-info
         v-if="$route.path === '/icl/mining'"
         class="icl-info"
-        :identity="getIdentity"
       ></icl-info>
       <router-view />
     </div>

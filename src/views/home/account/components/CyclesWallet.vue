@@ -155,7 +155,6 @@
       </a-table>
     </a-modal>
     <wallet-send-cycles
-      :identity="identity"
       :cycles="cycles"
       ref="walletSendCycles"
       @sendCyclesSuccess="sendCyclesSuccess"
@@ -358,8 +357,6 @@ export default class extends Vue {
   public cycles = '-';
   public decimals = 8;
   public fee = 0.0001;
-  @Prop()
-  private identity!: Identity;
   private ICLighthouseService: ICLighthouseService;
   private timer = null;
   private walletCallModal = false;

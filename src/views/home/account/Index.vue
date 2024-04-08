@@ -35,7 +35,6 @@
       </div>
       <div class="wallet-item">
         <ledger
-          :identity="getIdentity"
           :principal="getPrincipalId"
           type="cross"
           ref="ledger1"
@@ -99,7 +98,6 @@
           </button>
         </p>
         <ledger
-          :identity="getIdentity"
           :principal="getPrincipalId"
           :wallet-menu="currentWalletMenu"
           type="ic"
@@ -132,7 +130,6 @@
               :principal="getPrincipalId"
               :wallet-menu="currentWalletMenu"
               ref="addedTokens"
-              :identity="getIdentity"
               @showTraderAccounts="showTraderAccounts"
             ></added-tokens>
           </div>
@@ -173,7 +170,6 @@
                   @removeWalletSuccess="removeWalletSuccess(index)"
                   @setDefaultSuccess="setDefaultSuccess"
                   @showTopUp="showTopUp"
-                  :identity="getIdentity"
                   :wallet="wallet"
                   :ref="'cyclesWallet' + index"
                 ></cycles-wallet>
@@ -228,7 +224,6 @@
       </div>
       <create-wallet
         @createWalletSuccess="createWalletSuccess"
-        :identity="getIdentity"
         :balance="balance"
         ref="createWallet"
       ></create-wallet>
@@ -343,7 +338,6 @@
       </a-modal>
       <create-wallet
         @createWalletSuccess="createWalletSuccess"
-        :identity="identity"
         :wallet-id="currentWallet.walletId.toString()"
         :cycles="currentWallet.cycles"
         ref="cyclesCreateWallet"

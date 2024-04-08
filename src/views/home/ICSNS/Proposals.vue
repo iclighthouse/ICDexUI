@@ -65,18 +65,26 @@
             :key="index"
             @click="jumpProposal(item)"
           >
-            <div class="proposals-list-item-header">
+            <div
+              class="proposals-list-item-header"
+              style="align-items: center; margin-bottom: 10px"
+            >
+              <span class="base-font-title"
+                >ID: {{ item.id[0].id.toString(10) }}</span
+              >
+              <span
+                class="proposals-list-item-header-status margin-left-auto"
+                :class="getStatus(item)"
+              >
+                {{ getStatus(item) }}
+              </span>
+            </div>
+            <div>
               <span class="proposals-list-item-title">
                 <span class="base-color-w">
                   {{ item.proposal[0].title }}
                 </span>
                 <!--{{ item.proposal[0].action | filterAction }}-->
-              </span>
-              <span
-                class="proposals-list-item-header-status"
-                :class="getStatus(item)"
-              >
-                {{ getStatus(item) }}
               </span>
             </div>
             <!--<div class="proposals-list-item-type base-font-title">
@@ -588,7 +596,7 @@ export default class extends Vue {
   ): Promise<void> {
     console.log(listDeployedSnses);
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
-    const MAX_COCURRENCY = 20;
+    const MAX_COCURRENCY = 40;
     let snsTokensAll = [];
     let snsTokens = [];
     listDeployedSnses.forEach((item, index) => {

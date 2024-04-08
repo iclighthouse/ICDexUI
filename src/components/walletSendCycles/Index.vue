@@ -101,8 +101,6 @@ export default class extends Vue {
   $refs!: { sendCyclesForm: HTMLFormElement };
   @Prop({ type: String, default: 'sendCyclesWallet' })
   public type!: string;
-  @Prop()
-  private identity!: Identity;
   @Prop({ type: String, default: '-' })
   public cycles!: string;
   public walletId: PrincipalString = '';

@@ -83,8 +83,6 @@ import { checkAuth } from '@/ic/CheckAuth';
 export default class extends Vue {
   $refs!: { topUpForm: HTMLFormElement };
   @Prop()
-  private identity!: Identity;
-  @Prop()
   public balance!: string;
   @Prop({ type: String, default: 'topUp' })
   public type!: string;

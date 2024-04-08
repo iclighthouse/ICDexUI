@@ -71,7 +71,6 @@
     <receive-modal ref="receiveModal"></receive-modal>
     <transfer-token
       ref="transferToken"
-      :identity="identity"
       :current-token="currentToken"
       @transferTokenSuccess="transferTokenSuccess"
     ></transfer-token>
@@ -112,8 +111,6 @@ export default class extends Vue {
     approveForm: HTMLFormElement;
     createTokenForm: HTMLFormElement;
   };
-  @Prop()
-  private identity!: Identity;
   private currentToken = new AddTokenItemClass();
   private ICL = '0';
   private decimals = 8;

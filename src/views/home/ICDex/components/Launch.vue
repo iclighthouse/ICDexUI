@@ -1,24 +1,58 @@
 <template>
   <div>
+    <span
+      v-if="getPrincipalId"
+      @click="showLaunchInfo = true"
+      class="base-font-title pointer pc-show"
+      style="font-size: 15px"
+    >
+      +Launch
+    </span>
+    <a-dropdown
+      placement="bottomCenter"
+      v-if="getPrincipalId"
+      :trigger="['click']"
+    >
+      <span
+        class="base-font-title pointer pc-show"
+        v-show="currentLaunches.length"
+        >({{ currentLaunches.length }})</span
+      >
+      <a-menu class="user-setting" slot="overlay">
+        <a-menu-item @click="showPromote = true"> How to promote </a-menu-item>
+        <a-menu-item
+          v-for="item in currentLaunches"
+          :key="item"
+          style="color: #51b7c3"
+          @click="jump(item)"
+        >
+          <span style="color: #51b7c3">
+            {{ item.split('&')[1] }}
+          </span>
+        </a-menu-item>
+      </a-menu>
+    </a-dropdown>
     <a-modal
-      v-model="visible"
+      v-model="showLaunchInfo"
       centered
-      title="Launch a new trading pair"
+      title="How to list a token on ICDex"
       width="800px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
       class="transfer-modal"
-      :after-close="afterClose"
     >
       <div>
-        <p class="base-font-title" style="font-size: 15px">
+        <p style="font-size: 16px; color: #fff">
           Listing Your Token on ICDex: A Step-by-Step Process
         </p>
         <div class="base-font-light" v-if="sysConfig">
           ICDex allows for permissionless listing, enabling anyone to list a
           token, provided it meets specified principles and technical
           requirements.
+          <div class="mt20" style="font-size: 16px; color: #fff">
+            1. Principle Requirements
+          </div>
           <div class="listing-main">
             <div>
               <span class="dots"></span>Development Completion: The core
@@ -51,14 +85,52 @@
               security firm. Transition the DApp’s controller to a DAO or SNS.
             </div>
           </div>
+          <div class="mt20" style="font-size: 16px; color: #fff">
+            2. Listing Procedure on ICDex
+          </div>
+          <div>
+            Allocate
+            {{ sysConfig.creatingPairFee | bigintToFloat(8, 8) | formatNum }}
+            ICL (adjustable) to establish a trading pair.
+          </div>
           <div style="margin-top: 10px" class="base-warning">
-            WARNING: The creator may face constraints from the local legal
-            framework, please verify that you are in compliance with local laws
-            and do not commit fraud or other criminal activities through the
-            token.
+            Non-compliance may trigger delisting proposals by the ICLighthouse
+            community.
           </div>
         </div>
+        <div class="flex-center mt20">
+          <button @click="showLaunchInfo = false" class="margin-left-auto">
+            Cancel
+          </button>
+          <button @click="showLaunch" class="primary" style="margin-left: 10px">
+            Yes, I'm ready
+          </button>
+        </div>
       </div>
+    </a-modal>
+    <a-modal
+      v-model="showPromote"
+      centered
+      title="How to promote trading pair"
+      width="800px"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="transfer-modal"
+    >
+      <vue-markdown class="markdown-info" :source="promoteInfo"></vue-markdown>
+    </a-modal>
+    <a-modal
+      v-model="visible"
+      centered
+      title="Launch a new trading pair"
+      width="800px"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="transfer-modal"
+      :after-close="afterClose"
+    >
       <a-form-model class="mt20" ref="form" :model="form" :rules="formRules">
         <a-form-model-item
           class="launch-form-token0"
@@ -161,6 +233,7 @@ import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { readState } from '@/ic/readState';
 import { getCandidInterfaceTmpHack } from '@/ic/getCandidInterfaceTmpHack';
 import { toHttpRejectError } from '@/ic/httpError';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 
 const commonModule = namespace('common');
 
@@ -360,12 +433,119 @@ export default class extends Vue {
       callback();
     }
   }
+  private currentLaunches: Array<string> = [];
+  private showPromote = false;
+  private showLaunchInfo = false;
+  private promoteInfo = '';
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   created(): void {
     this.DRC20TokenService = new DRC20TokenService();
     this.ICDexRouterService = new ICDexRouterService();
     this.SNSWasmService = new SNSWasmService();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.getSysConfig();
     this.getSNSTokens();
+    this.getCurrentLaunches();
+  }
+  private getCurrentLaunches(): void {
+    if (this.getPrincipalId) {
+      const launches = JSON.parse(localStorage.getItem('launches')) || {};
+      if (
+        launches[this.getPrincipalId] &&
+        launches[this.getPrincipalId].length
+      ) {
+        this.currentLaunches = launches[this.getPrincipalId];
+        this.promoteInfo = `### 1 Introduce
+
+**Pair Score** is an automatic evaluation mechanism of ICDex for trading pairs, which is based on the comprehensive evaluation of the number of sponsors, liquidity, volume, etc. A higher Pair Score means a higher position in the list of pairs, which means more attention from traders. The list of trading pairs is divided into three boards according to the Pair Score.
+ - **MAIN** (STAGE2) Board means that more traders are involved.
+ - **SECOND** (STAGE1) Board means that some traders are involved.
+ - **THIRD** (STAGE0) Board means that fewer traders are involved and there are many unknown risks.
+
+**Upgrade rules**
+
+- A new trading pair defaults to THIRD (STAGE0).
+- Upgrade from THIRD to SECOND: pair_score >= 20.
+- Upgrade from SECOND to MAIN: pair_score >= 60, for at least one month.
+
+**Degrade rules**
+
+- Degrade from MAIN to SECOND: pair_score  50, for at least three months.
+- Degrade from SECOND to THIRD: pair_score  15, for at least three months.
+
+**Sponsor rules**
+
+ICLighthouse **URANUS** NFT holders (listing referrers) are eligible to sponsor pairs. Sponsoring a trading pair increases its "Pair Score", which in turn increases its ranking and board position in the list of pairs. The rules are.
+- (Not verified) ListingReferrer Sponsor: +10 per Sponsor.
+- Verified ListingReferrer Sponsor: +15 per Sponsor.
+- Sponsored (Sponsors >= 5): +10.
+- The highest total sponsor score is 70.
+
+
+### 2 How to increase Pair Score
+
+#### **2.1 Increase attention and trading volume** (Community operations)
+- You can promote the project in the community through the trading pair link and set up incentives for the promotion. You can visit the pair's "Referral" page, where any user who has traded on the pair can get their own referral link, and the pair will keep track of the number of new users and volume of trades acquired by the promoter. For technical support please contact the ICLighthouse team.
+- You can organize trading mining events with ICDex and provide users with token rewards based on the volume of trading during a specified period of time. For technical support please contact the ICLighthouse team.
+- You can organize trading competitions in conjunction with ICDex and offer token rewards based on the amount of trading profits. For technical support please contact the ICLighthouse team.
+- You can use strategic orders (e.g. Iceberg, Grid, TWAP, VWAP) to increase volume.
+- You can use ICDex-Trader (https://github.com/iclighthouse/ICDex-Trader) and expand it into a trading robot.
+
+#### **2.2 Enhance order book liquidity** (Enhance TVL)
+
+ICDex trading pairs support Orderbook Automated Market Making Pools (OAMM Pools) and their operation is as simple as an AMM pool.
+
+1) You can visit https://iclight.io/ICDex/pools to create an OAMM pool for a trading pair and get its canister-id. This requires a fee of 500 ICL (the fee is 50 ICL for NEPTUNE, URANUS or SATURN NFT holders).
+2) You can then invite NEPTUNE NFT holders to grant a vip-maker status to this OAMM pool, or apply for vip-maker status via an SNS proposal. This is optional, but it is strongly urged that you obtain vip-maker status for the OAMM pool. Without vip-maker status, the OAMM pool will have to pay for strategy orders, so you need to pre-fund the OAMM pool with some ICLs. Additionally, the account with vip-maker status will get a rebate on the trading fees for all maker orders, which will be one of the sources of revenue for the OAMM pool.
+    **Note**:
+    The ICLighthouse team will only support the first proposal submitted by a token's development team to apply for vip-maker status for an OAMM pool.
+    To apply for a vip-maker proposal, visit https://iclight.io/icsns/proposals, select "ICLighthouse DAO", click "Make Proposal", fill in the proposal content and select Action #ExecuteGenericNervousSystemFunction, fill in the function_id with 1007 for the method "pair_setVipMaker(app: Principal, account: Address, rate: Nat)", the \`rate\` can be set up to 90, fill in payload with the binary hex as parameter, tool https://ic.house/tools. For technical support please contact the ICLighthouse team.
+3) Finally you need to add the first liquidity to activate this OAMM pool. Note that the first liquidity is only allowed to be added by the creator.
+4) Transfers funds from SNS Treasury into ICDex-Trader (https://github.com/iclighthouse/ICDex-Trader) in a decentralized manner to provide liquidity. This is a very important initiative. Doc: https://github.com/iclighthouse/ICDex-Trader/blob/main/docs/Guide_for_SNS_treasury.md
+
+#### **2.3 To obtain the support of URANUS NFT holders (listing referrers)**
+
+**URANUS** NFT holders, listing referrers, have sponsor status. Each listing referrer can propose sponsorship for up to 12 pairs in a year, increasing the pair's **Pair Score**.
+- (Not verified) ListingReferrer Sponsor: +10 per Sponsor.
+- Verified ListingReferrer Sponsor: +15 per Sponsor.
+- Sponsored (Sponsors >= 5): +10.
+- The highest total sponsor score is 70.
+
+#### **2.4 Make proposal to add metadatas of token to enhance credibility**
+
+Contact the ICLighthouse team with the following information and request an update if the information changes, otherwise a risk warning may be displayed on the trading pair page.
+
+e.g.
+\`\`\`
+- TokenControllers: "7hdtw-...-cai, xxxx...-cai"  // separated by ", "
+- TokenIsDecentralized: True  // Requires the token to be controlled by the DAO, or to have no controller.
+- TokenModuleHash: 1d20aafd24d656e9ed9389325b4a113c5dda9bc6a06faf13934f30beb9d2d87e
+- TokenMintable: False
+- TokenMaxSupply: 1000000000000000  // total supply + possible future issuance
+- Catalog: games  // Available values: blockchain, exchanges, finance, businesses, gambling, games, storage, wallet, governance, property, identity, oracles, media, social, security, insurance, energy, health, ai_vr_ar, memes, other
+- Website: https://xxxxxx.xx
+- Social: https://twitter.com/xxxxxxx
+- Discord: https://xxxxxxxxxxx.xxx
+- Github: https://github.com/xxxxxxxx
+\`\`\`
+
+**ICLighthouse NFT**: https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai
+
+**Discord listing-on-icdex channel**: https://discord.gg/9ujhdDTESF
+`;
+      }
+    }
+  }
+  private jump(item): void {
+    if (this.$route.name === 'ICDex') {
+      this.$emit('changeLaunch', item.split('&')[1]);
+    } else {
+      this.$router.push(`${item.split('&')[1]}`);
+    }
+  }
+  private showLaunch(): void {
+    this.showLaunchInfo = false;
+    this.init();
   }
   private showTimeDefaultValue(): moment.Moment {
     return moment().add(30, 'm');
@@ -577,6 +757,22 @@ export default class extends Vue {
           );
           console.log(res);
           if (res) {
+            const launches = JSON.parse(localStorage.getItem('launches')) || {};
+            if (!launches[this.getPrincipalId]) {
+              launches[this.getPrincipalId] = [
+                `${res.toString()}&${this.token0Info.symbol}/${
+                  this.token1Info.symbol
+                }`
+              ];
+            } else {
+              launches[this.getPrincipalId].push(
+                `${res.toString()}&${this.token0Info.symbol}/${
+                  this.token1Info.symbol
+                }`
+              );
+            }
+            localStorage.setItem('launches', JSON.stringify(launches));
+            this.getCurrentLaunches();
             this.visible = false;
             this.$message.success('Success');
             this.$emit('launchSuccess', this.form.token0, this.form.token1);
@@ -665,6 +861,65 @@ export default class extends Vue {
 .listing-main {
   > div {
     margin-top: 5px;
+  }
+}
+.user-setting {
+  background-color: #141b23;
+  ::v-deep.ant-dropdown-menu-item {
+    background-color: #141b23;
+    padding: 10px 15px;
+    color: #fff;
+    border-bottom: 1px solid #383e4e;
+    cursor: pointer;
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+.markdown-info {
+  word-break: break-word;
+  line-height: 18px;
+  color: #adb3c4;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 20px 0 10px;
+    font-size: 18px;
+    color: #fff;
+  }
+  a {
+    color: #1996c4;
+  }
+  img {
+    max-width: 100%;
+  }
+  p,
+  ul {
+    margin: 0 0 16px;
+  }
+  b,
+  strong {
+    font-weight: 600;
+    color: #fff;
+  }
+  pre {
+    position: relative;
+    font-family: var(--default-mono-font, 'GitLab Mono'), 'JetBrains Mono',
+      'Menlo', 'DejaVu Sans Mono', 'Liberation Mono', 'Consolas', 'Ubuntu Mono',
+      'Courier New', 'andale mono', 'lucida console', monospace;
+    display: block;
+    padding: 8px 12px;
+    margin: 0 0 16px;
+    font-size: 0.875rem;
+    word-break: break-all;
+    word-wrap: break-word;
+    border: 1px solid #dcdcde;
   }
 }
 </style>

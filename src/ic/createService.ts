@@ -25,8 +25,6 @@ export const createService = async <T>(
     service = await createIcxActor(IDL, canisterId);
   } else if (priList[principal] === 'Plug') {
     const plugIc = (window as any).ic?.plug;
-    console.log(principal);
-    console.log(plugIc.principalId);
     if (principal !== plugIc.principalId) {
       Vue.prototype.$info({
         content: `Please check if you are logged into Plug with account ${principal}.`,

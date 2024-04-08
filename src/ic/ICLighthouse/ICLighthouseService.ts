@@ -120,10 +120,12 @@ export class ICLighthouseService {
       operation
     );
   };
-  public getFavorites = async (): Promise<Array<Principal>> => {
-    await this.check();
+  public getFavorites = async (
+    principalId: string
+  ): Promise<Array<Principal>> => {
+    await this.check(false, false);
     try {
-      return await this.service.getFavorites();
+      return await this.service.getFavorites(Principal.fromText(principalId));
     } catch (e) {
       console.error(e);
       return [];
@@ -142,6 +144,37 @@ export class ICLighthouseService {
     await this.check();
     try {
       return await this.service.removeFavorites(pairId);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public updateFavoritesListOrder = async (
+    pairList: Array<Principal>
+  ): Promise<void> => {
+    await this.check();
+    try {
+      return await this.service.updateFavoritesListOrder(pairList);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public getAccountName = async (
+    account: Principal
+  ): Promise<[Principal, [string]]> => {
+    await this.check(false, false);
+    try {
+      return await this.service.getAccountName(account);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+  public updateAccountName = async (name: string): Promise<void> => {
+    await this.check();
+    try {
+      return await this.service.updateAccountlName(name);
     } catch (e) {
       console.error(e);
       return null;

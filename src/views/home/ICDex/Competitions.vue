@@ -23,13 +23,7 @@
         </li>
       </ul>
       <div class="flex-center margin-left-auto">
-        <span
-          v-if="getPrincipalId"
-          @click="showLaunch"
-          class="base-font-title pointer pc-show"
-          style="font-size: 15px"
-          >+Launch</span
-        >
+				<launch :tokens="tokens" ref="launch"></launch>
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -453,7 +447,6 @@
       </div>
       <div v-else style="text-align: center; font-size: 16px">No record</div>
     </div>
-    <launch :tokens="tokens" ref="launch"></launch>
     <!--<div
       v-show="currentMenu === 'trade'"
       class="container-width container-common-style competitions-main"

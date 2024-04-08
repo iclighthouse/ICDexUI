@@ -594,12 +594,10 @@
     <top-up
       ref="topUp"
       :balance="balance"
-      :identity="identity"
       :type="topUpType"
       @topUpSuccess="topUpSuccess"
     ></top-up>
     <wallet-send-cycles
-      :identity="identity"
       :type="sendCyclesType"
       ref="walletSendCycles"
       @sendCyclesSuccess="sendCyclesSuccess"

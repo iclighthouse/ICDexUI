@@ -8,6 +8,7 @@ export interface State {
   principalId: string;
   isOpen: boolean;
   icx: AstroXWebViewHandler;
+  accountName: string;
 }
 const common = {
   namespaced: true,
@@ -17,7 +18,8 @@ const common = {
     showCheckAuth: false,
     principalId: '',
     isOpen: false,
-    icx: null
+    icx: null,
+    accountName: null
   },
   getters: {
     getIdentity(state: State): Identity {
@@ -37,6 +39,9 @@ const common = {
     },
     getIcx(state: State): AstroXWebViewHandler {
       return state.icx;
+    },
+    getAccountName(state: State): string {
+      return state.accountName;
     }
   },
   mutations: {
@@ -63,6 +68,9 @@ const common = {
     },
     SET_ICX: (state: State, icx: AstroXWebViewHandler): void => {
       state.icx = icx;
+    },
+    SET_ACCOUNT_NAME: (state: State, accountName: string): void => {
+      state.accountName = accountName;
     }
   }
 };

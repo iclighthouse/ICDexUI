@@ -221,7 +221,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.3
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.4
             </span>
           </span>
         </span>

@@ -292,7 +292,8 @@ export class ckETHMinterService {
   public getMinterInfo = async (): Promise<MinterInfo> => {
     const service = await this.check();
     try {
-      return await service.get_minter_info();
+      const res = await service.get_minter_info();
+      return res as MinterInfo;
     } catch (e) {
       console.log(e);
       return null;

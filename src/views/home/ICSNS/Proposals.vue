@@ -1044,6 +1044,7 @@ export default class extends Vue {
   margin-bottom: 10px;
   word-break: break-word;
   line-height: 18px;
+  max-height: 54px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;

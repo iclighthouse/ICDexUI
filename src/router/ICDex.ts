@@ -25,7 +25,7 @@ const ICDexRouter: RouteConfig[] = [
     }
   },
   {
-    path: '/ICDex/market',
+    path: '/ICDex/info',
     name: 'Market',
     component: () => import('@/views/home/ICDex/Market.vue'),
     meta: {

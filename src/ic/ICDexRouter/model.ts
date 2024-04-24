@@ -109,4 +109,5 @@ export default interface Service {
   version(): Promise<string>;
   getICDexPairWasmVersion(): Promise<[string, bigint]>;
   getICDexMakerWasmVersion(): Promise<[string, bigint]>;
+  getVipMakers(account: Array<Principal>): Promise<Array<[Principal, AccountId]>>;
 }

@@ -73,8 +73,8 @@ export const networkIds = {
   '-1': 'IC Network',
   '0': 'Bitcoin',
   '1': 'Ethereum Mainnet',
-  '2': 'Goerli'
-  // '3': 'Sepolia'
+  '2': 'Goerli',
+  '3': 'Sepolia'
 };
 export const networkList = [
   {
@@ -96,6 +96,11 @@ export const networkList = [
     id: '2',
     name: 'Goerli Testnet',
     logo: require('@/assets/img/goerlieth.svg')
+  },
+  {
+    id: '3',
+    name: 'Sepolia Testnet',
+    logo: require('@/assets/img/seth.svg')
   }
 ];
 export interface ICNetworkTokensInterface {

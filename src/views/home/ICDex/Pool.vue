@@ -1022,12 +1022,12 @@ export default class extends Vue {
       path: '/ICDex'
     },
     {
-      value: 'Market',
-      path: '/ICDex/market'
-    },
-    {
       value: 'Pools',
       path: '/ICDex/pools'
+    },
+    {
+      value: 'Info',
+      path: '/ICDex/info'
     },
     {
       value: 'Competitions',

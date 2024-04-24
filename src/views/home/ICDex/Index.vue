@@ -48,18 +48,6 @@
           @launchSuccess="launchSuccess"
           @changeLaunch="changeLaunch"
         ></launch>
-        <a
-          v-if="getPrincipalId"
-          href="https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471"
-          rel="nofollow noreferrer noopener"
-          target="_blank"
-          style="
-            margin-left: 15px;
-            margin-right: 5px;
-            color: #adb3c4 !important;
-          "
-          >Guide</a
-        >
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -84,39 +72,70 @@
             <div class="de-swap-list-item-search base-font-title">
               <a-tooltip placement="top">
                 <template slot="title">
-                  <div class="base-font-title">
-                    <div>
-                      Listing on ICDex is non-censored, anyone can list a token
-                      on ICDex, the security and value of the tokens needs to be
-                      assessed by you and you bear all the consequences.
+                  <div
+                    style="padding: 10px 0; color: #8c90a1"
+                    class="base-font-title"
+                  >
+                    <div style="margin-bottom: 10px; font-size: 14px">
+                      Listing on ICDex is an open and uncensored process so
+                      anyone can list a token on ICDex. You, the trader, bear
+                      all responsibility for assessing and valuing the tokens
+                      being traded on ICDex and accept responsibility for any
+                      consequences of these trades.
                     </div>
-                    <div>
+                    <div style="margin-bottom: 10px; font-size: 14px">
                       Pair Score is an automatic evaluation mechanism of ICDex
                       for trading pairs, which is based on the comprehensive
                       evaluation of the number of sponsors, liquidity, volume,
                       etc. It is for your reference only, and is not considered
-                      as investment advice. The list of trading pairs is divided
-                      into three boards according to the Pair Score.
+                      as investment advice, endorsement, or a form of guarantee.
                     </div>
-                    <div>
-                      <span class="dots"></span> MAIN (STAGE2) Board means that
-                      more traders are involved and need to keep track of the
-                      risks.
+                    <div style="margin-bottom: 10px; font-size: 14px">
+                      The list of trading pairs is divided into three boards
+                      according to the Pair Score but as always its important to
+                      note every asset carries risks and you’re advised to do
+                      your own due diligence before trading.
                     </div>
-                    <div>
-                      <span class="dots"></span> SECOND (STAGE1) Board means
-                      that some traders are involved and need to keep track of
-                      the risks.
+                    <div style="margin-bottom: 5px">
+                      <span class="dots"></span> "Top" (STAGE2): Pairings in the
+                      "Top" category should not only
+                      <a
+                        href="https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471"
+                        target="_blank"
+                        style="color: #51b7c3"
+                        >meet the criteria outlined in our listing article</a
+                      >, they also have a combination of strong user engagement
+                      (high trade volumes), high liquidity, and typically a high
+                      level of trust within the IC ecosystem.
                     </div>
-                    <div>
-                      <span class="dots"></span> THIRD (STAGE0) Board means that
-                      fewer traders are involved and there are many unknown
-                      risks.
+                    <div style="margin-bottom: 5px">
+                      <span class="dots"></span> "Rising" (STAGE1): Pairings
+                      which make it into the “Rising” category have reasonable
+                      and consistent levels of trading activity and liquidity
+                      and are growing in trust and popularity in the ecosystem.
+                    </div>
+                    <div style="margin-bottom: 5px">
+                      <span class="dots"></span> "High Risk" (STAGE0): "High
+                      Risk" pairings are pairs where traders will likely want to
+                      proceed with higher levels of scrutiny and caution.
+                      <div>
+                        New pairings and/or pairings which typically have low
+                        liquidity and low trade volumes will be placed in this
+                        category.
+                      </div>
+                      <div>
+                        This ranking does not necessarily mean a project is bad
+                        or that you shouldn’t trade it at all, however it’s
+                        recommended you take extra precautions before trading.
+                        Over time, projects which eventually grow to meet the
+                        criteria for a higher pair score are able to move to a
+                        higher ranking.
+                      </div>
                     </div>
                   </div>
                 </template>
                 <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
-                  >About boards
+                  >About Ranks
                   <a-icon type="question-circle" />
                 </span>
               </a-tooltip>
@@ -150,7 +169,16 @@
                 />
                 <a-tooltip placement="top">
                   <template slot="title">
-                    <span>{{ item.value }} Board Market</span>
+                    <span
+                      >{{
+                        item.value === 'Main'
+                          ? 'Main'
+                          : item.value === 'Second'
+                          ? 'Rising'
+                          : 'Higher Risk '
+                      }}
+                      Pairings</span
+                    >
                   </template>
                   <span
                     :class="{ 'trade-market-old-main': item.value === 'Main' }"
@@ -189,7 +217,7 @@
               >
                 <tr v-if="currentTradeMarketSort === 'Third' && !showThird">
                   <td colspan="3" style="line-height: 1.5; padding-left: 10px">
-                    The trading pairs on the THIRD board mean that very few
+                    The trading pairs on the High Risk mean that very few
                     traders are involved and there may be a higher risk. Sure
                     you want to show the list?
                     <button class="mt20 w100" @click="showThird = true">
@@ -204,7 +232,7 @@
                   "
                 >
                   <td colspan="3" style="line-height: 1.5; padding-left: 10px">
-                    There are no pairs on the MAIN board. Check out the
+                    There are no pairs on the Main Pairings. Check out the
                     <span
                       @click="
                         changeTradeMarketSort({
@@ -213,9 +241,9 @@
                         })
                       "
                       style="color: #51b7c3"
-                      >SECOND</span
+                      >Rising</span
                     >
-                    board.
+                    Pairings.
                   </td>
                 </tr>
                 <draggable
@@ -326,15 +354,15 @@
                                   <template slot="title">
                                     <span v-if="showReminder2(pair)">
                                       REMINDER: This trading pair with a score
-                                      below the MAIN board requirement for
+                                      below the Main Pairings requirement for
                                       {{ getMainDay(pair) }} days may be
-                                      downgraded to the SECOND board.
+                                      downgraded to the Rising Pairings.
                                     </span>
                                     <span v-if="showReminder1(pair)">
                                       REMINDER: This trading pair with a score
-                                      below the SECOND board requirement for
+                                      below the Rising Pairings requirement for
                                       {{ getSecondDay(pair) }} days may be
-                                      downgraded to the THIRD board.
+                                      downgraded to the Higher Risk Pairings.
                                     </span>
                                   </template>
                                   <span
@@ -597,34 +625,36 @@
                   <template slot="title">
                     <div class="base-font-title">
                       <div>
-                        Listing on ICDex is non-censored, anyone can list a
-                        token on ICDex, the security and value of the tokens
-                        needs to be assessed by you and you bear all the
-                        consequences.
+                        <span class="dots"></span> Pairings in the "Top"
+                        category should not only meet the criteria outlined in
+                        our listing article, they also have a combination of
+                        strong user engagement (high trade volumes), high
+                        liquidity, and typically a high level of trust within
+                        the IC ecosystem.
                       </div>
                       <div>
-                        Pair Score is an automatic evaluation mechanism of ICDex
-                        for trading pairs, which is based on the comprehensive
-                        evaluation of the number of sponsors, liquidity, volume,
-                        etc. It is for your reference only, and is not
-                        considered as investment advice. The list of trading
-                        pairs is divided into three boards according to the Pair
-                        Score.
+                        <span class="dots"></span> Pairings which make it into
+                        the "Rising" category have reasonable and consistent
+                        levels of trading activity and liquidity and are growing
+                        in trust and popularity in the ecosystem.
                       </div>
                       <div>
-                        <span class="dots"></span> MAIN (STAGE2) Board means
-                        that more traders are involved and need to keep track of
-                        the risks.
-                      </div>
-                      <div>
-                        <span class="dots"></span> SECOND (STAGE1) Board means
-                        that some traders are involved and need to keep track of
-                        the risks.
-                      </div>
-                      <div>
-                        <span class="dots"></span> THIRD (STAGE0) Board means
-                        that fewer traders are involved and there are many
-                        unknown risks.
+                        <span class="dots"></span> "High Risk" pairings are
+                        pairs where traders will likely want to proceed with
+                        higher levels of scrutiny and caution.
+                        <div>
+                          New pairings and/or pairings which typically have low
+                          liquidity and low trade volumes will be placed in this
+                          category.
+                        </div>
+                        <div>
+                          This ranking does not necessarily mean a project is
+                          bad or that you shouldn’t trade it at all, however
+                          it’s recommended you take extra precautions before
+                          trading. Over time, projects which eventually grow to
+                          meet the criteria for a higher pair score are able to
+                          move to a higher ranking.
+                        </div>
                       </div>
                     </div>
                   </template>
@@ -635,11 +665,11 @@
                   >
                     {{
                       Object.keys(currentPair[1][0].marketBoard)[0] === 'STAGE2'
-                        ? 'M'
+                        ? 'T'
                         : Object.keys(currentPair[1][0].marketBoard)[0] ===
                           'STAGE1'
-                        ? 'S'
-                        : 'T'
+                        ? 'R'
+                        : 'H'
                     }}
                   </span>
                 </a-tooltip>
@@ -701,11 +731,11 @@
                   >
                     {{
                       Object.keys(currentPair[1][0].marketBoard)[0] === 'STAGE2'
-                        ? 'M'
+                        ? 'T'
                         : Object.keys(currentPair[1][0].marketBoard)[0] ===
                           'STAGE1'
-                        ? 'S'
-                        : 'T'
+                        ? 'R'
+                        : 'H'
                     }}
                   </span>
                   <span
@@ -10243,23 +10273,21 @@
                     three boards according to the Pair Score.
                   </div>
                   <div>
-                    <span class="dots"></span> MAIN (STAGE2) Board means that
-                    more traders are involved and need to keep track of the
-                    risks.
+                    <span class="dots"></span> Main Pairings means that more
+                    traders are involved and need to keep track of the risks.
                   </div>
                   <div>
-                    <span class="dots"></span> SECOND (STAGE1) Board means that
-                    some traders are involved and need to keep track of the
-                    risks.
+                    <span class="dots"></span> Rising Pairings means that some
+                    traders are involved and need to keep track of the risks.
                   </div>
                   <div>
-                    <span class="dots"></span> THIRD (STAGE0) Board means that
+                    <span class="dots"></span> Higher Risk Pairings means that
                     fewer traders are involved and there are many unknown risks.
                   </div>
                 </div>
               </template>
               <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
-                >About boards
+                >About Ranks
                 <a-icon type="question-circle" />
               </span>
             </a-tooltip>
@@ -10314,7 +10342,7 @@
                     padding-left: 10px;
                   "
                 >
-                  The trading pairs on the THIRD board mean that very few
+                  The trading pairs on the Higher Risk mean that very few
                   traders are involved and there may be a higher risk. Sure you
                   want to show the list?
                   <button class="mt20 w100" @click="showThird = true">
@@ -13109,8 +13137,8 @@ export default class extends Vue {
     }
   ];
   private currentKInterval = {
-    value: '1H',
-    key: 60 * 60
+    value: '1D',
+    key: 24 * 60 * 60
   };
   private KIntervals: Array<KBar> = [];
   private chartSpinning = false;
@@ -13178,12 +13206,12 @@ export default class extends Vue {
       path: '/ICDex'
     },
     {
-      value: 'Market',
-      path: '/ICDex/market'
-    },
-    {
       value: 'Pools',
       path: '/ICDex/pools'
+    },
+    {
+      value: 'Info',
+      path: '/ICDex/info'
     },
     {
       value: 'Competitions',
@@ -13240,15 +13268,15 @@ export default class extends Vue {
       value: 'Star'
     },
     {
-      name: 'MAIN',
+      name: 'TOP',
       value: 'Main'
     },
     {
-      name: 'SECOND',
+      name: 'RISING',
       value: 'Second'
     },
     {
-      name: 'THIRD',
+      name: 'HIGH RISK',
       value: 'Third'
     }
     // ,
@@ -14076,8 +14104,8 @@ export default class extends Vue {
   }
   private resetChart(): void {
     this.currentKInterval = {
-      value: '1H',
-      key: 60 * 60
+      value: '1D',
+      key: 24 * 60 * 60
     };
     let style = {
       candle: {
@@ -14922,7 +14950,7 @@ export default class extends Vue {
       .minus(60 * 60 * 1000)
       .times(1000000)
       .lte(order.time.toString(10));
-    if (less1H && !order.filled.length) {
+    if (less1H && !order.filled.length && !this.dexRole.vipMaker) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       const side = this.filterSide(order.orderPrice);
@@ -15087,7 +15115,7 @@ export default class extends Vue {
     const hasGrid = localStorage.getItem('GridWarn');
     if (hasGrid) {
       this.orderType = 'Pro';
-      // this.currentTradesMenu = 'pro';
+      this.currentTradesMenu = 'pro';
       this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
       if (this.isH5) {
         this.currentProOrderMenu = ProOrderEnum.Grid;
@@ -18892,12 +18920,12 @@ export default class extends Vue {
     console.log(item);
     this.orderType = item;
     this.currentMark = 0;
-    // this.currentTradesMenu = 'std';
-    // if (item === 'Stop-limit') {
-    //   this.currentTradeMenu = 'stop';
-    // } else {
-    //   this.currentTradeMenu = 'pending';
-    // }
+    this.currentTradesMenu = 'std';
+    if (item === 'Stop-limit') {
+      this.currentTradeMenu = 'stop';
+    } else {
+      this.currentTradeMenu = 'pending';
+    }
     this.currentProOrderMenu = null;
     this.init();
     if (this.getPrincipalId && item === 'Stop-limit') {
@@ -19785,9 +19813,11 @@ export default class extends Vue {
       });
       this.pairs = this.tradePairs.Search = pairs;
     } else {
-      this.currentTradeMarketSort = localStorage.getItem('sort');
-      this.pairs = this.tradePairs[this.currentTradeMarketSort];
-      localStorage.removeItem('sort');
+      if (localStorage.getItem('sort')) {
+        this.currentTradeMarketSort = localStorage.getItem('sort');
+        this.pairs = this.tradePairs[this.currentTradeMarketSort];
+        localStorage.removeItem('sort');
+      }
     }
     console.log(this.tradePairs);
     console.log(this.pairs);

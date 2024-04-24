@@ -1,4 +1,4 @@
-import { Icrc1Account, Time } from '@/ic/common/icType';
+import { Icrc1Account, SubAccount, Time } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal/lib/cjs';
 
 export type EthAddress = string;
@@ -184,6 +184,7 @@ export interface IcTokenInfo {
   symbol: string;
   dexPair: Array<Principal>;
   tokenFee?: bigint;
+  type?: string;
 }
 export type RetrievingToken = { all: null } | { eth: null } | { token: string };
 export type ckETHEvent =
@@ -502,12 +503,31 @@ export interface ETHEvent {
 export type EventPayload =
   | { SkippedBlock: { block_number: bigint } }
   | {
+      AcceptedErc20Deposit: {
+        principal: Principal;
+        transaction_hash: string;
+        value: bigint;
+        log_index: bigint;
+        block_number: bigint;
+        erc20_contract_address: string;
+        from_address: string;
+      };
+    }
+  | {
       SignedTransaction: { raw_transaction: string; withdrawal_id: bigint };
     }
   | {
       Upgrade: UpgradeArg;
     }
   | { Init: InitArg }
+  | {
+      AddedCkErc20Token: {
+        ckerc20_ledger_id: Principal;
+        chain_id: bigint;
+        address: string;
+        ckerc20_token_symbol: string;
+      };
+    }
   | {
       SyncedToBlock: { block_number: bigint };
     }
@@ -539,6 +559,32 @@ export type EventPayload =
       };
     }
   | {
+      FailedErc20WithdrawalRequest: {
+        to: Principal;
+        withdrawal_id: bigint;
+        reimbursed_amount: bigint;
+        to_subaccount: Array<Array<number>>;
+      };
+    }
+  | {
+      ReimbursedErc20Withdrawal: {
+        burn_in_block: bigint;
+        transaction_hash: Array<string>;
+        withdrawal_id: bigint;
+        reimbursed_amount: bigint;
+        ledger_id: Principal;
+        reimbursed_in_block: bigint;
+      };
+    }
+  | {
+      MintedCkErc20: {
+        event_source: EventSource;
+        erc20_contract_address: string;
+        mint_block_index: bigint;
+        ckerc20_token_symbol: string;
+      };
+    }
+  | {
       CreatedTransaction: {
         withdrawal_id: bigint;
         transaction: UnsignedTransaction;
@@ -548,6 +594,23 @@ export type EventPayload =
       InvalidDeposit: {
         event_source: EventSource;
         reason: string;
+      };
+    }
+  | {
+      SyncedErc20ToBlock: { block_number: bigint };
+    }
+  | {
+      AcceptedErc20WithdrawalRequest: {
+        cketh_ledger_burn_index: bigint;
+        destination: string;
+        ckerc20_ledger_id: Principal;
+        withdrawal_amount: bigint;
+        from: Principal;
+        created_at: bigint;
+        from_subaccount: Array<Array<number>>;
+        erc20_contract_address: string;
+        ckerc20_ledger_burn_index: bigint;
+        max_transaction_fee: bigint;
       };
     }
   | {
@@ -610,8 +673,11 @@ export type EthereumNetwork =
 export interface UpgradeArg {
   next_transaction_nonce: Array<bigint>;
   ethereum_contract_address: Array<string>;
-  minimum_withdrawal_amount: Array<string>;
+  minimum_withdrawal_amount: Array<bigint>;
   ethereum_block_height: Array<BlockTag>;
+  ledger_suite_orchestrator_id: Array<Principal>;
+  erc20_helper_contract_address: Array<string>;
+  last_erc20_scraped_block_number: Array<bigint>;
 }
 export type BlockTag =
   | {
@@ -658,6 +724,93 @@ export type TxFinalizedStatus =
 export interface EthTransaction {
   transaction_hash: string;
 }
+export interface MinterInfoDFI {
+  eth_balance: Array<bigint>;
+  eth_helper_contract_address: Array<string>;
+  last_observed_block_number: Array<bigint>;
+  erc20_helper_contract_address: Array<string>;
+  supported_ckerc20_tokens: Array<Array<CkErc20Token>>;
+  last_gas_fee_estimate: Array<GasFeeEstimate>;
+  minimum_withdrawal_amount: Array<bigint>;
+  erc20_balances: Array<
+    Array<{ balance: bigint; erc20_contract_address: string }>
+  >;
+  minter_address: Array<string>;
+  ethereum_block_height: Array<BlockTag>;
+}
+export interface GasFeeEstimate {
+  max_priority_fee_per_gas: bigint;
+  max_fee_per_gas: bigint;
+  timestamp: bigint;
+}
+export interface CkErc20Token {
+  erc20_contract_address: string;
+  ledger_canister_id: Principal;
+  ckerc20_token_symbol: string;
+}
+export interface WithdrawErc20Arg {
+  ckerc20_ledger_id: Principal;
+  recipient: string;
+  amount: bigint;
+}
+export type WithdrawErc20Response =
+  | {
+      Ok: RetrieveErc20Request;
+    }
+  | { Err: WithdrawErc20Error };
+export interface RetrieveErc20Request {
+  ckerc20_block_index: bigint;
+  cketh_block_index: bigint;
+}
+export type WithdrawErc20Error =
+  | {
+      TokenNotSupported: {
+        supported_tokens: Array<CkErc20Token>;
+      };
+    }
+  | {
+      TemporarilyUnavailable: string;
+    }
+  | {
+      CkErc20LedgerError: {
+        error: LedgerError;
+        cketh_block_index: bigint;
+      };
+    }
+  | {
+      CkEthLedgerError: { error: LedgerError };
+    }
+  | {
+      RecipientAddressBlocked: { address: string };
+    };
+export type LedgerError =
+  | {
+      TemporarilyUnavailable: string;
+    }
+  | {
+      InsufficientAllowance: {
+        token_symbol: string;
+        ledger_id: Principal;
+        allowance: bigint;
+        failed_burn_amount: bigint;
+      };
+    }
+  | {
+      AmountTooLow: {
+        minimum_burn_amount: bigint;
+        token_symbol: string;
+        ledger_id: Principal;
+        failed_burn_amount: bigint;
+      };
+    }
+  | {
+      InsufficientFunds: {
+        balance: bigint;
+        token_symbol: string;
+        ledger_id: Principal;
+        failed_burn_amount: bigint;
+      };
+    };
 
 export default interface Service {
   get_deposit_address(request: Icrc1Account): Promise<string>;
@@ -681,7 +834,7 @@ export default interface Service {
     subAccount: Array<Array<number>>
   ): Promise<Array<BlockHeight>>;
   update_retrievals(): Promise<Array<[TxStatus, bigint]>>;
-  get_minter_info(): Promise<MinterInfo>;
+  get_minter_info(): Promise<MinterInfo | MinterInfoDFI>;
   get_ck_tokens(): Promise<Array<[EthAddress, IcTokenInfo]>>;
   get_depositing(
     tokenId: Array<string>,
@@ -718,4 +871,7 @@ export default interface Service {
   }): Promise<{ total_event_count: bigint; events: Array<ETHEvent> }>;
   withdraw_eth(withdrawalArg: WithdrawalArg): Promise<WithdrawalResponse>;
   retrieve_eth_status(blockIndex: bigint): Promise<RetrieveEthStatus>;
+  withdraw_erc20(
+    WithdrawErc20Arg: WithdrawErc20Arg
+  ): Promise<WithdrawErc20Response>;
 }

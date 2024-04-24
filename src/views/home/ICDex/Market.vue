@@ -23,7 +23,7 @@
         </li>
       </ul>
       <div class="flex-center margin-left-auto">
-				<launch :tokens="tokens" ref="launch"></launch>
+        <launch :tokens="tokens" ref="launch"></launch>
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -50,6 +50,10 @@
             {{ menu.name }}
           </div>
         </div>
+      </div>
+      <div v-show="marketType === 'pairs'" class="info-chart-main">
+        <div id="info-chart-tvl"></div>
+        <div id="info-chart-vol"></div>
       </div>
       <div
         v-if="pairs && pairs.length && marketType === 'pairs'"
@@ -1812,56 +1816,59 @@
       :maskClosable="false"
     >
       <p>
-        Pair Score is an automatic evaluation mechanism of ICDex for trading
-        pairs, which is based on the comprehensive evaluation of the number of
-        sponsors, liquidity, volume, etc. The list of trading pairs is divided
-        into three boards according to the Pair Score.
+        ICLighthouse URANUS NFT holders, acting as listing referrers, play a
+        pivotal role in influencing the Pair Score through sponsorships. The
+        impact of sponsorship varies based on the status of the sponsor and the
+        number of sponsors involved:
+      </p>
+      <p class="mt20">
+        <span class="dots"></span> Unverified Listing Referrer Sponsor: Each
+        sponsorship adds +10 to the Pair Score.
       </p>
       <p>
-        <span class="dots"></span> MAIN (STAGE2) Board means that more traders
-        are involved and need to keep track of the risks.
+        <span class="dots"></span> Verified Listing Referrer Sponsor: Each
+        verified sponsorship contributes +15 to the Pair Score.
       </p>
       <p>
-        <span class="dots"></span> SECOND (STAGE1) Board means that some traders
-        are involved and need to keep track of the risks.
+        <span class="dots"></span> Group Sponsorship Bonus: If a trading pair is
+        supported by 5 or more sponsors, it receives an additional +10 to its
+        Pair Score.
       </p>
       <p>
-        <span class="dots"></span> THIRD (STAGE0) Board means that fewer traders
-        are involved and there are many unknown risks.
+        <span class="dots"></span> Maximum Sponsorship Influence: The total
+        score a pair can gain from sponsorships alone is capped at 70.
       </p>
-      <p class="ambassadors-visible-title">Upgrade rules</p>
-      <p>
-        <span class="dots"></span> A new trading pair defaults to THIRD
-        (STAGE0).
+      <p class="ambassadors-visible-title">Upgrade Criteria</p>
+      <div class="mt20">
+        Trading pairs on ICDex are systematically classified based on their Pair
+        Score, which influences their visibility and accessibility to traders.
+        Initially, all new trading pairs are assigned to Higher Risk, indicating
+        the starting level. Progression through the levels is determined as
+        follows:
+      </div>
+      <p v-if="swapConfig">
+        <span class="dots"></span> To RISING (STAGE1): A trading pair must
+        achieve a Pair Score of {{ swapConfig.SCORE_G3 }} or higher.
       </p>
       <p v-if="swapConfig">
-        <span class="dots"></span> Upgrade from STAGE0 to SECOND (STAGE1):
-        pair_score >= {{ swapConfig.SCORE_G3 }}.
+        <span class="dots"></span> To TOP (STAGE2): A trading pair needs to
+        maintain a Pair Score of {{ swapConfig.SCORE_G1 }} or above for a
+        minimum duration of one month.
+      </p>
+      <p class="ambassadors-visible-title">Downgrade Criteria</p>
+      <div class="mt20">
+        To maintain the integrity and competitiveness of the trading
+        environment, trading pairs are subject to downgrade if their performance
+        declines:
+      </div>
+      <p v-if="swapConfig">
+        <span class="dots"></span> From TOP to RISING: If a pair’s score falls
+        below {{ swapConfig.SCORE_G2 }} and remains there for over three months.
       </p>
       <p v-if="swapConfig">
-        <span class="dots"></span> Upgrade from STAGE1 to MAIN (STAGE2):
-        pair_score >= {{ swapConfig.SCORE_G1 }}, for at least one month.
-      </p>
-      <p class="ambassadors-visible-title">Degrade rules</p>
-      <p v-if="swapConfig">
-        <span class="dots"></span> Degrade from MAIN (STAGE2) to SECOND
-        (STAGE1): pair_score <a-icon type="left" /> {{ swapConfig.SCORE_G2 }},
-        for at least three months.
-      </p>
-      <p v-if="swapConfig">
-        <span class="dots"></span> Degrade from SECOND (STAGE1) to THIRD
-        (STAGE0): pair_score <a-icon type="left" /> {{ swapConfig.SCORE_G4 }},
-        for at least three months.
-      </p>
-      <p class="ambassadors-visible-title">Notes</p>
-      <p>
-        <span class="dots"></span> Listing on ICDex is non-censored, anyone can
-        list a token on ICDex, the assessment of the security and value of the
-        token project requires you to take action and bear all the consequences.
-      </p>
-      <p>
-        <span class="dots"></span> It is for your reference only, and is not
-        considered as investment advice.
+        <span class="dots"></span> From RISING to HIGH RISK: Should a pair’s
+        score drop below {{ swapConfig.SCORE_G4 }} and stay there for more than
+        three months.
       </p>
       <button
         type="button"
@@ -1977,11 +1984,6 @@
       @setListingReferrerByNftSuccess="setListingReferrerByNftSuccess"
       @proposeSuccess="proposeSuccess"
     ></nft-balance>
-    <launch
-      :tokens="tokens"
-      ref="launch"
-      @launchSuccess="launchSuccess"
-    ></launch>
   </div>
 </template>
 
@@ -2017,6 +2019,9 @@ import { connectIcx } from '@/ic/connectIcx';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import axios from 'axios';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
+import * as echarts from 'echarts/core';
+import { EChartsType } from 'echarts/types/dist/shared';
+import { formatAmount, formatNum } from '@/filters';
 
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
@@ -2096,12 +2101,12 @@ export default class extends Vue {
       path: '/ICDex'
     },
     {
-      value: 'Market',
-      path: '/ICDex/market'
-    },
-    {
       value: 'Pools',
       path: '/ICDex/pools'
+    },
+    {
+      value: 'Info',
+      path: '/ICDex/info'
     },
     {
       value: 'Competitions',
@@ -2137,6 +2142,8 @@ export default class extends Vue {
   private makerInfo: { [key: string]: { [key: string]: MakerInfo } } = {};
   private pairsMaker: Array<PairTrie> = [];
   private currentPair: PairTrie = null;
+  private tvlChart: EChartsType;
+  private volChart: EChartsType;
 
   created(): void {
     this.marketMenu = [
@@ -2183,6 +2190,277 @@ export default class extends Vue {
     });
     this.getSwapConfig();
     this.getListingReferrer();
+    this.getPairsStats();
+  }
+  private async getPairsStats(): Promise<void> {
+    const res = await axios.get(
+      'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/stats'
+    );
+    console.log(res);
+    if (res && res.data && res.data.result && res.data.result.length) {
+      this.$nextTick(() => {
+        this.tvlChart = echarts.init(document.getElementById('info-chart-tvl'));
+        this.volChart = echarts.init(document.getElementById('info-chart-vol'));
+        const tvlData = [];
+        const volData = [];
+        const volDataTotal = [];
+        let maxTvl = '0';
+        let maxVol = '0';
+        let maxVolTotal = '0';
+        res.data.result.forEach((item) => {
+          tvlData.push([
+            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            item.usd_total_tvl
+          ]);
+          volData.push([
+            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            item.usd_24h_vol
+          ]);
+          volDataTotal.push([
+            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            item.usd_total_vol
+          ]);
+          if (new BigNumber(item.usd_total_tvl).gt(maxTvl)) {
+            maxTvl = item.usd_total_tvl;
+          }
+          if (new BigNumber(item.usd_24h_vol).gt(maxVol)) {
+            maxVol = item.usd_24h_vol;
+          }
+          if (new BigNumber(item.usd_total_vol).gt(maxVol)) {
+            maxVolTotal = item.usd_total_vol;
+          }
+        });
+        const tvlOption = {
+          title: {
+            text: 'TVL',
+            textStyle: {
+              color: '#fff'
+            },
+            left: 10,
+            top: 10
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            },
+            formatter: function (param) {
+              return (
+                '<div>' +
+                param[0].data[0] +
+                '</div>' +
+                '<div>' +
+                'TVL: $' +
+                formatAmount(BigInt(Math.floor(param[0].data[1])), 0) +
+                '</div>'
+              );
+            }
+          },
+          xAxis: {
+            type: 'time',
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              formatter: function (value) {
+                return echarts.format.formatTime('dd', value);
+              }
+            },
+            axisTick: {
+              show: false
+            }
+          },
+          yAxis: {
+            type: 'value',
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              formatter: function (value) {
+                if (new BigNumber(value).eq(0)) {
+                  return `$${value}`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 12)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 12)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}T`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 9)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 9)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}B`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 6)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 6)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}M`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 3)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 3)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}K`;
+                } else {
+                  return `$${value}`;
+                }
+              }
+            }
+          },
+          series: [
+            {
+              data: tvlData,
+              type: 'line',
+              showSymbol: false,
+              smooth: true
+            }
+          ]
+        };
+        console.log(volDataTotal);
+        this.tvlChart.setOption(tvlOption);
+        const volOption = {
+          title: {
+            text: 'Volume',
+            textStyle: {
+              color: '#fff'
+            },
+            left: 10,
+            top: 10
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            },
+            formatter: function (param) {
+              return (
+                '<div>' +
+                param[0].data[0] +
+                '</div>' +
+                '<div> 24h Vol: $' +
+                formatAmount(BigInt(Math.floor(param[0].data[1])), 0) +
+                '</div>' +
+                '<div> Total Vol: $' +
+                formatAmount(BigInt(Math.floor(param[1].data[1])), 0) +
+                '</div>'
+              );
+            }
+          },
+          xAxis: {
+            type: 'time',
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              interval: 'auto',
+              formatter: function (value) {
+                return echarts.format.formatTime('dd', value);
+              }
+            },
+            axisTick: {
+              show: false
+            }
+          },
+          yAxis: [
+            {
+              type: 'value',
+              position: 'left',
+              splitLine: {
+                show: false
+              },
+              axisLabel: {
+                formatter: function (value) {
+                  if (new BigNumber(value).eq(0)) {
+                    return `$${value}`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 12)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 12)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}T`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 9)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 9)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}B`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 6)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 6)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}M`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 3)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 3)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}K`;
+                  } else {
+                    return `$${value}`;
+                  }
+                }
+              }
+            },
+            {
+              type: 'value',
+              position: 'right',
+              splitLine: {
+                show: false
+              },
+              axisLabel: {
+                formatter: function (value) {
+                  if (new BigNumber(value).eq(0)) {
+                    return `$${value}`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 12)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 12)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}T`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 9)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 9)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}B`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 6)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 6)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}M`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 3)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 3)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}K`;
+                  } else {
+                    return `$${value}`;
+                  }
+                }
+              }
+            }
+          ],
+          series: [
+            {
+              data: volData,
+              type: 'bar',
+              barMaxWidth: 10,
+              large: true
+            },
+            {
+              data: volDataTotal,
+              type: 'line',
+              yAxisIndex: 1,
+              lineStyle: {
+                color: 'rgb(38, 158, 215)'
+              },
+              showSymbol: false
+            }
+          ]
+        };
+        console.log(volData);
+        this.volChart.setOption(volOption);
+        window.addEventListener('resize', () => {
+          this.tvlChart.resize();
+        });
+        window.addEventListener('resize', () => {
+          this.volChart.resize();
+        });
+      });
+    }
   }
   private setListingReferrerByNftSuccess(): void {
     this.getListingReferrer();
@@ -2333,6 +2611,18 @@ export default class extends Vue {
     const makers = [];
     const pairs = [];
     this.bindingMakersLoad = true;
+    // const res = await this.ICDexRouterService.getVipMakers([
+    //   Principal.fromText(this.getPrincipalId)
+    // ]);
+    // console.log(res);
+    // if (res && res.length) {
+    //   res.forEach((maker) => {
+    //     if (!pairs.includes(maker[0].toString())) {
+    //       pairs.push(maker[0].toString());
+    //     }
+    //     makers.push(maker);
+    //   });
+    // }
     for (let i = 0; i < this.nftBalanceVip.length; i++) {
       const NFTId = this.nftBalanceVip[i][1];
       const res = await this.ICDexRouterService.NFTBindingMakers(NFTId);
@@ -2813,11 +3103,11 @@ export default class extends Vue {
       board = Object.keys(marketBoard[0])[0];
     }
     if (board === 'STAGE2') {
-      return 'MAIN';
+      return 'TOP';
     } else if (board === 'STAGE1') {
-      return 'SECOND';
+      return 'RISING';
     } else {
-      return 'THIRD';
+      return 'HIGH RISK';
     }
   }
   private async getIDOs(): Promise<void> {
@@ -3114,6 +3404,25 @@ export default class extends Vue {
   align-items: center;
   button {
     width: 190px;
+  }
+}
+.info-chart-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
+  > div {
+    height: 300px;
+    width: 50%;
+    background: #131920;
+    border-radius: 10px;
+    &:first-child {
+      margin-right: 10px;
+    }
+    &:last-child {
+      margin-left: 10px;
+    }
   }
 }
 .ambassadors-visible-button {

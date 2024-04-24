@@ -24,9 +24,9 @@
       </span>
       <a-icon
         @click="setName"
+        type="edit"
         style="margin-left: 5px"
         class="pointer"
-        type="setting"
       />
       <router-link
         v-show="!$route.fullPath.toLocaleLowerCase().startsWith('/account')"

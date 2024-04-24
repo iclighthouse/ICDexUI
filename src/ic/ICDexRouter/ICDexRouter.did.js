@@ -398,6 +398,12 @@ export default ({ IDL }) => {
       desc: IDL.Text,
       pair: IDL.Principal
     }),
+    sysCall: IDL.Record({
+      method: IDL.Text,
+      args: IDL.Vec(IDL.Nat8),
+      canister: IDL.Principal,
+      reply: IDL.Vec(IDL.Nat8)
+    }),
     sysConfig: IDL.Record({
       blackhole: IDL.Opt(IDL.Principal),
       creatingPairFee: IDL.Opt(IDL.Nat),
@@ -522,6 +528,10 @@ export default ({ IDL }) => {
     removePairDataSnapshot: IDL.Record({
       timeBefore: Timestamp__3,
       pair: IDL.Principal
+    }),
+    makerGlobalLock: IDL.Record({
+      act: IDL.Variant({ lock: IDL.Null, unlock: IDL.Null }),
+      maker: IDL.Principal
     }),
     pairSTOConfig: IDL.Record({
       pair: IDL.Principal,
@@ -705,7 +715,6 @@ export default ({ IDL }) => {
       []
     ),
     drc207: IDL.Func([], [DRC207Support], ['query']),
-    getDAO: IDL.Func([], [IDL.Principal], ['query']),
     getICDexMakerWasmVersion: IDL.Func([], [IDL.Text, IDL.Nat], ['query']),
     getICDexMakerWasmVersionHistory: IDL.Func(
       [],
@@ -730,6 +739,11 @@ export default ({ IDL }) => {
     ),
     getSnapshots: IDL.Func([IDL.Principal], [IDL.Vec(Timestamp)], ['query']),
     getTokens: IDL.Func([], [IDL.Vec(TokenInfo__1)], ['query']),
+    getVipMakers: IDL.Func(
+      [IDL.Opt(IDL.Principal)],
+      [IDL.Vec(IDL.Tuple(IDL.Principal, AccountId))],
+      ['query']
+    ),
     get_account_events: IDL.Func(
       [AccountId],
       [IDL.Vec(IDL.Tuple(Event, Timestamp__1))],
@@ -818,7 +832,11 @@ export default ({ IDL }) => {
     ),
     maker_setPause: IDL.Func([IDL.Principal, IDL.Bool], [IDL.Bool], []),
     maker_transactionLock: IDL.Func(
-      [IDL.Principal, IDL.Variant({ lock: IDL.Null, unlock: IDL.Null })],
+      [
+        IDL.Principal,
+        IDL.Opt(IDL.Variant({ lock: IDL.Null, unlock: IDL.Null })),
+        IDL.Opt(IDL.Variant({ lock: IDL.Null, unlock: IDL.Null }))
+      ],
       [IDL.Bool],
       []
     ),
@@ -1023,10 +1041,17 @@ export default ({ IDL }) => {
       []
     ),
     sync: IDL.Func([], [], []),
+    syncVipMakers: IDL.Func([], [], []),
+    sys_call: IDL.Func(
+      [IDL.Principal, IDL.Text, IDL.Vec(IDL.Nat8)],
+      [IDL.Vec(IDL.Nat8)],
+      []
+    ),
     sys_cancelOrder: IDL.Func([IDL.Principal, IDL.Opt(Txid__1)], [], []),
     sys_config: IDL.Func(
       [
         IDL.Record({
+          icDaoBoard: IDL.Opt(IDL.Principal),
           blackhole: IDL.Opt(IDL.Principal),
           creatingPairFee: IDL.Opt(IDL.Nat),
           aggregator: IDL.Opt(IDL.Principal),
@@ -1040,10 +1065,26 @@ export default ({ IDL }) => {
       [],
       []
     ),
+    sys_conversionFees: IDL.Func(
+      [
+        IDL.Vec(
+          IDL.Record({
+            pair: IDL.Principal,
+            debitToken: IDL.Opt(
+              IDL.Variant({ token0: IDL.Null, token1: IDL.Null })
+            ),
+            approvalSupported: IDL.Opt(IDL.Bool)
+          })
+        )
+      ],
+      [IDL.Vec(TradingResult)],
+      []
+    ),
     sys_getConfig: IDL.Func(
       [],
       [
         IDL.Record({
+          icDaoBoard: IDL.Principal,
           blackhole: IDL.Principal,
           creatingPairFee: IDL.Nat,
           aggregator: IDL.Principal,
@@ -1062,7 +1103,15 @@ export default ({ IDL }) => {
       []
     ),
     sys_withdraw: IDL.Func(
-      [IDL.Principal, TokenStd, IDL.Principal, IDL.Nat],
+      [
+        IDL.Principal,
+        TokenStd,
+        IDL.Record({
+          owner: IDL.Principal,
+          subaccount: IDL.Opt(IDL.Vec(IDL.Nat8))
+        }),
+        IDL.Nat
+      ],
       [],
       []
     ),

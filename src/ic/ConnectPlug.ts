@@ -25,10 +25,13 @@ export default class ConnectPlug {
     if (requireAuth) {
       loading = Vue.prototype.$loading({
         lock: true,
-        text: 'Connecting Plug...',
+        customClass: 'create-wallet-loading',
+        text: `Connecting Plug...`,
         background: 'rgba(0, 0, 0, 0.5)'
       });
-      loading.setText('Connecting Plug...');
+      loading.setText(
+        'Connecting Plug... \n Please check that your Plug account is logged in.'
+      );
     }
     try {
       const connected = await plugIc.plug.isConnected();

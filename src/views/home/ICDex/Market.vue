@@ -500,6 +500,7 @@
                     <th>Fee</th>
                     <th>Vol</th>
                     <th>TVL</th>
+                    <th>24h Vol</th>
                     <th>Latest price</th>
                     <th>Score</th>
                     <th>Sponsored</th>
@@ -619,6 +620,43 @@
 											</router-link>-->
                       </div>
                       <div v-else>-</div>
+                    </td>
+                    <td>
+                      <div class="pair-vol" v-if="pair[3]">
+                        <dl
+                          v-if="
+                            tokens && tokens[pair[1].pair.token1[0].toString()]
+                          "
+                        >
+                          <dd>
+                            <span class="table-number-color">
+                              {{
+                                pair[3].vol24h.value1
+                                  | bigintToFloat(
+                                    0,
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                            {{ pair[1].pair.token1[1] }}
+                          </dd>
+                          <dt>
+                            <span v-if="pair[3]" class="table-number-color">
+                              ≈ ${{
+                                pair[3].vol24h.value1
+                                  | filterIcpVol(
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals,
+                                    getBasePrice(pair[1].pair.token1[1])
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                          </dt>
+                        </dl>
+                      </div>
                     </td>
                     <td>
                       <div
@@ -2028,7 +2066,7 @@ const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
 
 @Component({
-  name: 'Market',
+  name: 'Info',
   components: {
     AccountInfo,
     ApproveNft,
@@ -2086,6 +2124,7 @@ export default class extends Vue {
   private icpPrice = '';
   private BTCPrice = '';
   private ETHPrice = '';
+  private otherTokenPrice: { [key: string]: string } = {};
   private listingReferrer: [boolean, boolean] = null;
   private nft: TokenExt = null;
   private currentStep = -1;
@@ -2207,6 +2246,7 @@ export default class extends Vue {
         let maxTvl = '0';
         let maxVol = '0';
         let maxVolTotal = '0';
+        let minVolTotal = '0';
         res.data.result.forEach((item) => {
           tvlData.push([
             echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
@@ -2226,8 +2266,14 @@ export default class extends Vue {
           if (new BigNumber(item.usd_24h_vol).gt(maxVol)) {
             maxVol = item.usd_24h_vol;
           }
-          if (new BigNumber(item.usd_total_vol).gt(maxVol)) {
+          if (new BigNumber(item.usd_total_vol).gt(maxVolTotal)) {
             maxVolTotal = item.usd_total_vol;
+          }
+          if (
+            minVolTotal === '0' ||
+            new BigNumber(item.usd_total_vol).lt(minVolTotal)
+          ) {
+            minVolTotal = item.usd_total_vol;
           }
         });
         const tvlOption = {
@@ -2314,7 +2360,8 @@ export default class extends Vue {
             }
           ]
         };
-        console.log(volDataTotal);
+        console.log(maxVolTotal);
+        console.log(minVolTotal);
         this.tvlChart.setOption(tvlOption);
         const volOption = {
           title: {
@@ -2399,6 +2446,7 @@ export default class extends Vue {
             {
               type: 'value',
               position: 'right',
+              min: minVolTotal,
               splitLine: {
                 show: false
               },
@@ -2409,22 +2457,22 @@ export default class extends Vue {
                   } else if (new BigNumber(maxVolTotal).gt(10 ** 12)) {
                     return `$${new BigNumber(value)
                       .div(10 ** 12)
-                      .decimalPlaces(2, 1)
+                      .decimalPlaces(4, 1)
                       .toString(10)}T`;
                   } else if (new BigNumber(maxVolTotal).gt(10 ** 9)) {
                     return `$${new BigNumber(value)
                       .div(10 ** 9)
-                      .decimalPlaces(2, 1)
+                      .decimalPlaces(4, 1)
                       .toString(10)}B`;
                   } else if (new BigNumber(maxVolTotal).gt(10 ** 6)) {
                     return `$${new BigNumber(value)
                       .div(10 ** 6)
-                      .decimalPlaces(2, 1)
+                      .decimalPlaces(4, 1)
                       .toString(10)}M`;
                   } else if (new BigNumber(maxVolTotal).gt(10 ** 3)) {
                     return `$${new BigNumber(value)
                       .div(10 ** 3)
-                      .decimalPlaces(2, 1)
+                      .decimalPlaces(4, 1)
                       .toString(10)}K`;
                   } else {
                     return `$${value}`;
@@ -2980,15 +3028,17 @@ export default class extends Vue {
     let price = this.icpPrice;
     if (tokenSymbol.toLocaleLowerCase().includes('btc')) {
       price = this.BTCPrice;
-    }
-    if (tokenSymbol.toLocaleLowerCase().includes('eth')) {
+    } else if (tokenSymbol.toLocaleLowerCase().includes('eth')) {
       price = this.ETHPrice;
-    }
-    if (
+    } else if (
       tokenSymbol.toLocaleLowerCase().includes('usdt') ||
       tokenSymbol.toLocaleLowerCase().includes('usdc')
     ) {
       price = '1';
+    } else {
+      if (this.otherTokenPrice[tokenSymbol.toLocaleLowerCase()]) {
+        price = this.otherTokenPrice[tokenSymbol.toLocaleLowerCase()];
+      }
     }
     return price;
   }
@@ -3009,25 +3059,26 @@ export default class extends Vue {
   private async getPairs(): Promise<void> {
     this.busy = true;
     this.spinning = true;
-    const fetchRes = await fetch(
-      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/2'
-    );
+    const promiseValue = [
+      fetch('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/2'),
+      fetch('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12'),
+      fetch('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16')
+    ];
+    const fetchResPromise = await Promise.all(promiseValue);
+    console.log(fetchResPromise);
+    const fetchRes = fetchResPromise[0];
     if (fetchRes && fetchRes.status === 200) {
       const icpRes = await fetchRes.json();
       this.icpPrice = (icpRes as any).success[0].rate;
       console.log(this.icpPrice);
     }
-    const BTCfetchRes = await fetch(
-      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12'
-    );
+    const BTCfetchRes = fetchResPromise[1];
     if (BTCfetchRes && BTCfetchRes.status === 200) {
       const BTCRes = await BTCfetchRes.json();
       this.BTCPrice = (BTCRes as any).success[0].rate;
       console.log(this.BTCPrice);
     }
-    const ETHfetchRes = await fetch(
-      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16'
-    );
+    const ETHfetchRes = fetchResPromise[2];
     if (ETHfetchRes && ETHfetchRes.status === 200) {
       const ETHRes = await ETHfetchRes.json();
       this.ETHPrice = (ETHRes as any).success[0].rate;
@@ -3035,16 +3086,43 @@ export default class extends Vue {
     }
     const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
     if (res && res.data && res.data.length) {
+      this.sortType = 'scoreDown';
+      this.pairs = res.data.concat([]).sort((a, b) => {
+        return Number(b[1].score) - Number(a[1].score);
+      });
+      await this.getTokenDecimals();
       res.data.forEach((item) => {
         const id = `${item[1].pair.token0[0].toString()}_${item[1].pair.token1[0].toString()}`;
         if (this.pairsTVL[id]) {
           item[2] = this.pairsTVL[id];
         }
         this.pairToSymbol[item[0].toString()] = item[1];
-      });
-      this.sortType = 'scoreDown';
-      this.pairs = res.data.concat([]).sort((a, b) => {
-        return Number(b[1].score) - Number(a[1].score);
+        const token1Symbol = item[1].pair.token1[1];
+        if (
+          (token1Symbol.toLocaleLowerCase() === 'icp' ||
+            token1Symbol.toLocaleLowerCase().includes('eth') ||
+            token1Symbol.toLocaleLowerCase().includes('btc')) &&
+          !this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()]
+        ) {
+          const price = this.getPrice(item[1]);
+          if (token1Symbol.toLocaleLowerCase() === 'icp') {
+            this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+              new BigNumber(price).times(this.icpPrice).toString(10);
+          } else if (token1Symbol.toLocaleLowerCase() === 'eth') {
+            this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+              new BigNumber(price).times(this.ETHPrice).toString(10);
+          } else if (token1Symbol.toLocaleLowerCase() === 'btc') {
+            this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+              new BigNumber(price).times(this.BTCPrice).toString(10);
+          }
+        }
+        if (
+          token1Symbol.toLocaleLowerCase().includes('usdt') ||
+          token1Symbol.toLocaleLowerCase().includes('usdc')
+        ) {
+          this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+            this.getPrice(item[1]);
+        }
       });
       this.launches = res.data
         .concat([])
@@ -3063,36 +3141,35 @@ export default class extends Vue {
         return a[1].pair.token0[1].localeCompare(b[1].pair.token0[1]);
       });
       this.total = this.pairs.length;
-      this.getTokenDecimals().then(async () => {
-        let total = '0';
-        let Vol24 = '0';
-        try {
-          const res = await axios.get(
-            'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
-          );
-          console.log(res);
-          if (res && res.data) {
-            for (let key in res.data) {
-              const totalVol = res.data[key].usd_volume;
-              Vol24 = new BigNumber(Vol24)
-                .plus(res.data[key].usd_24h_volume)
-                .toString(10);
-              total = new BigNumber(total).plus(totalVol).toString(10);
-            }
+      let total = '0';
+      let Vol24 = '0';
+      try {
+        const res = await axios.get(
+          'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
+        );
+        console.log(res);
+        if (res && res.data) {
+          for (let key in res.data) {
+            const totalVol = res.data[key].usd_volume;
+            Vol24 = new BigNumber(Vol24)
+              .plus(res.data[key].usd_24h_volume)
+              .toString(10);
+            total = new BigNumber(total).plus(totalVol).toString(10);
           }
-        } catch (e) {
-          console.log(e);
         }
-        this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
-        this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
-        console.log(this.Vol24);
-      });
+      } catch (e) {
+        console.log(e);
+      }
+      this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
+      this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
+      console.log(this.Vol24);
       this.getIDOs();
       this.getStats();
     } else {
       this.pairs = [];
       this.pairsMaker = [];
     }
+    console.log(this.otherTokenPrice);
     console.log(this.pairs);
     this.spinning = false;
     this.busy = false;
@@ -3111,7 +3188,7 @@ export default class extends Vue {
     }
   }
   private async getIDOs(): Promise<void> {
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     this.IDOs = [];
     let promiseValue = [];
     if (this.launches.length) {
@@ -3149,7 +3226,7 @@ export default class extends Vue {
   }
   private async getStats(): Promise<void> {
     const pairs = this.pairs.slice((this.page - 1) * 100, this.page * 100);
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     let promiseValue = [];
     for (let i = 0; i < pairs.length; i++) {
       promiseValue.push(this.getPairStats(pairs[i]));
@@ -3169,7 +3246,7 @@ export default class extends Vue {
   }
   private async getTokenDecimals(): Promise<void> {
     const pairs = this.pairs.slice((this.page - 1) * 100, this.page * 100);
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     const tokens = [];
     let promiseValue = [];
     for (let i = 0; i < pairs.length; i++) {

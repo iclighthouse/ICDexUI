@@ -212,7 +212,13 @@
               <div class="ext-transfer" @click="depositToICDexRouter(ext[0])">
                 <button type="button">Deposit to ICDexRouter</button>
               </div>
-              <div class="ext-transfer" @click="depositToDexAggregator(ext[0])">
+              <div
+                v-show="
+                  getExtInfo(ext[2]).name.toLocaleLowerCase() === 'uranus'
+                "
+                class="ext-transfer"
+                @click="depositToDexAggregator(ext[0])"
+              >
                 <button type="button">Deposit to DexAggregator</button>
               </div>
             </li>

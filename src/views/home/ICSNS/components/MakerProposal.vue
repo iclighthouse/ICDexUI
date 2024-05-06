@@ -670,7 +670,7 @@ export default class extends Vue {
     }
 
     .ant-modal-body {
-      max-height: calc(100vh - 240px);
+      max-height: fit-content;
     }
   }
 }
@@ -754,12 +754,15 @@ export default class extends Vue {
   border: 1px solid #464648;
 }
 
+.custom-select {
+  position: relative;
+  z-index: 9999;
+}
 .select-items {
   position: absolute;
-  z-index: 9999;
   max-height: 310px;
-  right: 55px;
-  left: 65px;
+  right: 0;
+  left: 0;
   color: #727a87;
   font-weight: 400;
   font-size: 14px;

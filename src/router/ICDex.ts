@@ -26,11 +26,11 @@ const ICDexRouter: RouteConfig[] = [
   },
   {
     path: '/ICDex/info',
-    name: 'Market',
+    name: 'Info',
     component: () => import('@/views/home/ICDex/Market.vue'),
     meta: {
-      title: 'Market',
-      details: 'Market',
+      title: 'Info',
+      details: 'Info',
       version: '0.5test',
       scrollTop: 0,
       requireAuth: true,

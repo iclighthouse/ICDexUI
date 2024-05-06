@@ -141,7 +141,7 @@
 					<span>Trade</span>
 				</li>
 				<li
-					@click="changeMenu('market', '/market/icdex')"
+					@click="changeMenu('Info', '/icdex/Info')"
 					:class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
           }"
@@ -221,7 +221,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.4
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.5
             </span>
           </span>
         </span>

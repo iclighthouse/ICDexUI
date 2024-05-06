@@ -23,7 +23,7 @@
         </li>
       </ul>
       <div class="flex-center margin-left-auto">
-				<launch :tokens="tokens" ref="launch"></launch>
+        <launch :tokens="tokens" ref="launch"></launch>
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -64,9 +64,16 @@
                         LPs yield
                       </div>
                       <div style="margin-bottom: 10px" class="base-font-title">
-                        LPs may benefit from adding liquidity to the liquidity
-                        pool, but it is risky and does not result in a stable
-                        gain or may result in a loss. Possible gains include:
+                        <span v-show="currentPoolsMenu === 'public'">
+                          LPs may benefit from adding liquidity to the liquidity
+                          pool, but it is risky and does not result in a stable
+                          gain or may result in a loss. Possible gains include:
+                        </span>
+                        <span v-show="currentPoolsMenu === 'private'">
+                          Private OAMM LPs yield similar benefits to public
+                          OAMMs, but do not participate in liquidity
+                          mining.Possible gains include:
+                        </span>
                       </div>
                       <div style="margin-bottom: 10px">
                         <span class="dots"></span> Grid spread gain: ICDexMaker
@@ -92,7 +99,10 @@
                         charged a withdrawal fee to be added to the liquidity
                         pool.
                       </div>
-                      <div style="margin-bottom: 10px">
+                      <div
+                        v-show="currentPoolsMenu === 'public'"
+                        style="margin-bottom: 10px"
+                      >
                         <span class="dots"></span> Liquidity mining/airdrop:
                         this is a contingent benefit, ICDexMaker itself does not
                         provide liquidity mining or token airdrop, which
@@ -313,22 +323,32 @@
               >
                 <span>NAV: </span>
                 <span class="base-font-title" v-if="item[3]">
-                  {{
-                    item[3].latestUnitNetValue.token0
-                      | bigintToFloat(
-                        8,
-                        tokens[item[2].pairInfo.token0[0].toString()].decimals
-                      )
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].latestUnitNetValue.token0
+                        | bigintToFloat(
+                          8,
+                          tokens[item[2].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
-                  {{
-                    item[3].latestUnitNetValue.token1
-                      | bigintToFloat(
-                        8,
-                        tokens[item[2].pairInfo.token1[0].toString()].decimals
-                      )
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].latestUnitNetValue.token1
+                        | bigintToFloat(
+                          8,
+                          tokens[item[2].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
                 </span>
                 <span v-else>
@@ -345,32 +365,42 @@
               >
                 <span> Pool Balance: </span>
                 <span class="base-font-title" v-if="item[3]">
-                  {{
-                    item[3].poolBalance.balance0
-                      | bigintToFloat(
-                        Math.min(
-                          tokens[item[2].pairInfo.token0[0].toString()]
-                            .decimals,
-                          8
-                        ),
-                        tokens[item[2].pairInfo.token0[0].toString()].decimals
-                      )
-                      | formatNum
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].poolBalance.balance0
+                        | bigintToFloat(
+                          Math.min(
+                            tokens[item[2].pairInfo.token0[0].toString()]
+                              .decimals,
+                            8
+                          ),
+                          tokens[item[2].pairInfo.token0[0].toString()].decimals
+                        )
+                        | formatNum
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
-                  {{
-                    item[3].poolBalance.balance1
-                      | bigintToFloat(
-                        Math.min(
-                          tokens[item[2].pairInfo.token1[0].toString()]
-                            .decimals,
-                          8
-                        ),
-                        tokens[item[2].pairInfo.token1[0].toString()].decimals
-                      )
-                      | formatNum
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].poolBalance.balance1
+                        | bigintToFloat(
+                          Math.min(
+                            tokens[item[2].pairInfo.token1[0].toString()]
+                              .decimals,
+                            8
+                          ),
+                          tokens[item[2].pairInfo.token1[0].toString()].decimals
+                        )
+                        | formatNum
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
                 </span>
                 <span v-else>-</span>
@@ -947,22 +977,32 @@
               >
                 <span>NAV: </span>
                 <span class="base-font-title" v-if="item[3]">
-                  {{
-                    item[3].latestUnitNetValue.token0
-                      | bigintToFloat(
-                        8,
-                        tokens[item[2].pairInfo.token0[0].toString()].decimals
-                      )
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].latestUnitNetValue.token0
+                        | bigintToFloat(
+                          8,
+                          tokens[item[2].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
-                  {{
-                    item[3].latestUnitNetValue.token1
-                      | bigintToFloat(
-                        8,
-                        tokens[item[2].pairInfo.token1[0].toString()].decimals
-                      )
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].latestUnitNetValue.token1
+                        | bigintToFloat(
+                          8,
+                          tokens[item[2].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
                 </span>
                 <span v-else>
@@ -979,32 +1019,42 @@
               >
                 <span> Pool Balance: </span>
                 <span class="base-font-title" v-if="item[3]">
-                  {{
-                    item[3].poolBalance.balance0
-                      | bigintToFloat(
-                        Math.min(
-                          tokens[item[2].pairInfo.token0[0].toString()]
-                            .decimals,
-                          8
-                        ),
-                        tokens[item[2].pairInfo.token0[0].toString()].decimals
-                      )
-                      | formatNum
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].poolBalance.balance0
+                        | bigintToFloat(
+                          Math.min(
+                            tokens[item[2].pairInfo.token0[0].toString()]
+                              .decimals,
+                            8
+                          ),
+                          tokens[item[2].pairInfo.token0[0].toString()].decimals
+                        )
+                        | formatNum
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
-                  {{
-                    item[3].poolBalance.balance1
-                      | bigintToFloat(
-                        Math.min(
-                          tokens[item[2].pairInfo.token1[0].toString()]
-                            .decimals,
-                          8
-                        ),
-                        tokens[item[2].pairInfo.token1[0].toString()].decimals
-                      )
-                      | formatNum
-                  }}
+                  <span v-if="item[2].initialized && !item[3].poolShares"
+                    >0</span
+                  >
+                  <span v-else>
+                    {{
+                      item[3].poolBalance.balance1
+                        | bigintToFloat(
+                          Math.min(
+                            tokens[item[2].pairInfo.token1[0].toString()]
+                              .decimals,
+                            8
+                          ),
+                          tokens[item[2].pairInfo.token1[0].toString()].decimals
+                        )
+                        | formatNum
+                    }}
+                  </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
                 </span>
                 <span v-else>-</span>

@@ -3,6 +3,7 @@ import { HttpAgent, Certificate, Cbor } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { PrincipalString } from '@/ic/common/icType';
 import { toHexString } from '@/ic/converter';
+import { Buffer } from 'buffer';
 const encoder = new TextEncoder();
 const encode = (arg: string): ArrayBuffer => {
   return new DataView(encoder.encode(arg).buffer).buffer;
@@ -23,8 +24,14 @@ export const readState = async (
     encode('controllers')
   ];
   const pathHash = [encode('canister'), canisterBuffer, encode('module_hash')];
+  const pathCandid = [
+    encode('canister'),
+    canisterBuffer,
+    encode('metadata'),
+    encode('candid:service')
+  ];
   let res;
-  const paths = [pathControllers, pathHash];
+  const paths = [pathControllers, pathHash, pathCandid];
   try {
     res = await agent.readState(canisterId, {
       paths: paths
@@ -47,6 +54,7 @@ export const readState = async (
   let certControllerIds;
   let moduleHash = '-';
   let controllers = [];
+  let candid = '';
   try {
     const certControllers = cert.lookup(pathControllers);
     controllers = (Cbor.decode(certControllers) as Array<Buffer>).map(
@@ -58,13 +66,22 @@ export const readState = async (
   }
   try {
     const certHash = cert.lookup(pathHash);
-    moduleHash = [...new Uint8Array(certHash)].map(x => x.toString(16).padStart(2, '0')).join('');
+    moduleHash = [...new Uint8Array(certHash)]
+      .map((x) => x.toString(16).padStart(2, '0'))
+      .join('');
   } catch (e) {
     console.log(e);
     moduleHash = '-';
   }
-  console.log(controllers)
-  console.log(moduleHash)
+  try {
+    const certCandid = cert.lookup(pathCandid);
+    // console.log(Buffer.from(certCandid).toString('utf-8'));
+  } catch (e) {
+    console.log(e);
+    candid = '';
+  }
+  console.log(controllers);
+  console.log(moduleHash);
   return {
     controllers: controllers,
     moduleHash: moduleHash

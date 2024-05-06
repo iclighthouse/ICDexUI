@@ -169,14 +169,11 @@
                 />
                 <a-tooltip placement="top">
                   <template slot="title">
-                    <span
-                      >{{
-                        item.value === 'Main'
-                          ? 'Main'
-                          : item.value === 'Second'
-                          ? 'Rising'
-                          : 'Higher Risk '
-                      }}
+                    <span>
+                      <span v-show="item.value === 'Main'">Top</span>
+                      <span v-show="item.value === 'Second'">Rising</span>
+                      <span v-show="item.value === 'Third'">Higher Risk</span>
+                      <span v-show="item.value === 'Hot'">Hot</span>
                       Pairings</span
                     >
                   </template>
@@ -185,6 +182,7 @@
                     v-show="item.value !== 'Star' && item.value !== 'Old'"
                   >
                     <span
+                      v-show="item.value !== 'Hot'"
                       class="circle"
                       :class="[
                         item.value === 'Main'
@@ -214,6 +212,7 @@
               <tbody
                 class="de-swap-list-item-pair de-swap-list-item-pair-market"
                 ref="deSwapListItemPair"
+                v-if="currentTradeMarketSort"
               >
                 <tr v-if="currentTradeMarketSort === 'Third' && !showThird">
                   <td colspan="3" style="line-height: 1.5; padding-left: 10px">
@@ -232,7 +231,7 @@
                   "
                 >
                   <td colspan="3" style="line-height: 1.5; padding-left: 10px">
-                    There are no pairs on the Main Pairings. Check out the
+                    There are no pairs on the TOP Pairings. Check out the
                     <span
                       @click="
                         changeTradeMarketSort({
@@ -246,7 +245,270 @@
                     Pairings.
                   </td>
                 </tr>
+                <RecycleScroller
+                  v-if="currentTradeMarketSort !== 'Star'"
+                  style="height: 336px"
+                  :items="pairsScroll"
+                  :item-size="50"
+                  :buffer="800"
+                >
+                  <tr
+                    slot-scope="{ item, index }"
+                    @click="changePair(item.pair, index)"
+                    :class="{
+                      active:
+                        !(currentTradeMarketSort === 'Third' && !showThird) &&
+                        currentPairIndex !== null &&
+                        pairs[currentPairIndex] &&
+                        (currentPair[3] === currentTradeMarketSort ||
+                          !item.pair[1][0].marketBoard) &&
+                        item.pair[1][0].canisterId.toString() ===
+                          currentPair[1][0].canisterId.toString(),
+                      draggable: item.pair[3] === 'Star'
+                    }"
+                  >
+                    <a-tooltip
+                      :overlayClassName="
+                        drag ||
+                        item.pair[1][0].token1[0].toString() ===
+                          'hhaaz-2aaaa-aaaaq-aacla-cai'
+                          ? 'order-book-type-list-tooltip hide-order-book-type-list-tooltip'
+                          : 'order-book-type-list-tooltip'
+                      "
+                      placement="right"
+                    >
+                      <template slot="title">
+                        <dl>
+                          <dt>
+                            <span
+                              class="tabular-nums"
+                              v-if="
+                                tokens &&
+                                tokens[item.pair[1][0].token1[0].toString()] &&
+                                item.pair[2]
+                              "
+                            >
+                              24h: ${{
+                                item.pair[2].vol24h.value1
+                                  | icpToUsdt(
+                                    currentMarketPrice,
+                                    item.pair[1][0].token1[1],
+                                    tokens[item.pair[1][0].token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatNum
+                              }}
+                            </span>
+                          </dt>
+                          <dd>
+                            <span
+                              class="tabular-nums"
+                              v-if="
+                                tokens &&
+                                tokens[item.pair[1][0].token1[0].toString()] &&
+                                item.pair[2]
+                              "
+                            >
+                              Total: ${{
+                                item.pair[2].totalVol.value1
+                                  | icpToUsdt(
+                                    currentMarketPrice,
+                                    item.pair[1][0].token1[1],
+                                    tokens[item.pair[1][0].token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatNum
+                              }}
+                            </span>
+                          </dd>
+                        </dl>
+                      </template>
+                      <div
+                        style="display: table; width: 100%; table-layout: fixed"
+                        v-if="
+                          !(currentTradeMarketSort === 'Third' && !showThird)
+                        "
+                      >
+                        <td style="width: 100px">
+                          <dl>
+                            <dt
+                              :class="{
+                                'usdt-test-dt':
+                                  currentTradeMarketSort === 'USDT'
+                              }"
+                            >
+                              <a-tooltip placement="right">
+                                <template slot="title">
+                                  <span v-if="showReminder2(item.pair)">
+                                    REMINDER: This trading pair with a score
+                                    below the Main Pairings requirement for
+                                    {{ getMainDay(item.pair) }} days may be
+                                    downgraded to the Rising Pairings.
+                                  </span>
+                                  <span v-if="showReminder1(item.pair)">
+                                    REMINDER: This trading pair with a score
+                                    below the Rising Pairings requirement for
+                                    {{ getSecondDay(item.pair) }} days may be
+                                    downgraded to the Higher Risk Pairings.
+                                  </span>
+                                </template>
+                                <span
+                                  v-if="
+                                    (item.pair && showReminder1(item.pair)) ||
+                                    showReminder2(item.pair)
+                                  "
+                                  style="opacity: 0.8; color: #727a87"
+                                  class="pair-name"
+                                >
+                                  * {{ item.pair[1][0].token0[1]
+                                  }}<span class="pair-icp"
+                                    >/{{ item.pair[1][0].token1[1] }}</span
+                                  >
+                                </span>
+                              </a-tooltip>
+                              <span
+                                v-if="
+                                  item.pair &&
+                                  !showReminder1(item.pair) &&
+                                  !showReminder2(item.pair)
+                                "
+                                class="pair-name"
+                              >
+                                {{ item.pair[1][0].token0[1]
+                                }}<span class="pair-icp"
+                                  >/{{ item.pair[1][0].token1[1] }}</span
+                                >
+                              </span>
+                            </dt>
+                            <dd>
+                              <a-icon
+                                v-show="
+                                  !oldPairs.includes(item.pair[0].toString()) &&
+                                  item.pair[1][0].marketBoard
+                                "
+                                :theme="
+                                  star.includes(item.pair[0].toString())
+                                    ? 'filled'
+                                    : 'outlined'
+                                "
+                                @click.stop="onStar(item.pair)"
+                                type="star"
+                                :class="{
+                                  'base-font-title': star.includes(
+                                    item.pair[0].toString()
+                                  )
+                                }"
+                              />
+                              <span
+                                v-show="
+                                  oldPairs.includes(item.pair[0].toString())
+                                "
+                                >(Old)</span
+                              >
+                            </dd>
+                          </dl>
+                        </td>
+                        <td>
+                          <dl>
+                            <dt>
+                              <span
+                                class="tabular-nums"
+                                v-if="
+                                  tokens &&
+                                  tokens[
+                                    item.pair[1][0].token0[0].toString()
+                                  ] &&
+                                  tokens[
+                                    item.pair[1][0].token1[0].toString()
+                                  ] &&
+                                  item.pair[2]
+                                "
+                              >
+                                {{
+                                  item.pair[2].price
+                                    | filterPairTokenPrice(
+                                      tokens[
+                                        item.pair[1][0].token0[0].toString()
+                                      ].decimals,
+                                      tokens[
+                                        item.pair[1][0].token1[0].toString()
+                                      ].decimals
+                                    )
+                                }}
+                              </span>
+                            </dt>
+                            <dd>
+                              <span
+                                :class="{
+                                  'bid-pair-price':
+                                    Number(item.pair[2].change24h) > 0,
+                                  'ask-pair-price':
+                                    Number(item.pair[2].change24h) < 0
+                                }"
+                                class="tabular-nums"
+                                v-if="item.pair[2]"
+                              >
+                                {{ item.pair[2].change24h | filterChange }}%
+                              </span>
+                            </dd>
+                          </dl>
+                        </td>
+                        <td class="text-right">
+                          <dl>
+                            <dt>
+                              <span
+                                class="tabular-nums"
+                                v-if="
+                                  tokens &&
+                                  tokens[
+                                    item.pair[1][0].token1[0].toString()
+                                  ] &&
+                                  item.pair[2]
+                                "
+                              >
+                                {{
+                                  item.pair[2].vol24h.value1
+                                    | bigintToFloat(
+                                      2,
+                                      tokens[
+                                        item.pair[1][0].token1[0].toString()
+                                      ].decimals
+                                    )
+                                    | formatNum
+                                }}
+                              </span>
+                            </dt>
+                            <dd>
+                              <span
+                                class="tabular-nums"
+                                v-if="
+                                  tokens &&
+                                  tokens[
+                                    item.pair[1][0].token1[0].toString()
+                                  ] &&
+                                  item.pair[2]
+                                "
+                              >
+                                {{
+                                  item.pair[2].totalVol.value1
+                                    | bigintToFloat(
+                                      2,
+                                      tokens[
+                                        item.pair[1][0].token1[0].toString()
+                                      ].decimals
+                                    )
+                                    | formatNum
+                                }}
+                              </span>
+                            </dd>
+                          </dl>
+                        </td>
+                      </div>
+                    </a-tooltip>
+                  </tr>
+                </RecycleScroller>
                 <draggable
+                  v-if="currentTradeMarketSort === 'Star'"
                   @start="draggableStar"
                   @end="draggableEnd"
                   v-model="tradePairs[currentTradeMarketSort]"
@@ -10272,7 +10534,7 @@
                     three boards according to the Pair Score.
                   </div>
                   <div>
-                    <span class="dots"></span> Main Pairings means that more
+                    <span class="dots"></span> TOP Pairings means that more
                     traders are involved and need to keep track of the risks.
                   </div>
                   <div>
@@ -12616,7 +12878,7 @@ let lastCallTime = null;
 const interval = 10 * 1000;
 const SNS1Token = 'zfcdd-tqaaa-aaaaq-aaaga-cai';
 const OCToken = '2ouva-viaaa-aaaaq-aaamq-cai';
-const ICRC2Token = [
+let ICRC2Token = [
   CK_BTC_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   LEDGER_CANISTER_ID,
@@ -13256,6 +13518,7 @@ export default class extends Vue {
     Main: [],
     Second: [],
     Third: [],
+    Hot: [],
     Old: [],
     Search: []
   };
@@ -13275,6 +13538,10 @@ export default class extends Vue {
     {
       name: 'HIGH RISK',
       value: 'Third'
+    },
+    {
+      name: 'HOT',
+      value: 'Hot'
     }
     // ,
     // {
@@ -13312,6 +13579,7 @@ export default class extends Vue {
     disabled: false,
     ghostClass: 'ghost'
   };
+  private pairsScroll = [];
   @Watch('buyTotal')
   private onBuyTotalChange() {
     if (Number(this.buyTotal)) {
@@ -13372,6 +13640,22 @@ export default class extends Vue {
     } else {
       this.currentMark = this.sellSlider = 0;
     }
+  }
+  @Watch('currentTradeMarketSort')
+  private onCurrentTradeMarketSort(val) {
+    console.log('currentTradeMarketSort');
+    console.log(val);
+    const pairs = [];
+    if (val && this.tradePairs[val].length) {
+      this.tradePairs[val].forEach((pair) => {
+        pairs.push({
+          id: pair[1][0].canisterId.toString(),
+          pair: pair
+        });
+      });
+    }
+    this.pairsScroll = pairs;
+    console.log(this.pairsScroll);
   }
   get showOpeningTime(): boolean {
     if (this.sysMode && this.sysMode.openingTime) {
@@ -13711,10 +13995,10 @@ export default class extends Vue {
       });
       this.getIcpPrice();
       this.initFallbackInfo();
-      const principal = localStorage.getItem('principal');
       // this.principal = principal;
-      if (principal) {
-        const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
+      if (this.getPrincipalId) {
+        const currentInfo =
+          JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
         this.tokensBalance = currentInfo.tokensBalance || {};
         this.getNTFs();
       }
@@ -13881,8 +14165,9 @@ export default class extends Vue {
   private async pushUser(): Promise<void> {
     const icxPrincipals =
       JSON.parse(localStorage.getItem('icxPrincipals')) || [];
-    const principal = localStorage.getItem('principal');
-    const address = principalToAccountIdentifier(Principal.fromText(principal));
+    const address = principalToAccountIdentifier(
+      Principal.fromText(this.getPrincipalId)
+    );
     await this.astroXUserService.pushUser(address, icxPrincipals[0]);
   }
   private showFallback(): void {
@@ -13890,12 +14175,11 @@ export default class extends Vue {
     (this.$refs as any).fallback.init();
   }
   private async getMakerRebate(): Promise<void> {
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const currentPair = this.currentPair[0].toString();
       const res = await this.currentICDexService.makerRebate(
         currentPair,
-        principal
+        this.getPrincipalId
       );
       console.log(res);
       if (res && res.pairId === this.currentPair[0].toString()) {
@@ -15636,13 +15920,12 @@ export default class extends Vue {
     pendingList: Array<PendingList>,
     subaccountId = 0
   ): Promise<Array<PendingList>> {
-    const principal = localStorage.getItem('principal');
     const currentPair = this.currentPair[0].toString();
     const res = await this.currentICDexService.pending(
       currentPair,
       [
         principalToAccountIdentifier(
-          Principal.fromText(principal),
+          Principal.fromText(this.getPrincipalId),
           new Uint8Array(fromSubAccountId(subaccountId))
         )
       ],
@@ -16032,10 +16315,9 @@ export default class extends Vue {
     tokenStd: string,
     subAccountId = 0
   ): Promise<boolean> {
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const currentAddress = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (currentAddress !== address) {
         return false;
@@ -16182,14 +16464,10 @@ export default class extends Vue {
         price: price
       };
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       this.setPrepare(
         orderPrice,
         'Sell',
@@ -16200,14 +16478,6 @@ export default class extends Vue {
         address
       );
     }
-  }
-  private isPlug(): boolean {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal && priList) {
-      return priList[principal] === 'Plug';
-    }
-    return false;
   }
   private needApprove(
     amount: bigint,
@@ -16332,8 +16602,9 @@ export default class extends Vue {
         ) {
           delete this.prepareOrder[currentPairId];
         }
-        const principal = localStorage.getItem('principal');
-        const address = principalToAccountIdentifier(Principal.from(principal));
+        const address = principalToAccountIdentifier(
+          Principal.from(this.getPrincipalId)
+        );
         localStorage.setItem(
           `prepareOrder-${address}`,
           JSON.stringify(this.prepareOrder)
@@ -16345,11 +16616,12 @@ export default class extends Vue {
   }
   private initPrepared(currentPairId: string): void {
     this.preparing = [];
-    const principal = localStorage.getItem('principal');
-    if (!principal) {
+    if (!this.getPrincipalId) {
       return;
     }
-    const address = principalToAccountIdentifier(Principal.from(principal));
+    const address = principalToAccountIdentifier(
+      Principal.from(this.getPrincipalId)
+    );
     this.prepareOrder =
       JSON.parse(localStorage.getItem(`prepareOrder-${address}`)) || {};
     if (!this.prepareOrder[currentPairId]) {
@@ -16396,8 +16668,9 @@ export default class extends Vue {
     const prepareOrder = JSON.parse(
       JSON.stringify(this.prepareOrder[currentPairId])
     );
-    const principal = localStorage.getItem('principal');
-    const address = principalToAccountIdentifier(Principal.from(principal));
+    const address = principalToAccountIdentifier(
+      Principal.from(this.getPrincipalId)
+    );
     for (let i = 0; i < prepareOrder.length; i++) {
       const nonce = prepareOrder[i];
       const currentOrder = `${currentPairId}-${address}-${nonce}`;
@@ -16716,10 +16989,9 @@ export default class extends Vue {
       const d = new Date().getTime();
       console.log(prepare[2] + ': ' + new Date());
       console.log(orderPrice);
-      const principal = localStorage.getItem('principal');
-      if (principal) {
+      if (this.getPrincipalId) {
         const currentAddress = principalToAccountIdentifier(
-          Principal.fromText(principal)
+          Principal.fromText(this.getPrincipalId)
         );
         if (currentAddress !== address) {
           return;
@@ -16762,8 +17034,10 @@ export default class extends Vue {
           }
         });
       setTimeout(() => {
-        this.executionQueue(currentPair, address);
+        console.log('plugLoading');
+        this.plugLoading[currentPair[0].toString()] = false;
       }, 3000);
+      this.executionQueue(currentPair, address);
       this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
       this.getIntervalPrice(6);
@@ -17007,10 +17281,9 @@ export default class extends Vue {
       }
       const d = new Date().getTime();
       console.log(prepare[2] + ': ' + new Date());
-      const principal = localStorage.getItem('principal');
-      if (principal) {
+      if (this.getPrincipalId) {
         const currentAddress = principalToAccountIdentifier(
-          Principal.fromText(principal)
+          Principal.fromText(this.getPrincipalId)
         );
         if (currentAddress !== address) {
           return;
@@ -17038,8 +17311,9 @@ export default class extends Vue {
         });
       this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       setTimeout(() => {
-        this.executionQueue(currentPair, address);
+        this.plugLoading[currentPair[0].toString()] = false;
       }, 3000);
+      this.executionQueue(currentPair, address);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
       this.getIntervalPrice(6);
     } catch (e) {
@@ -17408,14 +17682,10 @@ export default class extends Vue {
         price: price
       };
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       if (this.orderType === 'Stop-limit') {
         const order = {
           side: { Sell: null },
@@ -17475,8 +17745,7 @@ export default class extends Vue {
     this.getLevel100(currentPair[0].toString());
     this.getPending(currentPair[0].toString());
     this.getAllowance(currentPair);
-    const principal = localStorage.getItem('principal');
-    this.getTradeList(currentPair[0].toString(), principal);
+    this.getTradeList(currentPair[0].toString(), this.getPrincipalId);
     this.latestFilled(currentPair[0].toString());
     const token0Info = currentPair[1][0].token0;
     const token1Info = currentPair[1][0].token1;
@@ -18035,10 +18304,9 @@ export default class extends Vue {
     amount: bigint,
     subAccount = 0
   ): Promise<void | string> {
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const currentAddress = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (currentAddress !== address) {
         return 'ErrAddress';
@@ -18109,14 +18377,10 @@ export default class extends Vue {
         price: price
       };
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       this.setPrepare(
         orderPrice,
         'Buy',
@@ -18248,14 +18512,16 @@ export default class extends Vue {
       };
       console.log(orderPrice);
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      // if (this.isPlug() || isInfinity()) {
+      //   this.plugLoading[currentPairId] = true;
+      //   setTimeout(() => {
+      //     this.plugLoading[currentPairId] = false;
+      //   }, 3000);
+      // }
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       if (this.orderType === 'Stop-limit') {
         const order = {
           side: { Buy: null },
@@ -18512,11 +18778,10 @@ export default class extends Vue {
     currentPair: DePairs,
     isValue0 = true
   ): Promise<void | string> {
-    const principal = localStorage.getItem('principal');
     let currentAddress;
-    if (principal) {
+    if (this.getPrincipalId) {
       currentAddress = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (currentAddress !== address) {
         return 'ErrAddress';
@@ -19005,7 +19270,7 @@ export default class extends Vue {
   }
   private async initPairsPrice(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     const pairs = [
       { type: 'Main', value: this.tradePairs.Main },
       { type: 'Second', value: this.tradePairs.Second },
@@ -19041,11 +19306,33 @@ export default class extends Vue {
         }
       }
     });
+    allPairs.forEach((pair) => {
+      const currentPair = [].concat(pair);
+      currentPair[3] = 'Hot';
+      this.tradePairs.Hot.push(currentPair);
+    });
+    this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
+      if (b[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+        return -1;
+      }
+      if (a[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+        return 1;
+      }
+      const basePrice = this.getBasePrice(a[1][0].token1[1]);
+      const vol24 = new BigNumber(a[2].vol24h.value1.toString(10)).times(
+        basePrice
+      );
+      const basePrice1 = this.getBasePrice(b[1][0].token1[1]);
+      const vol241 = new BigNumber(b[2].vol24h.value1.toString(10)).times(
+        basePrice1
+      );
+      return vol241.minus(vol24).toNumber();
+    });
     console.log(this.tradePairs);
   }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     let pairs = this.tradePairs[this.currentTradeMarketSort];
     if (this.pairSearch) {
       pairs = this.pairs;
@@ -19064,6 +19351,55 @@ export default class extends Vue {
         promiseAllValue = [];
       }
     }
+    if (this.currentTradeMarketSort === 'Hot') {
+      const prePair = this.currentPair;
+      this.tradePairs.Hot = this.tradePairs.Hot.sort(
+        (a: DePairs, b: DePairs) => {
+          if (
+            b[1][0].token1[1].toLocaleLowerCase().includes('test') &&
+            !a[1][0].token1[1].toLocaleLowerCase().includes('test')
+          ) {
+            return -1;
+          }
+          if (
+            a[1][0].token1[1].toLocaleLowerCase().includes('test') &&
+            !b[1][0].token1[1].toLocaleLowerCase().includes('test')
+          ) {
+            return 1;
+          }
+          const basePrice = this.getBasePrice(a[1][0].token1[1]);
+          const vol24 = new BigNumber(a[2].vol24h.value1.toString(10)).times(
+            basePrice
+          );
+          const basePrice1 = this.getBasePrice(b[1][0].token1[1]);
+          const vol241 = new BigNumber(b[2].vol24h.value1.toString(10)).times(
+            basePrice1
+          );
+          return vol241.minus(vol24).toNumber();
+        }
+      );
+      if (
+        this.currentPair[3] === 'Hot' &&
+        prePair[1][0].canisterId.toString() !==
+          this.tradePairs.Hot[this.currentPairIndex][1][0].canisterId.toString()
+      ) {
+        this.tradePairs.Hot.some((pair, index) => {
+          if (
+            pair[1][0].canisterId.toString() ===
+            prePair[1][0].canisterId.toString()
+          ) {
+            if (
+              this.currentPair[3] === 'Hot' &&
+              this.currentTradeMarketSort === 'Hot'
+            ) {
+              console.log(index);
+              this.currentPairIndex = index;
+            }
+            return true;
+          }
+        });
+      }
+    }
   }
   private initIntervalPrice(): void {
     try {
@@ -19071,11 +19407,16 @@ export default class extends Vue {
       this.getAllLiquidity();
       if (this.getPrincipalId) {
         this.getUserLiquidity(this.currentPair[0].toString());
-        const principal = localStorage.getItem('principal');
-        if (principal) {
+        if (this.getPrincipalId) {
           this.getPending(this.currentPair[0].toString());
-          this.getTradeList(this.currentPair[0].toString(), principal);
-          this.getStopOrders(this.currentPair[0].toString(), principal);
+          this.getTradeList(
+            this.currentPair[0].toString(),
+            this.getPrincipalId
+          );
+          this.getStopOrders(
+            this.currentPair[0].toString(),
+            this.getPrincipalId
+          );
         }
         if (
           !this.isTodo &&
@@ -19129,7 +19470,7 @@ export default class extends Vue {
             this.latestFilled(this.currentPair[0].toString());
           }, 0);
         }
-      }, 1000);
+      }, 1.5 * 1000);
       this.timerAccount = window.setInterval(async () => {
         if (!this.getCheckAuth) {
           setTimeout(async () => {
@@ -19162,10 +19503,9 @@ export default class extends Vue {
     }
     const currentDrc20Token = new DRC20TokenService();
     const spender = currentPairId;
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const account = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (tokenStd === 'drc20') {
         const allowance = await currentDrc20Token.drc20_allowance(
@@ -19182,7 +19522,7 @@ export default class extends Vue {
       } else if (tokenStd === 'dip20') {
         const allowance = await currentDrc20Token.allowance(
           tokenId,
-          Principal.fromText(principal),
+          Principal.fromText(this.getPrincipalId),
           Principal.fromText(currentPairId)
         );
         if (this.time !== 6) {
@@ -19193,7 +19533,7 @@ export default class extends Vue {
       } else if (tokenStd === 'icrc2') {
         const res = await currentDrc20Token.icrc2_allowance(tokenId, {
           account: {
-            owner: Principal.fromText(principal),
+            owner: Principal.fromText(this.getPrincipalId),
             subaccount: []
           },
           spender: {
@@ -19206,6 +19546,23 @@ export default class extends Vue {
             this.tokenAllowance[currentPairId][tokenId] = res.allowance;
           }
         }
+      }
+    }
+  }
+  private async setICRC2Token(
+    icrc2Tokens: Array<string>,
+    tokenId: string
+  ): Promise<void> {
+    const currentDrc20Token = new DRC20TokenService();
+    const standards = await currentDrc20Token.icrc1_supported_standards(
+      tokenId
+    );
+    if (standards && standards.length) {
+      const flag = standards.some((standard) => {
+        return standard.name.toLocaleLowerCase().includes('icrc-2');
+      });
+      if (flag) {
+        icrc2Tokens.push(tokenId);
       }
     }
   }
@@ -19230,18 +19587,36 @@ export default class extends Vue {
     // this.tradePairs.Old.forEach((pair) => {
     //   canisterIds.push(pair[0].toString());
     // });
+    const icrc2Tokens = JSON.parse(localStorage.getItem('icrc2')) || [];
+    const promiseValue = [];
     res.forEach((item) => {
+      const tokenId = item[0].toString();
+      if (!ICRC2Token.includes(tokenId) && !icrc2Tokens.includes(tokenId)) {
+        const std = Object.keys(item[2])[0];
+        if (std === 'icrc1') {
+          promiseValue.push(this.setICRC2Token(icrc2Tokens, tokenId));
+        }
+      }
       if (item[0].toString() !== LEDGER_CANISTER_ID) {
         canisterIds.push(item[0].toString());
       }
     });
     canisterIds = [...new Set(canisterIds)];
+    if (promiseValue.length) {
+      Promise.all(promiseValue).then(() => {
+        console.log(icrc2Tokens);
+        localStorage.setItem('icrc2', JSON.stringify(icrc2Tokens));
+      });
+    }
     await checkAuth();
     const flag = needConnectPlug(canisterIds);
-    const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const needConnectInfinity1 = await needConnectInfinity(canisterIds);
-    if (priList[principal] === 'Plug' && flag && this.$route.name === 'ICDex') {
+    if (
+      priList[this.getPrincipalId] === 'Plug' &&
+      flag &&
+      this.$route.name === 'ICDex'
+    ) {
       // this.loading.close();
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
@@ -19283,7 +19658,7 @@ export default class extends Vue {
         }
       });
     } else if (
-      priList[principal] === 'Infinity' &&
+      priList[this.getPrincipalId] === 'Infinity' &&
       needConnectInfinity1 &&
       this.$route.name === 'ICDex'
     ) {
@@ -19468,6 +19843,8 @@ export default class extends Vue {
         this.pairs = this.tradePairs.Search;
       } else if (this.currentTradeMarketSort === 'Star') {
         this.pairs = this.tradePairs.Star;
+      } else if (this.currentTradeMarketSort === 'Hot') {
+        this.pairs = this.tradePairs.Hot;
       } else if (stageType && stageType === 'STAGE2') {
         this.currentTradeMarketSort = 'Main';
         this.pairs = this.tradePairs.Main;
@@ -19835,11 +20212,15 @@ export default class extends Vue {
         Main: [],
         Second: [],
         Third: [],
+        Hot: [],
         Old: [],
         Search: []
       };
       console.log(res);
       if (res.data && res.data.length) {
+        const localICRC2Tokens =
+          JSON.parse(localStorage.getItem('icrc2')) || [];
+        ICRC2Token = [...new Set(ICRC2Token.concat(localICRC2Tokens))];
         const pairs = res.data.sort((a: TrieListData1, b: TrieListData1) =>
           new BigNumber(b[1].score1.toString(10))
             .plus(b[1].score2.toString(10))
@@ -19849,6 +20230,10 @@ export default class extends Vue {
             .minus(a[1].score3.toString(10))
             .toNumber()
         );
+        // this.tradePairs.Hot = res.data.sort((a: TrieListData1, b: TrieListData1) => {
+        //   const a24 = new BigNumber(a[1].pair.)
+        // 	}
+        // );
         pairs.forEach((pair) => {
           const swapPair = pair[1] as TrieListData1SwapPair;
           const score = BigInt(
@@ -20280,9 +20665,8 @@ export default class extends Vue {
       this.initPrice();
     });
     this.getConfig();
-    const principal = localStorage.getItem('principal');
-    if (principal) {
-      this.getTradeList(this.currentPair[0].toString(), principal);
+    if (this.getPrincipalId) {
+      this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId);
       this.getPending(this.currentPair[0].toString(), true);
       this.getTotalPending();
       this.getPairInfo(this.currentPair);
@@ -20291,7 +20675,7 @@ export default class extends Vue {
     this.latestFilled(this.currentPair[0].toString());
     this.getIntervalPrice();
     try {
-      if (principal) {
+      if (this.getPrincipalId) {
         const currentPairId = this.currentPair[0].toString();
         const res = await this.getTxAccount(currentPairId);
         if (res && res.pairId === this.currentPair[0].toString()) {
@@ -20373,10 +20757,9 @@ export default class extends Vue {
   private async ta_getReferrer(): Promise<Array<[string, boolean]>> {
     try {
       const dexId = this.currentPair[0].toString();
-      const principal = localStorage.getItem('principal');
       const res = await this.currentICDexService.ta_getReferrer(
         dexId,
-        principal
+        this.getPrincipalId
       );
       if (res && res.pairId === this.currentPair[0].toString()) {
         return res.referrer;
@@ -20418,10 +20801,9 @@ export default class extends Vue {
       this.isToSetReferrer = true;
       const referrer = this.$cookies.get('referral') || {};
       const currentReferrer = referrer[this.currentPair[0].toString()];
-      const principal = localStorage.getItem('principal');
-      if (principal) {
+      if (this.getPrincipalId) {
         const address = principalToAccountIdentifier(
-          Principal.fromText(principal)
+          Principal.fromText(this.getPrincipalId)
         );
         if (
           currentReferrer &&
@@ -21521,8 +21903,9 @@ export default class extends Vue {
 }
 .preparing-table {
   max-height: 336px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: auto;
+  overflow-y: overlay;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
   table {
     color: #8c98a5 !important;
     font-size: 12px;
@@ -22003,16 +22386,18 @@ export default class extends Vue {
       }*/
       &.de-swap-list-item-pair-trade {
         height: 180px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: auto;
+        overflow-y: overlay;
+        transform: translateZ(0);
+        -webkit-overflow-scrolling: touch;
         tr {
           height: 26px;
         }
       }
     }
     tbody.de-swap-list-item-pair {
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
+      overflow-y: overlay;
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
       &.de-swap-list-item-pair-market {
         height: 336px;
         tr {
@@ -22820,8 +23205,9 @@ div.kInterval-chart-h5 {
     tbody {
       display: block;
       height: 260px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
+      overflow-y: overlay;
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
     }
     tr {
       display: table;
@@ -23089,8 +23475,9 @@ div.kInterval-chart-h5 {
       height: calc(100% - 40px);
       width: 100%;
       overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
+      overflow-y: overlay;
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
       tr {
         display: table;
         width: 100%;

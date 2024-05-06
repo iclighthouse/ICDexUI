@@ -1109,6 +1109,12 @@ export default class extends Vue {
     });
   }
   private onSubmit(): void {
+    if (!this.pairsMaker[this.createMakerPoolForm.pair][1].liquidity[0].price) {
+      this.$message.error(
+        'The pair should complete at least one trade before being allowed to create an OAMM.'
+      );
+      return;
+    }
     (this.$refs.createMakerPoolForm as any).validate(async (valid: any) => {
       console.log(valid);
       if (valid) {
@@ -1142,7 +1148,7 @@ export default class extends Vue {
         if (new BigNumber(lowerLimit).lt(1)) {
           lowerLimit = '1';
         }
-        const upperLimit = new BigNumber(
+        let upperLimit = new BigNumber(
           this.pairsMaker[
             this.createMakerPoolForm.pair
           ][1].liquidity[0].price.toString(10)
@@ -1150,6 +1156,12 @@ export default class extends Vue {
           .times(1_000_000_000_000)
           .decimalPlaces(0)
           .toString(10);
+        if (new BigNumber(upperLimit).lte(lowerLimit)) {
+          upperLimit = new BigNumber(lowerLimit)
+            .times(1_000_000_000_000)
+            .decimalPlaces(0)
+            .toString(10);
+        }
         // ppm
         const spreadRate = new BigNumber(this.createMakerPoolForm.spreadRate)
           .div(100)

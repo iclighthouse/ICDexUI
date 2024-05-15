@@ -200,8 +200,11 @@ export class ICDexRouterService {
     await this.check(false, false);
     return await this.service.getICDexMakerWasmVersion();
   };
-  public getVipMakers = async (account: Array<Principal>): Promise<Array<[Principal, AccountId]>> => {
+  public getVipMakers = async (
+    account: Array<Principal>
+  ): Promise<Array<[Principal, AccountId]>> => {
     await this.check(false, false);
-    return await this.service.getVipMakers(account);
-  }
+    const res = await this.service.getVipMakers(account);
+    return SerializableIC(res);
+  };
 }

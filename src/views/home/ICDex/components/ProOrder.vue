@@ -458,7 +458,7 @@
                 {{ currentPair[1][0].token0[1] }}.
               </span>
               <span
-                v-show="
+                v-if="
                   amount &&
                   Number(amount) >= Number(unit10) &&
                   !isModulo(amount) &&

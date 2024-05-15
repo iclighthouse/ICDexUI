@@ -66,6 +66,8 @@ const BLACKHOLE_CANISTER_ID = '7hdtw-jqaaa-aaaak-aaccq-cai';
 const DID_CANISTER_ID = 'a4gq6-oaaaa-aaaab-qaa4q-cai';
 // const AIRDROP_CANISTER_ID = '76a3l-5qaaa-aaaak-afqhq-cai';
 const AIRDROP_CANISTER_ID = 'r43hs-lqaaa-aaaak-afoca-cai';
+let MINING_CANISTER_ID = 'o7d74-vqaaa-aaaar-qaapa-cai';
+// let MINING_CANISTER_ID = 'odhfn-cqaaa-aaaar-qaana-cai';
 const ETHHttps = [
   'https://eth-goerli.g.alchemy.com/v2/gm4OKMIz91Ca1w5WoKT3xXafUtQtdJd9',
   'https://eth-goerli.g.alchemy.com/v2/wREEsnLaFrPgZaXy3Kfhgx2bJ04spvfc',
@@ -115,6 +117,8 @@ if (process.env.NODE_ENV === 'production') {
   IC_BTC_CANISTER_ID = '3fwop-7iaaa-aaaak-adzca-cai';
   CK_BTC_MINTER_CANISTER_ID = 'mqygn-kiaaa-aaaar-qaadq-cai';
   CK_BTC_CANISTER_ID = 'mxzaz-hqaaa-aaaar-qaada-cai';
+  // MINING_CANISTER_ID = 'o7d74-vqaaa-aaaar-qaapa-cai';
+  MINING_CANISTER_ID = 'odhfn-cqaaa-aaaar-qaana-cai';
 }
 const plugWhitelist = [
   NNS_DAPP_CANISTER_ID,
@@ -148,7 +152,8 @@ const plugWhitelist = [
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
   BLACKHOLE_CANISTER_ID,
   AIRDROP_CANISTER_ID,
-  CK_ETH_LEDGER_CANISTER_ID_TEST
+  CK_ETH_LEDGER_CANISTER_ID_TEST,
+  MINING_CANISTER_ID
 ];
 const ICXWhitelist = [
   NNS_DAPP_CANISTER_ID,
@@ -178,7 +183,8 @@ const ICXWhitelist = [
   IC_SWAP_ROUTER_CANISTER_ID_Fiduciary,
   BLACKHOLE_CANISTER_ID,
   AIRDROP_CANISTER_ID,
-  CK_ETH_LEDGER_CANISTER_ID_TEST
+  CK_ETH_LEDGER_CANISTER_ID_TEST,
+  MINING_CANISTER_ID
 ];
 const SUB_ACCOUNT_BYTE_LENGTH = 32;
 const ICLighthouseNeuronId =
@@ -489,6 +495,7 @@ export {
   BLACKHOLE_CANISTER_ID,
   DID_CANISTER_ID,
   AIRDROP_CANISTER_ID,
+  MINING_CANISTER_ID,
   isHex,
   isHexString,
   getEthereumAccount,

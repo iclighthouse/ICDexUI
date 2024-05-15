@@ -602,18 +602,18 @@
               <td class="operation-td">
                 <div class="operation">
                   <span
-                    class="operation-name pointer"
-                    @click="onWithdraw(item)"
-                  >
-                    Withdraw
-                  </span>
-                  <span
                     :class="{
                       disabled:
                         currentWalletMenu === 'wallet'
                           ? !item[2].main
                           : !item[2].pro
                     }"
+                    class="operation-name pointer"
+                    @click="onWithdraw(item)"
+                  >
+                    Withdraw
+                  </span>
+                  <span
                     class="operation-name"
                     @click="onDepositKeepingBalance(item)"
                   >

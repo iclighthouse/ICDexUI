@@ -378,7 +378,7 @@ export default class extends Vue {
     this.getCurrentLaunches();
   }
   private showGuide(): void {
-    this.$info({
+		(this.$info as any)({
       title: 'Listing Your Token on ICDex: A Step-by-Step Process',
       content: (h) => {
         return h(
@@ -395,13 +395,10 @@ export default class extends Vue {
           'https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471'
         );
       },
-      class: 'connect-plug register-mining-confirm',
+      class: 'connect-plug register-mining-confirm register-mining-confirm-hide-button',
       icon: 'connect-plug',
-      okText: 'Confirm',
       centered: true,
-      onOk() {
-        //
-      }
+      closable: true
     });
   }
   private getCurrentLaunches(): void {

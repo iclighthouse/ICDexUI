@@ -1111,12 +1111,6 @@
                   <span>Competitions</span>
                 </li>-->
               </ul>
-              <!--<trading-mining
-                class="margin-left-auto trading-mining"
-                ref="tradingMiningH5"
-                v-if="currentPair"
-                :pair-id="currentPair[0].toString()"
-              ></trading-mining>-->
               <!-- <trading-competitions
                 ref="tradingCompetitionH5"
                 v-if="currentPair"
@@ -1680,13 +1674,12 @@
                 </a-menu>
               </a-dropdown>-->
             </div>
-            <trading-mining
+            <mining-info
+              v-if="currentPair"
+              :current-pair-id="currentPair[0].toString()"
               style="padding: 0 5px 0 0 !important; border: none"
               class="margin-left-auto trading-mining"
-              ref="tradingMining"
-              v-if="currentPair"
-              :pair-id="currentPair[0].toString()"
-            ></trading-mining>
+            ></mining-info>
             <a-icon
               v-show="
                 currentPair && !prePairs.includes(currentPair[0].toString())
@@ -12769,13 +12762,7 @@ import {
   TradeCompetitionsEnum,
   TradeCompetitionsMenu
 } from '@/views/home/ICDex/model';
-import {
-  Icrc1Account,
-  Time,
-  TokenId,
-  TokenInfo,
-  TokenStd
-} from '@/ic/common/icType';
+import { Icrc1Account, Time, TokenId, TokenInfo, TokenStd } from '@/ic/common/icType';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { TokenLiquidity } from '@/ic/ICSwap/model';
 import {
@@ -12826,14 +12813,7 @@ import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
-import {
-  DexName,
-  SwapCanister,
-  SwapConfig,
-  SwapTokenInfo,
-  TrieListData1,
-  TrieListData1SwapPair
-} from '@/ic/ICSwapRouter/model';
+import { SwapConfig, SwapTokenInfo, TrieListData1, TrieListData1SwapPair } from '@/ic/ICSwapRouter/model';
 import { getFee } from '@/ic/getTokenFee';
 import { getTokenBalance } from '@/ic/getTokenBalance';
 import { namespace } from 'vuex-class';
@@ -12845,18 +12825,14 @@ import {
   IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
   LEDGER_CANISTER_ID
 } from '@/ic/utils';
-import TradingMining from '@/views/home/ICDex/components/TradingMining.vue';
+import MiningInfo from '@/views/home/ICDex/components/MiningInfo.vue';
 import TradingCompetitions from '@/views/home/ICDex/components/TradingCompetitions.vue';
 import Fallback from '@/views/home/ICDex/components/Fallback.vue';
 import TradeCompetitions from '@/views/home/ICDex/components/TradeCompetitions.vue';
 import EventBus from '@/utils/Event';
 import { Menu } from '@/components/menu/model';
 import { checkAuth } from '@/ic/CheckAuth';
-import { isInfinity } from '@/ic/isInfinity';
-import {
-  currentPageConnectInfinity,
-  needConnectInfinity
-} from '@/ic/ConnectInfinity';
+import { currentPageConnectInfinity, needConnectInfinity } from '@/ic/ConnectInfinity';
 import { addedTokens, addToken } from '@/ic/addToken';
 import TransferIcp from '@/components/transferIcp/Index.vue';
 import TransferToken from '@/components/transferToken/Index.vue';
@@ -12865,7 +12841,7 @@ import ProOrder from '@/views/home/ICDex/components/ProOrder.vue';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import { toHttpRejectError } from '@/ic/httpError';
-import { SysConfig } from '@/ic/ICDexRouter/model';
+import { NFT, SysConfig } from '@/ic/ICDexRouter/model';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 import WithdrawToken from '@/components/withdrawToken/Index.vue';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
@@ -12894,7 +12870,7 @@ let timer = null;
 @Component({
   name: 'Index',
   components: {
-    TradingMining,
+    MiningInfo,
     Fallback,
     AccountInfo,
     TradeCompetitions,
@@ -13232,7 +13208,7 @@ export default class extends Vue {
   private ICDexRouterService: ICDexRouterService = null;
   private ICLighthouseService: ICLighthouseService = null;
   private NftService: NftService = null;
-  private NFTsExt: Array<TokenExt> = [];
+  private NFTsExt: Array<TokenExt> | Array<NFT> = [];
   private tokensBalance: { [key: string]: string } = {};
   private tokensBalanceSto: { [key: string]: string } = {};
   private pairs: Array<DePairs> = [];
@@ -13472,6 +13448,10 @@ export default class extends Vue {
       path: '/ICDex/pools'
     },
     {
+      value: 'Mining',
+      path: '/Mining'
+    },
+    {
       value: 'Info',
       path: '/ICDex/info'
     },
@@ -13479,11 +13459,6 @@ export default class extends Vue {
       value: 'Competitions',
       path: '/ICDex/competitions'
     }
-    // ,
-    // {
-    //   value: 'Mining',
-    //   path: '/icl/tradingMining'
-    // }
   ];
   private pairInfo: PairInfo = null;
   private sysMode: { mode: SysMode; openingTime: Time } = null;
@@ -13900,29 +13875,33 @@ export default class extends Vue {
     if (
       this.tokens &&
       this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()] &&
       this.tokens[this.currentPair[1][0].token1[0].toString()]
     ) {
       const token1Decimals =
         this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
+      const token0Decimals =
+        this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
       if (token1Decimals - this.tokenMinUnit > 0) {
         let unit = token1Decimals - this.tokenMinUnit;
         if (unit > 8) {
           unit = 8;
         }
-        if (
-          this.currentPair[2] &&
-          this.currentPair[2].price &&
-          Number(this.currentPair[2].price) >= 1 &&
-          unit > 4
-        ) {
-          unit = 4;
+        if (this.currentPair[2] && this.currentPair[2].price) {
+          const price = new BigNumber(this.currentPair[2].price)
+            .times(10 ** token0Decimals)
+            .div(10 ** token1Decimals)
+            .toNumber();
+          // if (price >= 1 && unit > 4) {
+          //   unit = 4;
+          // }
         }
         return unit;
       } else {
         return 0;
       }
     } else {
-      return 0;
+      return 8;
     }
   }
   get tokenMinUnit(): number {
@@ -14055,6 +14034,14 @@ export default class extends Vue {
       this.NFTsExt = tokensExt;
     } else {
       this.NFTsExt = [];
+    }
+    if (!this.NFTsExt.length) {
+      this.NFTsExt = await this.ICDexRouterService.NFTBalance(this.getPrincipalId);
+    }
+    if (!this.NFTsExt.length) {
+      this.NFTsExt = await this.ICSwapRouterFiduciaryService.NFTBalance(
+        this.getPrincipalId
+      );
     }
     console.log(this.NFTsExt);
   }
@@ -17498,7 +17485,6 @@ export default class extends Vue {
           content: errMessage,
           class: 'connect-plug',
           icon: 'connect-plug',
-          okText: 'Confirm',
           onOk() {
             //
           }
@@ -17508,7 +17494,6 @@ export default class extends Vue {
           content: 'Nonce error, please re-order.',
           class: 'connect-plug',
           icon: 'connect-plug',
-          okText: 'Confirm',
           onOk() {
             //
           }
@@ -17645,8 +17630,7 @@ export default class extends Vue {
             content:
               'The trading matching engine (TME) is under computational pressure, busy trading mode (BTM) is on, and the system is only accepting orders within +/- 5% of the latest price.',
             class: 'connect-plug',
-            icon: 'connect-plug',
-            okText: 'Confirm'
+            icon: 'connect-plug'
           });
           return;
         }
@@ -18465,8 +18449,7 @@ export default class extends Vue {
             content:
               'The trading matching engine (TME) is under computational pressure, busy trading mode (BTM) is on, and the system is only accepting orders within +/- 5% of the latest price.',
             class: 'connect-plug',
-            icon: 'connect-plug',
-            okText: 'Confirm'
+            icon: 'connect-plug'
           });
           return;
         }
@@ -19631,11 +19614,6 @@ export default class extends Vue {
         okText: 'Confirm',
         onOk() {
           currentPageConnectPlug(canisterIds).then(async () => {
-            if (_that.isH5) {
-              // _that.currentPair && (_that.$refs as any).tradingMiningH5.init();
-            } else {
-              _that.currentPair && (_that.$refs as any).tradingMining.init();
-            }
             if (res && res.length) {
               let promiseAllValue = [];
               const MAX_COCURRENCY = 10;
@@ -19676,11 +19654,6 @@ export default class extends Vue {
         okText: 'Confirm',
         onOk() {
           currentPageConnectInfinity(canisterIds).then(async () => {
-            if (_that.isH5) {
-              // _that.currentPair && (_that.$refs as any).tradingMiningH5.init();
-            } else {
-              _that.currentPair && (_that.$refs as any).tradingMining.init();
-            }
             if (res && res.length) {
               let promiseAllValue = [];
               const MAX_COCURRENCY = 10;
@@ -19717,11 +19690,6 @@ export default class extends Vue {
           JSON.stringify(newIcxCanisterIds)
         );
         await connectIcx(newIcxCanisterIds);
-      }
-      if (this.isH5) {
-        // this.currentPair && (this.$refs as any).tradingMiningH5.init();
-      } else {
-        this.currentPair && (this.$refs as any).tradingMining.init();
       }
       if (res && res.length) {
         let promiseAllValue = [];
@@ -20557,6 +20525,7 @@ export default class extends Vue {
           console.error(e);
         }
         this.resetChart();
+        console.log(this.$refs.deSwapListItemPair);
         const height = (this.$refs.deSwapListItemPair as any).clientHeight;
         let top = (this.currentPairIndex + 1) * 50 - height;
         if (top < 0) {

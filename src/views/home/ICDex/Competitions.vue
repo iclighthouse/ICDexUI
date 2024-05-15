@@ -835,6 +835,10 @@ export default class extends Vue {
       path: '/ICDex/pools'
     },
     {
+      value: 'Mining',
+      path: '/Mining'
+    },
+    {
       value: 'Info',
       path: '/ICDex/info'
     },

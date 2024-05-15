@@ -544,6 +544,7 @@
                             'hhaaz-2aaaa-aaaaq-aacla-cai'
                             ? 'order-book-type-list-tooltip hide-order-book-type-list-tooltip'
                             : 'order-book-type-list-tooltip'
+
                         "
                         placement="right"
                       >

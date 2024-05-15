@@ -645,6 +645,16 @@ export interface Participant {
   limit: Amount;
   historyVol: string;
 }
+export interface TrieList_5 {
+  total: bigint;
+  data: Array<[AccountId, BrokerInfo, string?]>;
+}
+export interface BrokerInfo {
+  vol: Vol;
+  count: bigint;
+  rate: string;
+  commission: Vol;
+}
 
 export default interface Service {
   liquidity(address: Array<Address>): Promise<TokenLiquidity>;
@@ -761,7 +771,10 @@ export default interface Service {
   sto_getStratOrder(soid: Soid): Promise<Array<STOrder>>;
   IDO_getConfig(): Promise<IDOConfig>;
   IDO_qualification(address: Array<string>): Promise<Qualification>;
-  IDO_updateQualification(subaccount: Array<Array<number>>): Promise<Array<Participant>>;
+  IDO_updateQualification(
+    subaccount: Array<Array<number>>
+  ): Promise<Array<Participant>>;
   ictc_getAdmins(): Promise<Array<Principal>>;
   getAuctionMode(): Promise<[boolean, AccountId]>;
+  brokerList(page: Array<bigint>, size: Array<bigint>): Promise<TrieList_5>;
 }

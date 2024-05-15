@@ -81,7 +81,8 @@ export enum TokenEnum {
 export enum NFTRole {
   BecomeVipMaker = 'BecomeVipMaker',
   CreateMaker = 'CreateMaker',
-  ListingReferrer = 'ListingReferrer'
+  ListingReferrer = 'ListingReferrer',
+  mining = 'mining'
 }
 export type TraderAccountsType = {
   [key: string]: {

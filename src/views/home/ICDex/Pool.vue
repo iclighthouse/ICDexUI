@@ -1060,6 +1060,10 @@ export default class extends Vue {
       path: '/ICDex/pools'
     },
     {
+      value: 'Mining',
+      path: '/Mining'
+    },
+    {
       value: 'Info',
       path: '/ICDex/info'
     },
@@ -1730,7 +1734,6 @@ export default class extends Vue {
           this.getPoolInfo(poolId);
           this.$message.error('Error');
         }
-        this.getDepositAccountBalance();
       })
       .catch((e) => {
         console.log(e);
@@ -1754,6 +1757,7 @@ export default class extends Vue {
       })
       .finally(() => {
         flag = true;
+        this.getDepositAccountBalance();
         this.getPoolICLBalance(poolId);
         loading.close();
       });

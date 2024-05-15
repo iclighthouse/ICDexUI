@@ -96,6 +96,17 @@ const ICDexRouter: RouteConfig[] = [
       requireAuth: true,
       measurementId: 'G-056B85Q2L0'
     }
+  },
+  {
+    path: '/Mining/:type?',
+    name: 'Mining',
+    component: () => import('@/views/home/ICDex/Mining.vue'),
+    meta: {
+      title: 'Mining',
+      version: '0.5test',
+      requireAuth: true,
+      measurementId: 'G-056B85Q2L0'
+    }
   }
 ];
 

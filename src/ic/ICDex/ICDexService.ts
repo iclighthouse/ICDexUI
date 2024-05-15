@@ -34,6 +34,7 @@ import Service, {
   TradingResult,
   TrieList,
   TrieList_3,
+  TrieList_5,
   TxAccount,
   TxnRecord,
   UpdateStopLossOrderConfig
@@ -925,6 +926,20 @@ export class ICDexService {
     const service = await this.check(canisterId, false, false);
     try {
       const res = await service.getAuctionMode();
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public brokerList = async (
+    canisterId: string,
+    page: Array<bigint> = [],
+    size: Array<bigint> = []
+  ): Promise<TrieList_5> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.brokerList(page, size);
       return SerializableIC(res);
     } catch (e) {
       console.log(e);

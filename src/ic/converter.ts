@@ -128,6 +128,25 @@ const formatDateToMinute = (date: Date): string => {
     Appendzero(minute)
   );
 };
+const formatDateToCalendarSecond = (date: Date): string => {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const hour = date.getUTCHours();
+  const minute = date.getUTCMinutes();
+  return (
+    day +
+    '/' +
+    month +
+    ' ' +
+    year +
+    ' ' +
+    Appendzero(hour) +
+    ':' +
+    Appendzero(minute) +
+    ' UTC'
+  );
+};
 const formatDateToDay = (date: Date): string => {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
@@ -445,5 +464,6 @@ export {
   generateMeatMaskSeed,
   toPrincipalAndAccountId,
   SerializableIC,
-  compute_distribution_subaccount_bytes
+  compute_distribution_subaccount_bytes,
+  formatDateToCalendarSecond
 };

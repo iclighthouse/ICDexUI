@@ -120,6 +120,17 @@
                   </span>
                 </a-tooltip>
               </span>
+              <mining-info
+                type="pools"
+                v-show="currentPoolsMenu === 'public'"
+                style="
+                  display: inline-block;
+                  margin-left: 8px;
+                  padding: 0 5px 0 0 !important;
+                  border: none;
+                "
+                class="margin-left-auto trading-mining"
+              ></mining-info>
             </span>
             <span
               v-if="
@@ -313,6 +324,12 @@
                 >
                   Become a Vip-Maker
                 </span>
+                <mining-info
+                  :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
+                  type="pool"
+                  style="display: inline-block; margin-left: 8px; border: none"
+                  class="margin-left-auto trading-mining"
+                ></mining-info>
               </div>
               <div
                 v-if="
@@ -661,6 +678,12 @@
                 >
                   Become a Vip-Maker
                 </span>
+                <mining-info
+                  :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
+                  type="pool"
+                  style="display: inline-block; margin-left: 8px; border: none"
+                  class="margin-left-auto trading-mining"
+                ></mining-info>
               </div>
               <div
                 v-if="
@@ -2709,6 +2732,7 @@ import { Menu } from '@/components/menu/model';
 import BigNumber from 'bignumber.js';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { getTokenLogo } from '@/ic/getTokenLogo';
+import MiningInfo from '@/views/home/ICDex/components/MiningInfo.vue';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import {
   BalanceChange,
@@ -2736,7 +2760,7 @@ let loading;
 
 @Component({
   name: 'Pools',
-  components: { NftBalance, AccountInfo, Launch },
+  components: { NftBalance, AccountInfo, Launch, MiningInfo },
   filters: {
     filterPpm(val: bigint): string {
       return (
@@ -2777,6 +2801,10 @@ export default class extends Vue {
     {
       value: 'Pools',
       path: '/ICDex/pools'
+    },
+    {
+      value: 'Mining',
+      path: '/Mining'
     },
     {
       value: 'Info',

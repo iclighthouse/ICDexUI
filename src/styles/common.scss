@@ -856,6 +856,16 @@ input {
     }
   }
 }
+.register-mining-confirm-hide-button {
+  .ant-modal-confirm-content {
+    font-size: 14px;
+  }
+  .ant-modal-confirm-btns {
+    button {
+      display: none;
+    }
+  }
+}
 .confirm-swap-button {
   .ant-btn {
     border-radius: 4px;

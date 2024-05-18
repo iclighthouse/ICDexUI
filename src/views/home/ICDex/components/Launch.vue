@@ -1,7 +1,6 @@
 <template>
   <div>
     <span
-      v-if="getPrincipalId"
       @click="showLaunch"
       class="base-font-title pointer pc-show"
       style="font-size: 15px"
@@ -33,7 +32,6 @@
       </a-menu>
     </a-dropdown>
     <span
-      v-if="getPrincipalId"
       class="pointer"
       style="margin: 0 8px; color: #adb3c4 !important"
       @click="showGuide"
@@ -378,7 +376,7 @@ export default class extends Vue {
     this.getCurrentLaunches();
   }
   private showGuide(): void {
-		(this.$info as any)({
+    (this.$info as any)({
       title: 'Listing Your Token on ICDex: A Step-by-Step Process',
       content: (h) => {
         return h(
@@ -395,7 +393,8 @@ export default class extends Vue {
           'https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471'
         );
       },
-      class: 'connect-plug register-mining-confirm register-mining-confirm-hide-button',
+      class:
+        'connect-plug register-mining-confirm register-mining-confirm-hide-button',
       icon: 'connect-plug',
       centered: true,
       closable: true
@@ -539,7 +538,11 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
     }
   }
   private showLaunch(): void {
-    this.init();
+    if (this.getPrincipalId) {
+      this.init();
+    } else {
+      this.$router.replace('/login');
+    }
   }
   private showTimeDefaultValue(): moment.Moment {
     return moment().add(30, 'm');

@@ -198,7 +198,9 @@
               class="w100 primary"
               @click="onDeposit"
             >
-              Deposit
+              <span v-if="type === 'mining'"
+                >Deposit NFT for mining acceleration</span
+              ><span v-else>Deposit</span>
             </button>
           </div>
         </div>

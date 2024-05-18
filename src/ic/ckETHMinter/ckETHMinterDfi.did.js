@@ -72,6 +72,10 @@ export default ({ IDL }) => {
     module_hash: IDL.Opt(IDL.Vec(IDL.Nat8)),
     reserved_cycles: IDL.Nat
   });
+  const EventSource = IDL.Record({
+    transaction_hash: IDL.Text,
+    log_index: IDL.Nat
+  });
   const UnsignedTransaction = IDL.Record({
     destination: IDL.Text,
     value: IDL.Nat,
@@ -88,9 +92,13 @@ export default ({ IDL }) => {
       })
     )
   });
-  const EventSource = IDL.Record({
-    transaction_hash: IDL.Text,
-    log_index: IDL.Nat
+  const ReimbursementIndex = IDL.Variant({
+    CkErc20: IDL.Record({
+      cketh_ledger_burn_index: IDL.Nat,
+      ledger_id: IDL.Principal,
+      ckerc20_ledger_burn_index: IDL.Nat
+    }),
+    CkEth: IDL.Record({ ledger_burn_index: IDL.Nat })
   });
   const TransactionReceipt = IDL.Record({
     effective_gas_price: IDL.Nat,
@@ -125,6 +133,7 @@ export default ({ IDL }) => {
         address: IDL.Text,
         ckerc20_token_symbol: IDL.Text
       }),
+      QuarantinedDeposit: IDL.Record({ event_source: EventSource }),
       SyncedToBlock: IDL.Record({ block_number: IDL.Nat }),
       AcceptedDeposit: IDL.Record({
         principal: IDL.Principal,
@@ -138,6 +147,7 @@ export default ({ IDL }) => {
         withdrawal_id: IDL.Nat,
         transaction: UnsignedTransaction
       }),
+      QuarantinedReimbursement: IDL.Record({ index: ReimbursementIndex }),
       MintedCkEth: IDL.Record({
         event_source: EventSource,
         mint_block_index: IDL.Nat
@@ -218,8 +228,11 @@ export default ({ IDL }) => {
     eth_helper_contract_address: IDL.Opt(IDL.Text),
     last_observed_block_number: IDL.Opt(IDL.Nat),
     erc20_helper_contract_address: IDL.Opt(IDL.Text),
+    last_erc20_scraped_block_number: IDL.Opt(IDL.Nat),
     supported_ckerc20_tokens: IDL.Opt(IDL.Vec(CkErc20Token)),
     last_gas_fee_estimate: IDL.Opt(GasFeeEstimate),
+    smart_contract_address: IDL.Opt(IDL.Text),
+    last_eth_scraped_block_number: IDL.Opt(IDL.Nat),
     minimum_withdrawal_amount: IDL.Opt(IDL.Nat),
     erc20_balances: IDL.Opt(
       IDL.Vec(
@@ -231,7 +244,10 @@ export default ({ IDL }) => {
   });
   const EthTransaction = IDL.Record({ transaction_hash: IDL.Text });
   const TxFinalizedStatus = IDL.Variant({
-    Success: EthTransaction,
+    Success: IDL.Record({
+      transaction_hash: IDL.Text,
+      effective_transaction_fee: IDL.Opt(IDL.Nat)
+    }),
     Reimbursed: IDL.Record({
       transaction_hash: IDL.Text,
       reimbursed_amount: IDL.Nat,
@@ -300,6 +316,31 @@ export default ({ IDL }) => {
     RecipientAddressBlocked: IDL.Record({ address: IDL.Text }),
     InsufficientFunds: IDL.Record({ balance: IDL.Nat })
   });
+  const Account = IDL.Record({
+    owner: IDL.Principal,
+    subaccount: IDL.Opt(IDL.Vec(IDL.Nat8))
+  });
+  const WithdrawalSearchParameter = IDL.Variant({
+    ByRecipient: IDL.Text,
+    BySenderAccount: Account,
+    ByWithdrawalId: IDL.Nat64
+  });
+  const WithdrawalStatus = IDL.Variant({
+    TxFinalized: TxFinalizedStatus,
+    TxSent: EthTransaction,
+    TxCreated: IDL.Null,
+    Pending: IDL.Null
+  });
+  const WithdrawalDetail = IDL.Record({
+    status: WithdrawalStatus,
+    token_symbol: IDL.Text,
+    withdrawal_amount: IDL.Nat,
+    withdrawal_id: IDL.Nat64,
+    from: IDL.Principal,
+    from_subaccount: IDL.Opt(IDL.Vec(IDL.Nat8)),
+    max_transaction_fee: IDL.Opt(IDL.Nat),
+    recipient_address: IDL.Text
+  });
   return IDL.Service({
     add_ckerc20_token: IDL.Func([AddCkErc20Token], [], []),
     eip_1559_transaction_price: IDL.Func(
@@ -337,6 +378,11 @@ export default ({ IDL }) => {
       [WithdrawalArg],
       [IDL.Variant({ Ok: RetrieveEthRequest, Err: WithdrawalError })],
       []
+    ),
+    withdrawal_status: IDL.Func(
+      [WithdrawalSearchParameter],
+      [IDL.Vec(WithdrawalDetail)],
+      ['query']
     )
   });
 };

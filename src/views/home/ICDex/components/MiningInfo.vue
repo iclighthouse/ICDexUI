@@ -110,7 +110,9 @@
                 >Your<span v-if="type === 'pools'">&nbsp;liquidity&nbsp;</span
                 ><span v-else>&nbsp;trading&nbsp;</span>mining points are:
                 <span v-if="type === 'pools'"
-                  >&nbsp;{{ accountData.points.lm.toString(10) }}&nbsp;</span
+                  >&nbsp;{{
+                    accountData.points.lm.toString(10) | filterMiningPoints
+                  }}&nbsp;</span
                 ><span v-else
                   >&nbsp;{{ accountData.points.tm.toString(10) }}</span
                 >,</span
@@ -134,7 +136,9 @@
                 >Your <span v-if="type === 'pools'">liquidity</span
                 ><span v-else>trading</span> mining points are:
                 <span v-if="type === 'pools'">
-                  &nbsp;{{ accountData.points.lm.toString(10) }}</span
+                  &nbsp;{{
+                    accountData.points.lm.toString(10) | filterMiningPoints
+                  }}</span
                 ><span v-else
                   >&nbsp;{{ accountData.points.tm.toString(10) }}</span
                 ></span
@@ -213,6 +217,17 @@ const commonModule = namespace('common');
   filters: {
     filterRate(val: string): string {
       return new BigNumber(val).times(100) + '%';
+    },
+    filterMiningPoints(val: string) {
+      if (new BigNumber(val).gt(10 ** 3)) {
+        return (
+          new BigNumber(val)
+            .div(10 ** 6)
+            .decimalPlaces(2)
+            .toString(10) + 'M'
+        );
+      }
+      return val;
     }
   }
 })

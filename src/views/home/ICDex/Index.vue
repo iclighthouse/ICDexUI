@@ -12762,7 +12762,13 @@ import {
   TradeCompetitionsEnum,
   TradeCompetitionsMenu
 } from '@/views/home/ICDex/model';
-import { Icrc1Account, Time, TokenId, TokenInfo, TokenStd } from '@/ic/common/icType';
+import {
+  Icrc1Account,
+  Time,
+  TokenId,
+  TokenInfo,
+  TokenStd
+} from '@/ic/common/icType';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { TokenLiquidity } from '@/ic/ICSwap/model';
 import {
@@ -12813,7 +12819,12 @@ import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
-import { SwapConfig, SwapTokenInfo, TrieListData1, TrieListData1SwapPair } from '@/ic/ICSwapRouter/model';
+import {
+  SwapConfig,
+  SwapTokenInfo,
+  TrieListData1,
+  TrieListData1SwapPair
+} from '@/ic/ICSwapRouter/model';
 import { getFee } from '@/ic/getTokenFee';
 import { getTokenBalance } from '@/ic/getTokenBalance';
 import { namespace } from 'vuex-class';
@@ -12832,7 +12843,10 @@ import TradeCompetitions from '@/views/home/ICDex/components/TradeCompetitions.v
 import EventBus from '@/utils/Event';
 import { Menu } from '@/components/menu/model';
 import { checkAuth } from '@/ic/CheckAuth';
-import { currentPageConnectInfinity, needConnectInfinity } from '@/ic/ConnectInfinity';
+import {
+  currentPageConnectInfinity,
+  needConnectInfinity
+} from '@/ic/ConnectInfinity';
 import { addedTokens, addToken } from '@/ic/addToken';
 import TransferIcp from '@/components/transferIcp/Index.vue';
 import TransferToken from '@/components/transferToken/Index.vue';
@@ -14036,7 +14050,9 @@ export default class extends Vue {
       this.NFTsExt = [];
     }
     if (!this.NFTsExt.length) {
-      this.NFTsExt = await this.ICDexRouterService.NFTBalance(this.getPrincipalId);
+      this.NFTsExt = await this.ICDexRouterService.NFTBalance(
+        this.getPrincipalId
+      );
     }
     if (!this.NFTsExt.length) {
       this.NFTsExt = await this.ICSwapRouterFiduciaryService.NFTBalance(
@@ -17009,6 +17025,9 @@ export default class extends Vue {
           this.$message.error('Order fail');
         })
         .finally(() => {
+          if (this.currentTradeMarketSort === 'Hot') {
+            this.sortHot();
+          }
           if (this.IDOConfig && this.IDOConfig[0] && this.IDOConfig[1]) {
             const now = new Date().getTime();
             if (
@@ -17298,6 +17317,24 @@ export default class extends Vue {
           console.error(e);
           this.initPending(currentPair, prepare, address);
           this.$message.error('Order fail');
+        })
+        .finally(() => {
+          if (this.currentTradeMarketSort === 'Hot') {
+            this.sortHot();
+          }
+          if (this.IDOConfig && this.IDOConfig[0] && this.IDOConfig[1]) {
+            const now = new Date().getTime();
+            if (
+              new BigNumber(this.IDOConfig[1].IDOOpeningTime.toString(10))
+                .div(10 ** 6)
+                .lt(now) &&
+              new BigNumber(this.IDOConfig[1].IDOClosingTime.toString(10))
+                .div(10 ** 6)
+                .gt(now)
+            ) {
+              this.IDO_qualification(currentPair);
+            }
+          }
         });
       this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       setTimeout(() => {
@@ -19297,6 +19334,11 @@ export default class extends Vue {
       currentPair[3] = 'Hot';
       this.tradePairs.Hot.push(currentPair);
     });
+    this.sortHot();
+    console.log(this.tradePairs);
+  }
+  private sortHot(): void {
+    console.log('sortHot');
     this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
       if (b[1][0].token1[1].toLocaleLowerCase().includes('test')) {
         return -1;
@@ -19305,20 +19347,27 @@ export default class extends Vue {
         return 1;
       }
       const basePrice = this.getBasePrice(a[1][0].token1[1]);
-      const vol24 = new BigNumber(a[2].vol24h.value1.toString(10)).times(
-        basePrice
-      );
+      const vol24 = new BigNumber(a[2].vol24h.value1.toString(10))
+        .div(10 ** this.tokens[a[1][0].token1[0].toString()].decimals)
+        .times(basePrice);
       const basePrice1 = this.getBasePrice(b[1][0].token1[1]);
-      const vol241 = new BigNumber(b[2].vol24h.value1.toString(10)).times(
-        basePrice1
-      );
+      const vol241 = new BigNumber(b[2].vol24h.value1.toString(10))
+        .div(10 ** this.tokens[b[1][0].token1[0].toString()].decimals)
+        .times(basePrice1);
       return vol241.minus(vol24).toNumber();
     });
-    console.log(this.tradePairs);
+    const res = [];
+    this.tradePairs.Hot.forEach((pair) => {
+      res.push({
+        id: pair[1][0].canisterId.toString(),
+        pair: pair
+      });
+    });
+    this.pairsScroll = res;
   }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 40;
+    const MAX_CONCURRENCY = 200;
     let pairs = this.tradePairs[this.currentTradeMarketSort];
     if (this.pairSearch) {
       pairs = this.pairs;
@@ -19339,31 +19388,7 @@ export default class extends Vue {
     }
     if (this.currentTradeMarketSort === 'Hot') {
       const prePair = this.currentPair;
-      this.tradePairs.Hot = this.tradePairs.Hot.sort(
-        (a: DePairs, b: DePairs) => {
-          if (
-            b[1][0].token1[1].toLocaleLowerCase().includes('test') &&
-            !a[1][0].token1[1].toLocaleLowerCase().includes('test')
-          ) {
-            return -1;
-          }
-          if (
-            a[1][0].token1[1].toLocaleLowerCase().includes('test') &&
-            !b[1][0].token1[1].toLocaleLowerCase().includes('test')
-          ) {
-            return 1;
-          }
-          const basePrice = this.getBasePrice(a[1][0].token1[1]);
-          const vol24 = new BigNumber(a[2].vol24h.value1.toString(10)).times(
-            basePrice
-          );
-          const basePrice1 = this.getBasePrice(b[1][0].token1[1]);
-          const vol241 = new BigNumber(b[2].vol24h.value1.toString(10)).times(
-            basePrice1
-          );
-          return vol241.minus(vol24).toNumber();
-        }
-      );
+      this.sortHot();
       if (
         this.currentPair[3] === 'Hot' &&
         prePair[1][0].canisterId.toString() !==
@@ -20157,6 +20182,15 @@ export default class extends Vue {
         }
       });
       this.pairs = this.tradePairs.Search = pairs;
+      const res = [];
+      this.tradePairs.Search.forEach((pair) => {
+        res.push({
+          id: pair[1][0].canisterId.toString(),
+          pair: pair
+        });
+      });
+      this.pairsScroll = res;
+      console.log(this.pairsScroll);
     } else {
       if (localStorage.getItem('sort')) {
         this.currentTradeMarketSort = localStorage.getItem('sort');
@@ -20164,6 +20198,7 @@ export default class extends Vue {
         localStorage.removeItem('sort');
       }
     }
+    console.log(this.currentTradeMarketSort);
     console.log(this.tradePairs);
     console.log(this.pairs);
   }

@@ -127,7 +127,10 @@
             </span>
             <span
               >Your liquidity mining points:
-              {{ accountData.points.lm.toString(10) | formatNum
+              {{
+                accountData.points.lm.toString(10)
+                  | filterMiningPoints
+                  | formatNum
               }}<span
                 v-if="Object.keys(currentRound.data[0].status)[0] === 'Closed'"
               >
@@ -175,7 +178,8 @@
               Object.keys(currentRound.data[0].status)[0] === 'Active' &&
               Number(accelerationRate) === 0
             ) &&
-            accelerationRate
+            accelerationRate &&
+            Number(currentRound.round) === maxRound
           "
           class="round-time text-center"
         >
@@ -282,6 +286,9 @@
                 class="base-color-w"
               >
                 Trading Mining
+                <router-link class="mining-link" to="/ICDex"
+                  >Go to trad</router-link
+                >
               </div>
               <span style="color: #5e6170; font-size: 12px">
                 Notes: Only 15% of the volume of vip-maker account will be
@@ -294,6 +301,9 @@
                 class="base-color-w"
               >
                 Liquidity Mining
+                <router-link class="mining-link" to="/ICDex/pools"
+                  >Go to add liquidity</router-link
+                >
               </div>
               <div style="font-size: 12px; color: #5e6170; text-align: right">
                 Data is updated every 30 minutes
@@ -333,6 +343,26 @@
                     </td>
                     <td>
                       <span>{{ item[1].toString(10) }}</span>
+                      <span
+                        v-if="
+                          Number(currentRound.round) === maxRound &&
+                          addressAcceleration[arrayToString(item[0])]
+                        "
+                      >
+                        <a-tooltip placement="top">
+                          <template slot="title"> NFT acceleration </template>
+                          <span class="base-red">
+                            <img
+                              style="width: 16px"
+                              src="@/assets/img/rocket.png"
+                              alt=""
+                            />{{
+                              addressAcceleration[arrayToString(item[0])]
+                                | filterRate
+                            }}
+                          </span>
+                        </a-tooltip>
+                      </span>
                     </td>
                     <td>
                       <span>
@@ -760,7 +790,11 @@
           ICL
         </div>
         <a-form-model-item>
-          <button @click="Claim" class="primary large-primary w100 mt20">
+          <button
+            :disabled="!available"
+            @click="Claim"
+            class="primary large-primary w100 mt20"
+          >
             Claim
           </button>
         </a-form-model-item>
@@ -891,6 +925,7 @@ export default class extends Vue {
   private showClaim = false;
   private miningRoundDataAccount: AccountData = null;
   private account = '';
+  private addressAcceleration: { [key: string]: string } = {};
   private showSearchAccount = false;
   private queryForm = {
     owner: '',
@@ -982,7 +1017,7 @@ export default class extends Vue {
   }
   private Claim(): void {
     (this.$refs.claimForm as any).validate(async (valid: any) => {
-      if (valid) {
+      if (valid && this.available) {
         await checkAuth();
         const loading = this.$loading({
           lock: true,
@@ -1126,6 +1161,7 @@ export default class extends Vue {
     this.miningRoundDataAccount = null;
   }
   private getPreRound(): void {
+    this.showDetails = false;
     this.type = 'Trading';
     this.pageLM = 1;
     this.totalLM = null;
@@ -1146,6 +1182,7 @@ export default class extends Vue {
     }
   }
   private getLastRound(): void {
+    this.showDetails = false;
     this.type = 'Trading';
     this.pageLM = 1;
     this.totalLM = null;
@@ -1254,12 +1291,41 @@ export default class extends Vue {
     console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataTM, 0, res.data);
+      this.getAccelerationByAccount(res.data);
       if (!this.totalTM) {
         this.totalTM = Number(res.total);
       }
     }
     console.log(this.totalTM);
     this.spinningTM = false;
+  }
+  private async getAccelerationByAccount(
+    res: Array<[AccountId, bigint]>
+  ): Promise<void> {
+    let promiseValue = [];
+    const max = 20;
+    for (let i = 0; i < res.length; i++) {
+      promiseValue.push(this.getCurrentAccelerationRate(res[i][0]));
+      if (promiseValue.length === max) {
+        await Promise.all(promiseValue);
+        promiseValue = [];
+      }
+      if (i === res.length - 1 && promiseValue.length) {
+        console.log(i);
+        await Promise.all(promiseValue);
+      }
+    }
+    console.log(this.addressAcceleration);
+  }
+  private async getCurrentAccelerationRate(
+    accountId: Array<number>
+  ): Promise<void> {
+    const res = await this.MiningService.getAccelerationRate(accountId);
+    this.$set(
+      this.addressAcceleration,
+      toHexString(new Uint8Array(accountId)),
+      res
+    );
   }
   private async getRoundSettlementsForTM(): Promise<void> {
     const res = await this.MiningService.getRoundSettlementsForTM(
@@ -1475,6 +1541,14 @@ table {
     &:last-child {
       padding-left: 40px;
     }
+  }
+}
+.mining-link {
+  margin-left: 10px;
+  font-size: 12px;
+  color: #51b7c3;
+  &:hover {
+    color: #1996c4 !important;
   }
 }
 </style>

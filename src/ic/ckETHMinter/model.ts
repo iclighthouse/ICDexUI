@@ -722,6 +722,7 @@ export type TxFinalizedStatus =
       PendingReimbursement: EthTransaction;
     };
 export interface EthTransaction {
+  effective_transaction_fee: Array<bigint>
   transaction_hash: string;
 }
 export interface MinterInfoDFI {

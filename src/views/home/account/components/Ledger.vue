@@ -5900,6 +5900,14 @@ export default class extends Mixins(BalanceMixin) {
             this.icNetworkTokens.icTokenInfo.type &&
             this.icNetworkTokens.icTokenInfo.type === 'dfinityERC20'
           ) {
+            console.log(
+              this.icNetworkTokens.networkToIcId === '3' ||
+                this.icNetworkTokens.networkId === '3'
+                ? CK_ETH_MINTER_CANISTER_ID_TEST
+                : CK_ETH_MINTER_CANISTER_ID
+            );
+            console.log(this.icNetworkTokens.tokenId);
+            console.log(amount);
             const withdraw = await this.ckETHMinterDfiService.withdraw_erc20(
               this.icNetworkTokens.networkToIcId === '3' ||
                 this.icNetworkTokens.networkId === '3'
@@ -7226,7 +7234,15 @@ export default class extends Mixins(BalanceMixin) {
         );
         const currentStatus = Object.keys(res)[0];
         if (status !== currentStatus) {
-          this.$set(retrieve, 'status', res);
+          this.$set(
+            retrieve,
+            'status',
+            JSON.parse(
+              JSON.stringify(res, (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+              )
+            )
+          );
           const currentInfo =
             JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
           currentInfo['ckETHRetrieve-' + id][tokenId] = this.ckETHRetrieve;

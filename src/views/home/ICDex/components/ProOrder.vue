@@ -2668,7 +2668,7 @@ export default class extends Vue {
     console.log(res.allowance);
     let fee = new BigNumber(this.stoConfig.poFee1.toString(10));
     if (this.type === 'update') {
-      fee = fee.div(5);
+      fee = fee.times(0.05);
     }
     fee = fee.plus(this.sysConfig.sysTokenFee.toString(10));
     console.log(fee.toString(10));
@@ -2686,13 +2686,8 @@ export default class extends Vue {
     let balance = new BigNumber(ICLBalance).minus(tokenFee);
     console.log(balance.toString(10));
     if (balance.lt(fee)) {
-      const ICLBalance0 = await getTokenBalance({ icrc1: null }, sysToken);
-      if (
-        new BigNumber(ICLBalance0)
-          .minus(getFee(this.tokens[sysToken]).toString(10))
-          .plus(balance)
-          .lt(fee)
-      ) {
+      // const ICLBalance0 = await getTokenBalance({ icrc1: null }, sysToken);
+      if (new BigNumber(balance).lt(fee)) {
         const createFee = new BigNumber(fee)
           .plus(tokenFee)
           .plus(getFee(this.tokens[sysToken]).toString(10))
@@ -2700,21 +2695,21 @@ export default class extends Vue {
           .toString(10);
         if (this.type === 'create') {
           this.$message.error(
-            `Insufficient ${this.tokens[sysToken].symbol}: Create a pro-order need ${createFee} ${this.tokens[sysToken].symbol}.`
+            `Error! Your Pro-Wallet ICL balance is not enough to pay for pro-trade fee (at least with ${createFee} ICL).`
           );
         } else {
           this.$message.error(
-            `Insufficient ${this.tokens[sysToken].symbol}: Update pro-order need ${createFee} ${this.tokens[sysToken].symbol}.`
+            `Error! Your Pro-Wallet ICL balance is not enough to pay for pro-trade fee (at least with ${createFee} ICL).`
           );
         }
         return false;
       } else {
-        const amount = new BigNumber(fee).minus(balance).toString(10);
-        console.log(amount);
-        await currentDrc20Token.icrc1Transfer(sysToken, BigInt(amount), {
-          owner: Principal.fromText(principal),
-          subaccount: [fromSubAccountId(ProSubaccountId)]
-        });
+        // const amount = new BigNumber(fee).minus(balance).toString(10);
+        // console.log(amount);
+        // await currentDrc20Token.icrc1Transfer(sysToken, BigInt(amount), {
+        //   owner: Principal.fromText(principal),
+        //   subaccount: [fromSubAccountId(ProSubaccountId)]
+        // });
       }
     }
     if (new BigNumber(res.allowance.toString(10)).lt(fee)) {

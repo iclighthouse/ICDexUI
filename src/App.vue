@@ -189,7 +189,6 @@ import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { Principal } from '@dfinity/principal';
 const commonModule = namespace('common');
-const Ic = (window as any).ic;
 const ethers = require('ethers');
 
 @Component({
@@ -337,10 +336,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const principal = localStorage.getItem('principal');
     if (priList[principal] === 'Plug') {
-      (window as any).ic.plug.disconnect();
+      if ((window as any).ic && (window as any).ic.plug) {
+        (window as any).ic.plug.disconnect();
+      }
     }
     if (priList[principal] === 'Infinity') {
-      (window as any).ic.infinityWallet.disconnect();
+      if ((window as any).ic && (window as any).ic.infinityWallet) {
+        (window as any).ic.infinityWallet.disconnect();
+      }
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
@@ -401,13 +404,18 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           const whitelist: string[] =
             localWhitelist[principal] || plugWhitelist;
           const connectPlug = new ConnectPlug();
-          if (!Ic.plug.agent && checkAuth && !this.isInit) {
+          if (
+            (window as any).ic &&
+            !(window as any).ic.plug.agent &&
+            checkAuth &&
+            !this.isInit
+          ) {
             this.isInit = true;
             const plugIc = (window as any).ic?.plug;
-            const plugPrincipalId = (await plugIc.getPrincipal()).toString();
+            const plugPrincipalId = await plugIc.getPrincipal();
             console.log(principal);
             console.log(plugPrincipalId);
-            if (plugPrincipalId && principal !== plugPrincipalId) {
+            if (plugPrincipalId && principal !== plugPrincipalId.toString()) {
               // eslint-disable-next-line @typescript-eslint/no-this-alias
               const _that = this;
               Vue.prototype.$info({
@@ -438,7 +446,9 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           const whitelist: string[] =
             localWhitelist[principal] || plugWhitelist;
           const connectInfinity = new ConnectInfinity();
-          const connected = await Ic.infinityWallet.isConnected();
+          const connected = await (
+            window as any
+          ).ic.infinityWallet.isConnected();
           if (!connected && checkAuth && !this.isInit) {
             this.isInit = true;
             await connectInfinity.connect(whitelist, false);

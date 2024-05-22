@@ -979,6 +979,10 @@
               </div>
             </div>
             <router-link
+              v-show="
+                !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdc') &&
+                !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdt')
+              "
               class="transfer-balance-right pc-show"
               :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
             >
@@ -3382,6 +3386,12 @@
                 </div>
               </div>
               <router-link
+                v-show="
+                  !icNetworkTokens.symbol
+                    .toLocaleLowerCase()
+                    .includes('usdc') &&
+                  !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdt')
+                "
                 class="transfer-balance-right pc-show"
                 :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
               >

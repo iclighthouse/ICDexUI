@@ -105,31 +105,44 @@
         </div>
         <div class="mining-points">
           <div v-show="getPrincipalId">
-            <span v-if="isActive && Number(accelerationRate) === 0">
+            <span v-if="isActive">
               <span
                 >Your<span v-if="type === 'pools'">&nbsp;liquidity&nbsp;</span
                 ><span v-else>&nbsp;trading&nbsp;</span>mining points are:
                 <span v-if="type === 'pools'"
                   >&nbsp;{{
                     accountData.points.lm.toString(10) | filterMiningPoints
-                  }}&nbsp;</span
+                  }}
+                  ({{
+                    getRewardsPercent(
+                      accountData.points.lm,
+                      currentRound.data[0].points.totalPointsForLM
+                    )
+                  }})&nbsp;</span
                 ><span v-else
-                  >&nbsp;{{ accountData.points.tm.toString(10) }}</span
+                  >&nbsp;{{ accountData.points.tm.toString(10) }} ({{
+                    getRewardsPercent(
+                      accountData.points.tm,
+                      currentRound.data[0].points.totalPointsForTM
+                    )
+                  }})</span
                 >,</span
               >
-              <span @click="bindNFT" class="main-color pointer"
-                >Binding NFT</span
-              >
-              can get 15% to 25% mining acceleration. (You don't have a NFT yet?
-              Go to
-              <a
-                href="https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai"
-                target="_blank"
-                rel="nofollow noreferrer noopener"
-                class="link"
-                >YUKU</a
-              >
-              and get one.)
+              <span v-if="Number(accelerationRate) === 0">
+                <span @click="bindNFT" class="main-color pointer"
+                  >Binding NFT</span
+                >
+                can get 15% to 25% mining acceleration. (You don't have a NFT
+                yet? Go to
+                <a
+                  href="https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                  class="link"
+                  >YUKU</a
+                >
+                and get one.)
+              </span>
             </span>
             <span v-else>
               <span
@@ -138,11 +151,26 @@
                 <span v-if="type === 'pools'">
                   &nbsp;{{
                     accountData.points.lm.toString(10) | filterMiningPoints
-                  }}</span
+                  }}
+                  ({{
+                    getRewards(
+                      accountData.points.lm,
+                      currentRound.data[0].points.totalPointsForLM,
+                      currentRound.data[0].config.supplyForLM
+                    ) | formatNum
+                  }}
+                  ICL)</span
                 ><span v-else
-                  >&nbsp;{{ accountData.points.tm.toString(10) }}</span
+                  >&nbsp;{{ accountData.points.tm.toString(10) }} ({{
+                    getRewards(
+                      accountData.points.tm,
+                      currentRound.data[0].points.totalPointsForTM,
+                      currentRound.data[0].config.supplyForTM
+                    ) | formatNum
+                  }}
+                  ICL)</span
                 ></span
-              ><span v-if="accelerationRate"
+              ><span v-if="Number(accelerationRate) !== 0"
                 >,&nbsp;+{{ accelerationRate | filterRate }} acceleration by
                 holding
                 <router-link class="main-color" to="/NFT">NFT</router-link>.
@@ -456,6 +484,23 @@ export default class extends Vue {
     this.NFTBalance().then(() => {
       (this.$refs.nftBalance as any).init();
     });
+  }
+  private getRewards(pointer: bigint, total: bigint, supply: bigint): string {
+    return new BigNumber(pointer.toString(10))
+      .times(supply.toString(10))
+      .div(total.toString(10))
+      .div(10 ** 8)
+      .decimalPlaces(2, 1)
+      .toString(10);
+  }
+  private getRewardsPercent(pointer: bigint, total: bigint): string {
+    return (
+      new BigNumber(pointer.toString(10))
+        .div(total.toString(10))
+        .times(100)
+        .decimalPlaces(4, 1)
+        .toString(10) + '%'
+    );
   }
 }
 </script>

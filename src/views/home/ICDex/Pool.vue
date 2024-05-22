@@ -1282,10 +1282,10 @@ export default class extends Vue {
             this.buttonName = `Insufficient ${this.tokens[token0Id].symbol} balance`;
             flag = true;
           } else if (
-            !this.showCapThreshold &&
+            !this.showCapThreshold(this.pool) &&
             new BigNumber(available).minus(utilized).lt(this.token1Amount)
           ) {
-            this.buttonName = `Max ${this.tokens[token1Id].symbol} amount is ${remaining}`;
+            this.buttonName = `Available: ${remaining} ${this.tokens[token1Id].symbol}`;
             flag = true;
           } else if (
             new BigNumber(this.tokensBalance[token1Id])

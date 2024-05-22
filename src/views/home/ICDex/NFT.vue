@@ -556,7 +556,7 @@ export default class extends Vue {
     const that = this;
     this.$confirm({
       content:
-        'Withdrawing this NFT may cause the function it is bound to to be disabled.',
+        'Withdrawing this NFT may disable the function it is linked to.',
       class: 'connect-plug',
       icon: 'connect-plug',
       centered: true,
@@ -606,7 +606,7 @@ export default class extends Vue {
     } else {
       this.$confirm({
         content:
-          'Withdrawing this NFT may cause the function it is bound to to be disabled.',
+          'Withdrawing this NFT may disable the function it is linked to.',
         class: 'connect-plug',
         icon: 'connect-plug',
         centered: true,

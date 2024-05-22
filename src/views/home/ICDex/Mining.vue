@@ -56,6 +56,13 @@
           v-if="currentRound && currentRound.data && currentRound.data.length"
           class="round-claim"
         >
+          <a
+            href="https://medium.com/@ICLighthouse/icdex-mining-guide-f242a49f2dc9"
+            rel="nofollow noreferrer noopener"
+            target="_blank"
+            style="font-size: 14px; margin-right: 10px; color: #1996c4"
+            >Guide</a
+          >
           <button
             class="primary"
             style="margin: 0 auto; width: 140px"
@@ -122,7 +129,15 @@
                     currentRound.data[0].config.supplyForTM
                   ) | formatNum
                 }}
-                ICL) </span
+                ICL)
+              </span>
+              <span v-else>
+                ({{
+                  getRewardsPercent(
+                    accountData.points.tm,
+                    currentRound.data[0].points.totalPointsForTM
+                  )
+                }}) </span
               >;
             </span>
             <span
@@ -142,6 +157,13 @@
                   ) | formatNum
                 }}
                 ICL) </span
+              ><span v-else>
+                ({{
+                  getRewardsPercent(
+                    accountData.points.lm,
+                    currentRound.data[0].points.totalPointsForLM
+                  )
+                }}) </span
               >.</span
             >
           </span>
@@ -287,7 +309,7 @@
               >
                 Trading Mining
                 <router-link class="mining-link" to="/ICDex"
-                  >Go to trad</router-link
+                  >Go to trade</router-link
                 >
               </div>
               <span style="color: #5e6170; font-size: 12px">
@@ -351,12 +373,12 @@
                       >
                         <a-tooltip placement="top">
                           <template slot="title"> NFT acceleration </template>
-                          <span class="base-red">
+                          <span class="link">
                             <img
                               style="width: 16px"
                               src="@/assets/img/rocket.png"
                               alt=""
-                            />{{
+                            />+{{
                               addressAcceleration[arrayToString(item[0])]
                                 | filterRate
                             }}
@@ -444,6 +466,10 @@
                         <template slot="title">
                           Liquidity mining points are time-weighted quote token
                           value, i.e. ∑(DurationSeconds * LiquidityToken1USD).
+                          <div>
+                            1M is approximately 10 USD (quote token) of
+                            liquidity held for 1 day.
+                          </div>
                         </template>
                         <a-icon class="pointer" type="question-circle" />
                       </a-tooltip>
@@ -464,9 +490,29 @@
                       ></copy-account>
                     </td>
                     <td>
-                      <span>{{
-                        item[1].toString(10) | filterMiningPoints
-                      }}</span>
+                      <span
+                        >{{ item[1].toString(10) | filterMiningPoints }}
+                      </span>
+                      <span
+                        v-if="
+                          Number(currentRound.round) === maxRound &&
+                          addressAcceleration[arrayToString(item[0])]
+                        "
+                      >
+                        <a-tooltip placement="top">
+                          <template slot="title"> NFT acceleration </template>
+                          <span class="link">
+                            <img
+                              style="width: 16px"
+                              src="@/assets/img/rocket.png"
+                              alt=""
+                            />+{{
+                              addressAcceleration[arrayToString(item[0])]
+                                | filterRate
+                            }}
+                          </span>
+                        </a-tooltip>
+                      </span>
                     </td>
                     <td>
                       <span>
@@ -1114,6 +1160,15 @@ export default class extends Vue {
       .decimalPlaces(2, 1)
       .toString(10);
   }
+  private getRewardsPercent(pointer: bigint, total: bigint): string {
+    return (
+      new BigNumber(pointer.toString(10))
+        .div(total.toString(10))
+        .times(100)
+        .decimalPlaces(4, 1)
+        .toString(10) + '%'
+    );
+  }
   private async getRound(round: Array<bigint> = []): Promise<void> {
     this.currentRound = await this.MiningService.getRound(round);
     if (!round.length) {
@@ -1280,6 +1335,7 @@ export default class extends Vue {
     console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataLM, 1, res.data);
+      this.getAccelerationByAccount(res.data);
     }
   }
   private async getRoundPointsForTM(): Promise<void> {
@@ -1305,7 +1361,9 @@ export default class extends Vue {
     let promiseValue = [];
     const max = 20;
     for (let i = 0; i < res.length; i++) {
-      promiseValue.push(this.getCurrentAccelerationRate(res[i][0]));
+      if (!this.addressAcceleration[toHexString(new Uint8Array(res[i][0]))]) {
+        promiseValue.push(this.getCurrentAccelerationRate(res[i][0]));
+      }
       if (promiseValue.length === max) {
         await Promise.all(promiseValue);
         promiseValue = [];
@@ -1407,6 +1465,9 @@ export default class extends Vue {
 .mining-title {
   position: relative;
   .round-claim {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
     right: 0;
     top: 10px;

@@ -4,7 +4,7 @@ import router from '@/router';
 import Vue from 'vue';
 import { isInfinity } from '@/ic/isInfinity';
 
-const Ic = (window as any).ic;
+
 export default class ConnectInfinity {
   public connect = async (
     newWhitelist?: Array<string>,
@@ -31,12 +31,12 @@ export default class ConnectInfinity {
       loading.setText('Initialized Infinity...');
     }
     try {
-      await Ic.infinityWallet.requestConnect({
+      await (window as any).ic.infinityWallet.requestConnect({
         host: host,
         whitelist: whitelist
       });
       if (process.env.NODE_ENV !== 'production') {
-        Ic.infinityWallet.agent.fetchRootKey().catch((err) => {
+        (window as any).ic.infinityWallet.agent.fetchRootKey().catch((err) => {
           console.warn(
             'Unable to fetch root key. Check to ensure that your local replica is running'
           );
@@ -56,7 +56,7 @@ export default class ConnectInfinity {
   public setLocalStorage = async (
     newWhitelist?: Array<string>
   ): Promise<void> => {
-    const principalId = await Ic.infinityWallet.getPrincipal();
+    const principalId = await (window as any).ic.infinityWallet.getPrincipal();
     if (newWhitelist && newWhitelist.length) {
       const whitelist =
         JSON.parse(localStorage.getItem('whitelistInfinity')) || {};
@@ -115,10 +115,10 @@ export const needConnectInfinity = async (
   canisterIds: Array<string>
 ): Promise<boolean> => {
   const whitelist = getWhitelist();
-  if (!isInfinity() || !Ic || (Ic && !Ic.infinityWallet)) {
+  if (!isInfinity() || !(window as any).ic || ((window as any).ic && !(window as any).ic.infinityWallet)) {
     return false;
   }
-  const connected = await Ic.infinityWallet.isConnected();
+  const connected = await (window as any).ic.infinityWallet.isConnected();
   return (
     !connected ||
     (connected && !canisterIds.every((item) => whitelist.includes(item)))
@@ -131,7 +131,7 @@ const getWhitelist = (): string[] => {
   return localWhitelist[principal] || plugWhitelist;
 };
 export const canRequest = async (canisterId: string): Promise<boolean> => {
-  // const connected = await Ic.plug.isConnected();
+  // const connected = await (window as any).ic.plug.isConnected();
   // return (
   //   (isPlug() && connected && getWhitelist().includes(canisterId)) || !isPlug()
   // );

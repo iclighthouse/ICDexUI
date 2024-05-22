@@ -3659,7 +3659,7 @@ export default class extends Vue {
       board = Object.keys(marketBoard[0])[0];
     }
     if (board === 'STAGE2') {
-      return 'TOP';
+      return 'Main';
     } else if (board === 'STAGE1') {
       return 'RISING';
     } else {

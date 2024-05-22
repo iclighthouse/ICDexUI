@@ -3,7 +3,6 @@ import store from '@/store';
 import { Identity } from '@dfinity/agent';
 import { plugWhitelist } from '@/ic/utils';
 import router from '@/router';
-const Ic = (window as any).ic;
 
 export interface CommonState {
   common: {
@@ -54,11 +53,12 @@ export const checkAuth = (
       const localWhitelist =
         JSON.parse(localStorage.getItem('whitelist')) || {};
       const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
-      if (!Ic.plug.agent || (canisterId && !whitelist.includes(canisterId))) {
+      console.log((window as any).ic);
+      if ((window as any).ic && !(window as any).ic.plug.agent || (canisterId && !whitelist.includes(canisterId))) {
         refreshingPlugOrInfinity(resolve);
       } else {
-        if (Ic.plug.agent) {
-          Ic.plug.agent.getPrincipal().then((currentPrincipal) => {
+        if ((window as any).ic && (window as any).ic.plug.agent) {
+          (window as any).ic.plug.agent.getPrincipal().then((currentPrincipal) => {
             if (currentPrincipal.toString() !== principal) {
               // router.go(0);
               resolve(false);
@@ -75,12 +75,12 @@ export const checkAuth = (
       const localWhitelist =
         JSON.parse(localStorage.getItem('whitelistInfinity')) || {};
       const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
-      Ic.infinityWallet.isConnected().then((connected) => {
+      (window as any).ic.infinityWallet.isConnected().then((connected) => {
         if (!connected || (canisterId && !whitelist.includes(canisterId))) {
           refreshingPlugOrInfinity(resolve);
         } else {
           if (connected) {
-            Ic.infinityWallet.getPrincipal().then((currentPrincipal) => {
+            (window as any).ic.infinityWallet.getPrincipal().then((currentPrincipal) => {
               if (currentPrincipal.toString() !== principal) {
                 router.go(0);
               } else {

@@ -69,7 +69,68 @@
           }"
         >
           <div class="de-swap-list-item">
-            <div class="de-swap-list-item-search base-font-title">
+            <div
+              ref="deSwapListmenu"
+              @mouseleave="marketMenuVisible = false"
+              class="de-swap-list-item-search base-font-title"
+            >
+              <a-icon
+                :theme="
+                  currentTradeMarketSort === 'Star' ? 'filled' : 'outlined'
+                "
+                type="star"
+                class="pointer"
+                :class="{
+                  'base-font-normal': currentTradeMarketSort === 'Star'
+                }"
+                style="margin-right: 10px; font-size: 13px"
+                @click.stop="changeStarMenu"
+              />
+              <a-tooltip
+                :getPopupContainer="() => $refs.deSwapListmenu"
+                :visible="marketMenuVisible"
+                :overlayStyle="{ padding: 0 }"
+                overlayClassName="market-menu-tooltip"
+                trigger="click"
+                @click.stop="(selectMarket = false), (marketMenuVisible = true)"
+              >
+                <template slot="title">
+                  <div @mouseleave="marketMenuVisible = false">
+                    <div
+                      class="user-setting base-bg-box user-setting-account"
+                      :class="{
+                        active:
+                          currentMarketMenu === item.value &&
+                          currentTradeMarketSort !== 'Star'
+                      }"
+                      v-for="(item, index) in marketMenu"
+                      :key="index"
+                      @click.stop="changeMarketMenu(item)"
+                    >
+                      <span>
+                        {{ item.name }}
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <a-tooltip placement="topRight" :visible="selectMarket">
+                  <template slot="title"> Select Market </template>
+                  <div
+                    @mouseenter="selectMarket = true"
+                    @mouseleave="selectMarket = false"
+                    @click.stop="marketMenuVisible = true"
+                    class="flex-center pointer base-font-title"
+                    :class="[
+                      currentTradeMarketSort === 'Star'
+                        ? 'base-font-title'
+                        : 'base-font-normal'
+                    ]"
+                  >
+                    <a-icon style="font-size: 12px" type="menu" />
+                    <span style="margin: 0 2px">{{ currentMarketMenu }}</span>
+                  </div>
+                </a-tooltip>
+              </a-tooltip>
               <a-tooltip placement="top">
                 <template slot="title">
                   <div
@@ -97,8 +158,8 @@
                       your own due diligence before trading.
                     </div>
                     <div style="margin-bottom: 5px">
-                      <span class="dots"></span> "Top" (STAGE2): Pairings in the
-                      "Top" category should not only
+                      <span class="dots"></span> "Main" (STAGE2): Pairings in
+                      the "Main" category should not only
                       <a
                         href="https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471"
                         target="_blank"
@@ -134,8 +195,7 @@
                     </div>
                   </div>
                 </template>
-                <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
-                  >About Ranks
+                <span style="font-size: 12px; flex-shrink: 0; margin: 0 10px">
                   <a-icon type="question-circle" />
                 </span>
               </a-tooltip>
@@ -151,9 +211,18 @@
                 <a-icon style="color: #adb3c4" slot="prefix" type="search" />
               </a-input>
             </div>
-            <ul class="trade-market-sort">
+            <ul
+              class="trade-market-sort"
+              v-show="currentTradeMarketSort !== 'Star'"
+            >
               <li
                 :class="[
+                  currentTradeMarketSort === 'Star' && item.value === 'Star'
+                    ? 'show-sort'
+                    : 'hide-sort',
+                  currentTradeMarketSort !== 'Star' && item.value !== 'Star'
+                    ? 'show-sort'
+                    : 'hide-sort',
                   item.value === currentTradeMarketSort ? 'active' : '',
                   item.value === 'Old' ? 'trade-market-old' : '',
                   item.value
@@ -163,14 +232,16 @@
                 @click="changeTradeMarketSort(item)"
               >
                 <a-icon
-                  v-show="item.value === 'Star'"
+                  v-show="
+                    currentTradeMarketSort === 'Star' && item.value === 'Star'
+                  "
                   type="star"
                   theme="filled"
                 />
                 <a-tooltip placement="top">
                   <template slot="title">
                     <span>
-                      <span v-show="item.value === 'Main'">Top</span>
+                      <span v-show="item.value === 'Main'">Main</span>
                       <span v-show="item.value === 'Second'">Rising</span>
                       <span v-show="item.value === 'Third'">Higher Risk</span>
                       <span v-show="item.value === 'Hot'">Hot</span>
@@ -179,7 +250,11 @@
                   </template>
                   <span
                     :class="{ 'trade-market-old-main': item.value === 'Main' }"
-                    v-show="item.value !== 'Star' && item.value !== 'Old'"
+                    v-show="
+                      currentTradeMarketSort !== 'Star' &&
+                      item.value !== 'Star' &&
+                      item.value !== 'Old'
+                    "
                   >
                     <span
                       v-show="item.value !== 'Hot'"
@@ -198,7 +273,7 @@
                 <span v-if="item.value === 'Old'">
                   {{ item.name }}
                 </span>
-                <span v-if="item.value === 'USDT'" class="base-red">TEST</span>
+                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
               </li>
             </ul>
             <table>
@@ -231,7 +306,7 @@
                   "
                 >
                   <td colspan="3" style="line-height: 1.5; padding-left: 10px">
-                    There are no pairs on the TOP Pairings. Check out the
+                    There are no pairs on the MAIN Pairings. Check out the
                     <span
                       @click="
                         changeTradeMarketSort({
@@ -334,7 +409,7 @@
                             <dt
                               :class="{
                                 'usdt-test-dt':
-                                  currentTradeMarketSort === 'USDT'
+                                  currentTradeMarketSort === 'USDC'
                               }"
                             >
                               <a-tooltip placement="right">
@@ -609,7 +684,7 @@
                               <dt
                                 :class="{
                                   'usdt-test-dt':
-                                    currentTradeMarketSort === 'USDT'
+                                    currentTradeMarketSort === 'USDC'
                                 }"
                               >
                                 <a-tooltip placement="right">
@@ -886,38 +961,16 @@
                 <a-tooltip placement="top">
                   <template slot="title">
                     <div class="base-font-title">
-                      <div>
-                        <span class="dots"></span> Pairings in the "Top"
-                        category should not only meet the criteria outlined in
-                        our listing article, they also have a combination of
-                        strong user engagement (high trade volumes), high
-                        liquidity, and typically a high level of trust within
-                        the IC ecosystem.
-                      </div>
-                      <div>
-                        <span class="dots"></span> Pairings which make it into
-                        the "Rising" category have reasonable and consistent
-                        levels of trading activity and liquidity and are growing
-                        in trust and popularity in the ecosystem.
-                      </div>
-                      <div>
-                        <span class="dots"></span> "High Risk" pairings are
-                        pairs where traders will likely want to proceed with
-                        higher levels of scrutiny and caution.
-                        <div>
-                          New pairings and/or pairings which typically have low
-                          liquidity and low trade volumes will be placed in this
-                          category.
-                        </div>
-                        <div>
-                          This ranking does not necessarily mean a project is
-                          bad or that you shouldn’t trade it at all, however
-                          it’s recommended you take extra precautions before
-                          trading. Over time, projects which eventually grow to
-                          meet the criteria for a higher pair score are able to
-                          move to a higher ranking.
-                        </div>
-                      </div>
+                      {{
+                        Object.keys(currentPair[1][0].marketBoard)[0] ===
+                        'STAGE2'
+                          ? 'Main'
+                          : Object.keys(currentPair[1][0].marketBoard)[0] ===
+                            'STAGE1'
+                          ? 'Rising'
+                          : 'Higher Risk'
+                      }}
+                      Pairings
                     </div>
                   </template>
                   <span
@@ -927,7 +980,7 @@
                   >
                     {{
                       Object.keys(currentPair[1][0].marketBoard)[0] === 'STAGE2'
-                        ? 'T'
+                        ? 'M'
                         : Object.keys(currentPair[1][0].marketBoard)[0] ===
                           'STAGE1'
                         ? 'R'
@@ -993,7 +1046,7 @@
                   >
                     {{
                       Object.keys(currentPair[1][0].marketBoard)[0] === 'STAGE2'
-                        ? 'T'
+                        ? 'M'
                         : Object.keys(currentPair[1][0].marketBoard)[0] ===
                           'STAGE1'
                         ? 'R'
@@ -1503,7 +1556,7 @@
                     <th>
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDT'
+                          'usdt-test': currentTradeMarketSort === 'USDC'
                         }"
                       >
                         Price<span
@@ -1519,7 +1572,7 @@
                     <th class="text-right">
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDT'
+                          'usdt-test': currentTradeMarketSort === 'USDC'
                         }"
                       >
                         Quantity
@@ -1723,7 +1776,7 @@
                       v-if="
                         currentPair[1][0].token1[1]
                           .toLocaleLowerCase()
-                          .includes('usdt') ||
+                          .includes('usdc') ||
                         currentPair[1][0].token1[1]
                           .toLocaleLowerCase()
                           .includes('test')
@@ -1757,7 +1810,7 @@
                     v-if="
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
-                        .includes('usdt') &&
+                        .includes('usdc') &&
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
                         .includes('test')
@@ -2427,7 +2480,7 @@
                       v-if="
                         currentPair[1][0].token0[1]
                           .toLocaleLowerCase()
-                          .includes('usdt') ||
+                          .includes('usdc') ||
                         currentPair[1][0].token0[1]
                           .toLocaleLowerCase()
                           .includes('test')
@@ -2462,7 +2515,7 @@
                     v-if="
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
-                        .includes('usdt') &&
+                        .includes('usdc') &&
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
                         .includes('test')
@@ -3537,7 +3590,7 @@
                 <th>
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDT'
+                      'usdt-test': currentTradeMarketSort === 'USDC'
                     }"
                     class="font-10"
                   >
@@ -3554,7 +3607,7 @@
                 <th class="text-right">
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDT'
+                      'usdt-test': currentTradeMarketSort === 'USDC'
                     }"
                     class="font-10"
                   >
@@ -10511,6 +10564,7 @@
             />
           </div>
           <div class="de-swap-list-item-search base-font-title">
+            <a-icon type="menu" />
             <a-tooltip placement="top">
               <template slot="title">
                 <div class="base-font-title">
@@ -10528,7 +10582,7 @@
                     three boards according to the Pair Score.
                   </div>
                   <div>
-                    <span class="dots"></span> TOP Pairings means that more
+                    <span class="dots"></span> MAIN Pairings means that more
                     traders are involved and need to keep track of the risks.
                   </div>
                   <div>
@@ -10541,8 +10595,7 @@
                   </div>
                 </div>
               </template>
-              <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
-                >About Ranks
+              <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px">
                 <a-icon type="question-circle" />
               </span>
             </a-tooltip>
@@ -10558,10 +10611,20 @@
               <a-icon style="color: #adb3c4" slot="prefix" type="search" />
             </a-input>
           </div>
-          <ul class="trade-market-sort">
+          <ul
+            class="trade-market-sort"
+            v-show="currentTradeMarketSort !== 'Star'"
+          >
             <li
               :class="[
+                currentTradeMarketSort === 'Star' && item.value === 'Star'
+                  ? 'show-sort'
+                  : 'hide-sort',
+                currentTradeMarketSort !== 'Star' && item.value !== 'Star'
+                  ? 'show-sort'
+                  : 'hide-sort',
                 item.value === currentTradeMarketSort ? 'active' : '',
+                item.value === 'Old' ? 'trade-market-old' : '',
                 item.value
               ]"
               v-for="item in tradeMarketSort"
@@ -10569,13 +10632,19 @@
               @click="changeTradeMarketSort(item)"
             >
               <a-icon
-                v-show="item.value === 'Star'"
+                v-show="
+                  currentTradeMarketSort === 'Star' && item.value === 'Star'
+                "
                 type="star"
                 theme="filled"
               />
-              <span v-show="item.value !== 'Star'">
+              <span
+                v-show="
+                  currentTradeMarketSort !== 'Star' && item.value !== 'Star'
+                "
+              >
                 {{ item.name }}
-                <span v-if="item.value === 'USDT'" class="base-red">TEST</span>
+                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
               </span>
             </li>
           </ul>
@@ -12926,10 +12995,10 @@ let timer = null;
         price = currentMarketPrice['icp'];
       } else if (
         token1 &&
-        (token1.toLocaleLowerCase().includes('usdt') ||
+        (token1.toLocaleLowerCase().includes('usdc') ||
           token1.toLocaleLowerCase().includes('test'))
       ) {
-        price = currentMarketPrice['usdt'];
+        price = currentMarketPrice['usdc'];
       } else if (token1 && token1.toLocaleLowerCase().includes('btc')) {
         price = currentMarketPrice['btc'];
       } else if (token1 && token1.toLocaleLowerCase().includes('eth')) {
@@ -13263,7 +13332,7 @@ export default class extends Vue {
     }
   ];
   private currentMarketPrice: { [key: string]: string } = {
-    usdt: '1'
+    usdc: '1'
   };
   private orderTypeEnum = OrderTypeEnum;
   private orderType: OrderTypeMenu | 'Pro' | 'Stop-limit' = OrderTypeEnum.LMT;
@@ -13502,16 +13571,38 @@ export default class extends Vue {
   private dragPair: DePairs = null;
   private prePairs: Array<string> = [];
   private star: Array<string> = [];
+  private allPairs = {
+    Markets: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
+    ICP: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
+    USDC: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
+    OTHER: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    }
+  };
   private tradePairs = {
-    // ICP: [],
-    // Old: [],
-    // USDT: []
     Star: [],
     Main: [],
     Second: [],
     Third: [],
     Hot: [],
-    Old: [],
     Search: []
   };
   private tradeMarketSort = [
@@ -13520,7 +13611,11 @@ export default class extends Vue {
       value: 'Star'
     },
     {
-      name: 'TOP',
+      name: 'HOT',
+      value: 'Hot'
+    },
+    {
+      name: 'MAIN',
       value: 'Main'
     },
     {
@@ -13530,10 +13625,6 @@ export default class extends Vue {
     {
       name: 'HIGH RISK',
       value: 'Third'
-    },
-    {
-      name: 'HOT',
-      value: 'Hot'
     }
     // ,
     // {
@@ -13541,6 +13632,27 @@ export default class extends Vue {
     //   value: 'Old'
     // }
   ];
+  private marketMenu = [
+    {
+      name: 'Markets',
+      value: 'Markets'
+    },
+    {
+      name: 'ICP',
+      value: 'ICP'
+    },
+    {
+      name: 'USDC',
+      value: 'USDC'
+    },
+    {
+      name: 'OTHER',
+      value: 'OTHER'
+    }
+  ];
+  private currentMarketMenu = 'Markets';
+  private selectMarket = false;
+  private marketMenuVisible = false;
   private swapConfig: SwapConfig = null;
   private currentTradeMarketSort: string = null;
   private pairSearch = '';
@@ -14017,7 +14129,7 @@ export default class extends Vue {
     };
   }
   private getBasePrice(tokenSymbol: string): string {
-    let price = this.currentMarketPrice['usdt'];
+    let price = this.currentMarketPrice['usdc'];
     if (
       tokenSymbol.toLocaleLowerCase().includes('icp') &&
       this.currentMarketPrice['icp']
@@ -18636,13 +18748,13 @@ export default class extends Vue {
       .toString(10);
     if (type === 'update') {
       sloFee = new BigNumber(this.stoConfig.sloFee1.toString(10))
-        .div(5)
+        .times(0.05)
         .div(10 ** this.tokens[sysToken].decimals)
         .toString(10);
     }
     let fee = new BigNumber(this.stoConfig.sloFee1.toString(10));
     if (type === 'update') {
-      fee = new BigNumber(this.stoConfig.sloFee1.toString(10)).div(5);
+      fee = new BigNumber(this.stoConfig.sloFee1.toString(10)).times(0.05);
     }
     console.log(fee.toString(10));
     const ICLBalance = await getTokenBalance({ icrc1: null }, sysToken);
@@ -19295,50 +19407,65 @@ export default class extends Vue {
     let promiseAllValue = [];
     const MAX_CONCURRENCY = 40;
     const pairs = [
-      { type: 'Main', value: this.tradePairs.Main },
-      { type: 'Second', value: this.tradePairs.Second },
-      { type: 'Third', value: this.tradePairs.Third }
-      // { type: 'Old', value: this.tradePairs.Old }
+      { type: 'Main', value: this.allPairs.Markets.Main },
+      { type: 'Second', value: this.allPairs.Markets.Second },
+      { type: 'Third', value: this.allPairs.Markets.Third }
     ];
     for (let i = 0; i < pairs.length; i++) {
       for (let j = 0; j < pairs[i].value.length; j++) {
         promiseAllValue.push(
-          this.getLiquidity(pairs[i].value[j][0].toString(), j, pairs[i].type)
+          this.getLiquidity(
+            pairs[i].value[j][0].toString(),
+            j,
+            pairs[i].type,
+            pairs[i].value
+          )
         );
         if (promiseAllValue.length === MAX_CONCURRENCY) {
           await Promise.all(promiseAllValue);
           promiseAllValue = [];
         }
-      }
-      if (i === pairs.length - 1 && promiseAllValue.length) {
-        await Promise.all(promiseAllValue);
-        promiseAllValue = [];
+        if (
+          i === pairs.length - 1 &&
+          j === pairs[i].value.length - 1 &&
+          promiseAllValue.length
+        ) {
+          await Promise.all(promiseAllValue);
+          promiseAllValue = [];
+        }
       }
     }
     const allPairs = []
-      .concat(this.tradePairs.Main)
-      .concat(this.tradePairs.Second)
-      .concat(this.tradePairs.Third);
-    this.tradePairs.Star.forEach((star) => {
-      const pairId = star[0].toString();
-      for (let i = 0; i < allPairs.length; i++) {
-        const pairId1 = allPairs[i][0].toString();
-        if (pairId === pairId1) {
-          star[2] = allPairs[i][2];
+      .concat(this.allPairs.Markets.Main)
+      .concat(this.allPairs.Markets.Second)
+      .concat(this.allPairs.Markets.Third);
+    allPairs.forEach((pair) => {
+      const pairId = pair[0].toString();
+      for (let i = 0; i < this.allPairs.Markets.Hot.length; i++) {
+        const hotId = this.allPairs.Markets.Hot[i][0].toString();
+        if (pairId === hotId) {
+          this.allPairs.Markets.Hot[i][2] = pair[2];
+          break;
+        }
+      }
+      for (let j = 0; j < this.tradePairs.Star.length; j++) {
+        const starId = this.tradePairs.Star[j][0].toString();
+        if (starId === pairId) {
+          this.tradePairs.Star[j][2] = pair[2];
           break;
         }
       }
     });
-    allPairs.forEach((pair) => {
-      const currentPair = [].concat(pair);
-      currentPair[3] = 'Hot';
-      this.tradePairs.Hot.push(currentPair);
-    });
-    this.sortHot();
+    console.log(this.currentMarketMenu);
+    if (this.currentMarketMenu !== 'FAVORITES') {
+      this.tradePairs.Hot = this.allPairs[this.currentMarketMenu].Hot;
+      this.sortHot();
+    }
     console.log(this.tradePairs);
   }
   private sortHot(): void {
     console.log('sortHot');
+    console.log(this.tradePairs);
     this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
       if (b[1][0].token1[1].toLocaleLowerCase().includes('test')) {
         return -1;
@@ -19347,23 +19474,40 @@ export default class extends Vue {
         return 1;
       }
       const basePrice = this.getBasePrice(a[1][0].token1[1]);
-      const vol24 = new BigNumber(a[2].vol24h.value1.toString(10))
-        .div(10 ** this.tokens[a[1][0].token1[0].toString()].decimals)
-        .times(basePrice);
-      const basePrice1 = this.getBasePrice(b[1][0].token1[1]);
-      const vol241 = new BigNumber(b[2].vol24h.value1.toString(10))
-        .div(10 ** this.tokens[b[1][0].token1[0].toString()].decimals)
-        .times(basePrice1);
-      return vol241.minus(vol24).toNumber();
+      if (
+        this.tokens[a[1][0].token1[0].toString()] &&
+        this.tokens[b[1][0].token1[0].toString()]
+      ) {
+        const vol24 = new BigNumber(a[2].vol24h.value1.toString(10))
+          .div(10 ** this.tokens[a[1][0].token1[0].toString()].decimals)
+          .times(basePrice);
+        const basePrice1 = this.getBasePrice(b[1][0].token1[1]);
+        const vol241 = new BigNumber(b[2].vol24h.value1.toString(10))
+          .div(10 ** this.tokens[b[1][0].token1[0].toString()].decimals)
+          .times(basePrice1);
+        return vol241.minus(vol24).toNumber();
+      }
+      return 1;
     });
-    const res = [];
-    this.tradePairs.Hot.forEach((pair) => {
-      res.push({
-        id: pair[1][0].canisterId.toString(),
-        pair: pair
+    if (this.currentTradeMarketSort === 'Hot') {
+      const res = [];
+      this.tradePairs.Hot.forEach((pair, index) => {
+        if (
+          this.currentPair &&
+          this.currentPair[3] === 'Hot' &&
+          this.currentPair[0].toString() === pair[1][0].canisterId.toString()
+        ) {
+          this.currentPairIndex = index;
+        }
+        res.push({
+          id: pair[1][0].canisterId.toString(),
+          pair: pair
+        });
       });
-    });
-    this.pairsScroll = res;
+      this.pairsScroll = res;
+    }
+    this.scrollTop();
+    console.log(this.currentPairIndex);
   }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
@@ -19391,6 +19535,7 @@ export default class extends Vue {
       this.sortHot();
       if (
         this.currentPair[3] === 'Hot' &&
+        this.tradePairs.Hot[this.currentPairIndex] &&
         prePair[1][0].canisterId.toString() !==
           this.tradePairs.Hot[this.currentPairIndex][1][0].canisterId.toString()
       ) {
@@ -19763,6 +19908,34 @@ export default class extends Vue {
     this.$router.push(`/ICDex/${token0}/${token1}`).then(() => {
       this.getDexPairs('icdex');
     });
+  }
+  private changeStarMenu(): void {
+    this.currentTradeMarketSort = 'Star';
+    this.tradePairs = Object.assign(
+      { Star: this.tradePairs.Star, Search: [] },
+      this.allPairs.Markets
+    );
+  }
+  private changeMarketMenu(val): void {
+    this.currentMarketMenu = val.value;
+    this.currentTradeMarketSort = 'Hot';
+    this.tradePairs = Object.assign(
+      { Star: this.tradePairs.Star, Search: [] },
+      this.allPairs[this.currentMarketMenu]
+    );
+    this.sortHot();
+    const res = [];
+    this.pairs = this.tradePairs[this.currentTradeMarketSort];
+    console.log(this.tradePairs);
+    this.tradePairs[this.currentTradeMarketSort].forEach((pair) => {
+      res.push({
+        id: pair[1][0].canisterId.toString(),
+        pair: pair
+      });
+    });
+    this.pairsScroll = res;
+    this.selectMarket = false;
+    this.marketMenuVisible = false;
   }
   private changeTradeMarketSort(val): void {
     this.currentTradeMarketSort = val.value;
@@ -20158,10 +20331,14 @@ export default class extends Vue {
     console.log(this.pairSearch);
     if (this.pairSearch) {
       const allPairs = []
-        .concat(this.tradePairs.Main)
-        .concat(this.tradePairs.Second)
-        .concat(this.tradePairs.Third);
+        .concat(this.allPairs.Markets.Main)
+        .concat(this.allPairs.Markets.Second)
+        .concat(this.allPairs.Markets.Third);
+      const label = localStorage.getItem('label');
       const sort = localStorage.getItem('sort');
+      if (!label && this.currentMarketMenu) {
+        localStorage.setItem('label', this.currentMarketMenu);
+      }
       if (!sort && this.currentTradeMarketSort) {
         localStorage.setItem('sort', this.currentTradeMarketSort);
       }
@@ -20192,9 +20369,17 @@ export default class extends Vue {
       this.pairsScroll = res;
       console.log(this.pairsScroll);
     } else {
-      if (localStorage.getItem('sort')) {
+      this.tradePairs.Search = [];
+      if (localStorage.getItem('label') && localStorage.getItem('sort')) {
+        this.currentMarketMenu = localStorage.getItem('label');
         this.currentTradeMarketSort = localStorage.getItem('sort');
+        console.log(this.currentMarketMenu, this.currentTradeMarketSort);
+        this.tradePairs = Object.assign(
+          { Star: this.tradePairs.Star, Search: [] },
+          this.allPairs[this.currentMarketMenu]
+        );
         this.pairs = this.tradePairs[this.currentTradeMarketSort];
+        localStorage.removeItem('label');
         localStorage.removeItem('sort');
       }
     }
@@ -20213,13 +20398,38 @@ export default class extends Vue {
         [],
         []
       );
+      this.allPairs = {
+        Markets: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
+        ICP: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
+        USDC: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
+        OTHER: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        }
+      };
       this.tradePairs = {
         Star: [],
         Main: [],
         Second: [],
         Third: [],
         Hot: [],
-        Old: [],
         Search: []
       };
       console.log(res);
@@ -20236,10 +20446,7 @@ export default class extends Vue {
             .minus(a[1].score3.toString(10))
             .toNumber()
         );
-        // this.tradePairs.Hot = res.data.sort((a: TrieListData1, b: TrieListData1) => {
-        //   const a24 = new BigNumber(a[1].pair.)
-        // 	}
-        // );
+        const star = [];
         pairs.forEach((pair) => {
           const swapPair = pair[1] as TrieListData1SwapPair;
           const score = BigInt(
@@ -20267,47 +20474,44 @@ export default class extends Vue {
           if (marketBoard) {
             stage = Object.keys(marketBoard)[0];
           }
+          const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
           if (stage === 'STAGE2') {
             currentPair[3] = 'Main';
-            this.tradePairs.Main.push(currentPair);
+            // this.tradePairs.Main.push(currentPair);
           } else if (stage === 'STAGE1') {
             currentPair[3] = 'Second';
-            this.tradePairs.Second.push(currentPair);
+            // this.tradePairs.Second.push(currentPair);
           } else if (stage === 'STAGE0') {
             currentPair[3] = 'Third';
-            this.tradePairs.Third.push(currentPair);
+            // this.tradePairs.Third.push(currentPair);
+          }
+          const pairStage = currentPair[3] as string;
+          this.allPairs.Markets[pairStage].push(currentPair);
+          const hotPair = [].concat(currentPair);
+          hotPair[3] = 'Hot';
+          this.allPairs.Markets.Hot.push(hotPair);
+          if (token1Symbol.includes('icp')) {
+            this.allPairs.ICP[pairStage].push(currentPair);
+            this.allPairs.ICP.Hot.push(hotPair);
+          } else if (token1Symbol.includes('usdc')) {
+            this.allPairs.USDC[pairStage].push(currentPair);
+            this.allPairs.USDC.Hot.push(hotPair);
+          } else {
+            this.allPairs.OTHER[pairStage].push(currentPair);
+            this.allPairs.OTHER.Hot.push(hotPair);
           }
           const starIndex = this.star.indexOf(currentPair[0].toString());
           if (starIndex > -1) {
             let pair = [].concat(currentPair);
             pair[3] = 'Star';
-            this.tradePairs.Star.splice(starIndex, 0, pair);
+            star.splice(starIndex, 0, pair);
           }
-          // const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
-          // if (token1Symbol === 'icp') {
-          //   this.tradePairs.ICP.push(currentPair);
-          // }
-          // if (currentPair[1][0].token0[1].toLocaleLowerCase().includes('itest')) {
-          //   currentPair[1][0].token0[2] = { icrc2: null };
-          // }
-          // todo usdt test
-          // if (
-          //   token1Symbol.toLocaleLowerCase().includes('usdt') ||
-          //   token1Symbol.toLocaleLowerCase().includes('test')
-          // ) {
-          //   this.tradePairs.USDT.push(currentPair);
-          // }
         });
-        // this.tradePairs.Star.sort((a, b) => {
-        //   return (
-        //     this.star.indexOf(b[0].toString()) -
-        //     this.star.indexOf(a[0].toString())
-        //   );
-        // });
         let token0 = this.$route.params.token0;
         let token1 = this.$route.params.token1;
         let currentStage: string;
         let currentPairId = '';
+        let token1Symbol = '';
         if (token0 && token1) {
           console.log(token0, token1);
           for (let i = 0; i < pairs.length; i++) {
@@ -20316,6 +20520,7 @@ export default class extends Vue {
               if (currentPair.pair.canisterId.toString() === token1) {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
+                token1Symbol = currentPair.pair.token1[1].toLocaleLowerCase();
                 break;
               }
             } else {
@@ -20329,6 +20534,7 @@ export default class extends Vue {
               ) {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
+                token1Symbol = currentPair.pair.token1[1].toLocaleLowerCase();
                 break;
               }
             }
@@ -20360,55 +20566,62 @@ export default class extends Vue {
                   ]);
                   currentPairId = token1;
                   currentStage = 'STAGE0';
+                  token1Symbol = res.pairInfo.token1[1].toLocaleLowerCase();
                 }
               } catch (e) {
                 console.log(e);
               }
             }
           }
+          this.tradePairs = Object.assign(
+            { Star: star, Search: [] },
+            this.allPairs.Markets
+          );
+          // if (token1Symbol) {
+          //   if (token1Symbol.includes('icp')) {
+          //     this.currentMarketMenu = 'ICP';
+          //     this.tradePairs = Object.assign(
+          //       { Star: star, Search: [] },
+          //       this.allPairs.ICP
+          //     );
+          //   } else if (token1Symbol.includes('usdc')) {
+          //     this.currentMarketMenu = 'USDC';
+          //     this.tradePairs = Object.assign(
+          //       { Star: star, Search: [] },
+          //       this.allPairs.USDC
+          //     );
+          //   } else {
+          //     this.currentMarketMenu = 'ALL';
+          //     this.tradePairs = Object.assign(
+          //       { Star: star, Search: [] },
+          //       this.allPairs.ALL
+          //     );
+          //   }
+          // } else {
+          //   this.tradePairs = Object.assign(
+          //     { Star: star, Search: [] },
+          //     this.allPairs[this.currentMarketMenu]
+          //   );
+          // }
           console.log(currentPairId, currentStage, this.star);
           if (currentPairId && this.star.includes(currentPairId)) {
+            this.currentMarketMenu = 'Markets';
             this.currentTradeMarketSort = 'Star';
             this.pairs = this.tradePairs.Star;
-          } else if (currentStage === 'STAGE2') {
-            this.currentTradeMarketSort = 'Main';
-            this.pairs = this.tradePairs.Main;
-          } else if (currentStage === 'STAGE1') {
-            this.currentTradeMarketSort = 'Second';
-            this.pairs = this.tradePairs.Second;
-          } else if (currentStage === 'STAGE0') {
-            this.currentTradeMarketSort = 'Third';
-            this.pairs = this.tradePairs.Third;
+          } else {
+            this.currentMarketMenu = 'Markets';
+            this.currentTradeMarketSort = 'Hot';
+            this.pairs = this.tradePairs.Hot;
           }
-          // if (
-          //   token1.toLocaleLowerCase() !== 'icp' &&
-          //   !token1.toLocaleLowerCase().includes('usdt') &&
-          //   !token1.toLocaleLowerCase().includes('test')
-          // ) {
-          //   for (let i = 0; i < pairs.length; i++) {
-          //     const currentPair = pairs[i][1] as TrieListData1SwapPair;
-          //     if (
-          //       (currentPair.pair.token0[1] === token0 ||
-          //         currentPair.pair.token0[0].toString() === token0) &&
-          //       (currentPair.pair.token1[1] === token1 ||
-          //         currentPair.pair.token1[0].toString() === token1)
-          //     ) {
-          //       token0 = currentPair.pair.token0[1];
-          //       token1 = currentPair.pair.token1[1];
-          //       break;
-          //     }
-          //   }
-          // }
-          // if (token1.toLocaleLowerCase() === 'icp') {
-          //   this.currentTradeMarketSort = 'ICP';
-          //   this.pairs = this.tradePairs.ICP;
-          // }
-          // if (
-          //   token1.toLocaleLowerCase().includes('usdt') ||
-          //   token1.toLocaleLowerCase().includes('test')
-          // ) {
-          //   this.currentTradeMarketSort = 'USDT';
-          //   this.pairs = this.tradePairs.USDT;
+          // else if (currentStage === 'STAGE2') {
+          //   this.currentTradeMarketSort = 'Main';
+          //   this.pairs = this.tradePairs.Main;
+          // } else if (currentStage === 'STAGE1') {
+          //   this.currentTradeMarketSort = 'Second';
+          //   this.pairs = this.tradePairs.Second;
+          // } else if (currentStage === 'STAGE0') {
+          //   this.currentTradeMarketSort = 'Third';
+          //   this.pairs = this.tradePairs.Third;
           // }
           for (let i = 0; i < this.pairs.length; i++) {
             if (token0 === 'pair') {
@@ -20432,19 +20645,21 @@ export default class extends Vue {
               }
             }
           }
-          console.log(this.currentPairIndex);
-          console.log(this.currentPair);
           if (!this.currentPair && this.$route.name === 'ICDex') {
-            if (this.tradePairs.Main.length) {
-              this.currentTradeMarketSort = 'Main';
-              this.pairs = this.tradePairs.Main;
-            } else if (this.tradePairs.Second.length) {
-              this.currentTradeMarketSort = 'Second';
-              this.pairs = this.tradePairs.Second;
-            } else if (this.tradePairs.Third.length) {
-              this.currentTradeMarketSort = 'Third';
-              this.pairs = this.tradePairs.Third;
+            if (this.tradePairs.Hot.length) {
+              this.currentTradeMarketSort = 'Hot';
+              this.pairs = this.tradePairs.Hot;
             }
+            // if (this.tradePairs.Main.length) {
+            //   this.currentTradeMarketSort = 'Main';
+            //   this.pairs = this.tradePairs.Main;
+            // } else if (this.tradePairs.Second.length) {
+            //   this.currentTradeMarketSort = 'Second';
+            //   this.pairs = this.tradePairs.Second;
+            // } else if (this.tradePairs.Third.length) {
+            //   this.currentTradeMarketSort = 'Third';
+            //   this.pairs = this.tradePairs.Third;
+            // }
             this.currentPair = this.pairs[this.currentPairIndex];
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
@@ -20475,16 +20690,25 @@ export default class extends Vue {
           }
         } else {
           if (this.$route.name === 'ICDex') {
-            if (this.tradePairs.Main.length) {
-              this.currentTradeMarketSort = 'Main';
-              this.pairs = this.tradePairs.Main;
-            } else if (this.tradePairs.Second.length) {
-              this.currentTradeMarketSort = 'Second';
-              this.pairs = this.tradePairs.Second;
-            } else if (this.tradePairs.Third.length) {
-              this.currentTradeMarketSort = 'Third';
-              this.pairs = this.tradePairs.Third;
-            }
+            this.currentMarketMenu = 'Markets';
+            this.tradePairs = Object.assign(
+              { Star: star, Search: [] },
+              this.allPairs.Markets
+            );
+            this.currentTradeMarketSort = 'Hot';
+            this.pairs = this.tradePairs.Hot;
+            // if (this.tradePairs.Main.length) {
+            //   this.currentTradeMarketSort = 'Main';
+            //   this.pairs = this.tradePairs.Main;
+            // } else if (this.tradePairs.Second.length) {
+            //   this.currentTradeMarketSort = 'Second';
+            //   this.pairs = this.tradePairs.Second;
+            // } else if (this.tradePairs.Third.length) {
+            //   this.currentTradeMarketSort = 'Third';
+            //   this.pairs = this.tradePairs.Third;
+            // }
+            console.log(this.currentMarketMenu);
+            console.log(this.pairs);
             this.currentPair = this.pairs[this.currentPairIndex];
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
@@ -20515,28 +20739,6 @@ export default class extends Vue {
           }
         }
       }
-      // const res1 = await this.iCSwapRouterService.getPairs2([dexName], [], []);
-      // if (res1.data && res1.data.length) {
-      //   const pairs = res1.data.sort(
-      //     (a, b) => Number(b[1].score) - Number(a[1].score)
-      //   );
-      //   pairs.forEach((pair) => {
-      //     const currentPair = [
-      //       pair[0],
-      //       [pair[1].pair, pair[1].score],
-      //       null,
-      //       'Old'
-      //     ];
-      //     this.prePairs.push(pair[0].toString());
-      //     const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
-      //     if (token1Symbol === 'icp') {
-      //       this.tradePairs.Old.push(currentPair);
-      //     }
-      //   });
-      // }
-      // if (!this.pairs.length) {
-      //   this.pairs = this.tradePairs.Old;
-      // }
       const type = this.$route.query.type;
       if (type && type === 'referrer') {
         this.tradeCompetitionsMenu = TradeCompetitionsEnum.Referral;
@@ -20560,13 +20762,7 @@ export default class extends Vue {
           console.error(e);
         }
         this.resetChart();
-        console.log(this.$refs.deSwapListItemPair);
-        const height = (this.$refs.deSwapListItemPair as any).clientHeight;
-        let top = (this.currentPairIndex + 1) * 50 - height;
-        if (top < 0) {
-          top = 0;
-        }
-        (this.$refs.deSwapListItemPair as any).scrollTop = top;
+        this.scrollTop();
       });
       this.getTokens();
       console.log(this.prePairs);
@@ -20576,6 +20772,18 @@ export default class extends Vue {
       console.log(e);
     }
     // this.loading.close();
+  }
+  private scrollTop(): void {
+    this.$nextTick(() => {
+      if (this.$refs.deSwapListItemPair) {
+        const height = (this.$refs.deSwapListItemPair as any).clientHeight;
+        let top = (this.currentPairIndex + 1) * 50 - height;
+        if (top < 0) {
+          top = 0;
+        }
+        (this.$refs.deSwapListItemPair as any).scrollTop = top;
+      }
+    });
   }
   private async IDO_qualification(currentPair: DePairs): Promise<void> {
     if (this.getPrincipalId) {
@@ -20848,7 +21056,8 @@ export default class extends Vue {
   private async getLiquidity(
     swapId: string,
     index: number,
-    currentTradeMarketSort: string
+    currentTradeMarketSort: string,
+    pairs?: Array<DePairs>
   ): Promise<void> {
     // const liquidity = await currentICDexService.liquidity(swapId);
     try {
@@ -20856,7 +21065,9 @@ export default class extends Vue {
       if (!res) {
         return;
       }
-      let pairs = this.tradePairs[currentTradeMarketSort];
+      if (!pairs) {
+        pairs = this.tradePairs[currentTradeMarketSort];
+      }
       if (this.pairSearch) {
         pairs = this.pairs;
       }
@@ -21823,6 +22034,26 @@ export default class extends Vue {
   background: #2a303a;
   border-radius: 20px;
 }
+.user-setting {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  padding: 10px 20px;
+  border-bottom: 1px solid #383e4e;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+  &.active {
+    color: #51b7c3;
+  }
+  &:last-child {
+    border: none;
+  }
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
 .set-pool {
   display: flex;
   align-items: center;
@@ -21910,7 +22141,7 @@ export default class extends Vue {
 }
 .preparing-table {
   max-height: 336px;
-  overflow-y: overlay;
+  overflow-y: scroll;
   transform: translateZ(0);
   -webkit-overflow-scrolling: touch;
   table {
@@ -22313,10 +22544,17 @@ export default class extends Vue {
     border: 1px solid #242d38;
     border-left: none;
     transition: all 0.2s;
+    &.hide-sort {
+      display: none;
+      &.show-sort {
+        display: block;
+      }
+    }
     &:last-child {
       padding: 0 8px;
     }
-    &:first-child {
+    &:first-child,
+    &:nth-child(2) {
       border-left: 1px solid #242d38;
       &.active {
         z-index: 1;
@@ -22393,7 +22631,7 @@ export default class extends Vue {
       }*/
       &.de-swap-list-item-pair-trade {
         height: 180px;
-        overflow-y: overlay;
+        overflow-y: scroll;
         transform: translateZ(0);
         -webkit-overflow-scrolling: touch;
         tr {
@@ -22402,7 +22640,7 @@ export default class extends Vue {
       }
     }
     tbody.de-swap-list-item-pair {
-      overflow-y: overlay;
+      overflow-y: scroll;
       transform: translateZ(0);
       -webkit-overflow-scrolling: touch;
       &.de-swap-list-item-pair-market {
@@ -23212,7 +23450,7 @@ div.kInterval-chart-h5 {
     tbody {
       display: block;
       height: 260px;
-      overflow-y: overlay;
+      overflow-y: scroll;
       transform: translateZ(0);
       -webkit-overflow-scrolling: touch;
     }
@@ -23482,7 +23720,7 @@ div.kInterval-chart-h5 {
       height: calc(100% - 40px);
       width: 100%;
       overflow-x: hidden;
-      overflow-y: overlay;
+      overflow-y: scroll;
       transform: translateZ(0);
       -webkit-overflow-scrolling: touch;
       tr {
@@ -23638,6 +23876,9 @@ div.kInterval-chart-h5 {
 }
 </style>
 <style lang="scss">
+.market-menu-tooltip .ant-tooltip-inner {
+  padding: 0;
+}
 .adopted-countdown {
   line-height: 1;
   .ant-statistic-content {

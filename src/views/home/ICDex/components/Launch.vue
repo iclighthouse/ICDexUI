@@ -1,12 +1,11 @@
 <template>
   <div>
     <span
-      v-if="getPrincipalId"
-      @click="showLaunchInfo = true"
+      @click="showLaunch"
       class="base-font-title pointer pc-show"
       style="font-size: 15px"
     >
-      +Launch
+      Token Listing
     </span>
     <a-dropdown
       placement="bottomCenter"
@@ -32,82 +31,12 @@
         </a-menu-item>
       </a-menu>
     </a-dropdown>
-    <a-modal
-      v-model="showLaunchInfo"
-      centered
-      title="How to list a token on ICDex"
-      width="800px"
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-      class="transfer-modal"
-    >
-      <div>
-        <p style="font-size: 16px; color: #fff">
-          Listing Your Token on ICDex: A Step-by-Step Process
-        </p>
-        <div class="base-font-light" v-if="sysConfig">
-          ICDex allows for permissionless listing, enabling anyone to list a
-          token, provided it meets specified principles and technical
-          requirements.
-          <div class="mt20" style="font-size: 16px; color: #fff">
-            1. Principle Requirements
-          </div>
-          <div class="listing-main">
-            <div>
-              <span class="dots"></span>Development Completion: The core
-              functionality of the project must be fully developed and the code
-              open-sourced.
-            </div>
-            <div>
-              <span class="dots"></span>Whitepaper Disclosure: The project’s
-              whitepaper, detailing the economic model of the token, must be
-              publicly accessible.
-            </div>
-            <div>
-              <span class="dots"></span>Controller Assignment: The token’s
-              control must be vested in a DAO contract, or its controllers
-              removed, to avert malicious modifications or issuance.
-            </div>
-            <div>
-              <span class="dots"></span>Standard Compliance: Tokens must conform
-              to either the ICRC1 or DRC20 standards.
-            </div>
-            <div>
-              <span class="dots"></span>Transaction Transparency: Adherence to
-              the DRC202 standard or implementation of the get_transactions
-              query method (according to the SNS ICRC1 specification) is
-              required for transparent transaction records.
-            </div>
-            <div>
-              <span class="dots"></span>Additional Conditions for DeFi Projects:
-              Require the submission of an audit report conducted by a reputable
-              security firm. Transition the DApp’s controller to a DAO or SNS.
-            </div>
-          </div>
-          <div class="mt20" style="font-size: 16px; color: #fff">
-            2. Listing Procedure on ICDex
-          </div>
-          <div>
-            Allocate
-            {{ sysConfig.creatingPairFee | bigintToFloat(8, 8) | formatNum }}
-            ICL (adjustable) to establish a trading pair.
-          </div>
-          <div style="margin-top: 10px" class="base-warning">
-            Non-compliance may trigger delisting proposals by the ICLighthouse
-            community.
-          </div>
-        </div>
-        <div class="flex-center mt20">
-          <button @click="showLaunchInfo = false" class="margin-left-auto">
-            Cancel
-          </button>
-          <button @click="showLaunch" class="primary" style="margin-left: 10px">
-            Yes, I'm ready
-          </button>
-        </div>
-      </div>
-    </a-modal>
+    <span
+      class="pointer"
+      style="margin: 0 8px; color: #adb3c4 !important"
+      @click="showGuide"
+      ><a-icon type="question-circle"
+    /></span>
     <a-modal
       v-model="showPromote"
       centered
@@ -435,7 +364,6 @@ export default class extends Vue {
   }
   private currentLaunches: Array<string> = [];
   private showPromote = false;
-  private showLaunchInfo = false;
   private promoteInfo = '';
   private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   created(): void {
@@ -447,6 +375,31 @@ export default class extends Vue {
     this.getSNSTokens();
     this.getCurrentLaunches();
   }
+  private showGuide(): void {
+    (this.$info as any)({
+      title: 'Listing Your Token on ICDex: A Step-by-Step Process',
+      content: (h) => {
+        return h(
+          'a',
+          {
+            attrs: {
+              href: 'https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471',
+              target: '_blank'
+            },
+            style: {
+              color: '#1996c4'
+            }
+          },
+          'https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471'
+        );
+      },
+      class:
+        'connect-plug register-mining-confirm register-mining-confirm-hide-button',
+      icon: 'connect-plug',
+      centered: true,
+      closable: true
+    });
+  }
   private getCurrentLaunches(): void {
     if (this.getPrincipalId) {
       const launches = JSON.parse(localStorage.getItem('launches')) || {};
@@ -455,84 +408,125 @@ export default class extends Vue {
         launches[this.getPrincipalId].length
       ) {
         this.currentLaunches = launches[this.getPrincipalId];
-        this.promoteInfo = `### 1 Introduce
+        this.promoteInfo = `
 
-**Pair Score** is an automatic evaluation mechanism of ICDex for trading pairs, which is based on the comprehensive evaluation of the number of sponsors, liquidity, volume, etc. A higher Pair Score means a higher position in the list of pairs, which means more attention from traders. The list of trading pairs is divided into three boards according to the Pair Score.
- - **MAIN** (STAGE2) Board means that more traders are involved.
- - **SECOND** (STAGE1) Board means that some traders are involved.
- - **THIRD** (STAGE0) Board means that fewer traders are involved and there are many unknown risks.
+### **1. Introduction to Pair Score**
 
-**Upgrade rules**
+Pair Score serves as ICDex’s proprietary evaluation mechanism for trading pairs, assessing factors such as sponsorship, liquidity, and trading volume. A superior Pair
 
-- A new trading pair defaults to THIRD (STAGE0).
-- Upgrade from THIRD to SECOND: pair_score >= 20.
-- Upgrade from SECOND to MAIN: pair_score >= 60, for at least one month.
+Score elevates a pair’s listing position, enhancing visibility among traders. Trading pairs are stratified into three categories based on their Pair Score:
 
-**Degrade rules**
+**TOP** (STAGE2): Signifies extensive trader engagement.
 
-- Degrade from MAIN to SECOND: pair_score  50, for at least three months.
-- Degrade from SECOND to THIRD: pair_score  15, for at least three months.
+**RISING** (STAGE1): Indicates moderate trader participation.
 
-**Sponsor rules**
+**HIGH RISK** (STAGE0): Reflects limited engagement and heightened risks.
 
-ICLighthouse **URANUS** NFT holders (listing referrers) are eligible to sponsor pairs. Sponsoring a trading pair increases its "Pair Score", which in turn increases its ranking and board position in the list of pairs. The rules are.
-- (Not verified) ListingReferrer Sponsor: +10 per Sponsor.
-- Verified ListingReferrer Sponsor: +15 per Sponsor.
-- Sponsored (Sponsors >= 5): +10.
-- The highest total sponsor score is 70.
+**Upgrade Criteria**
 
+Trading pairs on ICDex are systematically classified based on their Pair Score, which influences their visibility and accessibility to traders. Initially, all new trading pairs are assigned to **HIGH RISK (STAGE0)**, indicating the starting level.Progression through the levels is determined as follows:
 
-### 2 How to increase Pair Score
+**To RISING (STAGE1)**: A trading pair must achieve a Pair Score of 20 or higher.
 
-#### **2.1 Increase attention and trading volume** (Community operations)
-- You can promote the project in the community through the trading pair link and set up incentives for the promotion. You can visit the pair's "Referral" page, where any user who has traded on the pair can get their own referral link, and the pair will keep track of the number of new users and volume of trades acquired by the promoter. For technical support please contact the ICLighthouse team.
-- You can organize trading mining events with ICDex and provide users with token rewards based on the volume of trading during a specified period of time. For technical support please contact the ICLighthouse team.
-- You can organize trading competitions in conjunction with ICDex and offer token rewards based on the amount of trading profits. For technical support please contact the ICLighthouse team.
-- You can use strategic orders (e.g. Iceberg, Grid, TWAP, VWAP) to increase volume.
-- You can use ICDex-Trader (https://github.com/iclighthouse/ICDex-Trader) and expand it into a trading robot.
+**To TOP (STAGE2)**: A trading pair needs to maintain a Pair Score of 60 or above for a minimum duration of one month.
 
-#### **2.2 Enhance order book liquidity** (Enhance TVL)
+**Downgrade Criteria**
 
-ICDex trading pairs support Orderbook Automated Market Making Pools (OAMM Pools) and their operation is as simple as an AMM pool.
+To maintain the integrity and competitiveness of the trading environment, trading pairs are subject to downgrade if their performance declines:
 
-1) You can visit https://iclight.io/ICDex/pools to create an OAMM pool for a trading pair and get its canister-id. This requires a fee of 500 ICL (the fee is 50 ICL for NEPTUNE, URANUS or SATURN NFT holders).
-2) You can then invite NEPTUNE NFT holders to grant a vip-maker status to this OAMM pool, or apply for vip-maker status via an SNS proposal. This is optional, but it is strongly urged that you obtain vip-maker status for the OAMM pool. Without vip-maker status, the OAMM pool will have to pay for strategy orders, so you need to pre-fund the OAMM pool with some ICLs. Additionally, the account with vip-maker status will get a rebate on the trading fees for all maker orders, which will be one of the sources of revenue for the OAMM pool.
-    **Note**:
-    The ICLighthouse team will only support the first proposal submitted by a token's development team to apply for vip-maker status for an OAMM pool.
-    To apply for a vip-maker proposal, visit https://iclight.io/icsns/proposals, select "ICLighthouse DAO", click "Make Proposal", fill in the proposal content and select Action #ExecuteGenericNervousSystemFunction, fill in the function_id with 1007 for the method "pair_setVipMaker(app: Principal, account: Address, rate: Nat)", the \`rate\` can be set up to 90, fill in payload with the binary hex as parameter, tool https://ic.house/tools. For technical support please contact the ICLighthouse team.
-3) Finally you need to add the first liquidity to activate this OAMM pool. Note that the first liquidity is only allowed to be added by the creator.
-4) Transfers funds from SNS Treasury into ICDex-Trader (https://github.com/iclighthouse/ICDex-Trader) in a decentralized manner to provide liquidity. This is a very important initiative. Doc: https://github.com/iclighthouse/ICDex-Trader/blob/main/docs/Guide_for_SNS_treasury.md
+**From TOP to RISING:** If a pair’s score falls below 50 and remains there for over three months.
 
-#### **2.3 To obtain the support of URANUS NFT holders (listing referrers)**
+**From RISING to HIGH RISK:** Should a pair’s score drop below 15 and stay there for more than three months.
 
-**URANUS** NFT holders, listing referrers, have sponsor status. Each listing referrer can propose sponsorship for up to 12 pairs in a year, increasing the pair's **Pair Score**.
-- (Not verified) ListingReferrer Sponsor: +10 per Sponsor.
-- Verified ListingReferrer Sponsor: +15 per Sponsor.
-- Sponsored (Sponsors >= 5): +10.
-- The highest total sponsor score is 70.
+**Sponsorship Rules**
 
-#### **2.4 Make proposal to add metadatas of token to enhance credibility**
+ICLighthouse **URANUS NFT holders**, acting as listing referrers, play a pivotal role in influencing the Pair Score through sponsorships. The impact of sponsorship varies based on the status of the sponsor and the number of sponsors involved:
 
-Contact the ICLighthouse team with the following information and request an update if the information changes, otherwise a risk warning may be displayed on the trading pair page.
+**Unverified Listing Referrer Sponsor**: Each sponsorship adds +10 to the Pair Score.
 
-e.g.
-\`\`\`
-- TokenControllers: "7hdtw-...-cai, xxxx...-cai"  // separated by ", "
-- TokenIsDecentralized: True  // Requires the token to be controlled by the DAO, or to have no controller.
-- TokenModuleHash: 1d20aafd24d656e9ed9389325b4a113c5dda9bc6a06faf13934f30beb9d2d87e
-- TokenMintable: False
-- TokenMaxSupply: 1000000000000000  // total supply + possible future issuance
-- Catalog: games  // Available values: blockchain, exchanges, finance, businesses, gambling, games, storage, wallet, governance, property, identity, oracles, media, social, security, insurance, energy, health, ai_vr_ar, memes, other
-- Website: https://xxxxxx.xx
-- Social: https://twitter.com/xxxxxxx
-- Discord: https://xxxxxxxxxxx.xxx
-- Github: https://github.com/xxxxxxxx
-\`\`\`
+**Verified Listing Referrer Sponsor**: Each verified sponsorship contributes +15 to the Pair Score.
 
-**ICLighthouse NFT**: https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai
+**Group Sponsorship Bonus**: If a trading pair is supported by 5 or more sponsors, it receives an additional +10 to its Pair Score.
 
-**Discord listing-on-icdex channel**: https://discord.gg/9ujhdDTESF
-`;
+**Maximum Sponsorship Influence**: The total score a pair can gain from sponsorships alone is capped at 70.
+
+### **2. Enhancing Your Pair Score**
+
+**2.1. Boosting Engagement and Trading Volume**
+
+Increasing your trading pair’s visibility and activity is pivotal for elevating its Pair Score. Implement these community- centric strategies to engage users and stimulate trading volume:
+
+**Leverage the Referral Program:** Encourage community participation by utilizing the trading pair’s referral link available on the pair’s “Referral" page. This enables traders to share their unique link, attracting new users and tracking trade volumes generated by their referrals. For assistance, the ICLighthouse team is ready to support.
+
+**Organize Trading Mining Events:** Partner with ICDex to host events where participants earn token rewards based on their trading volume over a defined period. Such initiatives boost engagement and liquidity.
+
+**Host Trading Competitions:** Collaborate with ICDex to organize competitions, rewarding traders based on profit margins. This encourages active and strategic trading.
+
+**Implement Strategic Orders:** Utilize advanced trading strategies, such as Iceberg, Grid, TWAP, and VWAP orders, to enhance volume and market presence.
+
+**Deploy ICDex-Trader:**
+
+Expand the capabilities of ICDex-Trader, available at https://github.com/iclighthouse/ICDex-Trader, into a comprehensive trading robot to automate and optimize trading strategies.
+
+**2.2. Improving Order Book Liquidity**
+
+Creating Orderbook Automated Market Making Pools (OAMM) Pools on ICDex is easy, combining traditional pool benefits with new
+
+features for more gains. Here’s how to do it quickly.
+
+1. **EstablishOAMMPools:** Visit https://iclight.io/ICDex/pools to create an Orderbook Automated Market Making Pool (OAMM Pool) for your trading pair and obtain its canister-id. Initiating an OAMM Pool incurs a fee of 500 ICL, reduced to 50 ICL for holders of NEPTUNE, URANUS, or SATURN NFTs.
+
+2. **SecureVip-Maker Status:** To enhance your OAMM pool on ICDex, consider inviting NEPTUNE NFT holders for a VIP-maker status or applying for it through an SNS proposal. This step, while optional, is highly recommended. Gaining VIP-maker status exempts your pool from strategy order fees and secures trading fee rebates for all maker orders, opening up an additional revenue stream.
+
+**Keep in mind,** *the ICLighthouse team supports only the initial proposal from a token’s development team for acquiring VIP-maker status for an OAMM pool.*
+
+For submitting a VIP-maker proposal, proceed to https://iclight.io/icsns/proposals, select "ICLighthouse DAO", and initiate a new proposal. Your submission should specify the action #ExecuteGenericNervousSyste mFunction, with function_id 1007 for “pair_setVipMaker(app: Principal, account: Address, rate: Nat)" where the rate may reach up to 90. The payload must include the binary hex as a parameter, with a helpful tool available at https://ic.house/tools. For any technical assistance, the ICLighthouse team is ready to help.
+
+3. **Adding the Initial Liquidity:** The pool’s initial liquidity is crucial for its activation and can only be contributed by the creator of the pool.
+4. **Transferring Funds from SNS Treasury to ICDex- Trader:** This vital step involves decentralizing the transfer of funds to provide liquidity. For comprehensive instructions on this process, please refer to the documentation at https://github.com/iclighthouse/ICDex-Trader/blob/main/docs/Guide_for_SNS_treasury.md.
+
+**2.3. Securing Support from URANUS NFT Holders (Listing Referrers)**
+
+**URANUS NFT holders**, endowed with the role of listing referrers, possess the unique ability to sponsor trading pairs, thereby contributing significantly to the Pair Score:
+
+**Unverified Listing Referrer Sponsor:** Each sponsorship from an unverified listing referrer adds +10 to the Pair Score.
+
+**Verified Listing Referrer Sponsor:** Sponsorships from verified listing referrers contribute +15 to the Pair Score.
+
+**Collective Sponsorship Reward:** A trading pair receiving sponsorship from 5 or more sponsors gains an additional +10 to its Pair Score.
+
+**Sponsorship Cap:** The maximum boost a pair can receive from sponsorship activities is limited to 70 points.
+
+Each listing referrer is entitled to sponsor up to **12 pairs** annually, enhancing their visibility and trading volume on ICDex.
+
+**2.4. Submitting Metadata to Enhance Token Credibility**
+
+To ensure your token is perceived as credible and trustworthy on ICDex, it’s essential to provide comprehensive metadata to the ICLighthouse team. This includes:
+
+**TokenControllers:**["7hdtw-...-cai", "xxxx...- cai"], // Separated by commas
+
+**TokenIsDecentralized**: true, // The token must be controlled by a DAO or have no controller
+
+**TokenModuleHash:** "1d20aafd24d656e9ed93 89325b4a113c5dda9bc6a 06faf13934f30beb9d2d87 e",
+
+**TokenMintable:** false, // Indicates whether the token is mintable
+
+**TokenMaxSupply:** 1000000000000000, // The total supply, including possible future issuance
+
+**Catalog:** "games", // Available categories include: blockchain, exchanges, finance,businesses, gambling, games, storage, wallet, governance, property, identity, oracles, media, social, security, insurance, energy, health, ai_vr_ar, memes, and others
+
+**Website:** https://xxxxxx.xx
+
+**Social:**https://twitter.com/xxxxx
+
+**Discord:** https://xxxxxxxxxxx.xxx
+
+**Github:** https://github.com/xxxxxx
+
+**Useful Link**
+
+**ICLighthouse NFT:**https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai
+**Discord listing-on-icdex channel:** https://discord.gg/9ujhdDTESF`;
       }
     }
   }
@@ -544,8 +538,11 @@ e.g.
     }
   }
   private showLaunch(): void {
-    this.showLaunchInfo = false;
-    this.init();
+    if (this.getPrincipalId) {
+      this.init();
+    } else {
+      this.$router.replace('/login');
+    }
   }
   private showTimeDefaultValue(): moment.Moment {
     return moment().add(30, 'm');

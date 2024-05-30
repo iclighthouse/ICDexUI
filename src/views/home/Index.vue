@@ -9,7 +9,8 @@
           $route.fullPath.toLocaleLowerCase().startsWith('/market') ||
           $route.fullPath.toLocaleLowerCase().startsWith('/competitions') ||
           $route.fullPath.toLocaleLowerCase().startsWith('/cyclesfinance') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/icswap')
+          $route.fullPath.toLocaleLowerCase().startsWith('/icswap') ||
+          $route.fullPath.toLocaleLowerCase().startsWith('/mining')
       }"
     >
       <div class="home-header-main-menu">
@@ -141,7 +142,7 @@
 					<span>Trade</span>
 				</li>
 				<li
-					@click="changeMenu('market', '/market/icdex')"
+					@click="changeMenu('Info', '/icdex/Info')"
 					:class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
           }"
@@ -221,7 +222,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.3
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.7
             </span>
           </span>
         </span>
@@ -290,13 +291,20 @@
         <span style="color: #646e79"
           >(Add them to your favorites to prevent scamming risks)</span
         >
-        <div>
+        <div style="color: #646e79">
           <a
             style="color: #2b8cb0"
             href="https://iclight.io/"
             rel="nofollow noreferrer noopener"
             target="_blank"
             >iclight.io</a
+          >,
+          <a
+            style="color: #2b8cb0"
+            href="https://icdex.io/"
+            rel="nofollow noreferrer noopener"
+            target="_blank"
+            >icdex.io</a
           >,
           <a
             style="color: #2b8cb0"

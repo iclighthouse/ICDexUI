@@ -24,9 +24,9 @@
       </span>
       <a-icon
         @click="setName"
+        type="edit"
         style="margin-left: 5px"
         class="pointer"
-        type="setting"
       />
       <router-link
         v-show="!$route.fullPath.toLocaleLowerCase().startsWith('/account')"
@@ -822,10 +822,14 @@ export default class extends Vue {
     }
     const principal = localStorage.getItem('principal');
     if (this.priList[principal] === 'Plug') {
-      (window as any).ic.plug.disconnect();
+      if ((window as any).ic && (window as any).ic.plug) {
+        (window as any).ic.plug.disconnect();
+      }
     }
     if (this.priList[principal] === 'Infinity') {
-      (window as any).ic.infinityWallet.disconnect();
+      if ((window as any).ic && (window as any).ic.infinityWallet) {
+        (window as any).ic.infinityWallet.disconnect();
+      }
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
@@ -862,9 +866,10 @@ export default class extends Vue {
     const res = await this.ICLighthouseService.getAccountName(
       Principal.fromText(principalId)
     );
-    console.log(res);
     if (res && res[1]) {
-      this.setAccountName(res[1][0]);
+      if (principalId === this.getPrincipalId) {
+        this.setAccountName(res[1][0]);
+      }
       const accountName = JSON.parse(localStorage.getItem('accountName')) || {};
       if (
         !accountName[principalId] ||

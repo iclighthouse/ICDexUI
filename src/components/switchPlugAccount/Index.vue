@@ -60,10 +60,14 @@ export default class extends Vue {
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     if (priList[principal] === 'Plug') {
-      (window as any).ic.plug.disconnect();
+      if ((window as any).ic && (window as any).ic.plug) {
+        (window as any).ic.plug.disconnect();
+      }
     }
     if (priList[principal] === 'Infinity') {
-      (window as any).ic.infinityWallet.disconnect();
+      if ((window as any).ic && (window as any).ic.infinityWallet) {
+        (window as any).ic.infinityWallet.disconnect();
+      }
     }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);

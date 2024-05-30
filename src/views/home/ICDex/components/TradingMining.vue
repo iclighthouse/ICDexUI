@@ -836,7 +836,6 @@ export default class extends Vue {
   color: #8c90a1;
   img {
     width: 14px;
-    margin-right: 5px;
   }
 }
 @media screen and (max-width: 768px) {

@@ -1,13 +1,13 @@
 <template>
   <a-modal
-    v-model="visible"
-    centered
-    title="Make Proposal"
-    width="1000px"
+    :after-close="afterClose"
     :keyboard="false"
     :maskClosable="false"
-    :after-close="afterClose"
+    centered
     class="proposal-model"
+    title="Make Proposal"
+    v-model="visible"
+    width="1000px"
   >
     <div class="maker-proposal-main">
       <div class="maker-proposal-item">
@@ -17,14 +17,14 @@
           Neuron Id:
         </div>
         <a-select
-          notFoundContent="Not eligible neurons"
           class="maker-proposal-item-neuron"
+          notFoundContent="Not eligible neurons"
           v-model="neuronId"
         >
           <a-select-option
-            v-for="(item, index) in SNSNeurons"
             :key="index"
             :value="arrayToString(item.id[0].id)"
+            v-for="(item, index) in SNSNeurons"
           >
             <span>{{ arrayToString(item.id[0].id) }}</span>
           </a-select-option>
@@ -37,19 +37,19 @@
           Title:
         </div>
         <a-textarea
-          v-model="title"
+          :autoSize="{ minRows: 2 }"
           autocomplete="off"
           placeholder="Proposal Title"
-          :autoSize="{ minRows: 2 }"
+          v-model="title"
         ></a-textarea>
       </div>
       <div class="maker-proposal-item">
         <div class="maker-proposal-label base-font-title">Url:</div>
         <a-textarea
-          v-model="url"
+          :autoSize="{ minRows: 2 }"
           autocomplete="off"
           placeholder="The web address of additional content required to evaluate the proposal, specified using HTTPS."
-          :autoSize="{ minRows: 2 }"
+          v-model="url"
         ></a-textarea>
       </div>
       <div class="maker-proposal-item">
@@ -63,21 +63,21 @@
       <div class="maker-proposal-item">
         <div class="maker-proposal-label base-font-title">Summary:</div>
         <mavon-editor
-          v-model="summary"
-          ref="md"
-          language="en"
-          :html="false"
-          :xssOptions="false"
           :externalLink="false"
+          :html="false"
           :toolbars="toolbars"
+          :xssOptions="false"
+          language="en"
+          ref="md"
+          v-model="summary"
         ></mavon-editor>
       </div>
     </div>
     <div slot="footer">
       <button
-        type="button"
-        class="primary w100 mt20 large-primary"
         @click="submit"
+        class="primary w100 mt20 large-primary"
+        type="button"
       >
         Make Proposal
       </button>
@@ -86,7 +86,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import {
   NeuronPermissionEnum,
   proposalsNeurons
@@ -176,6 +176,78 @@ export default class extends Vue {
     help: true,
     preview: true
   };
+  private functionId: { [key: string]: number } = {};
+
+  @Watch('actionInput', { deep: true })
+  private onActionInput() {
+    const labels = document.getElementsByTagName('label') as any;
+    console.log(labels);
+    if (labels && labels.length) {
+      labels.forEach((item) => {
+        if (item.innerText === 'function_name') {
+          const custom = document.querySelector('.custom-select');
+          if (!custom) {
+            const dom = document.createElement('div');
+            const popup_form = document.querySelector('.popup-form');
+            console.log(popup_form);
+            if (popup_form) {
+              const firstChild: any =
+                popup_form.firstElementChild || popup_form.firstChild;
+              firstChild.style.display = 'none';
+              popup_form.insertBefore(dom, popup_form.firstChild);
+            }
+            let newHtml =
+              '<div style="margin-bottom: 5px">function_name</div><div class="custom-select"><div class="select-selected"><svg class="select-selected-icon" viewBox="64 64 896 896" data-icon="down" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path></svg></div><div class="select-items select-hide">';
+            for (let key in this.functionId) {
+              newHtml += `<div>${key}</div>`;
+            }
+            newHtml += '</div></div>';
+            dom.outerHTML = newHtml;
+            console.dir(dom);
+            this.$nextTick(() => {
+              const custom = document.querySelector('.popup-form select');
+              const selected = document.querySelector('.select-selected');
+              const items = document.querySelector('.select-items');
+              selected.addEventListener('click', function () {
+                items.classList.toggle('select-hide');
+              });
+              Array.from(items.children).forEach(function (item) {
+                item.addEventListener('click', function () {
+                  Array.from(items.children).forEach((el) =>
+                    el.classList.remove('active')
+                  );
+                  item.classList.add('active');
+                  console.dir(custom);
+                  if (custom) {
+                    for (let i = 0; i < (custom as any).options.length; i++) {
+                      if (
+                        (custom as any).options[i].value === this.textContent
+                      ) {
+                        (custom as any).selectedIndex = i;
+                        custom.dispatchEvent(new Event('change'));
+                        break;
+                      }
+                    }
+                    // document.querySelector('.popup-form select').set
+                    // (custom as any).value = this.textContent;
+                  }
+                  selected.innerHTML = this.textContent;
+                  items.classList.add('select-hide');
+                });
+              });
+
+              document.addEventListener('click', function (e) {
+                if (e.target !== selected && e.target !== items) {
+                  items.classList.add('select-hide');
+                }
+              });
+            });
+          }
+        }
+      });
+    }
+  }
+
   private async submit(): Promise<void> {
     if (!this.neuronId) {
       this.$message.error('Please select a neuron');
@@ -185,6 +257,7 @@ export default class extends Vue {
       this.$message.error('Please enter title');
       return;
     }
+    console.log(this.actionInput);
     let parse;
     try {
       parse = this.actionInput.parse();
@@ -193,7 +266,24 @@ export default class extends Vue {
       this.$message.error('Please select action');
       return;
     }
+    console.log(parse);
     const actionInput = this.initBlobParams(parse);
+    if (actionInput && actionInput.ExecuteGenericNervousSystemFunction) {
+      if (
+        actionInput.ExecuteGenericNervousSystemFunction.function_name &&
+        actionInput.ExecuteGenericNervousSystemFunction.payload
+      ) {
+        actionInput.ExecuteGenericNervousSystemFunction = {
+          function_id:
+            this.functionId[
+              Object.keys(
+                actionInput.ExecuteGenericNervousSystemFunction.function_name
+              )[0]
+            ],
+          payload: actionInput.ExecuteGenericNervousSystemFunction.payload
+        };
+      }
+    }
     console.log(actionInput);
     console.log(this.summary);
     await checkAuth();
@@ -234,6 +324,7 @@ export default class extends Vue {
     }
     loading.close();
   }
+
   private initBlobParams(val: any): any {
     if (typeof val === 'object') {
       if (Object.prototype.toString.call(val) === '[object Object]') {
@@ -264,6 +355,7 @@ export default class extends Vue {
       return val;
     }
   }
+
   private async init(): Promise<void> {
     console.log(this.currentSNS);
     this.getNeurons();
@@ -271,6 +363,43 @@ export default class extends Vue {
       this.currentSNS.governanceId
     );
     this.actionParams = params.manage_neuron.argTypes;
+    const _type = (this.actionParams[0] as any)._fields[1][1]._type
+      ._fields[6][1]._fields[2][1]._type;
+    if (_type && _type._fields && _type._fields.length) {
+      _type._fields.some((item) => {
+        if (item && item[0] === 'ExecuteGenericNervousSystemFunction') {
+          if (
+            item[1] &&
+            item[1]._fields &&
+            item[1]._fields[0] &&
+            item[1]._fields[0][0] === 'function_id' &&
+            item[1]._fields[0][1] instanceof IDL.FixedNatClass &&
+            this.currentSNS &&
+            this.currentSNS.listTypes &&
+            this.currentSNS.listTypes.length
+          ) {
+            console.log(item[1]._fields);
+            const functionIds = {};
+            this.currentSNS.listTypes.sort((a, b) => {
+              return a.name.localeCompare(b.name);
+            });
+            console.log(this.currentSNS);
+            this.currentSNS.listTypes.forEach((item) => {
+              if (item.id >= 1000) {
+                this.functionId[item.name] = item.id;
+                functionIds[item.name] = new IDL.RecordClass();
+              }
+            });
+            console.log(functionIds);
+            const a = new IDL.VariantClass(functionIds);
+            console.log(a);
+            item[1]._fields[0][0] = 'function_name';
+            item[1]._fields[0][1] = IDL.Variant(functionIds);
+          }
+          return true;
+        }
+      });
+    }
     this.setParams(
       (this.actionParams[0] as any)._fields[1][1]._type._fields[6][1]
         ._fields[2][1]._type
@@ -281,8 +410,10 @@ export default class extends Vue {
     );
     this.$nextTick(() => {
       this.actionInput.render(this.$refs.action as HTMLElement);
+      console.log(this.actionInput);
     });
   }
+
   private async getNeurons(): Promise<void> {
     const snsGovernanceService = new SNSGovernanceService();
     const request: ListNeurons = {
@@ -306,6 +437,7 @@ export default class extends Vue {
       this.neuronId = '';
     }
   }
+
   private getVotingPower(SNSNeuron: SNSNeuron): string {
     const dissolveState = SNSNeuron.dissolve_state;
     let dissolveDelay = 0;
@@ -383,6 +515,7 @@ export default class extends Vue {
       .decimalPlaces(2, 1)
       .toString(10);
   }
+
   private getVoteBalance(SNSNeuron: SNSNeuron): string {
     const staked_maturity_e8s_equivalent =
       SNSNeuron.staked_maturity_e8s_equivalent[0] || BigInt(0);
@@ -391,6 +524,7 @@ export default class extends Vue {
       .div(10 ** this.currentSNS.decimals)
       .toString(10);
   }
+
   private canVote(SNSNeuron: SNSNeuron, type: number): boolean {
     let flag = false;
     for (let i = 0; i < SNSNeuron.permissions.length; i++) {
@@ -407,6 +541,7 @@ export default class extends Vue {
     }
     return flag;
   }
+
   private filterNeuron(SNSNeurons: Array<SNSNeuron>): Array<SNSNeuron> {
     SNSNeurons = SNSNeurons.filter((SNSNeuron) => {
       const votingPower = this.getVotingPower(SNSNeuron);
@@ -418,6 +553,7 @@ export default class extends Vue {
     });
     return SNSNeurons;
   }
+
   private hasBalance(SNSNeuron: SNSNeuron): boolean {
     // const staked_maturity_e8s_equivalent =
     //   SNSNeuron.staked_maturity_e8s_equivalent[0] || BigInt(0);
@@ -432,6 +568,7 @@ export default class extends Vue {
         )
     );
   }
+
   private setParams(idType: Type): Type {
     if (
       idType instanceof IDL.RecClass ||
@@ -504,6 +641,7 @@ export default class extends Vue {
       return idType;
     }
   }
+
   private afterClose(): void {
     this.SNSNeurons = [];
     this.neuronId = '';
@@ -512,34 +650,40 @@ export default class extends Vue {
     this.summary = '';
     (this.$refs.action as HTMLElement).innerHTML = '';
   }
+
   private arrayToString(val: Array<number>): string {
     return toHexString(new Uint8Array(val));
   }
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .maker-proposal-item-neuron {
   width: 100%;
 }
+
 .proposal-model {
   ::v-deep {
     .ant-modal-footer {
       padding: 0 55px;
       border: none;
     }
+
     .ant-modal-body {
-      max-height: calc(100vh - 240px);
+      max-height: fit-content;
     }
   }
 }
+
 .maker-proposal-item {
   margin-bottom: 20px;
 }
+
 .maker-proposal-label {
   margin-bottom: 10px;
   font-size: 16px;
 }
+
 .maker-proposal-item-action {
   ::v-deep > span {
     > span {
@@ -547,6 +691,7 @@ export default class extends Vue {
       border-left: 1px solid #666;
     }
   }
+
   ::v-deep .popup-form {
     > span {
       > span {
@@ -557,29 +702,35 @@ export default class extends Vue {
       }
     }
   }
+
   ::v-deep {
     span {
       display: block;
       margin-top: 5px;
+
       &.status {
         line-height: 1.2;
         color: #f5222d;
         font-size: 12px;
       }
+
       label {
         display: block;
         margin-bottom: 5px;
         color: #666;
       }
+
       input {
         width: 100%;
         vertical-align: middle;
         padding-left: 11px;
       }
+
       input[type='checkbox'] {
         height: auto !important;
         width: auto;
       }
+
       /*input[placeholder='nat8'] {
 				width: 20px;
 			}*/
@@ -588,5 +739,66 @@ export default class extends Vue {
       }
     }
   }
+}
+</style>
+<style lang="scss">
+.select-selected {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 4px;
+  color: #fff;
+  padding-left: 5px;
+  background: #141b23;
+  border: 1px solid #464648;
+}
+
+.custom-select {
+  position: relative;
+  z-index: 9999;
+}
+.select-items {
+  position: absolute;
+  max-height: 310px;
+  right: 0;
+  left: 0;
+  color: #727a87;
+  font-weight: 400;
+  font-size: 14px;
+  overflow-y: scroll;
+  line-height: 22px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  background: #141b23;
+  box-shadow: 1px 2px 8px rgba(7, 7, 7, 0.5);
+  transition: all 0.3s;
+}
+
+.select-hide {
+  display: none;
+}
+
+.select-items {
+  div {
+    padding: 4px 16px;
+    cursor: pointer;
+
+    &:hover {
+      background: #ffffff14;
+      color: #51b7c3;
+    }
+
+    &.active {
+      background: #ffffff14;
+      color: #51b7c3;
+    }
+  }
+}
+.select-selected-icon {
+  margin-left: auto;
+  margin-right: 5px;
+  font-size: 12px;
 }
 </style>

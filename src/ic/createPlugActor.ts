@@ -4,7 +4,6 @@ import { LEDGER_CANISTER_ID, WICP_CANISTER_ID } from '@/ic/utils';
 import ledgerIDL from '@/ic/ledger/ledger.did.js';
 
 const plugActor: { [key: string]: any } = {};
-const plugIc = (window as any).ic?.plug;
 // each item will be an actor from to be executed
 const requests = {};
 const requestsCanisterId = [];
@@ -30,7 +29,7 @@ export const createPlugActor = async <T>(
       requestsCanisterId.push(canisterId);
       const t = new Date().getTime();
       console.log(canisterId + ': ' + t);
-      return plugIc
+      return (window as any).ic?.plug
         .createActor({
           canisterId: canisterId,
           interfaceFactory: IDL

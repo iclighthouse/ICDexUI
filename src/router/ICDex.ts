@@ -25,12 +25,12 @@ const ICDexRouter: RouteConfig[] = [
     }
   },
   {
-    path: '/ICDex/market',
-    name: 'Market',
+    path: '/ICDex/info',
+    name: 'Info',
     component: () => import('@/views/home/ICDex/Market.vue'),
     meta: {
-      title: 'Market',
-      details: 'Market',
+      title: 'Info',
+      details: 'Info',
       version: '0.5test',
       scrollTop: 0,
       requireAuth: true,
@@ -92,6 +92,17 @@ const ICDexRouter: RouteConfig[] = [
     component: () => import('@/views/home/ICDex/Airdrop.vue'),
     meta: {
       title: 'Airdrop',
+      version: '0.5test',
+      requireAuth: true,
+      measurementId: 'G-056B85Q2L0'
+    }
+  },
+  {
+    path: '/Mining/:type?',
+    name: 'Mining',
+    component: () => import('@/views/home/ICDex/Mining.vue'),
+    meta: {
+      title: 'Mining',
       version: '0.5test',
       requireAuth: true,
       measurementId: 'G-056B85Q2L0'

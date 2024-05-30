@@ -602,18 +602,18 @@
               <td class="operation-td">
                 <div class="operation">
                   <span
-                    class="operation-name pointer"
-                    @click="onWithdraw(item)"
-                  >
-                    Withdraw
-                  </span>
-                  <span
                     :class="{
                       disabled:
                         currentWalletMenu === 'wallet'
                           ? !item[2].main
                           : !item[2].pro
                     }"
+                    class="operation-name pointer"
+                    @click="onWithdraw(item)"
+                  >
+                    Withdraw
+                  </span>
+                  <span
                     class="operation-name"
                     @click="onDepositKeepingBalance(item)"
                   >
@@ -666,6 +666,8 @@ import CreateWallet from '@/views/home/account/components/CreateWallet.vue';
 import AddedTokens from '@/views/home/account/components/AddedTokens.vue';
 import { namespace } from 'vuex-class';
 import {
+  CK_ETH_MINTER_CANISTER_ID,
+  CK_ETH_MINTER_CANISTER_ID_TEST,
   encryptMessage,
   getEthereumAccount,
   NFT_CANISTER_ID,
@@ -738,6 +740,7 @@ import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { PairTokenStdMenu } from '@/views/home/ICSwap/model';
 import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
+import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
 // const plugIc = (window as any).ic;
 
 const commonModule = namespace('common');
@@ -774,6 +777,7 @@ export default class extends Mixins(BalanceMixin) {
   @commonModule.Mutation('SET_SHOW_CHECK_AUTH') setCheckAuth?: any;
   public ICLighthouseService: ICLighthouseService | undefined;
   private ckETHMinterService: ckETHMinterService = null;
+  private ckETHMinterDfiService: ckETHMinterDfiService = null;
   // public principal: string = null;
   private metaMaskVisible = false;
   public ethAccount = '';
@@ -862,6 +866,7 @@ export default class extends Mixins(BalanceMixin) {
   async mounted(): Promise<void> {
     this.ICLighthouseService = new ICLighthouseService();
     this.ckETHMinterService = new ckETHMinterService();
+    this.ckETHMinterDfiService = new ckETHMinterDfiService();
     this.walletService = new WalletService();
     this.NftService = new NftService();
     this.ICSwapRouterService = new ICSwapRouterFiduciaryService();
@@ -2017,8 +2022,17 @@ export default class extends Mixins(BalanceMixin) {
     this.connectPlug();
   }
   private async connectPlug(): Promise<void> {
-    const tokens = await this.ICLighthouseService.getTokens();
-    const ckETHTokens = await this.ckETHMinterService.getCkTokens();
+    const promise = await Promise.all([
+      this.ICLighthouseService.getTokens(),
+      this.ckETHMinterService.getCkTokens(),
+      this.ckETHMinterDfiService.get_minter_info(
+        CK_ETH_MINTER_CANISTER_ID_TEST
+      ),
+      this.ckETHMinterDfiService.get_minter_info(CK_ETH_MINTER_CANISTER_ID)
+    ]);
+    console.log(promise);
+    const tokens = promise[0];
+    const ckETHTokens = promise[1];
     const canisterIdsIdl = [];
     let canisterIds = [];
     this.wallets.forEach((item) => {
@@ -2038,6 +2052,30 @@ export default class extends Mixins(BalanceMixin) {
         canisterIds.push(item[1].ckLedgerId.toString());
       }
     });
+    if (
+      promise[2] &&
+      promise[2].supported_ckerc20_tokens &&
+      promise[2].supported_ckerc20_tokens[0] &&
+      promise[2].supported_ckerc20_tokens[0].length
+    ) {
+      promise[2].supported_ckerc20_tokens[0].forEach((item) => {
+        if (!canisterIds.includes(item.ledger_canister_id.toString())) {
+          canisterIds.push(item.ledger_canister_id.toString());
+        }
+      });
+    }
+    if (
+      promise[3] &&
+      promise[3].supported_ckerc20_tokens &&
+      promise[3].supported_ckerc20_tokens[0] &&
+      promise[3].supported_ckerc20_tokens[0].length
+    ) {
+      promise[3].supported_ckerc20_tokens[0].forEach((item) => {
+        if (!canisterIds.includes(item.ledger_canister_id.toString())) {
+          canisterIds.push(item.ledger_canister_id.toString());
+        }
+      });
+    }
     this.pairList.forEach((item) => {
       const pair = item[1][0].canisterId.toString();
       if (!canisterIds.includes(pair)) {

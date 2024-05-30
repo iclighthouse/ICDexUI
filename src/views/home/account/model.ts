@@ -97,6 +97,11 @@ export const networkList = [
     name: 'Goerli Testnet',
     logo: require('@/assets/img/goerlieth.svg')
   }
+  // {
+  //   id: '3',
+  //   name: 'Sepolia Testnet',
+  //   logo: require('@/assets/img/seth.svg')
+  // }
 ];
 export interface ICNetworkTokensInterface {
   id: string;

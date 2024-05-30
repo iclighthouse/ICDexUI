@@ -4,7 +4,6 @@ import router from '@/router';
 import Vue from 'vue';
 import { isPlug } from '@/ic/isPlug';
 
-const plugIc = (window as any).ic;
 export default class ConnectPlug {
   public connect = async (
     newWhitelist?: Array<string>,
@@ -25,32 +24,35 @@ export default class ConnectPlug {
     if (requireAuth) {
       loading = Vue.prototype.$loading({
         lock: true,
-        text: 'Connecting Plug...',
+        customClass: 'create-wallet-loading',
+        text: `Connecting Plug...`,
         background: 'rgba(0, 0, 0, 0.5)'
       });
-      loading.setText('Connecting Plug...');
+      loading.setText(
+        'Connecting Plug... \n Please check that your Plug account is logged in.'
+      );
     }
     try {
-      const connected = await plugIc.plug.isConnected();
+      const connected = await (window as any).ic.plug.isConnected();
       const isOpen = store.getters['common/getIsOpen'];
-      if (connected && !plugIc.plug.agent && isOpen) {
-        await plugIc.plug.createAgent({
+      if (connected && !(window as any).ic.plug.agent && isOpen) {
+        await (window as any).ic.plug.createAgent({
           whitelist: whitelist,
           host: host
         });
       } else {
-        await plugIc.plug.requestConnect({
+        await (window as any).ic.plug.requestConnect({
           host: host,
           whitelist: whitelist
         });
       }
       if (process.env.NODE_ENV !== 'production') {
-        plugIc.plug.agent.fetchRootKey().catch((err) => {
-          console.warn(
-            'Unable to fetch root key. Check to ensure that your local replica is running'
-          );
-          console.error(err);
-        });
+        // plugIc.plug.agent.fetchRootKey().catch((err) => {
+        //   console.warn(
+        //     'Unable to fetch root key. Check to ensure that your local replica is running'
+        //   );
+        //   console.error(err);
+        // });
       }
       store.commit('common/SET_IS_OPEN', true);
       await this.setLocalStorage(whitelist);
@@ -65,7 +67,7 @@ export default class ConnectPlug {
   public setLocalStorage = async (
     newWhitelist?: Array<string>
   ): Promise<void> => {
-    const principalId = await plugIc.plug.agent.getPrincipal();
+    const principalId = await (window as any).ic.plug.agent.getPrincipal();
     if (newWhitelist && newWhitelist.length) {
       const whitelist = JSON.parse(localStorage.getItem('whitelist')) || {};
       whitelist[principalId.toString()] = newWhitelist;
@@ -119,12 +121,12 @@ export const currentPageConnectPlug = async (
 };
 export const needConnectPlug = (canisterIds: Array<string>): boolean => {
   const whitelist = getWhitelist();
-  if (!isPlug() || !plugIc || (plugIc && !plugIc.plug)) {
+  if (!isPlug() || !(window as any).ic || ((window as any).ic && !(window as any).ic.plug)) {
     return false;
   }
   return (
-    !plugIc.plug.agent ||
-    (plugIc.plug.agent &&
+    !(window as any).ic.plug.agent ||
+    ((window as any).ic.plug.agent &&
       !canisterIds.every((item) => whitelist.includes(item)))
   );
 };

@@ -1,5 +1,5 @@
 import { Principal } from '@dfinity/principal';
-import { sha224 } from '@noble/hashes/sha256';
+import { sha224, sha256 } from '@noble/hashes/sha256';
 import { SubAccount } from './common/icType';
 // @ts-ignore no type definitions for crc are available)
 import crc from 'crc';
@@ -126,6 +126,25 @@ const formatDateToMinute = (date: Date): string => {
     Appendzero(hour) +
     ':' +
     Appendzero(minute)
+  );
+};
+const formatDateToCalendarSecond = (date: Date): string => {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const hour = date.getUTCHours();
+  const minute = date.getUTCMinutes();
+  return (
+    day +
+    '/' +
+    month +
+    ' ' +
+    year +
+    ' ' +
+    Appendzero(hour) +
+    ':' +
+    Appendzero(minute) +
+    ' UTC'
   );
 };
 const formatDateToDay = (date: Date): string => {
@@ -401,6 +420,23 @@ const SerializableIC = (x) => {
   return x;
 };
 
+const compute_distribution_subaccount_bytes = (
+  principal: Principal,
+  nonce: number
+) => {
+  const padding = asciiStringToByteArray('token-distribution');
+  const shaObj = sha256.create();
+  shaObj.update(
+    new Uint8Array([
+      0x12,
+      ...padding,
+      ...principal.toUint8Array(),
+      ...arrayBufferToArrayOfNumber(numberToArrayBuffer(nonce, 8))
+    ])
+  );
+  return new Uint8Array(shaObj.digest());
+};
+
 export {
   bigIntToUint8Array,
   uint8ArrayToBigInt,
@@ -427,5 +463,7 @@ export {
   getTokenIdentifier,
   generateMeatMaskSeed,
   toPrincipalAndAccountId,
-  SerializableIC
+  SerializableIC,
+  compute_distribution_subaccount_bytes,
+  formatDateToCalendarSecond
 };

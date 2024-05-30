@@ -216,7 +216,6 @@ import { namespace } from 'vuex-class';
 import { ConnectMetaMaskMixin } from '@/mixins';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
-const Ic = (window as any).ic;
 const commonModule = namespace('common');
 @Component({
   name: 'Index',
@@ -238,10 +237,10 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.hostname = window.location.hostname;
   }
   private checkPlug(): boolean {
-    return Ic && Ic.plug;
+    return (window as any).ic && (window as any).ic.plug;
   }
   private checkInfinity(): boolean {
-    return Ic && Ic.infinityWallet;
+    return (window as any).ic && (window as any).ic.infinityWallet;
   }
   public back(): void {
     this.type = null;
@@ -284,8 +283,12 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         // const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
         const whitelist = plugWhitelist;
         const connectPlug = new ConnectPlug();
-        if (Ic.plug.agent) {
-          Ic.plug.disconnect();
+        if (
+          (window as any).ic &&
+          (window as any).ic.plug &&
+          (window as any).ic.plug.agent
+        ) {
+          (window as any).ic.plug.disconnect();
         }
         const isConnect = await connectPlug.connect(whitelist);
         if (isConnect) {
@@ -314,9 +317,9 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         // const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
         const whitelist = plugWhitelist;
         const connectInfinity = new ConnectInfinity();
-        const connected = await Ic.infinityWallet.isConnected();
+        const connected = await (window as any).ic.infinityWallet.isConnected();
         if (connected) {
-          Ic.infinityWallet.disconnect();
+          (window as any).ic.infinityWallet.disconnect();
         }
         const isConnect = await connectInfinity.connect(whitelist);
         if (isConnect) {

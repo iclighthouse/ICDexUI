@@ -4,7 +4,6 @@ import { LEDGER_CANISTER_ID } from '@/ic/utils';
 import ledgerIDL from '@/ic/ledger/ledger.did.js';
 
 const InfinityActor: { [key: string]: any } = {};
-const Ic = (window as any).ic?.infinityWallet;
 // each item will be an actor from to be executed
 const requests = {};
 const requestsCanisterId = [];
@@ -30,7 +29,7 @@ export const createInfinityActor = async <T>(
       requestsCanisterId.push(canisterId);
       const t = new Date().getTime();
       console.log(canisterId + ': ' + t);
-      return Ic.createActor({
+      return (window as any).ic?.infinityWallet.createActor({
         canisterId: canisterId,
         interfaceFactory: IDL
       }).then((res) => {

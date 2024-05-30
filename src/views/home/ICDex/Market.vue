@@ -23,7 +23,7 @@
         </li>
       </ul>
       <div class="flex-center margin-left-auto">
-				<launch :tokens="tokens" ref="launch"></launch>
+        <launch :tokens="tokens" ref="launch"></launch>
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -50,6 +50,10 @@
             {{ menu.name }}
           </div>
         </div>
+      </div>
+      <div v-show="marketType === 'pairs'" class="info-chart-main">
+        <div id="info-chart-tvl"></div>
+        <div id="info-chart-vol"></div>
       </div>
       <div
         v-if="pairs && pairs.length && marketType === 'pairs'"
@@ -496,6 +500,7 @@
                     <th>Fee</th>
                     <th>Vol</th>
                     <th>TVL</th>
+                    <th>24h Vol</th>
                     <th>Latest price</th>
                     <th>Score</th>
                     <th>Sponsored</th>
@@ -615,6 +620,43 @@
 											</router-link>-->
                       </div>
                       <div v-else>-</div>
+                    </td>
+                    <td>
+                      <div class="pair-vol" v-if="pair[3]">
+                        <dl
+                          v-if="
+                            tokens && tokens[pair[1].pair.token1[0].toString()]
+                          "
+                        >
+                          <dd>
+                            <span class="table-number-color">
+                              {{
+                                pair[3].vol24h.value1
+                                  | bigintToFloat(
+                                    0,
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                            {{ pair[1].pair.token1[1] }}
+                          </dd>
+                          <dt>
+                            <span v-if="pair[3]" class="table-number-color">
+                              ≈ ${{
+                                pair[3].vol24h.value1
+                                  | filterIcpVol(
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals,
+                                    getBasePrice(pair[1].pair.token1[1])
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                          </dt>
+                        </dl>
+                      </div>
                     </td>
                     <td>
                       <div
@@ -1255,25 +1297,60 @@
 					<button @click="NFTWithdraw">NFTWithdraw</button>
 				</div>-->
         <div
-          v-show="getPrincipalId && marketType === 'vip'"
+          style="padding: 10px 20px 40px"
+          v-show="marketType === 'vip'"
           class="referrers-main referrers-main-pool mt20"
         >
           <div class="makers-header">
-            Makers
-            <button
-              type="button"
-              class="primary margin-left-auto"
-              @click="onBindMaker"
+            <span style="font-size: 16px">Makers</span>
+            <span
+              class="margin-left-auto main-color pointer"
+              style="margin-right: 10px"
+              @click="searchMaker"
             >
+              Search vip-maker
+            </span>
+            <button type="button" class="primary" @click="onBindMaker">
               Add new vip-maker with NFT
             </button>
+          </div>
+          <div
+            v-show="showSearchAccount"
+            class="mt20 background-table background-table-form"
+          >
+            <a-icon @click="hideAccount" type="close-circle" />
+            <a-form-model
+              :model="queryForm"
+              ref="queryForm"
+              :rules="queryFormRules"
+              class="round-account-form"
+            >
+              <a-form-model-item label="Owner" prop="owner">
+                <a-input
+                  v-model="queryForm.owner"
+                  autocomplete="off"
+                  placeholder="Owner(Principal)"
+                />
+              </a-form-model-item>
+              <a-form-model-item label="Subaccount (Hex)" prop="subaccount">
+                <a-input
+                  v-model="queryForm.subaccount"
+                  autocomplete="off"
+                  placeholder="Subaccount (optional)"
+                />
+              </a-form-model-item>
+              <a-form-model-item class="margin-left-auto">
+                <button @click="queryAccount" class="primary large-primary">
+                  Search
+                </button>
+              </a-form-model-item>
+            </a-form-model>
           </div>
           <div class="pc-show">
             <a-spin :spinning="bindingMakersLoad" class="mt20">
               <table>
                 <thead>
                   <tr>
-                    <th>NFTId</th>
                     <th>Pair</th>
                     <th>Account</th>
                     <th>Vol</th>
@@ -1287,83 +1364,76 @@
                   </tr>
                   <tr v-for="(item, index) in bindingMakers" :key="index">
                     <td>
-                      <copy-account
-                        :account="item[0]"
-                        copyText="NFTId"
-                      ></copy-account>
-                    </td>
-                    <td>
                       <router-link
-                        v-if="pairToSymbol[item[1].toString()]"
+                        v-if="pairToSymbol[item[0].toString()]"
                         :to="`/ICDex/${
-                          pairToSymbol[item[1].toString()].pair.token0[1]
-                        }/${pairToSymbol[item[1].toString()].pair.token1[1]}`"
+                          pairToSymbol[item[0].toString()].pair.token0[1]
+                        }/${pairToSymbol[item[0].toString()].pair.token1[1]}`"
                       >
-                        {{ pairToSymbol[item[1].toString()].pair.token0[1] }}/{{
-                          pairToSymbol[item[1].toString()].pair.token1[1]
+                        {{ pairToSymbol[item[0].toString()].pair.token0[1] }}/{{
+                          pairToSymbol[item[0].toString()].pair.token1[1]
                         }}
                       </router-link>
                     </td>
                     <td>
                       <copy-account
-                        :account="arrayToString(item[2])"
+                        :account="arrayToString(item[1])"
                         copyText="Account"
                       ></copy-account>
                     </td>
                     <td>
                       <span
                         v-if="
-                          pairToSymbol[item[1].toString()] &&
-                          makerInfo[item[1].toString()] &&
-                          makerInfo[item[1].toString()][
-                            arrayToString(item[2])
+                          pairToSymbol[item[0].toString()] &&
+                          makerInfo[item[0].toString()] &&
+                          makerInfo[item[0].toString()][
+                            arrayToString(item[1])
                           ] &&
                           tokens[
                             pairToSymbol[
-                              item[1].toString()
+                              item[0].toString()
                             ].pair.token0[0].toString()
                           ] &&
                           tokens[
                             pairToSymbol[
-                              item[1].toString()
+                              item[0].toString()
                             ].pair.token1[0].toString()
                           ]
                         "
-                        class="stats-info"
                       >
                         <span>
                           {{
-                            makerInfo[item[1].toString()][
-                              arrayToString(item[2])
+                            makerInfo[item[0].toString()][
+                              arrayToString(item[1])
                             ].vol.value0
                               | bigintToFloat(
-                                8,
+                                4,
                                 tokens[
                                   pairToSymbol[
-                                    item[1].toString()
+                                    item[0].toString()
                                   ].pair.token0[0].toString()
                                 ].decimals
                               )
                               | formatNum
                           }}
-                          {{ pairToSymbol[item[1].toString()].pair.token0[1] }}
+                          {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                         </span>
                         <span>
                           {{
-                            makerInfo[item[1].toString()][
-                              arrayToString(item[2])
+                            makerInfo[item[0].toString()][
+                              arrayToString(item[1])
                             ].vol.value1
                               | bigintToFloat(
-                                8,
+                                4,
                                 tokens[
                                   pairToSymbol[
-                                    item[1].toString()
+                                    item[0].toString()
                                   ].pair.token1[0].toString()
                                 ].decimals
                               )
                               | formatNum
                           }}
-                          {{ pairToSymbol[item[1].toString()].pair.token1[1] }}
+                          {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                         </span>
                       </span>
                       <span v-else>-</span>
@@ -1371,65 +1441,68 @@
                     <td>
                       <span
                         v-if="
-                          makerInfo[item[1].toString()] &&
-                          makerInfo[item[1].toString()][
-                            arrayToString(item[2])
+                          makerInfo[item[0].toString()] &&
+                          makerInfo[item[0].toString()][
+                            arrayToString(item[1])
                           ] &&
-                          pairToSymbol[item[1].toString()] &&
+                          pairToSymbol[item[0].toString()] &&
                           tokens[
                             pairToSymbol[
-                              item[1].toString()
+                              item[0].toString()
                             ].pair.token0[0].toString()
                           ] &&
                           tokens[
                             pairToSymbol[
-                              item[1].toString()
+                              item[0].toString()
                             ].pair.token1[0].toString()
                           ]
                         "
-                        class="stats-info"
                       >
                         <span>
                           {{
-                            makerInfo[item[1].toString()][
-                              arrayToString(item[2])
+                            makerInfo[item[0].toString()][
+                              arrayToString(item[1])
                             ].commission.value0
                               | bigintToFloat(
-                                8,
+                                4,
                                 tokens[
                                   pairToSymbol[
-                                    item[1].toString()
+                                    item[0].toString()
                                   ].pair.token0[0].toString()
                                 ].decimals
                               )
                               | formatNum
                           }}
-                          {{ pairToSymbol[item[1].toString()].pair.token0[1] }}
+                          {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                         </span>
                         <span>
                           {{
-                            makerInfo[item[1].toString()][
-                              arrayToString(item[2])
+                            makerInfo[item[0].toString()][
+                              arrayToString(item[1])
                             ].commission.value1
                               | bigintToFloat(
-                                8,
+                                4,
                                 tokens[
                                   pairToSymbol[
-                                    item[1].toString()
+                                    item[0].toString()
                                   ].pair.token1[0].toString()
                                 ].decimals
                               )
                               | formatNum
                           }}
-                          {{ pairToSymbol[item[1].toString()].pair.token1[1] }}
+                          {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                         </span>
                       </span>
                       <span v-else>-</span>
                     </td>
                     <td>
-                      <span class="main-color pointer" @click="onUnbind(item)"
+                      <span
+                        v-if="getPrincipalId && isOwner(item)"
+                        class="main-color pointer"
+                        @click="onUnbind(item)"
                         >Unbind</span
                       >
+                      <span v-else>-</span>
                     </td>
                   </tr>
                 </tbody>
@@ -1451,31 +1524,23 @@
               >
                 <div class="pair-item">
                   <span
+                    v-if="getPrincipalId && isOwner(item)"
                     class="main-color pointer margin-left-auto"
                     @click="onUnbind(item)"
                     >Unbind</span
                   >
                 </div>
                 <div class="pair-item">
-                  <span>NFTId</span>
-                  <span class="margin-left-auto">
-                    <copy-account
-                      :account="item[0]"
-                      copyText="NFTId"
-                    ></copy-account>
-                  </span>
-                </div>
-                <div class="pair-item">
                   <span>Pair</span>
                   <span class="margin-left-auto">
                     <router-link
-                      v-if="pairToSymbol[item[1].toString()]"
+                      v-if="pairToSymbol[item[0].toString()]"
                       :to="`/ICDex/${
-                        pairToSymbol[item[1].toString()].pair.token0[1]
-                      }/${pairToSymbol[item[1].toString()].pair.token1[1]}`"
+                        pairToSymbol[item[0].toString()].pair.token0[1]
+                      }/${pairToSymbol[item[0].toString()].pair.token1[1]}`"
                     >
-                      {{ pairToSymbol[item[1].toString()].pair.token0[1] }}/{{
-                        pairToSymbol[item[1].toString()].pair.token1[1]
+                      {{ pairToSymbol[item[0].toString()].pair.token0[1] }}/{{
+                        pairToSymbol[item[0].toString()].pair.token1[1]
                       }}
                     </router-link>
                   </span>
@@ -1484,7 +1549,7 @@
                   <span>Account</span>
                   <span class="margin-left-auto">
                     <copy-account
-                      :account="arrayToString(item[2])"
+                      :account="arrayToString(item[1])"
                       copyText="Account"
                     ></copy-account>
                   </span>
@@ -1493,17 +1558,17 @@
                   <span>Vol</span>
                   <span
                     v-if="
-                      makerInfo[item[1].toString()] &&
-                      makerInfo[item[1].toString()][arrayToString(item[2])] &&
-                      pairToSymbol[item[1].toString()] &&
+                      makerInfo[item[0].toString()] &&
+                      makerInfo[item[0].toString()][arrayToString(item[1])] &&
+                      pairToSymbol[item[0].toString()] &&
                       tokens[
                         pairToSymbol[
-                          item[1].toString()
+                          item[0].toString()
                         ].pair.token0[0].toString()
                       ] &&
                       tokens[
                         pairToSymbol[
-                          item[1].toString()
+                          item[0].toString()
                         ].pair.token1[0].toString()
                       ]
                     "
@@ -1511,35 +1576,35 @@
                   >
                     <span>
                       {{
-                        makerInfo[item[1].toString()][arrayToString(item[2])]
+                        makerInfo[item[0].toString()][arrayToString(item[1])]
                           .vol.value0
                           | bigintToFloat(
                             8,
                             tokens[
                               pairToSymbol[
-                                item[1].toString()
+                                item[0].toString()
                               ].pair.token0[0].toString()
                             ].decimals
                           )
                           | formatNum
                       }}
-                      {{ pairToSymbol[item[1].toString()].pair.token0[1] }}
+                      {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                     </span>
                     <span>
                       {{
-                        makerInfo[item[1].toString()][arrayToString(item[2])]
+                        makerInfo[item[0].toString()][arrayToString(item[1])]
                           .vol.value1
                           | bigintToFloat(
                             8,
                             tokens[
                               pairToSymbol[
-                                item[1].toString()
+                                item[0].toString()
                               ].pair.token1[0].toString()
                             ].decimals
                           )
                           | formatNum
                       }}
-                      {{ pairToSymbol[item[1].toString()].pair.token1[1] }}
+                      {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                     </span>
                   </span>
                   <span v-else class="margin-left-auto">-</span>
@@ -1549,17 +1614,17 @@
                   <span class="margin-left-auto">
                     <span
                       v-if="
-                        makerInfo[item[1].toString()] &&
-                        makerInfo[item[1].toString()][arrayToString(item[2])] &&
-                        pairToSymbol[item[1].toString()] &&
+                        makerInfo[item[0].toString()] &&
+                        makerInfo[item[0].toString()][arrayToString(item[1])] &&
+                        pairToSymbol[item[0].toString()] &&
                         tokens[
                           pairToSymbol[
-                            item[1].toString()
+                            item[0].toString()
                           ].pair.token0[0].toString()
                         ] &&
                         tokens[
                           pairToSymbol[
-                            item[1].toString()
+                            item[0].toString()
                           ].pair.token1[0].toString()
                         ]
                       "
@@ -1567,35 +1632,35 @@
                     >
                       <span>
                         {{
-                          makerInfo[item[1].toString()][arrayToString(item[2])]
+                          makerInfo[item[0].toString()][arrayToString(item[1])]
                             .commission.value0
                             | bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[
-                                  item[1].toString()
+                                  item[0].toString()
                                 ].pair.token0[0].toString()
                               ].decimals
                             )
                             | formatNum
                         }}
-                        {{ pairToSymbol[item[1].toString()].pair.token0[1] }}
+                        {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                       </span>
                       <span>
                         {{
-                          makerInfo[item[1].toString()][arrayToString(item[2])]
+                          makerInfo[item[0].toString()][arrayToString(item[1])]
                             .commission.value1
                             | bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[
-                                  item[1].toString()
+                                  item[0].toString()
                                 ].pair.token1[0].toString()
                               ].decimals
                             )
                             | formatNum
                         }}
-                        {{ pairToSymbol[item[1].toString()].pair.token1[1] }}
+                        {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                       </span>
                     </span>
                     <span v-else>-</span>
@@ -1605,7 +1670,7 @@
             </div>
           </a-spin>
         </div>
-        <div v-show="!getPrincipalId && marketType === 'vip'">
+        <!--<div v-show="!getPrincipalId && marketType === 'vip'">
           <div class="wallet-empty container-width">
             <img src="@/assets/img/empty.png" alt="" />
             <p>Connect wallet to view</p>
@@ -1613,6 +1678,337 @@
               Connect Wallet
             </button>
           </div>
+        </div>-->
+        <div
+          v-show="marketType === 'Brokers'"
+          style="padding: 10px 20px 40px"
+          class="referrers-main referrers-main-pool mt20"
+        >
+          <div class="makers-header">
+            <span style="font-size: 16px">Brokers</span>
+            <button
+              type="button"
+              class="primary margin-left-auto"
+              style="margin-right: 10px; width: 135px"
+              @click="searchBroker"
+            >
+              Search Broker
+            </button>
+          </div>
+          <div
+            v-show="showSearchAccountBroker"
+            class="mt20 background-table background-table-form"
+          >
+            <a-icon @click="hideAccountBroker" type="close-circle" />
+            <a-form-model
+              :model="queryFormBroker"
+              ref="queryFormBroker"
+              :rules="queryFormBrokerRules"
+              class="round-account-form"
+            >
+              <a-form-model-item label="Owner" prop="owner">
+                <a-input
+                  v-model="queryFormBroker.owner"
+                  autocomplete="off"
+                  placeholder="Owner(Principal)"
+                />
+              </a-form-model-item>
+              <a-form-model-item label="Subaccount (Hex)" prop="subaccount">
+                <a-input
+                  v-model="queryFormBroker.subaccount"
+                  autocomplete="off"
+                  placeholder="Subaccount (optional)"
+                />
+              </a-form-model-item>
+              <a-form-model-item class="margin-left-auto">
+                <button
+                  @click="queryAccountBroker"
+                  class="primary large-primary"
+                >
+                  Search
+                </button>
+              </a-form-model-item>
+            </a-form-model>
+          </div>
+          <div class="pc-show">
+            <a-spin :spinning="bindingBrokersLoad" class="mt20">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Broker</th>
+                    <th>Pair</th>
+                    <th>Tx count</th>
+                    <th>Vol</th>
+                    <th>Commission</th>
+                    <th style="width: 170px">Latest commission rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="!brokerListAll.length">
+                    <td colspan="6" style="text-align: center">No Brokers</td>
+                  </tr>
+                  <tr v-for="(item, index) in brokerListAll" :key="index">
+                    <td>
+                      <copy-account
+                        :account="arrayToString(item[0])"
+                        copyText="Account"
+                      ></copy-account>
+                    </td>
+                    <td>
+                      <router-link
+                        v-if="pairToSymbol[item[2]]"
+                        :to="`/ICDex/${pairToSymbol[item[2]].pair.token0[1]}/${
+                          pairToSymbol[item[2]].pair.token1[1]
+                        }`"
+                      >
+                        {{ pairToSymbol[item[2]].pair.token0[1] }}/{{
+                          pairToSymbol[item[2]].pair.token1[1]
+                        }}
+                      </router-link>
+                    </td>
+                    <td>
+                      <span>
+                        {{ item[1].count.toString(10) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        v-if="
+                          pairToSymbol[item[2]] &&
+                          tokens[
+                            pairToSymbol[item[2]].pair.token0[0].toString()
+                          ] &&
+                          tokens[
+                            pairToSymbol[item[2]].pair.token1[0].toString()
+                          ]
+                        "
+                        class="stats-info"
+                      >
+                        <span>
+                          {{
+                            item[1].vol.value0
+                              | bigintToFloat(
+                                8,
+                                tokens[
+                                  pairToSymbol[
+                                    item[2]
+                                  ].pair.token0[0].toString()
+                                ].decimals
+                              )
+                              | formatNum
+                          }}
+                          {{ pairToSymbol[item[2]].pair.token0[1] }}
+                        </span>
+                        <span>
+                          {{
+                            item[1].vol.value1
+                              | bigintToFloat(
+                                8,
+                                tokens[
+                                  pairToSymbol[
+                                    item[2]
+                                  ].pair.token1[0].toString()
+                                ].decimals
+                              )
+                              | formatNum
+                          }}
+                          {{ pairToSymbol[item[2]].pair.token1[1] }}
+                        </span>
+                      </span>
+                      <span v-else>-</span>
+                    </td>
+                    <td>
+                      <span
+                        v-if="
+                          pairToSymbol[item[2]] &&
+                          tokens[
+                            pairToSymbol[item[2]].pair.token0[0].toString()
+                          ] &&
+                          tokens[
+                            pairToSymbol[item[2]].pair.token1[0].toString()
+                          ]
+                        "
+                        class="stats-info"
+                      >
+                        <span>
+                          {{
+                            item[1].commission.value0
+                              | bigintToFloat(
+                                8,
+                                tokens[
+                                  pairToSymbol[
+                                    item[2]
+                                  ].pair.token0[0].toString()
+                                ].decimals
+                              )
+                              | formatNum
+                          }}
+                          {{ pairToSymbol[item[2]].pair.token0[1] }}
+                        </span>
+                        <span>
+                          {{
+                            item[1].commission.value1
+                              | bigintToFloat(
+                                8,
+                                tokens[
+                                  pairToSymbol[
+                                    item[2]
+                                  ].pair.token1[0].toString()
+                                ].decimals
+                              )
+                              | formatNum
+                          }}
+                          {{ pairToSymbol[item[2]].pair.token1[1] }}
+                        </span>
+                      </span>
+                      <span v-else>-</span>
+                    </td>
+                    <td>
+                      <span>
+                        {{ item[1].rate | filterFee }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </a-spin>
+          </div>
+          <a-spin class="h5-show" :spinning="bindingBrokersLoad">
+            <div
+              class="pair-main-scroll"
+              :infinite-scroll-distance="10"
+              :infinite-scroll-immediate-check="false"
+            >
+              <div
+                class="pair-main"
+                v-for="(item, index) in brokerListAll"
+                :key="index"
+              >
+                <div class="pair-item">
+                  <span>Broker</span>
+                  <span class="margin-left-auto">
+                    <copy-account
+                      :account="arrayToString(item[0])"
+                      copyText="Account"
+                    ></copy-account>
+                  </span>
+                </div>
+                <div class="pair-item">
+                  <span>Pair</span>
+                  <span class="margin-left-auto">
+                    <router-link
+                      v-if="pairToSymbol[item[2]]"
+                      :to="`/ICDex/${pairToSymbol[item[2]].pair.token0[1]}/${
+                        pairToSymbol[item[2]].pair.token1[1]
+                      }`"
+                    >
+                      {{ pairToSymbol[item[2]].pair.token0[1] }}/{{
+                        pairToSymbol[item[2]].pair.token1[1]
+                      }}
+                    </router-link>
+                  </span>
+                </div>
+                <div class="pair-item">
+                  <span>Tx count</span>
+                  <span class="margin-left-auto">
+                    {{ item[1].count.toString(10) }}
+                  </span>
+                </div>
+                <div class="pair-item pair-item-vol">
+                  <span>Vol</span>
+                  <span class="margin-left-auto">
+                    <span
+                      v-if="
+                        pairToSymbol[item[2]] &&
+                        tokens[
+                          pairToSymbol[item[2]].pair.token0[0].toString()
+                        ] &&
+                        tokens[pairToSymbol[item[2]].pair.token1[0].toString()]
+                      "
+                      class="stats-info"
+                    >
+                      <span>
+                        {{
+                          item[1].vol.value0
+                            | bigintToFloat(
+                              8,
+                              tokens[
+                                pairToSymbol[item[2]].pair.token0[0].toString()
+                              ].decimals
+                            )
+                            | formatNum
+                        }}
+                        {{ pairToSymbol[item[2]].pair.token0[1] }}
+                      </span>
+                      <span>
+                        {{
+                          item[1].vol.value1
+                            | bigintToFloat(
+                              8,
+                              tokens[
+                                pairToSymbol[item[2]].pair.token1[0].toString()
+                              ].decimals
+                            )
+                            | formatNum
+                        }}
+                        {{ pairToSymbol[item[2]].pair.token1[1] }}
+                      </span>
+                    </span>
+                    <span v-else>-</span>
+                  </span>
+                </div>
+                <div class="pair-item pair-item-vol">
+                  <span>Commission</span>
+                  <span class="margin-left-auto">
+                    <span
+                      v-if="
+                        pairToSymbol[item[2]] &&
+                        tokens[
+                          pairToSymbol[item[2]].pair.token0[0].toString()
+                        ] &&
+                        tokens[pairToSymbol[item[2]].pair.token1[0].toString()]
+                      "
+                      class="stats-info"
+                    >
+                      <span>
+                        {{
+                          item[1].commission.value0
+                            | bigintToFloat(
+                              8,
+                              tokens[
+                                pairToSymbol[item[2]].pair.token0[0].toString()
+                              ].decimals
+                            )
+                            | formatNum
+                        }}
+                        {{ pairToSymbol[item[2]].pair.token0[1] }}
+                      </span>
+                      <span>
+                        {{
+                          item[1].commission.value1
+                            | bigintToFloat(
+                              8,
+                              tokens[
+                                pairToSymbol[item[2]].pair.token1[0].toString()
+                              ].decimals
+                            )
+                            | formatNum
+                        }}
+                        {{ pairToSymbol[item[2]].pair.token1[1] }}
+                      </span>
+                    </span>
+                    <span v-else>-</span>
+                  </span>
+                </div>
+                <div class="pair-item">
+                  <span>Latest commission rate</span>
+                  <span class="margin-left-auto">
+                    {{ item[1].rate }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a-spin>
         </div>
         <div v-show="marketType === 'referrers'" class="referrers-main">
           <div>
@@ -1812,56 +2208,59 @@
       :maskClosable="false"
     >
       <p>
-        Pair Score is an automatic evaluation mechanism of ICDex for trading
-        pairs, which is based on the comprehensive evaluation of the number of
-        sponsors, liquidity, volume, etc. The list of trading pairs is divided
-        into three boards according to the Pair Score.
+        ICLighthouse URANUS NFT holders, acting as listing referrers, play a
+        pivotal role in influencing the Pair Score through sponsorships. The
+        impact of sponsorship varies based on the status of the sponsor and the
+        number of sponsors involved:
+      </p>
+      <p class="mt20">
+        <span class="dots"></span> Unverified Listing Referrer Sponsor: Each
+        sponsorship adds +10 to the Pair Score.
       </p>
       <p>
-        <span class="dots"></span> MAIN (STAGE2) Board means that more traders
-        are involved and need to keep track of the risks.
+        <span class="dots"></span> Verified Listing Referrer Sponsor: Each
+        verified sponsorship contributes +15 to the Pair Score.
       </p>
       <p>
-        <span class="dots"></span> SECOND (STAGE1) Board means that some traders
-        are involved and need to keep track of the risks.
+        <span class="dots"></span> Group Sponsorship Bonus: If a trading pair is
+        supported by 5 or more sponsors, it receives an additional +10 to its
+        Pair Score.
       </p>
       <p>
-        <span class="dots"></span> THIRD (STAGE0) Board means that fewer traders
-        are involved and there are many unknown risks.
+        <span class="dots"></span> Maximum Sponsorship Influence: The total
+        score a pair can gain from sponsorships alone is capped at 70.
       </p>
-      <p class="ambassadors-visible-title">Upgrade rules</p>
-      <p>
-        <span class="dots"></span> A new trading pair defaults to THIRD
-        (STAGE0).
+      <p class="ambassadors-visible-title">Upgrade Criteria</p>
+      <div class="mt20">
+        Trading pairs on ICDex are systematically classified based on their Pair
+        Score, which influences their visibility and accessibility to traders.
+        Initially, all new trading pairs are assigned to Higher Risk, indicating
+        the starting level. Progression through the levels is determined as
+        follows:
+      </div>
+      <p v-if="swapConfig">
+        <span class="dots"></span> To RISING (STAGE1): A trading pair must
+        achieve a Pair Score of {{ swapConfig.SCORE_G3 }} or higher.
       </p>
       <p v-if="swapConfig">
-        <span class="dots"></span> Upgrade from STAGE0 to SECOND (STAGE1):
-        pair_score >= {{ swapConfig.SCORE_G3 }}.
+        <span class="dots"></span> To TOP (STAGE2): A trading pair needs to
+        maintain a Pair Score of {{ swapConfig.SCORE_G1 }} or above for a
+        minimum duration of one month.
+      </p>
+      <p class="ambassadors-visible-title">Downgrade Criteria</p>
+      <div class="mt20">
+        To maintain the integrity and competitiveness of the trading
+        environment, trading pairs are subject to downgrade if their performance
+        declines:
+      </div>
+      <p v-if="swapConfig">
+        <span class="dots"></span> From TOP to RISING: If a pair’s score falls
+        below {{ swapConfig.SCORE_G2 }} and remains there for over three months.
       </p>
       <p v-if="swapConfig">
-        <span class="dots"></span> Upgrade from STAGE1 to MAIN (STAGE2):
-        pair_score >= {{ swapConfig.SCORE_G1 }}, for at least one month.
-      </p>
-      <p class="ambassadors-visible-title">Degrade rules</p>
-      <p v-if="swapConfig">
-        <span class="dots"></span> Degrade from MAIN (STAGE2) to SECOND
-        (STAGE1): pair_score <a-icon type="left" /> {{ swapConfig.SCORE_G2 }},
-        for at least three months.
-      </p>
-      <p v-if="swapConfig">
-        <span class="dots"></span> Degrade from SECOND (STAGE1) to THIRD
-        (STAGE0): pair_score <a-icon type="left" /> {{ swapConfig.SCORE_G4 }},
-        for at least three months.
-      </p>
-      <p class="ambassadors-visible-title">Notes</p>
-      <p>
-        <span class="dots"></span> Listing on ICDex is non-censored, anyone can
-        list a token on ICDex, the assessment of the security and value of the
-        token project requires you to take action and bear all the consequences.
-      </p>
-      <p>
-        <span class="dots"></span> It is for your reference only, and is not
-        considered as investment advice.
+        <span class="dots"></span> From RISING to HIGH RISK: Should a pair’s
+        score drop below {{ swapConfig.SCORE_G4 }} and stay there for more than
+        three months.
       </p>
       <button
         type="button"
@@ -1977,11 +2376,6 @@
       @setListingReferrerByNftSuccess="setListingReferrerByNftSuccess"
       @proposeSuccess="proposeSuccess"
     ></nft-balance>
-    <launch
-      :tokens="tokens"
-      ref="launch"
-      @launchSuccess="launchSuccess"
-    ></launch>
   </div>
 </template>
 
@@ -2006,24 +2400,34 @@ import { AccountId, TokenInfo } from '@/ic/common/icType';
 import BigNumber from 'bignumber.js';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import ApproveNft from '@/components/approveNFT/Index.vue';
-import { toHexString } from '@/ic/converter';
+import {
+  hexToBytes,
+  principalToAccountIdentifier,
+  toHexString
+} from '@/ic/converter';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 import { NFT } from '@/ic/ICDexRouter/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import NftBalance from '@/views/home/ICDex/components/NFTBalance.vue';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
-import { IDOConfig, MakerInfo, TrieList_3 } from '@/ic/ICDex/model';
+import { BrokerInfo, IDOConfig, MakerInfo, TrieList_3 } from '@/ic/ICDex/model';
 import { connectIcx } from '@/ic/connectIcx';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import axios from 'axios';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
+import * as echarts from 'echarts/core';
+import { EChartsType } from 'echarts/types/dist/shared';
+import { formatAmount } from '@/filters';
+import { ValidationRule } from 'ant-design-vue/types/form/form';
+import { validateAccount } from '@/ic/utils';
+import { validateCanister } from '@/utils/validate';
 
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
 
 @Component({
-  name: 'Market',
+  name: 'Info',
   components: {
     AccountInfo,
     ApproveNft,
@@ -2081,6 +2485,7 @@ export default class extends Vue {
   private icpPrice = '';
   private BTCPrice = '';
   private ETHPrice = '';
+  private otherTokenPrice: { [key: string]: string } = {};
   private listingReferrer: [boolean, boolean] = null;
   private nft: TokenExt = null;
   private currentStep = -1;
@@ -2096,12 +2501,16 @@ export default class extends Vue {
       path: '/ICDex'
     },
     {
-      value: 'Market',
-      path: '/ICDex/market'
-    },
-    {
       value: 'Pools',
       path: '/ICDex/pools'
+    },
+    {
+      value: 'Mining',
+      path: '/Mining'
+    },
+    {
+      value: 'Info',
+      path: '/ICDex/info'
     },
     {
       value: 'Competitions',
@@ -2132,13 +2541,70 @@ export default class extends Vue {
   private nftBalanceListingReferrer: Array<NFT> = [];
   private nftBalancePool: Array<NFT> = [];
   private nftBalanceVip: Array<NFT> = [];
-  private bindingMakers: Array<[string, Principal, AccountId]> = [];
+  private bindingMakersAll: Array<[Principal, AccountId]> = [];
+  private bindingMakers: Array<[Principal, AccountId]> = [];
+  private bindingMakersByNFT: {
+    [key: string]: { [key: string]: string };
+  } = {};
   private bindingMakersLoad = false;
+  private bindingBrokersLoad = false;
   private makerInfo: { [key: string]: { [key: string]: MakerInfo } } = {};
   private pairsMaker: Array<PairTrie> = [];
   private currentPair: PairTrie = null;
-
-  created(): void {
+  private tvlChart: EChartsType;
+  private volChart: EChartsType;
+  private account = '';
+  private accountBroker = '';
+  private showSearchAccount = false;
+  private showSearchAccountBroker = false;
+  private queryForm = {
+    owner: '',
+    subaccount: ''
+  };
+  private validateSubaccount = (
+    rule: ValidationRule,
+    value: string,
+    callback: (arg0?: string) => void
+  ): void => {
+    if (value && !validateAccount(value)) {
+      callback('invalid subaccount');
+    } else {
+      callback();
+    }
+  };
+  private queryFormRules = {
+    owner: [
+      {
+        required: true,
+        message: 'Please enter owner',
+        trigger: 'blur'
+      },
+      { validator: validateCanister, trigger: ['change', 'blur'] }
+    ],
+    subaccount: [
+      { validator: this.validateSubaccount, trigger: ['change', 'blur'] }
+    ]
+  };
+  private queryFormBroker = {
+    owner: '',
+    subaccount: ''
+  };
+  private queryFormBrokerRules = {
+    owner: [
+      {
+        required: true,
+        message: 'Please enter owner',
+        trigger: 'blur'
+      },
+      { validator: validateCanister, trigger: ['change', 'blur'] }
+    ],
+    subaccount: [
+      { validator: this.validateSubaccount, trigger: ['change', 'blur'] }
+    ]
+  };
+  private brokerListAllL: Array<[AccountId, BrokerInfo, string?]> = [];
+  private brokerListAll: Array<[AccountId, BrokerInfo, string?]> = [];
+  async created(): Promise<void> {
     this.marketMenu = [
       {
         name: 'All pairs',
@@ -2155,17 +2621,33 @@ export default class extends Vue {
       {
         name: 'Vip-Makers',
         value: 'vip'
+      },
+      {
+        name: 'Brokers',
+        value: 'Brokers'
       }
-      // {
-      //   name: 'Brokers',
-      //   value: 'Brokers'
-      // }
-      // ,
-      // {
-      //   name: 'UnListing Referrers',
-      //   value: 'referrers'
-      // }
     ];
+    const width = document.documentElement.clientWidth;
+    if (width <= 768) {
+      this.marketMenu = [
+        {
+          name: 'All pairs',
+          value: 'pairs'
+        },
+        {
+          name: 'IDOs',
+          value: 'IDO'
+        },
+        {
+          name: 'Vip-Makers',
+          value: 'vip'
+        },
+        {
+          name: 'Brokers',
+          value: 'Brokers'
+        }
+      ];
+    }
     this.ICDexRouterService = new ICDexRouterService();
     this.makerPoolService = new makerPoolService();
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
@@ -2173,16 +2655,295 @@ export default class extends Vue {
     this.ICDexService = new ICDexService();
     if (this.getPrincipalId) {
       this.getTokensExt();
-      this.NFTBalance().then(() => {
-        this.getBindingMakers();
-      });
+      await this.NFTBalance();
     }
+    this.getBindingMakers();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     this.getTVL().finally(() => {
       this.getPairs();
     });
     this.getSwapConfig();
     this.getListingReferrer();
+    this.getPairsStats();
+  }
+  private async getPairsStats(): Promise<void> {
+    const res = await axios.get(
+      'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/stats'
+    );
+    console.log(res);
+    if (res && res.data && res.data.result && res.data.result.length) {
+      this.$nextTick(() => {
+        this.tvlChart = echarts.init(document.getElementById('info-chart-tvl'));
+        this.volChart = echarts.init(document.getElementById('info-chart-vol'));
+        const tvlData = [];
+        const volData = [];
+        const volDataTotal = [];
+        let maxTvl = '0';
+        let maxVol = '0';
+        let maxVolTotal = '0';
+        let minVolTotal = '0';
+        res.data.result.forEach((item) => {
+          tvlData.push([
+            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            item.usd_total_tvl
+          ]);
+          volData.push([
+            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            item.usd_24h_vol
+          ]);
+          volDataTotal.push([
+            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            item.usd_total_vol
+          ]);
+          if (new BigNumber(item.usd_total_tvl).gt(maxTvl)) {
+            maxTvl = item.usd_total_tvl;
+          }
+          if (new BigNumber(item.usd_24h_vol).gt(maxVol)) {
+            maxVol = item.usd_24h_vol;
+          }
+          if (new BigNumber(item.usd_total_vol).gt(maxVolTotal)) {
+            maxVolTotal = item.usd_total_vol;
+          }
+          if (
+            minVolTotal === '0' ||
+            new BigNumber(item.usd_total_vol).lt(minVolTotal)
+          ) {
+            minVolTotal = item.usd_total_vol;
+          }
+        });
+        const tvlOption = {
+          title: {
+            text: 'TVL',
+            textStyle: {
+              color: '#fff'
+            },
+            left: 10,
+            top: 10
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            },
+            formatter: function (param) {
+              return (
+                '<div>' +
+                param[0].data[0] +
+                '</div>' +
+                '<div>' +
+                'TVL: $' +
+                formatAmount(BigInt(Math.floor(param[0].data[1])), 0) +
+                '</div>'
+              );
+            }
+          },
+          xAxis: {
+            type: 'time',
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              formatter: function (value) {
+                return echarts.format.formatTime('dd', value);
+              }
+            },
+            axisTick: {
+              show: false
+            }
+          },
+          yAxis: {
+            type: 'value',
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              formatter: function (value) {
+                if (new BigNumber(value).eq(0)) {
+                  return `$${value}`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 12)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 12)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}T`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 9)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 9)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}B`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 6)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 6)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}M`;
+                } else if (new BigNumber(maxTvl).gt(10 ** 3)) {
+                  return `$${new BigNumber(value)
+                    .div(10 ** 3)
+                    .decimalPlaces(2, 1)
+                    .toString(10)}K`;
+                } else {
+                  return `$${value}`;
+                }
+              }
+            }
+          },
+          series: [
+            {
+              data: tvlData,
+              type: 'line',
+              showSymbol: false,
+              smooth: true
+            }
+          ]
+        };
+        console.log(maxVolTotal);
+        console.log(minVolTotal);
+        this.tvlChart.setOption(tvlOption);
+        const volOption = {
+          title: {
+            text: 'Volume',
+            textStyle: {
+              color: '#fff'
+            },
+            left: 10,
+            top: 10
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            },
+            formatter: function (param) {
+              return (
+                '<div>' +
+                param[0].data[0] +
+                '</div>' +
+                '<div> 24h Vol: $' +
+                formatAmount(BigInt(Math.floor(param[0].data[1])), 0) +
+                '</div>' +
+                '<div> Total Vol: $' +
+                formatAmount(BigInt(Math.floor(param[1].data[1])), 0) +
+                '</div>'
+              );
+            }
+          },
+          xAxis: {
+            type: 'time',
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              interval: 'auto',
+              formatter: function (value) {
+                return echarts.format.formatTime('dd', value);
+              }
+            },
+            axisTick: {
+              show: false
+            }
+          },
+          yAxis: [
+            {
+              type: 'value',
+              position: 'left',
+              splitLine: {
+                show: false
+              },
+              axisLabel: {
+                formatter: function (value) {
+                  if (new BigNumber(value).eq(0)) {
+                    return `$${value}`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 12)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 12)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}T`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 9)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 9)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}B`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 6)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 6)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}M`;
+                  } else if (new BigNumber(maxVol).gt(10 ** 3)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 3)
+                      .decimalPlaces(2, 1)
+                      .toString(10)}K`;
+                  } else {
+                    return `$${value}`;
+                  }
+                }
+              }
+            },
+            {
+              type: 'value',
+              position: 'right',
+              min: minVolTotal,
+              splitLine: {
+                show: false
+              },
+              axisLabel: {
+                formatter: function (value) {
+                  if (new BigNumber(value).eq(0)) {
+                    return `$${value}`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 12)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 12)
+                      .decimalPlaces(4, 1)
+                      .toString(10)}T`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 9)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 9)
+                      .decimalPlaces(4, 1)
+                      .toString(10)}B`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 6)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 6)
+                      .decimalPlaces(4, 1)
+                      .toString(10)}M`;
+                  } else if (new BigNumber(maxVolTotal).gt(10 ** 3)) {
+                    return `$${new BigNumber(value)
+                      .div(10 ** 3)
+                      .decimalPlaces(4, 1)
+                      .toString(10)}K`;
+                  } else {
+                    return `$${value}`;
+                  }
+                }
+              }
+            }
+          ],
+          series: [
+            {
+              data: volData,
+              type: 'bar',
+              barMaxWidth: 10,
+              large: true
+            },
+            {
+              data: volDataTotal,
+              type: 'line',
+              yAxisIndex: 1,
+              lineStyle: {
+                color: 'rgb(38, 158, 215)'
+              },
+              showSymbol: false
+            }
+          ]
+        };
+        console.log(volData);
+        this.volChart.setOption(volOption);
+        window.addEventListener('resize', () => {
+          this.tvlChart.resize();
+        });
+        window.addEventListener('resize', () => {
+          this.volChart.resize();
+        });
+      });
+    }
   }
   private setListingReferrerByNftSuccess(): void {
     this.getListingReferrer();
@@ -2209,8 +2970,8 @@ export default class extends Vue {
       if (isConnect) {
         await this.getTokensExt();
         await this.NFTBalance();
-        this.getBindingMakers();
       }
+      this.getBindingMakers();
     } else {
       await this.$router.push({
         path: '/login',
@@ -2234,18 +2995,28 @@ export default class extends Vue {
   private async bindSuccess(pair: string, pool: string): Promise<void> {
     this.getBindingMakers();
   }
+  private searchMaker(): void {
+    this.showSearchAccount = true;
+  }
+  private searchBroker(): void {
+    this.showSearchAccountBroker = true;
+  }
   private onBindMaker(
     pair?: string,
     pool?: string,
     index?: number,
     isHold = false
   ): void {
+    let bindingMakersLength = 0;
+    for (let key in this.bindingMakersByNFT) {
+      bindingMakersLength += Object.keys(this.bindingMakersByNFT[key]).length;
+    }
     const max = this.nftBalanceVip.length * 5;
-    const left = max - this.bindingMakers.length;
+    const left = max - bindingMakersLength;
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _that = this;
     this.$confirm({
-      content: `You've already added ${this.bindingMakers.length} vip-makers and have ${left} left to add.`,
+      content: `You've already added ${bindingMakersLength} vip-makers and have ${left} left to add.`,
       class: 'connect-plug register-mining-confirm',
       icon: 'connect-plug',
       okText: 'Confirm',
@@ -2321,7 +3092,6 @@ export default class extends Vue {
         this.makerInfo[item.pairId][address] = data[1];
       });
     });
-    this.$forceUpdate();
     console.log(this.makerInfo);
   }
   private async getMakerList(
@@ -2333,33 +3103,57 @@ export default class extends Vue {
     const makers = [];
     const pairs = [];
     this.bindingMakersLoad = true;
+    const res = await this.ICDexRouterService.getVipMakers([]);
+    console.log(res);
+    if (res && res.length) {
+      res.forEach((maker) => {
+        if (!pairs.includes(maker[0].toString())) {
+          pairs.push(maker[0].toString());
+        }
+        makers.push(maker);
+      });
+    }
     for (let i = 0; i < this.nftBalanceVip.length; i++) {
       const NFTId = this.nftBalanceVip[i][1];
+      console.log(NFTId);
       const res = await this.ICDexRouterService.NFTBindingMakers(NFTId);
       if (res && res.length) {
         res.forEach((maker) => {
-          if (!pairs.includes(maker[0].toString())) {
-            pairs.push(maker[0].toString());
+          if (!this.bindingMakersByNFT[maker[0].toString()]) {
+            this.bindingMakersByNFT[maker[0].toString()] = {};
           }
-          makers.push([NFTId, ...maker]);
+          const accountId = toHexString(new Uint8Array(maker[1]));
+          if (!this.bindingMakersByNFT[maker[0].toString()][accountId])
+            this.bindingMakersByNFT[maker[0].toString()][accountId] = NFTId;
         });
       }
     }
-    console.log(makers);
+    console.log(this.bindingMakersByNFT);
     console.log(pairs);
     this.onMakerList(pairs);
+    this.bindingMakersAll = makers;
     this.bindingMakers = makers;
     this.bindingMakersLoad = false;
   }
-  private async onUnbind(item: [string, Principal, AccountId]): Promise<void> {
+  private isOwner(item: [Principal, AccountId]): boolean {
+    return !!(
+      this.bindingMakersByNFT[item[0].toString()] &&
+      this.bindingMakersByNFT[item[0].toString()][
+        toHexString(new Uint8Array(item[1]))
+      ]
+    );
+  }
+  private async onUnbind(item: [Principal, AccountId]): Promise<void> {
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
     const res = await this.ICDexRouterService.NFTUnbindMaker(
+      this.bindingMakersByNFT[item[0].toString()][
+        toHexString(new Uint8Array(item[1]))
+      ],
       item[0],
-      item[1],
-      item[2]
+      item[1]
     );
     if (res) {
       this.$message.success('Success');
@@ -2690,15 +3484,17 @@ export default class extends Vue {
     let price = this.icpPrice;
     if (tokenSymbol.toLocaleLowerCase().includes('btc')) {
       price = this.BTCPrice;
-    }
-    if (tokenSymbol.toLocaleLowerCase().includes('eth')) {
+    } else if (tokenSymbol.toLocaleLowerCase().includes('eth')) {
       price = this.ETHPrice;
-    }
-    if (
+    } else if (
       tokenSymbol.toLocaleLowerCase().includes('usdt') ||
       tokenSymbol.toLocaleLowerCase().includes('usdc')
     ) {
       price = '1';
+    } else {
+      if (this.otherTokenPrice[tokenSymbol.toLocaleLowerCase()]) {
+        price = this.otherTokenPrice[tokenSymbol.toLocaleLowerCase()];
+      }
     }
     return price;
   }
@@ -2719,25 +3515,26 @@ export default class extends Vue {
   private async getPairs(): Promise<void> {
     this.busy = true;
     this.spinning = true;
-    const fetchRes = await fetch(
-      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/2'
-    );
+    const promiseValue = [
+      fetch('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/2'),
+      fetch('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12'),
+      fetch('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16')
+    ];
+    const fetchResPromise = await Promise.all(promiseValue);
+    console.log(fetchResPromise);
+    const fetchRes = fetchResPromise[0];
     if (fetchRes && fetchRes.status === 200) {
       const icpRes = await fetchRes.json();
       this.icpPrice = (icpRes as any).success[0].rate;
       console.log(this.icpPrice);
     }
-    const BTCfetchRes = await fetch(
-      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12'
-    );
+    const BTCfetchRes = fetchResPromise[1];
     if (BTCfetchRes && BTCfetchRes.status === 200) {
       const BTCRes = await BTCfetchRes.json();
       this.BTCPrice = (BTCRes as any).success[0].rate;
       console.log(this.BTCPrice);
     }
-    const ETHfetchRes = await fetch(
-      'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16'
-    );
+    const ETHfetchRes = fetchResPromise[2];
     if (ETHfetchRes && ETHfetchRes.status === 200) {
       const ETHRes = await ETHfetchRes.json();
       this.ETHPrice = (ETHRes as any).success[0].rate;
@@ -2745,16 +3542,43 @@ export default class extends Vue {
     }
     const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
     if (res && res.data && res.data.length) {
+      this.sortType = 'scoreDown';
+      this.pairs = res.data.concat([]).sort((a, b) => {
+        return Number(b[1].score) - Number(a[1].score);
+      });
+      await this.getTokenDecimals();
       res.data.forEach((item) => {
         const id = `${item[1].pair.token0[0].toString()}_${item[1].pair.token1[0].toString()}`;
         if (this.pairsTVL[id]) {
           item[2] = this.pairsTVL[id];
         }
         this.pairToSymbol[item[0].toString()] = item[1];
-      });
-      this.sortType = 'scoreDown';
-      this.pairs = res.data.concat([]).sort((a, b) => {
-        return Number(b[1].score) - Number(a[1].score);
+        const token1Symbol = item[1].pair.token1[1];
+        if (
+          (token1Symbol.toLocaleLowerCase() === 'icp' ||
+            token1Symbol.toLocaleLowerCase().includes('eth') ||
+            token1Symbol.toLocaleLowerCase().includes('btc')) &&
+          !this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()]
+        ) {
+          const price = this.getPrice(item[1]);
+          if (token1Symbol.toLocaleLowerCase() === 'icp') {
+            this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+              new BigNumber(price).times(this.icpPrice).toString(10);
+          } else if (token1Symbol.toLocaleLowerCase() === 'eth') {
+            this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+              new BigNumber(price).times(this.ETHPrice).toString(10);
+          } else if (token1Symbol.toLocaleLowerCase() === 'btc') {
+            this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+              new BigNumber(price).times(this.BTCPrice).toString(10);
+          }
+        }
+        if (
+          token1Symbol.toLocaleLowerCase().includes('usdt') ||
+          token1Symbol.toLocaleLowerCase().includes('usdc')
+        ) {
+          this.otherTokenPrice[item[1].pair.token0[1].toLocaleLowerCase()] =
+            this.getPrice(item[1]);
+        }
       });
       this.launches = res.data
         .concat([])
@@ -2773,39 +3597,61 @@ export default class extends Vue {
         return a[1].pair.token0[1].localeCompare(b[1].pair.token0[1]);
       });
       this.total = this.pairs.length;
-      this.getTokenDecimals().then(async () => {
-        let total = '0';
-        let Vol24 = '0';
-        try {
-          const res = await axios.get(
-            'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
-          );
-          console.log(res);
-          if (res && res.data) {
-            for (let key in res.data) {
-              const totalVol = res.data[key].usd_volume;
-              Vol24 = new BigNumber(Vol24)
-                .plus(res.data[key].usd_24h_volume)
-                .toString(10);
-              total = new BigNumber(total).plus(totalVol).toString(10);
-            }
+      let total = '0';
+      let Vol24 = '0';
+      try {
+        const res = await axios.get(
+          'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
+        );
+        console.log(res);
+        if (res && res.data) {
+          for (let key in res.data) {
+            const totalVol = res.data[key].usd_volume;
+            Vol24 = new BigNumber(Vol24)
+              .plus(res.data[key].usd_24h_volume)
+              .toString(10);
+            total = new BigNumber(total).plus(totalVol).toString(10);
           }
-        } catch (e) {
-          console.log(e);
         }
-        this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
-        this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
-        console.log(this.Vol24);
-      });
+      } catch (e) {
+        console.log(e);
+      }
+      this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
+      this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
+      console.log(this.Vol24);
       this.getIDOs();
       this.getStats();
     } else {
       this.pairs = [];
       this.pairsMaker = [];
     }
+    console.log(this.otherTokenPrice);
     console.log(this.pairs);
     this.spinning = false;
     this.busy = false;
+    this.getBrokerList();
+  }
+  private async getBrokerList(): Promise<void> {
+    this.bindingBrokersLoad = true;
+    this.brokerListAll = [];
+    this.brokerListAllL = [];
+    const promiseValue = [];
+    this.pairs.forEach((item) => {
+      promiseValue.push(this.brokerList(item[0].toString()));
+    });
+    await Promise.all(promiseValue);
+    console.log(this.brokerListAllL);
+    this.brokerListAll = this.brokerListAllL;
+    this.bindingBrokersLoad = false;
+  }
+  private async brokerList(pairId: string): Promise<void> {
+    const res = await this.ICDexService.brokerList(pairId);
+    if (res && res.data) {
+      const info: any = res.data.map((item) => {
+        return item.concat(pairId);
+      });
+      this.brokerListAllL = this.brokerListAllL.concat(info);
+    }
   }
   private getBoard(marketBoard: Array<MarketBoard>): string {
     let board = 'STAGE0';
@@ -2813,15 +3659,15 @@ export default class extends Vue {
       board = Object.keys(marketBoard[0])[0];
     }
     if (board === 'STAGE2') {
-      return 'MAIN';
+      return 'Main';
     } else if (board === 'STAGE1') {
-      return 'SECOND';
+      return 'RISING';
     } else {
-      return 'THIRD';
+      return 'HIGH RISK';
     }
   }
   private async getIDOs(): Promise<void> {
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     this.IDOs = [];
     let promiseValue = [];
     if (this.launches.length) {
@@ -2859,7 +3705,7 @@ export default class extends Vue {
   }
   private async getStats(): Promise<void> {
     const pairs = this.pairs.slice((this.page - 1) * 100, this.page * 100);
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     let promiseValue = [];
     for (let i = 0; i < pairs.length; i++) {
       promiseValue.push(this.getPairStats(pairs[i]));
@@ -2879,7 +3725,7 @@ export default class extends Vue {
   }
   private async getTokenDecimals(): Promise<void> {
     const pairs = this.pairs.slice((this.page - 1) * 100, this.page * 100);
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     const tokens = [];
     let promiseValue = [];
     for (let i = 0; i < pairs.length; i++) {
@@ -3097,12 +3943,62 @@ export default class extends Vue {
   private arrayToString(val: Array<number>): string {
     return toHexString(new Uint8Array(val));
   }
-  private showLaunch(): void {
-    (this.$refs.launch as any).init();
+  private hideAccount(): void {
+    this.bindingMakers = this.bindingMakersAll;
+    this.showSearchAccount = false;
+    (this.$refs.queryForm as any).resetFields();
+    this.account = '';
   }
-  private launchSuccess(): void {
-    this.getTVL().finally(() => {
-      this.getPairs();
+  private hideAccountBroker(): void {
+    this.brokerListAll = this.brokerListAllL;
+    this.showSearchAccountBroker = false;
+    (this.$refs.queryFormBroker as any).resetFields();
+    this.accountBroker = '';
+  }
+  private queryAccount(): void {
+    (this.$refs.queryForm as any).validate(async (valid: any) => {
+      if (valid) {
+        let subaccount = [];
+        let accountId = '';
+        if (this.queryForm.subaccount) {
+          subaccount = hexToBytes(this.queryForm.subaccount);
+          accountId = principalToAccountIdentifier(
+            Principal.fromText(this.queryForm.owner),
+            new Uint8Array(subaccount)
+          );
+        } else {
+          accountId = principalToAccountIdentifier(
+            Principal.fromText(this.queryForm.owner)
+          );
+        }
+        this.account = accountId;
+        this.bindingMakers = this.bindingMakersAll.filter((item) => {
+          return toHexString(new Uint8Array(item[1])) === this.account;
+        });
+      }
+    });
+  }
+  private queryAccountBroker(): void {
+    (this.$refs.queryFormBroker as any).validate(async (valid: any) => {
+      if (valid) {
+        let subaccount = [];
+        let accountId = '';
+        if (this.queryFormBroker.subaccount) {
+          subaccount = hexToBytes(this.queryFormBroker.subaccount);
+          accountId = principalToAccountIdentifier(
+            Principal.fromText(this.queryFormBroker.owner),
+            new Uint8Array(subaccount)
+          );
+        } else {
+          accountId = principalToAccountIdentifier(
+            Principal.fromText(this.queryFormBroker.owner)
+          );
+        }
+        this.accountBroker = accountId;
+        this.brokerListAll = this.brokerListAllL.filter((item) => {
+          return toHexString(new Uint8Array(item[0])) === this.accountBroker;
+        });
+      }
     });
   }
 }
@@ -3114,6 +4010,25 @@ export default class extends Vue {
   align-items: center;
   button {
     width: 190px;
+  }
+}
+.info-chart-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
+  > div {
+    height: 300px;
+    width: 50%;
+    background: #131920;
+    border-radius: 10px;
+    &:first-child {
+      margin-right: 10px;
+    }
+    &:last-child {
+      margin-left: 10px;
+    }
   }
 }
 .ambassadors-visible-button {
@@ -3160,7 +4075,7 @@ export default class extends Vue {
     height: 40px;
     line-height: 40px;
     padding: 0 20px;
-    font-size: 16px;
+    font-size: 14px;
     transition: all 0.3s;
     cursor: pointer;
     &:hover {
@@ -3336,7 +4251,7 @@ tbody {
 .stats-info {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  line-height: 1.5;
 }
 .sort-table-main {
   display: flex;
@@ -3452,6 +4367,32 @@ tbody {
         font-size: 12px;
       }
     }
+  }
+}
+.background-table-form {
+  position: relative;
+  max-width: 1100px;
+  margin-left: auto;
+  i {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  form {
+    margin-bottom: 5px;
+    padding: 10px;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #000;
+  }
+}
+.round-account-form {
+  display: flex;
+  align-items: flex-end;
+  input {
+    width: 450px;
+    margin-right: 10px;
   }
 }
 </style>

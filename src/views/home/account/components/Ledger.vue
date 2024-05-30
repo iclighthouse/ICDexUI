@@ -169,7 +169,7 @@
                     class="select-erc20-token"
                     v-model="networkIdMint"
                     @change="changeNetworkIdMint"
-                    :disabled="networkTokens.length <= 5"
+                    :disabled="networkTokenDisabled"
                   >
                     <span
                       class="ic-router-token-placeholder"
@@ -979,6 +979,10 @@
               </div>
             </div>
             <router-link
+              v-show="
+                !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdc') &&
+                !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdt')
+              "
               class="transfer-balance-right pc-show"
               :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
             >
@@ -986,12 +990,75 @@
             </router-link>
           </div>
           <button
+            :disabled="!canRetrieveCkerc20"
             type="button"
             class="primary retrieve-button w100 mt20"
             @click="retrieveCkETH"
           >
             Retrieve
+            <div v-if="!canRetrieveCkerc20">
+              &nbsp;(You should have at least {{ ckerc20RetrieveFee }} ETH.)
+            </div>
           </button>
+          <div
+            v-if="
+              icNetworkTokens.icTokenInfo.type &&
+              icNetworkTokens.icTokenInfo.type === 'dfinityERC20' &&
+              !canRetrieveCkerc20
+            "
+            style="margin-top: 5px"
+          >
+            <div
+              class="flex-auto"
+              v-if="
+                icNetworkTokens.networkToIcId === '3' &&
+                tokens &&
+                tokens['apia6-jaaaa-aaaar-qabma-cai']
+              "
+            >
+              {{ tokens['apia6-jaaaa-aaaar-qabma-cai'].symbol }} Balance:
+              <div class="balance base-font-normal">
+                <span>
+                  &nbsp;{{
+                    ERC20Balance['apia6-jaaaa-aaaar-qabma-cai']
+                      | bigintToFloat(
+                        8,
+                        tokens['apia6-jaaaa-aaaar-qabma-cai'].decimals
+                      )
+                      | formatAmount(8)
+                  }}&nbsp;
+                </span>
+              </div>
+              {{ tokens['apia6-jaaaa-aaaar-qabma-cai'].symbol }} ({{
+                networkIds[icNetworkTokens.networkId]
+              }})&nbsp;
+            </div>
+            <div
+              class="flex-auto"
+              v-if="
+                icNetworkTokens.networkToIcId === '1' &&
+                tokens &&
+                tokens['ss2fx-dyaaa-aaaar-qacoq-cai']
+              "
+            >
+              {{ tokens['ss2fx-dyaaa-aaaar-qacoq-cai'].symbol }} Balance:
+              <div class="balance base-font-normal">
+                <span>
+                  {{
+                    ERC20Balance['ss2fx-dyaaa-aaaar-qacoq-cai']
+                      | bigintToFloat(
+                        8,
+                        tokens['ss2fx-dyaaa-aaaar-qacoq-cai'].decimals
+                      )
+                      | formatAmount(8)
+                  }}
+                </span>
+              </div>
+              {{ tokens['ss2fx-dyaaa-aaaar-qacoq-cai'].symbol }} ({{
+                networkIds[icNetworkTokens.networkId]
+              }})&nbsp;
+            </div>
+          </div>
         </div>
         <div
           v-show="retrieveStep === 2"
@@ -1342,7 +1409,10 @@
                   </td>
                   <td style="width: 92px">
                     <span v-show="lastScrapedBlockNumber">
-                      <span v-if="item.blockNum">
+                      <span class="base-red" v-if="item.txStatus">{{
+                        item.txStatus
+                      }}</span>
+                      <span v-if="!item.txStatus && item.blockNum">
                         <span
                           v-if="lastScrapedBlockNumber >= Number(item.blockNum)"
                           >Confirmed</span
@@ -1351,7 +1421,9 @@
                           >Submitted <span class="loading-spinner"></span
                         ></span>
                       </span>
-                      <span v-else class="flex-center"
+                      <span
+                        v-if="!item.txStatus && !item.blockNum"
+                        class="flex-center"
                         >Pending <span class="loading-spinner"></span
                       ></span>
                     </span>
@@ -1408,7 +1480,8 @@
                 <span class="li-left">Status:</span>
                 <span class="margin-left-auto">
                   <span v-show="lastScrapedBlockNumber">
-                    <span v-if="item.blockNum">
+                    <span v-if="item.txStatus">{{ item.txStatus }}</span>
+                    <span v-if="!item.txStatus && item.blockNum">
                       <span
                         v-if="lastScrapedBlockNumber >= Number(item.blockNum)"
                         >Confirmed</span
@@ -1417,7 +1490,9 @@
                         >Submitted <span class="loading-spinner"></span
                       ></span>
                     </span>
-                    <span v-else class="flex-center"
+                    <span
+                      v-if="!item.txStatus && !item.blockNum"
+                      class="flex-center"
                       >Pending <span class="loading-spinner"></span
                     ></span>
                   </span>
@@ -3311,6 +3386,12 @@
                 </div>
               </div>
               <router-link
+                v-show="
+                  !icNetworkTokens.symbol
+                    .toLocaleLowerCase()
+                    .includes('usdc') &&
+                  !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdt')
+                "
                 class="transfer-balance-right pc-show"
                 :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
               >
@@ -4171,9 +4252,11 @@ import {
   CK_BTC_MINTER_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   CK_ETH_MINTER_CANISTER_ID,
+  CK_ETH_MINTER_CANISTER_ID_TEST,
   etherScanKey,
   ETHHttps,
   ETHHttpsMainnet,
+  ETHHttpsSepolia,
   ETHWebsocketProvider,
   IC_BTC_CANISTER_ID,
   IC_BTC_MINTER_CANISTER_ID,
@@ -4186,11 +4269,13 @@ import { IcrcTransferError } from '@/ic/DRC20Token/model';
 import { ckETHMinterService } from '@/ic/ckETHMinter/ckETHMinterService';
 import {
   Burn,
+  CkErc20Token,
   ckETHEvent,
   IcTokenInfo,
   MinterInfo,
   PendingDepositTxn,
   ResultError,
+  RetrieveErc20Request,
   RetrieveEthRequest,
   RetrieveEthStatus,
   TxIndex,
@@ -4207,6 +4292,8 @@ import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
 import { principalToBytes32 } from '@/ic/principal_to_bytes';
 import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
+import erc20ABI from '@/ic/abi/erc20Deposit';
+import { getFee } from '@/ic/getTokenFee';
 
 const { Web3 } = require('web3');
 
@@ -4218,6 +4305,7 @@ let ETHUpdateTime = null;
 let ETHDepositTime = null;
 const ethVersion = '0.1';
 let timer: number;
+const ckETHSep = 'apia6-jaaaa-aaaar-qabma-cai';
 
 @Component({
   name: 'Ledger',
@@ -4320,12 +4408,14 @@ export default class extends Mixins(BalanceMixin) {
     recipient: string;
     amount: string;
     blockIndex: string;
+    ckerc20BlockIndex?: string;
     status: RetrieveEthStatus;
   }> = [];
   private ckETHMint: Array<{
     txHash: string;
     blockNum: string;
     amount: string;
+    txStatus?: string;
   }> = [];
   private ckETHMintPage = 1;
   private lastScrapedBlockNumber: number = null;
@@ -4370,6 +4460,7 @@ export default class extends Mixins(BalanceMixin) {
   private networkIdMintTo: number | Array<any> = [];
   private networkTokenIdMint: number | Array<any> = [];
   private networkTokenIdMintTo: number | Array<any> = [];
+  private networkTokenDisabled = true;
   private ckTokenInfo: { [key: string]: IcTokenInfo } = {};
   private ethersTokenIdToCkTokenId: { [key: string]: string } = {};
   private tokens: { [key: string]: TokenInfo } = {};
@@ -4397,9 +4488,12 @@ export default class extends Mixins(BalanceMixin) {
   private depositInfoPageSize = 5;
   private otherNetworkTokens: ICNetworkTokensInterface = null;
   private smartContractAddress = '';
+  private smartContractAddressERC20 = '';
   private ethLink = 'https://etherscan.io';
   private etherscanLink = 'https://api.etherscan.io';
   private ckEthLink = 'https://etherscan.io';
+  private canRetrieveCkerc20 = true;
+  private ckerc20RetrieveFee = '';
   private signatureForm = {
     txHash: ''
   };
@@ -4640,6 +4734,7 @@ export default class extends Mixins(BalanceMixin) {
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     if (this.type === 'cross') {
       this.getMinterInfo().then(() => {
+        this.networkTokenDisabled = true;
         this.getCkTokens();
         if (this.minterInfo.depositMethod === 1) {
           this.depositMethod = 1;
@@ -4816,7 +4911,34 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async getCkTokensDfi(): Promise<void> {
-    this.smartContractAddress = await this.getMinterAddress();
+    const res = await this.ckETHMinterDfiService.get_minter_info(
+      CK_ETH_MINTER_CANISTER_ID_TEST
+    );
+    let minimum_withdrawal_amount = BigInt('30000000000000000');
+    console.log(res);
+    if (res) {
+      this.smartContractAddress = res.eth_helper_contract_address[0];
+      this.smartContractAddressERC20 = res.erc20_helper_contract_address[0];
+      const promiseValue = [];
+      if (res.minimum_withdrawal_amount.length) {
+        minimum_withdrawal_amount = res.minimum_withdrawal_amount[0];
+      }
+      if (
+        res.supported_ckerc20_tokens &&
+        res.supported_ckerc20_tokens.length &&
+        res.supported_ckerc20_tokens[0].length
+      ) {
+        res.supported_ckerc20_tokens[0].forEach((item) => {
+          promiseValue.push(
+            this.getCKERC20TokenInfo(item, minimum_withdrawal_amount)
+          );
+        });
+      }
+      console.log(promiseValue);
+      if (promiseValue.length) {
+        await Promise.all(promiseValue);
+      }
+    }
     if (!this.tokens[CK_ETH_LEDGER_CANISTER_ID]) {
       const res = await getTokenInfo(
         Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
@@ -4842,6 +4964,64 @@ export default class extends Mixins(BalanceMixin) {
         );
       }
     }
+    if (CK_ETH_MINTER_CANISTER_ID_TEST !== CK_ETH_MINTER_CANISTER_ID) {
+      this.smartContractAddress = await this.getMinterAddress();
+      minimum_withdrawal_amount = BigInt('30000000000000000');
+      if (!this.tokens[ckETHSep]) {
+        const res = await getTokenInfo(Principal.fromText(ckETHSep), {
+          icrc1: null
+        });
+        this.$set(this.tokens, ckETHSep, res);
+      } else {
+        if (!this.tokens[ckETHSep].logo) {
+          const logo = await getTokenLogo(Principal.fromText(ckETHSep), {
+            icrc1: null
+          });
+          this.$set(
+            this.tokens,
+            ckETHSep,
+            Object.assign(this.tokens[ckETHSep], {
+              logo: logo
+            })
+          );
+        }
+      }
+      // ckETHTest
+      const icTokenInfo = {
+        ckLedgerId: Principal.fromText(ckETHSep),
+        ckSymbol: this.tokens[ckETHSep].symbol,
+        decimals: this.tokens[ckETHSep].decimals,
+        dexPair: null,
+        dexPrice: null,
+        fee: null,
+        minAmount: minimum_withdrawal_amount,
+        std: { ETH: null },
+        symbol: 'SepoliaETH',
+        tokenId: res.eth_helper_contract_address[0],
+        totalSupply: null
+      };
+      this.networkTokens.unshift({
+        id: res.eth_helper_contract_address[0],
+        networkId: '-1',
+        networkToIcId: '3',
+        symbol: this.tokens[ckETHSep].symbol,
+        tokenId: ckETHSep,
+        icTokenInfo: icTokenInfo
+      });
+      this.networkTokens.unshift({
+        id: res.eth_helper_contract_address[0],
+        networkId: '3',
+        networkToIcId: '-1',
+        symbol: 'SepoliaETH',
+        tokenId: ckETHSep,
+        logo: require('@/assets/img/ethereum.svg')
+      });
+      this.ethersTokenIdToCkTokenId[res.eth_helper_contract_address[0]] =
+        ckETHSep;
+      this.ckTokenInfo[ckETHSep] = Object.assign({}, icTokenInfo, {
+        symbol: 'SepoliaETH'
+      });
+    }
     // ckETH
     const icTokenInfo = {
       ckLedgerId: Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
@@ -4850,15 +5030,13 @@ export default class extends Mixins(BalanceMixin) {
       dexPair: null,
       dexPrice: null,
       fee: null,
-      minAmount: BigInt('30000000000000000'),
+      minAmount: minimum_withdrawal_amount,
       std: { ETH: null },
       symbol: 'ETH',
-      // tokenId: this.smartContractAddress,
       tokenId: '0x0000000000000000000000000000000000000000',
       totalSupply: null
     };
     this.networkTokens.unshift({
-      // id: this.smartContractAddress,
       id: '0x0000000000000000000000000000000000000000',
       networkId: '-1',
       networkToIcId: '1',
@@ -4867,7 +5045,6 @@ export default class extends Mixins(BalanceMixin) {
       icTokenInfo: icTokenInfo
     });
     this.networkTokens.unshift({
-      // id: this.smartContractAddress,
       id: '0x0000000000000000000000000000000000000000',
       networkId: '1',
       networkToIcId: '-1',
@@ -4883,6 +5060,67 @@ export default class extends Mixins(BalanceMixin) {
       { symbol: 'ETH' }
     );
   }
+  private async getCKERC20TokenInfo(
+    info: CkErc20Token,
+    minimum_withdrawal_amount: bigint
+  ): Promise<void> {
+    const tokenId = info.ledger_canister_id.toString();
+    if (!this.tokens[tokenId]) {
+      const res = await getTokenInfo(Principal.fromText(tokenId), {
+        icrc1: null
+      });
+      this.$set(this.tokens, tokenId, res);
+    } else {
+      if (!this.tokens[tokenId].logo) {
+        const logo = await getTokenLogo(Principal.fromText(tokenId), {
+          icrc1: null
+        });
+        this.$set(
+          this.tokens,
+          tokenId,
+          Object.assign(this.tokens[tokenId], {
+            logo: logo
+          })
+        );
+      }
+    }
+    const symbol = this.tokens[tokenId].symbol.split('ck')[1];
+    const icTokenInfo = {
+      ckLedgerId: info.ledger_canister_id,
+      ckSymbol: this.tokens[tokenId].symbol,
+      decimals: this.tokens[tokenId].decimals,
+      dexPair: null,
+      dexPrice: null,
+      fee: null,
+      minAmount: minimum_withdrawal_amount,
+      std: { ERC20: null },
+      symbol: symbol,
+      tokenId: info.erc20_contract_address,
+      totalSupply: null,
+      type: 'dfinityERC20'
+    };
+    const isMain = CK_ETH_MINTER_CANISTER_ID_TEST === CK_ETH_MINTER_CANISTER_ID;
+    this.networkTokens.unshift({
+      id: info.erc20_contract_address,
+      networkId: '-1',
+      networkToIcId: isMain ? '1' : '3',
+      symbol: this.tokens[tokenId].symbol,
+      tokenId: tokenId,
+      icTokenInfo: icTokenInfo
+    });
+    this.networkTokens.unshift({
+      id: info.erc20_contract_address,
+      networkId: isMain ? '1' : '3',
+      networkToIcId: '-1',
+      symbol: symbol,
+      tokenId: tokenId,
+      logo: require('@/assets/img/ethereum.svg')
+    });
+    this.ethersTokenIdToCkTokenId[info.erc20_contract_address] = tokenId;
+    this.ckTokenInfo[tokenId] = Object.assign({}, icTokenInfo, {
+      symbol: symbol
+    });
+  }
   private async getCkTokens(): Promise<void> {
     let res = await this.ckETHMinterService.getCkTokens();
     console.log(res);
@@ -4892,7 +5130,6 @@ export default class extends Mixins(BalanceMixin) {
         this.networkTokens =
           JSON.parse(JSON.stringify(networkTokens));
       console.log(this.networkTokens);
-      await this.getCkTokensDfi();
       res = res.sort((a, b) => b[1].symbol.localeCompare(a[1].symbol));
       res.forEach((item) => {
         if (!this.tokens[item[1].ckLedgerId.toString()]) {
@@ -4955,12 +5192,32 @@ export default class extends Mixins(BalanceMixin) {
         });
       });
     }
+    await this.getCkTokensDfi();
+    this.networkTokens.sort((a, b) => {
+      if (
+        a.symbol.toLocaleLowerCase().includes('test') ||
+        a.symbol.toLocaleLowerCase().includes('sepolia') ||
+        a.symbol.toLocaleLowerCase().includes('goerli')
+      ) {
+        return 1;
+      }
+      if (
+        b.symbol.toLocaleLowerCase().includes('test') ||
+        b.symbol.toLocaleLowerCase().includes('sepolia') ||
+        b.symbol.toLocaleLowerCase().includes('goerli')
+      ) {
+        return -1;
+      }
+    });
+    this.networkTokenDisabled = false;
     this.getActive();
     this.initICRouter();
     console.log(this.networkTokens);
   }
   private async getMinterAddress(): Promise<string> {
-    return await this.ckETHMinterDfiService.smart_contract_address();
+    return await this.ckETHMinterDfiService.smart_contract_address(
+      CK_ETH_MINTER_CANISTER_ID
+    );
   }
   private initICRouter(): void {
     const type = this.$route.query.type;
@@ -4983,9 +5240,20 @@ export default class extends Mixins(BalanceMixin) {
       type === 'mintCKETH'
     ) {
       let network;
+      console.log(type);
+      console.log(tokenId);
+      console.log(this.networkTokens);
       // todo networkIdMint
       if (type === 'mintCKETH') {
         this.networkIdMint = 2;
+        this.networkTokens.some((item) => {
+          if (item.tokenId === tokenId) {
+            if (item.networkId === '3') {
+              this.networkIdMint = 4;
+            }
+            return true;
+          }
+        });
       } else if (Number(this.minterInfo.chainId) === 5) {
         this.networkIdMint = 3;
       } else if (Number(this.minterInfo.chainId) === 1) {
@@ -4993,6 +5261,7 @@ export default class extends Mixins(BalanceMixin) {
       } else {
         //
       }
+      console.log(this.networkListFrom);
       console.log(this.networkIdMint);
       network = this.networkListFrom[this.networkIdMint as number];
       this.changeNetworkIdMint(this.networkIdMint as number);
@@ -5164,21 +5433,25 @@ export default class extends Mixins(BalanceMixin) {
     let retrievePending: Array<RetrieveActive> = [];
     const currentInfo =
       JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-    // const smartContractAddress = await this.getMinterAddress();
-    const key = 'ckETHRetrieve-' + '0x0000000000000000000000000000000000000000';
-    const retrieveCKETH = currentInfo[key] || {};
-    console.log(retrieveCKETH);
-    for (let key in retrieveCKETH) {
-      if (retrieveCKETH[key]) {
-        for (let i = 0; i < retrieveCKETH[key].length; i++) {
-          const type = Object.keys(retrieveCKETH[key][i].status)[0];
-          if (type !== 'TxFinalized' && type !== 'NotFound') {
-            retrievePending.push({
-              amount: retrieveCKETH[key][i].amount,
-              tokenId: key
-            });
-          } else {
-            break;
+    for (let ckETHRetrieveKey in currentInfo) {
+      if (ckETHRetrieveKey.startsWith('ckETHRetrieve-')) {
+        const retrieveCKETH = currentInfo[ckETHRetrieveKey] || {};
+        console.log(retrieveCKETH);
+        if (retrieveCKETH) {
+          for (let key in retrieveCKETH) {
+            if (retrieveCKETH[key]) {
+              for (let i = 0; i < retrieveCKETH[key].length; i++) {
+                const type = Object.keys(retrieveCKETH[key][i].status)[0];
+                if (type !== 'TxFinalized' && type !== 'NotFound') {
+                  retrievePending.push({
+                    amount: retrieveCKETH[key][i].amount,
+                    tokenId: key
+                  });
+                } else {
+                  break;
+                }
+              }
+            }
           }
         }
       }
@@ -5199,29 +5472,46 @@ export default class extends Mixins(BalanceMixin) {
     let mintPending: Array<ClaimCKETHActive> = [];
     const currentInfo =
       JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-    // const smartContractAddress = await this.getMinterAddress();
-    const key = 'ckETHMint-' + '0x0000000000000000000000000000000000000000';
-    const mintCKETH = currentInfo[key] || {};
-    console.log(mintCKETH);
-    if (mintCKETH) {
-      await this.getLastScrapedBlockNumber();
-      if (this.lastScrapedBlockNumber) {
-        for (let key in mintCKETH) {
-          if (mintCKETH[key]) {
-            for (let i = 0; i < mintCKETH[key].length; i++) {
-              if (
-                !mintCKETH[key][i].blockNum ||
-                new BigNumber(this.lastScrapedBlockNumber).lt(
-                  mintCKETH[key][i].blockNum
-                )
-              ) {
-                mintPending.push({
-                  txHash: mintCKETH[key][i].txHash,
-                  amount: mintCKETH[key][i].amount,
-                  tokenId: key
-                });
-              } else {
-                break;
+    const lastScrapedBlockNumber = await this.getLastScrapedBlockNumber(
+      CK_ETH_MINTER_CANISTER_ID
+    );
+    const lastScrapedBlockNumberTest = await this.getLastScrapedBlockNumber(
+      CK_ETH_MINTER_CANISTER_ID_TEST
+    );
+    console.log(lastScrapedBlockNumber);
+    console.log(lastScrapedBlockNumberTest);
+    for (let ckETHMintKey in currentInfo) {
+      if (ckETHMintKey.startsWith('ckETHMint-')) {
+        const mintCKETH = currentInfo[ckETHMintKey] || {};
+        console.log(mintCKETH);
+        if (mintCKETH) {
+          if (lastScrapedBlockNumber && lastScrapedBlockNumberTest) {
+            for (let key in mintCKETH) {
+              if (mintCKETH[key]) {
+                for (let i = 0; i < mintCKETH[key].length; i++) {
+                  let blockNumber = lastScrapedBlockNumber;
+                  if (
+                    this.tokens &&
+                    this.tokens[key] &&
+                    this.tokens[key].symbol
+                      .toLocaleLowerCase()
+                      .includes('sepolia')
+                  ) {
+                    blockNumber = lastScrapedBlockNumberTest;
+                  }
+                  if (
+                    !mintCKETH[key][i].blockNum ||
+                    new BigNumber(blockNumber).lt(mintCKETH[key][i].blockNum)
+                  ) {
+                    mintPending.push({
+                      txHash: mintCKETH[key][i].txHash,
+                      amount: mintCKETH[key][i].amount,
+                      tokenId: key
+                    });
+                  } else {
+                    break;
+                  }
+                }
               }
             }
           }
@@ -5541,7 +5831,7 @@ export default class extends Mixins(BalanceMixin) {
         fee = new BigNumber(this.tokens[ERC20TokenId].fee.toString(10))
           .div(10 ** decimals)
           .toString(10);
-        const max = new BigNumber(total).div(10 ** 18).minus(fee);
+        const max = new BigNumber(total).div(10 ** decimals).minus(fee);
         console.log(total, max.toString(10));
         if (max.gt(0)) {
           console.log(type);
@@ -5561,17 +5851,50 @@ export default class extends Mixins(BalanceMixin) {
   private async retrieveCkETH(): Promise<void> {
     (this.$refs as any).ethDissolveFormCK.validate(async (valid: any) => {
       if (valid) {
+        // todo
         await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        if (
+          this.icNetworkTokens.icTokenInfo.type &&
+          this.icNetworkTokens.icTokenInfo.type === 'dfinityERC20'
+        ) {
+          let ethCanisterId = CK_ETH_LEDGER_CANISTER_ID;
+          let minter = CK_ETH_MINTER_CANISTER_ID;
+          if (this.icNetworkTokens.networkToIcId === '3') {
+            ethCanisterId = ckETHSep;
+            minter = CK_ETH_MINTER_CANISTER_ID_TEST;
+          }
+          (loading as any).setText(
+            `Approve ${this.tokens[ethCanisterId].symbol} ...`
+          );
+          const spender: Icrc1Account = {
+            owner: Principal.fromText(minter),
+            subaccount: []
+          };
+          const approveResETH = await this.icrc2Approve(
+            ethCanisterId,
+            BigInt(this.icNetworkTokens.icTokenInfo.minAmount),
+            spender
+          );
+          if (!approveResETH) {
+            loading.close();
+            return;
+          }
+        }
         const canisterId = this.icNetworkTokens.tokenId;
+        let spenderId = CK_ETH_MINTER_CANISTER_ID;
+        if (this.icNetworkTokens.networkToIcId === '3') {
+          spenderId = CK_ETH_MINTER_CANISTER_ID_TEST;
+        }
         const amount = new BigNumber(this.ethDissolveFormCK.retrieveAmount)
           .times(10 ** this.tokens[canisterId].decimals)
           .toString(10);
+        (loading as any).setText(`Approve ${this.icNetworkTokens.symbol} ...`);
         const spender: Icrc1Account = {
-          owner: Principal.fromText(CK_ETH_MINTER_CANISTER_ID),
+          owner: Principal.fromText(spenderId),
           subaccount: []
         };
         const approveRes = await this.icrc2Approve(
@@ -5580,47 +5903,129 @@ export default class extends Mixins(BalanceMixin) {
           spender
         );
         if (approveRes) {
-          const withdraw = await this.ckETHMinterDfiService.withdraw_eth({
-            recipient: this.ethDissolveFormCK.address.trim(),
-            amount: BigInt(amount)
-          });
-          console.log(withdraw);
-          if (withdraw) {
-            const type = Object.keys(withdraw)[0];
-            if (type === 'Ok') {
-              this.$message.success('Success');
-              this.ckETHRetrieve.unshift({
+          (loading as any).setText(
+            `Withdraw ${this.icNetworkTokens.symbol} ...`
+          );
+          if (
+            this.icNetworkTokens.icTokenInfo.type &&
+            this.icNetworkTokens.icTokenInfo.type === 'dfinityERC20'
+          ) {
+            console.log(
+              this.icNetworkTokens.networkToIcId === '3' ||
+                this.icNetworkTokens.networkId === '3'
+                ? CK_ETH_MINTER_CANISTER_ID_TEST
+                : CK_ETH_MINTER_CANISTER_ID
+            );
+            console.log(this.icNetworkTokens.tokenId);
+            console.log(amount);
+            const withdraw = await this.ckETHMinterDfiService.withdraw_erc20(
+              this.icNetworkTokens.networkToIcId === '3' ||
+                this.icNetworkTokens.networkId === '3'
+                ? CK_ETH_MINTER_CANISTER_ID_TEST
+                : CK_ETH_MINTER_CANISTER_ID,
+              {
+                ckerc20_ledger_id: Principal.fromText(
+                  this.icNetworkTokens.tokenId
+                ),
                 recipient: this.ethDissolveFormCK.address.trim(),
-                amount: amount,
-                blockIndex: (
-                  withdraw as {
-                    Ok: RetrieveEthRequest;
-                  }
-                ).Ok.block_index.toString(10),
-                status: { Pending: null }
-              });
-              const currentInfo =
-                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-              if (!currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id]) {
-                currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id] = {};
+                amount: BigInt(amount)
               }
-              currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id][
-                canisterId
-              ] = this.ckETHRetrieve;
-              localStorage.setItem(
-                this.getPrincipalId,
-                JSON.stringify(currentInfo)
-              );
-              this.retrieveStep = 2;
-              this.onGetRetrieveCKETHPending();
-              (this.$refs as any).ethDissolveFormCK.resetFields();
-            } else {
-              const err = (withdraw as { Err: WithdrawalError }).Err;
-              this.$message.error(
-                JSON.stringify(err, (key, value) =>
-                  typeof value === 'bigint' ? value.toString(10) : value
-                )
-              );
+            );
+            console.log(withdraw);
+            if (withdraw) {
+              const type = Object.keys(withdraw)[0];
+              if (type === 'Ok') {
+                this.$message.success('Success');
+                this.ckETHRetrieve.unshift({
+                  recipient: this.ethDissolveFormCK.address.trim(),
+                  amount: amount,
+                  blockIndex: (
+                    withdraw as {
+                      Ok: RetrieveErc20Request;
+                    }
+                  ).Ok.cketh_block_index.toString(10),
+                  ckerc20BlockIndex: (
+                    withdraw as {
+                      Ok: RetrieveErc20Request;
+                    }
+                  ).Ok.ckerc20_block_index.toString(10),
+                  status: { Pending: null }
+                });
+                const currentInfo =
+                  JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+                if (!currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id]) {
+                  currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id] = {};
+                }
+                currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id][
+                  canisterId
+                ] = this.ckETHRetrieve;
+                localStorage.setItem(
+                  this.getPrincipalId,
+                  JSON.stringify(currentInfo)
+                );
+                this.retrieveStep = 2;
+                this.getCKETHBalance(this.icNetworkTokens);
+                this.onGetRetrieveCKETHPending();
+                (this.$refs as any).ethDissolveFormCK.resetFields();
+              } else {
+                const err = (withdraw as { Err: WithdrawalError }).Err;
+                this.$message.error(
+                  JSON.stringify(err, (key, value) =>
+                    typeof value === 'bigint' ? value.toString(10) : value
+                  )
+                );
+              }
+            }
+          } else {
+            const withdraw = await this.ckETHMinterDfiService.withdraw_eth(
+              this.icNetworkTokens.networkToIcId === '3' ||
+                this.icNetworkTokens.networkId === '3'
+                ? CK_ETH_MINTER_CANISTER_ID_TEST
+                : CK_ETH_MINTER_CANISTER_ID,
+              {
+                recipient: this.ethDissolveFormCK.address.trim(),
+                amount: BigInt(amount)
+              }
+            );
+            console.log(withdraw);
+            if (withdraw) {
+              const type = Object.keys(withdraw)[0];
+              if (type === 'Ok') {
+                this.$message.success('Success');
+                this.ckETHRetrieve.unshift({
+                  recipient: this.ethDissolveFormCK.address.trim(),
+                  amount: amount,
+                  blockIndex: (
+                    withdraw as {
+                      Ok: RetrieveEthRequest;
+                    }
+                  ).Ok.block_index.toString(10),
+                  status: { Pending: null }
+                });
+                const currentInfo =
+                  JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+                if (!currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id]) {
+                  currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id] = {};
+                }
+                currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id][
+                  canisterId
+                ] = this.ckETHRetrieve;
+                localStorage.setItem(
+                  this.getPrincipalId,
+                  JSON.stringify(currentInfo)
+                );
+                this.retrieveStep = 2;
+                this.getCKETHBalance(this.icNetworkTokens);
+                this.onGetRetrieveCKETHPending();
+                (this.$refs as any).ethDissolveFormCK.resetFields();
+              } else {
+                const err = (withdraw as { Err: WithdrawalError }).Err;
+                this.$message.error(
+                  JSON.stringify(err, (key, value) =>
+                    typeof value === 'bigint' ? value.toString(10) : value
+                  )
+                );
+              }
             }
           }
         }
@@ -6790,6 +7195,23 @@ export default class extends Mixins(BalanceMixin) {
       networkIds[this.otherNetworkTokens.networkId]
     })`;
     this.retrieveModalCKETH = true;
+    this.canRetrieveCkerc20 = true;
+    if (this.icNetworkTokens.networkToIcId === '3') {
+      this.ckerc20RetrieveFee = new BigNumber(
+        this.icNetworkTokens.icTokenInfo.minAmount.toString(10)
+      )
+        .plus(getFee(this.tokens[ckETHSep]).toString(10))
+        .div(10 ** this.tokens[ckETHSep].decimals)
+        .toString(10);
+    } else if (this.icNetworkTokens.networkToIcId === '1') {
+      this.ckerc20RetrieveFee = new BigNumber(
+        this.icNetworkTokens.icTokenInfo.minAmount.toString(10)
+      )
+        .plus(getFee(this.tokens[CK_ETH_LEDGER_CANISTER_ID]).toString(10))
+        .plus(getFee(this.tokens[CK_ETH_LEDGER_CANISTER_ID]).toString(10))
+        .div(10 ** this.tokens[CK_ETH_LEDGER_CANISTER_ID].decimals)
+        .toString(10);
+    }
     this.initCKETHRetrieve();
   }
   private initCKETHRetrieve(): void {
@@ -6814,11 +7236,23 @@ export default class extends Mixins(BalanceMixin) {
       const status = Object.keys(retrieve.status)[0];
       if (status !== 'TxFinalized' && status !== 'NotFound') {
         const res = await this.ckETHMinterDfiService.retrieve_eth_status(
+          this.icNetworkTokens.networkToIcId === '3' ||
+            this.icNetworkTokens.networkId === '3'
+            ? CK_ETH_MINTER_CANISTER_ID_TEST
+            : CK_ETH_MINTER_CANISTER_ID,
           BigInt(retrieve.blockIndex)
         );
         const currentStatus = Object.keys(res)[0];
         if (status !== currentStatus) {
-          this.$set(retrieve, 'status', res);
+          this.$set(
+            retrieve,
+            'status',
+            JSON.parse(
+              JSON.stringify(res, (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+              )
+            )
+          );
           const currentInfo =
             JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
           currentInfo['ckETHRetrieve-' + id][tokenId] = this.ckETHRetrieve;
@@ -6861,7 +7295,16 @@ export default class extends Mixins(BalanceMixin) {
       const ckETHMint = currentInfo['ckETHMint-' + id] || {};
       this.ckETHMint = ckETHMint[tokenId] || [];
       this.getCkETHMintBlockNum(id, tokenId);
-      this.getLastScrapedBlockNumber();
+      let minterId = CK_ETH_MINTER_CANISTER_ID;
+      if (
+        this.icNetworkTokens.networkId === '3' ||
+        this.icNetworkTokens.networkToIcId === '3'
+      ) {
+        minterId = CK_ETH_MINTER_CANISTER_ID_TEST;
+      }
+      this.getLastScrapedBlockNumber(minterId).then((res) => {
+        this.lastScrapedBlockNumber = res;
+      });
       this.getCKETHBalance(this.icNetworkTokens);
       this.getCKETHMinterInterval(this.icNetworkTokens);
     }
@@ -6873,6 +7316,30 @@ export default class extends Mixins(BalanceMixin) {
     const balance = await getTokenBalance({ icrc1: null }, tokenId);
     this.$set(this.ERC20Balance, tokenId, balance);
     this.toAddToken('ICRC-1');
+    if (
+      icNetworkTokens.icTokenInfo.type &&
+      icNetworkTokens.icTokenInfo.type === 'dfinityERC20'
+    ) {
+      if (icNetworkTokens.networkToIcId === '3') {
+        getTokenBalance({ icrc1: null }, ckETHSep).then((res) => {
+          console.log(res);
+          this.canRetrieveCkerc20 = new BigNumber(res)
+            .div(10 ** this.tokens[ckETHSep].decimals)
+            .gte(this.ckerc20RetrieveFee);
+          this.$set(this.ERC20Balance, ckETHSep, res);
+        });
+      } else if (icNetworkTokens.networkToIcId === '1') {
+        getTokenBalance({ icrc1: null }, CK_ETH_LEDGER_CANISTER_ID).then(
+          (res) => {
+            console.log(res);
+            this.canRetrieveCkerc20 = new BigNumber(res)
+              .div(10 ** this.tokens[CK_ETH_LEDGER_CANISTER_ID].decimals)
+              .gte(this.ckerc20RetrieveFee);
+            this.$set(this.ERC20Balance, CK_ETH_LEDGER_CANISTER_ID, res);
+          }
+        );
+      }
+    }
   }
   private getCKETHMinterInterval(
     icNetworkTokens: ICNetworkTokensInterface
@@ -6883,7 +7350,16 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.ckETHTimer = window.setInterval(() => {
       this.getCkETHMintBlockNum(icNetworkTokens.id, icNetworkTokens.tokenId);
-      this.getLastScrapedBlockNumber();
+      let minterId = CK_ETH_MINTER_CANISTER_ID;
+      if (
+        icNetworkTokens.networkId === '3' ||
+        icNetworkTokens.networkToIcId === '3'
+      ) {
+        minterId = CK_ETH_MINTER_CANISTER_ID_TEST;
+      }
+      this.getLastScrapedBlockNumber(minterId).then((res) => {
+        this.lastScrapedBlockNumber = res;
+      });
       this.getCKETHBalance(icNetworkTokens);
     }, 30 * 1000);
   }
@@ -6891,7 +7367,14 @@ export default class extends Mixins(BalanceMixin) {
     id: string,
     tokenId: string
   ): Promise<void> {
-    this.getEthBlock(0, 0, ETHHttpsMainnet).then((res) => {
+    let ETHHttps = ETHHttpsMainnet;
+    if (
+      this.icNetworkTokens.networkId === '3' ||
+      this.icNetworkTokens.networkToIcId === '3'
+    ) {
+      ETHHttps = ETHHttpsSepolia;
+    }
+    this.getEthBlock(0, 0, ETHHttps).then((res) => {
       console.log(res);
       if (res) {
         this.ckETHBlockNum = parseInt(res.data.result);
@@ -6904,7 +7387,7 @@ export default class extends Mixins(BalanceMixin) {
           mint.txHash,
           0,
           0,
-          ETHHttpsMainnet
+          ETHHttps
         );
         if (res) {
           const receipt = res.data.result;
@@ -6915,6 +7398,9 @@ export default class extends Mixins(BalanceMixin) {
               'blockNum',
               Number(receipt.blockNumber).toString(10)
             );
+            if (receipt.status && receipt.status === '0x0') {
+              this.$set(mint, 'txStatus', 'Failed');
+            }
             const currentInfo =
               JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
             if (!currentInfo['ckETHMint-' + id]) {
@@ -6932,51 +7418,13 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
-  private async getLastScrapedBlockNumber(): Promise<void> {
-    const events = await this.ckETHMinterDfiService.get_events({
-      start: BigInt(0),
-      length: BigInt(1)
-    });
-    if (events) {
-      const length = 100;
-      const total = events.total_event_count;
-      let start = new BigNumber(total.toString(10)).minus(length).toString(10);
-      if (new BigNumber(start).lt(0)) {
-        start = '0';
-      }
-      await this.getEvents(BigInt(start), BigInt(length));
+  private async getLastScrapedBlockNumber(
+    ckETHMinterId: string
+  ): Promise<number> {
+    const res = await this.ckETHMinterDfiService.get_minter_info(ckETHMinterId);
+    if (res) {
+      return Number(res.last_observed_block_number[0]);
     }
-  }
-  private async getEvents(start: bigint, length: bigint): Promise<void> {
-    const events = await this.ckETHMinterDfiService.get_events({
-      start: start,
-      length: length
-    });
-    if (events) {
-      for (let i = events.events.length - 1; i >= 0; i--) {
-        const event = events.events[i];
-        const type = Object.keys(event.payload)[0];
-        if (type === 'AcceptedDeposit') {
-          this.lastScrapedBlockNumber = Number(
-            event.payload['AcceptedDeposit'].block_number
-          );
-          break;
-        }
-      }
-      if (
-        this.lastScrapedBlockNumber === null &&
-        new BigNumber(start.toString(10)).gt(0)
-      ) {
-        let newStart = new BigNumber(start.toString(10))
-          .minus(length.toString(10))
-          .toString(10);
-        if (new BigNumber(newStart).lt(0)) {
-          newStart = '0';
-        }
-        await this.getEvents(BigInt(newStart), length);
-      }
-    }
-    console.log(this.lastScrapedBlockNumber);
   }
   private initETHDeposit(): void {
     if (this.forgeModalETH) {
@@ -7112,7 +7560,17 @@ export default class extends Mixins(BalanceMixin) {
       ) {
         this.showForge(BTCTypeEnum.icBTC);
       } else {
-        const ckETHId = '1';
+        let ckETHId = '1';
+
+        if (
+          this.icNetworkTokens.networkId === '3' ||
+          this.icNetworkTokens.networkToIcId === '3'
+        ) {
+          ckETHId = '3';
+          this.ckEthLink = 'https://sepolia.etherscan.io/';
+        } else {
+          this.ckEthLink = 'https://etherscan.io';
+        }
         if (
           this.networkTokensTo[this.networkTokenIdMintTo].networkToIcId ===
           ckETHId
@@ -7153,6 +7611,7 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     }
+    console.log(this.icNetworkTokens);
   }
   private switchHub(): void {
     if (
@@ -7288,7 +7747,11 @@ export default class extends Mixins(BalanceMixin) {
                           account,
                           0,
                           0,
-                          networkId === '2' ? ETHHttps : ETHHttpsMainnet
+                          networkId === '2'
+                            ? ETHHttps
+                            : networkId === '3'
+                            ? ETHHttpsSepolia
+                            : ETHHttpsMainnet
                         ).then((res) => {
                           this.ethereumIsConnected = true;
                           const balance = new BigNumber(res)
@@ -7362,7 +7825,11 @@ export default class extends Mixins(BalanceMixin) {
                           account,
                           0,
                           0,
-                          networkId === '2' ? ETHHttps : ETHHttpsMainnet
+                          networkId === '2'
+                            ? ETHHttps
+                            : networkId === '3'
+                            ? ETHHttpsSepolia
+                            : ETHHttpsMainnet
                         ).then((res) => {
                           this.ethereumIsConnected = true;
                           const balance = new BigNumber(res)
@@ -8656,47 +9123,68 @@ export default class extends Mixins(BalanceMixin) {
     ) {
       const erc20TokenInfo = this.icNetworkTokens.icTokenInfo;
       const ERC20TokenId = this.icNetworkTokens.tokenId;
-      const std = Object.keys(erc20TokenInfo.std)[0];
-      let total;
-      let fee;
-      let decimals;
-      if (ERC20TokenId) {
-        if (std === 'ERC20') {
-          //
-        }
-        decimals = this.tokens[ERC20TokenId].decimals;
-        total = this.ERC20Balance[ERC20TokenId];
-        fee = new BigNumber(this.tokens[ERC20TokenId].fee.toString(10))
-          .div(10 ** decimals)
+      if (erc20TokenInfo.type && erc20TokenInfo.type === 'dfinityERC20') {
+        const fee = new BigNumber(this.tokens[ERC20TokenId].fee.toString(10))
+          .div(10 ** this.tokens[ERC20TokenId].decimals)
           .toString(10);
-      }
-      const min = Number(
-        new BigNumber(total)
-          .div(10 ** decimals)
-          .minus(fee)
-          .minus(value)
-          .toString(10)
-      );
-      let retrieve_eth_min_amount = new BigNumber(
-        this.icNetworkTokens.icTokenInfo.minAmount.toString(10)
-      )
-        .div(10 ** decimals)
-        .decimalPlaces(8)
-        .toString(10);
-      if (value && min < 0) {
-        callback(
-          `Insufficient ${this.icNetworkTokens.symbol} (${
-            networkIds[this.icNetworkTokens.networkId]
-          })`
+        const min = Number(
+          new BigNumber(this.ERC20Balance[ERC20TokenId])
+            .div(10 ** this.tokens[ERC20TokenId].decimals)
+            .minus(fee)
+            .minus(value)
         );
-      } else if (new BigNumber(value).lt(retrieve_eth_min_amount)) {
-        callback(
-          `Min amount is ${retrieve_eth_min_amount} ${
-            this.icNetworkTokens.symbol
-          } (${networkIds[this.icNetworkTokens.networkId]})`
-        );
+        if (value && min < 0) {
+          callback(
+            `Insufficient ${this.icNetworkTokens.symbol} (${
+              networkIds[this.icNetworkTokens.networkId]
+            })`
+          );
+        } else {
+          callback();
+        }
       } else {
-        callback();
+        const std = Object.keys(erc20TokenInfo.std)[0];
+        let total;
+        let fee;
+        let decimals;
+        if (ERC20TokenId) {
+          if (std === 'ERC20') {
+            //
+          }
+          decimals = this.tokens[ERC20TokenId].decimals;
+          total = this.ERC20Balance[ERC20TokenId];
+          fee = new BigNumber(this.tokens[ERC20TokenId].fee.toString(10))
+            .div(10 ** decimals)
+            .toString(10);
+        }
+        const min = Number(
+          new BigNumber(total)
+            .div(10 ** decimals)
+            .minus(fee)
+            .minus(value)
+            .toString(10)
+        );
+        let retrieve_eth_min_amount = new BigNumber(
+          this.icNetworkTokens.icTokenInfo.minAmount.toString(10)
+        )
+          .div(10 ** decimals)
+          .decimalPlaces(8)
+          .toString(10);
+        if (value && min < 0) {
+          callback(
+            `Insufficient ${this.icNetworkTokens.symbol} (${
+              networkIds[this.icNetworkTokens.networkId]
+            })`
+          );
+        } else if (new BigNumber(value).lt(retrieve_eth_min_amount)) {
+          callback(
+            `Min amount is ${retrieve_eth_min_amount} ${
+              this.icNetworkTokens.symbol
+            } (${networkIds[this.icNetworkTokens.networkId]})`
+          );
+        } else {
+          callback();
+        }
       }
     }
   }
@@ -8965,7 +9453,11 @@ export default class extends Mixins(BalanceMixin) {
             background: 'rgba(0, 0, 0, 0.5)'
           });
           try {
-            const ethChainId = '0x1';
+            const ethChainId =
+              this.icNetworkTokens.networkId === '1' ||
+              this.icNetworkTokens.networkToIcId === '1'
+                ? '0x1'
+                : '0xaa36a7';
             const chainId = await ethereum.request({ method: 'eth_chainId' });
             if (chainId !== ethChainId) {
               await ethereum.request({
@@ -8977,51 +9469,162 @@ export default class extends Mixins(BalanceMixin) {
               method: 'eth_requestAccounts'
             });
             console.log(accounts);
-            const contractId = this.smartContractAddress;
+            console.log(this.icNetworkTokens);
             const amount =
               '0x' +
               new BigNumber(this.erc20Form.amount).times(10 ** 18).toString(16);
             const _principalHex = principalToBytes32(this.getPrincipalId);
             const web3 = new Web3();
-            const ethContract = new web3.eth.Contract(ethAbi, contractId);
-            const contractData = ethContract.methods
-              .deposit(_principalHex)
-              .encodeABI();
             console.log(amount, _principalHex);
-            const sendTransactionRes = await ethereum.request({
-              method: 'eth_sendTransaction',
-              params: [
-                {
-                  from: accounts[0],
-                  to: contractId,
-                  value: amount,
-                  data: contractData
-                }
-              ]
-            });
-            console.log(sendTransactionRes);
-            const amountMint = new BigNumber(this.erc20Form.amount)
-              .times(10 ** 18)
-              .toString(10);
-            this.ckETHMint.unshift({
-              txHash: sendTransactionRes,
-              amount: amountMint,
-              blockNum: ''
-            });
-            const currentInfo =
-              JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-            if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
-              currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
+            console.log(this.smartContractAddress);
+            if (this.icNetworkTokens.tokenId === CK_ETH_LEDGER_CANISTER_ID) {
+              const ethContract = new web3.eth.Contract(
+                ethAbi,
+                this.smartContractAddress
+              );
+              const contractData = ethContract.methods
+                .deposit(_principalHex)
+                .encodeABI();
+              const sendTransactionRes = await ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [
+                  {
+                    from: accounts[0],
+                    to: this.smartContractAddress,
+                    value: amount,
+                    data: contractData
+                  }
+                ]
+              });
+              console.log(sendTransactionRes);
+              const amountMint = new BigNumber(this.erc20Form.amount)
+                .times(10 ** 18)
+                .toString(10);
+              this.ckETHMint.unshift({
+                txHash: sendTransactionRes,
+                amount: amountMint,
+                blockNum: ''
+              });
+              const currentInfo =
+                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+              if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
+                currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
+              }
+              currentInfo['ckETHMint-' + this.icNetworkTokens.id][
+                this.icNetworkTokens.tokenId
+              ] = this.ckETHMint;
+              localStorage.setItem(
+                this.getPrincipalId,
+                JSON.stringify(currentInfo)
+              );
+              this.changeMintStepCK(2);
+              this.onGetMintCKETHPending();
+            } else if (this.icNetworkTokens.tokenId === ckETHSep) {
+              const ethContract = new web3.eth.Contract(
+                ethAbi,
+                this.icNetworkTokens.id
+              );
+              const contractData = ethContract.methods
+                .deposit(_principalHex)
+                .encodeABI();
+              const sendTransactionRes = await ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [
+                  {
+                    from: accounts[0],
+                    to: this.icNetworkTokens.id,
+                    value: amount,
+                    data: contractData
+                  }
+                ]
+              });
+              console.log(sendTransactionRes);
+              const amountMint = new BigNumber(this.erc20Form.amount)
+                .times(10 ** 18)
+                .toString(10);
+              this.ckETHMint.unshift({
+                txHash: sendTransactionRes,
+                amount: amountMint,
+                blockNum: ''
+              });
+              const currentInfo =
+                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+              if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
+                currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
+              }
+              currentInfo['ckETHMint-' + this.icNetworkTokens.id][
+                this.icNetworkTokens.tokenId
+              ] = this.ckETHMint;
+              localStorage.setItem(
+                this.getPrincipalId,
+                JSON.stringify(currentInfo)
+              );
+              this.changeMintStepCK(2);
+              this.onGetMintCKETHPending();
+            } else {
+              (loading as any).setText(
+                `Approve ${this.icNetworkTokens.icTokenInfo.symbol} ...`
+              );
+              const web3 = new Web3(ethereum);
+              const tokenContract = new web3.eth.Contract(
+                abi,
+                this.icNetworkTokens.id
+              );
+              const amount =
+                '0x' +
+                new BigNumber(this.erc20Form.amount)
+                  .times(
+                    10 ** this.tokens[this.icNetworkTokens.tokenId].decimals
+                  )
+                  .toString(16);
+              const approveRes = await tokenContract.methods
+                .approve(this.smartContractAddressERC20, amount)
+                .send({ from: accounts[0] });
+              console.log(approveRes);
+              (loading as any).setText(
+                `Deposit ${this.icNetworkTokens.icTokenInfo.symbol} ...`
+              );
+              const ERC20Contract = new web3.eth.Contract(
+                erc20ABI,
+                this.smartContractAddressERC20
+              );
+              const contractData = ERC20Contract.methods
+                .deposit(this.icNetworkTokens.id, amount, _principalHex)
+                .encodeABI();
+              const sendTransactionRes = await ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [
+                  {
+                    from: accounts[0],
+                    to: this.smartContractAddressERC20,
+                    data: contractData
+                  }
+                ]
+              });
+              console.log(sendTransactionRes);
+              const amountMint = new BigNumber(this.erc20Form.amount)
+                .times(10 ** this.tokens[this.icNetworkTokens.tokenId].decimals)
+                .toString(10);
+              this.ckETHMint.unshift({
+                txHash: sendTransactionRes,
+                amount: amountMint,
+                blockNum: ''
+              });
+              const currentInfo =
+                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+              if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
+                currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
+              }
+              currentInfo['ckETHMint-' + this.icNetworkTokens.id][
+                this.icNetworkTokens.tokenId
+              ] = this.ckETHMint;
+              localStorage.setItem(
+                this.getPrincipalId,
+                JSON.stringify(currentInfo)
+              );
+              this.changeMintStepCK(2);
+              this.onGetMintCKETHPending();
             }
-            currentInfo['ckETHMint-' + this.icNetworkTokens.id][
-              this.icNetworkTokens.tokenId
-            ] = this.ckETHMint;
-            localStorage.setItem(
-              this.getPrincipalId,
-              JSON.stringify(currentInfo)
-            );
-            this.changeMintStepCK(2);
-            this.onGetMintCKETHPending();
           } catch (e) {
             console.error(e);
             if (e.code !== 4001) {

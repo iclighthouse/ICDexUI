@@ -174,7 +174,6 @@ import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 
 const commonModule = namespace('common');
-const Ic = (window as any).ic;
 const ethers = require('ethers');
 
 @Component({
@@ -320,11 +319,11 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     const authClientAPi = await AuthClientAPi.create();
     await authClientAPi.login();
     const identity = authClientAPi.tryGetIdentity();
-    const principal = identity.getPrincipal().toString();
-    if (principal !== this.selectedAccount) {
+    const principal = identity.getPrincipal();
+    if (principal && principal.toString() !== this.selectedAccount) {
       this.localAccount = this.selectedAccount;
       this.accountType = 'Internet Identity';
-      this.plugAccount = principal;
+      this.plugAccount = principal.toString();
       (this.$refs as any).switchPlugAccount.plugVisible = true;
     } else {
       this.setCheckAuth(false);
@@ -352,8 +351,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       const isConnect = await connectPlug.connect(whitelist);
       if (isConnect) {
         await createPlugWhiteActor();
-        const principalId = await Ic.plug.agent.getPrincipal();
-        if (principalId.toString() !== this.selectedAccount) {
+        const principalId = await (window as any).ic.plug.getPrincipal();
+        if (principalId && principalId.toString() !== this.selectedAccount) {
           this.localAccount = this.selectedAccount;
           this.plugAccount = principalId.toString();
           this.accountType = 'Plug';
@@ -387,8 +386,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       const isConnect = await connectInfinity.connect(whitelist);
       if (isConnect) {
         await createInfinityWhiteActor();
-        const principalId = await Ic.infinityWallet.getPrincipal();
-        if (principalId.toString() !== this.selectedAccount) {
+        const principalId = await (window as any).ic.infinityWallet.getPrincipal();
+        if (principalId && principalId.toString() !== this.selectedAccount) {
           this.localAccount = this.selectedAccount;
           this.plugAccount = principalId.toString();
           this.accountType = 'Infinity';

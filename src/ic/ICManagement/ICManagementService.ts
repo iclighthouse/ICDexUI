@@ -10,7 +10,6 @@ import { checkAuth } from '@/ic/CheckAuth';
 import store from '@/store';
 import { createIcxActor } from '@/ic/createIcxActor';
 import { SerializableIC } from '@/ic/converter';
-const Ic = (window as any).ic;
 
 export class ICManagementService {
   private service: Service;
@@ -33,7 +32,7 @@ export class ICManagementService {
       );
     } else if (priList[principal] === 'Plug') {
       this.service = Actor.createActor(ICManagementIDL, {
-        agent: Ic.plug.agent,
+        agent: (window as any).ic.plug.agent,
         canisterId: IC_MANAGEMENT_CANISTER_ID,
         ...{
           callTransform: transform,

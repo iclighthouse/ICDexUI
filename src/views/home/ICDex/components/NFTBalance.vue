@@ -103,6 +103,21 @@
           the account is an OAMM Pool, it will be eligible to create and update
           grid orders without ICL fees.
         </div>
+        <div v-if="type === 'mining'" class="base-font-title">
+          <div>
+            Binding NFT can get 15% to 25% mining acceleration.
+            <ul style="margin-top: 10px">
+              <li>- #MERCURY (index 1515-2021)&nbsp;&nbsp;15%</li>
+              <li>- #VENUS (index 1015-1514)&nbsp;&nbsp;17%</li>
+              <li>- #EARTH (index 615-1014)&nbsp;&nbsp;19%</li>
+              <li>- #MARS (index 315-614)&nbsp;&nbsp;21%</li>
+              <li>- #JUPITER (index 115-314)&nbsp;&nbsp;23%</li>
+              <li>- #SATURN (index 15-114)&nbsp;&nbsp;25%</li>
+              <li>- #URANUS (index 5-14)&nbsp;&nbsp;25%</li>
+              <li>- #NEPTUNE (index 0-4)&nbsp;&nbsp;25%</li>
+            </ul>
+          </div>
+        </div>
         <p class="flex-center base-color-w mt20">
           NFTs:
           <span
@@ -160,6 +175,7 @@
             <span v-if="type === 'ListingReferrer'"
               >You need to transfer the URANUS NFT to
             </span>
+            <span v-if="type === 'mining'">You need to transfer NFT to </span>
             <copy-account
               :account="getPrincipalId"
               copyText="Principal"
@@ -182,7 +198,9 @@
               class="w100 primary"
               @click="onDeposit"
             >
-              Deposit
+              <span v-if="type === 'mining'"
+                >Deposit NFT for mining acceleration</span
+              ><span v-else>Deposit</span>
             </button>
           </div>
         </div>
@@ -190,7 +208,9 @@
       <div class="mt20">
         <p class="base-color-w">Deposited NFT</p>
         <div class="nfts-main">
-          <div class="base-font-title">Select an NFT</div>
+          <div v-show="type !== 'mining'" class="base-font-title">
+            Select an NFT
+          </div>
           <ul class="nft-main">
             <li
               v-for="(ext, index) in nftBalance.slice(
@@ -200,14 +220,18 @@
               :key="index"
               :class="{
                 active:
-                  currentDepositedNft && ext[1] === currentDepositedNft[1],
+                  currentDepositedNft &&
+                  ext[1] === currentDepositedNft[1] &&
+                  type !== 'mining',
                 disabled: !canSubmit(ext)
               }"
               @click="selectDepositedNft(ext)"
             >
               <img
                 v-show="
-                  currentDepositedNft && ext[1] === currentDepositedNft[1]
+                  currentDepositedNft &&
+                  ext[1] === currentDepositedNft[1] &&
+                  type !== 'mining'
                 "
                 class="checked"
                 src="@/assets/img/checked.png"
@@ -217,7 +241,11 @@
                 <img :src="getImg(ext[3])" alt="" />
               </div>
               <div class="ext-info">{{ Object.keys(ext[3])[0] }} CARD</div>
-              <div class="ext-transfer" @click.stop="onWithdraw(ext)">
+              <div
+                v-show="type !== 'mining'"
+                class="ext-transfer"
+                @click.stop="onWithdraw(ext)"
+              >
                 Withdraw
               </div>
             </li>
@@ -238,6 +266,17 @@
           </div>
           <div v-if="!nftBalance.length" class="text-center">
             No Deposited NFT
+          </div>
+          <div
+            v-if="type === 'mining' && nftBalance.length"
+            style="display: flex; align-items: center; justify-content: center"
+          >
+            <img
+              style="width: 16px; height: 16px"
+              src="@/assets/img/checked.png"
+              alt=""
+            />&nbsp; Already have NFT bound, you get +{{ acceleration }}% mining
+            acceleration.
           </div>
           <div class="nft-main-pagination">
             <a-pagination
@@ -808,6 +847,29 @@ export default class extends Vue {
       { validator: validateCanisterOrAccount, trigger: ['blur', 'change'] }
     ]
   };
+  get acceleration(): number {
+    if (this.nftBalance.length) {
+      let acceleration = 0;
+      this.nftBalance.forEach((item) => {
+        const type = Object.keys(item[3])[0];
+        if (type === 'NEPTUNE' || type === 'URANUS' || type === 'SATURN') {
+          acceleration = 25;
+        } else if (type === 'JUPITER' && acceleration < 23) {
+          acceleration = 23;
+        } else if (type === 'MARS' && acceleration < 21) {
+          acceleration = 21;
+        } else if (type === 'EARTH' && acceleration < 19) {
+          acceleration = 19;
+        } else if (type === 'VENUS' && acceleration < 17) {
+          acceleration = 17;
+        } else if (type === 'MERCURY' && acceleration < 15) {
+          acceleration = 15;
+        }
+      });
+      return acceleration;
+    }
+    return null;
+  }
   created(): void {
     this.NftService = new NftService();
     this.ICDexRouterService = new ICDexRouterService();
@@ -1006,11 +1068,12 @@ export default class extends Vue {
     }
     if (new BigNumber(await this.getIclBalance()).lt(fee)) {
       loading.close();
-      this.$info({
+      (this.$info as any)({
         content: `Insufficient balance. A minimum of ${fee} ${tokenInfo.symbol} is required to create a MM Pool.`,
-        class: 'connect-plug',
+        class: 'connect-plug register-mining-confirm launch-info-button',
         icon: 'connect-plug',
-        okText: 'Confirm',
+        okText: 'Insufficient ICL balance',
+        closable: true,
         centered: true,
         onOk() {
           //
@@ -1109,6 +1172,12 @@ export default class extends Vue {
     });
   }
   private onSubmit(): void {
+    if (!this.pairsMaker[this.createMakerPoolForm.pair][1].liquidity[0].price) {
+      this.$message.error(
+        'The pair should complete at least one trade before being allowed to create an OAMM.'
+      );
+      return;
+    }
     (this.$refs.createMakerPoolForm as any).validate(async (valid: any) => {
       console.log(valid);
       if (valid) {
@@ -1142,7 +1211,7 @@ export default class extends Vue {
         if (new BigNumber(lowerLimit).lt(1)) {
           lowerLimit = '1';
         }
-        const upperLimit = new BigNumber(
+        let upperLimit = new BigNumber(
           this.pairsMaker[
             this.createMakerPoolForm.pair
           ][1].liquidity[0].price.toString(10)
@@ -1150,6 +1219,12 @@ export default class extends Vue {
           .times(1_000_000_000_000)
           .decimalPlaces(0)
           .toString(10);
+        if (new BigNumber(upperLimit).lte(lowerLimit)) {
+          upperLimit = new BigNumber(lowerLimit)
+            .times(1_000_000_000_000)
+            .decimalPlaces(0)
+            .toString(10);
+        }
         // ppm
         const spreadRate = new BigNumber(this.createMakerPoolForm.spreadRate)
           .div(100)
@@ -1444,6 +1519,9 @@ export default class extends Vue {
         if (this.type === 'ListingReferrer' && info.name.includes('URANUS')) {
           return true;
         }
+        if (this.type === 'mining') {
+          return true;
+        }
       }
     }
     return false;
@@ -1526,7 +1604,7 @@ export default class extends Vue {
     } else {
       this.$confirm({
         content:
-          'Withdrawing this NFT may cause the function it is bound to to be disabled.',
+          'Withdrawing this NFT may disable the function it is linked to.',
         class: 'connect-plug',
         icon: 'connect-plug',
         centered: true,

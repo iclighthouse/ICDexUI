@@ -48,18 +48,6 @@
           @launchSuccess="launchSuccess"
           @changeLaunch="changeLaunch"
         ></launch>
-        <a
-          v-if="getPrincipalId"
-          href="https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471"
-          rel="nofollow noreferrer noopener"
-          target="_blank"
-          style="
-            margin-left: 15px;
-            margin-right: 5px;
-            color: #adb3c4 !important;
-          "
-          >Guide</a
-        >
         <div class="home-header-right-info">
           <account-info :menu-list="menuList"></account-info>
         </div>
@@ -81,42 +69,133 @@
           }"
         >
           <div class="de-swap-list-item">
-            <div class="de-swap-list-item-search base-font-title">
+            <div
+              ref="deSwapListmenu"
+              @mouseleave="marketMenuVisible = false"
+              class="de-swap-list-item-search base-font-title"
+            >
+              <a-icon
+                :theme="
+                  currentTradeMarketSort === 'Star' ? 'filled' : 'outlined'
+                "
+                type="star"
+                class="pointer"
+                :class="{
+                  'base-font-normal': currentTradeMarketSort === 'Star'
+                }"
+                style="margin-right: 10px; font-size: 13px"
+                @click.stop="changeStarMenu"
+              />
+              <a-tooltip
+                :getPopupContainer="() => $refs.deSwapListmenu"
+                :visible="marketMenuVisible"
+                :overlayStyle="{ padding: 0 }"
+                overlayClassName="market-menu-tooltip"
+                trigger="click"
+                @click.stop="(selectMarket = false), (marketMenuVisible = true)"
+              >
+                <template slot="title">
+                  <div @mouseleave="marketMenuVisible = false">
+                    <div
+                      class="user-setting base-bg-box user-setting-account"
+                      :class="{
+                        active:
+                          currentMarketMenu === item.value &&
+                          currentTradeMarketSort !== 'Star'
+                      }"
+                      v-for="(item, index) in marketMenu"
+                      :key="index"
+                      @click.stop="changeMarketMenu(item)"
+                    >
+                      <span>
+                        {{ item.name }}
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <a-tooltip placement="topRight" :visible="selectMarket">
+                  <template slot="title"> Select Market </template>
+                  <div
+                    @mouseenter="selectMarket = true"
+                    @mouseleave="selectMarket = false"
+                    @click.stop="marketMenuVisible = true"
+                    class="flex-center pointer base-font-title"
+                    :class="[
+                      currentTradeMarketSort === 'Star'
+                        ? 'base-font-title'
+                        : 'base-font-normal'
+                    ]"
+                  >
+                    <a-icon style="font-size: 12px" type="menu" />
+                    <span style="margin: 0 2px">{{ currentMarketMenu }}</span>
+                  </div>
+                </a-tooltip>
+              </a-tooltip>
               <a-tooltip placement="top">
                 <template slot="title">
-                  <div class="base-font-title">
-                    <div>
-                      Listing on ICDex is non-censored, anyone can list a token
-                      on ICDex, the security and value of the tokens needs to be
-                      assessed by you and you bear all the consequences.
+                  <div
+                    style="padding: 10px 0; color: #8c90a1"
+                    class="base-font-title"
+                  >
+                    <div style="margin-bottom: 10px; font-size: 14px">
+                      Listing on ICDex is an open and uncensored process so
+                      anyone can list a token on ICDex. You, the trader, bear
+                      all responsibility for assessing and valuing the tokens
+                      being traded on ICDex and accept responsibility for any
+                      consequences of these trades.
                     </div>
-                    <div>
+                    <div style="margin-bottom: 10px; font-size: 14px">
                       Pair Score is an automatic evaluation mechanism of ICDex
                       for trading pairs, which is based on the comprehensive
                       evaluation of the number of sponsors, liquidity, volume,
                       etc. It is for your reference only, and is not considered
-                      as investment advice. The list of trading pairs is divided
-                      into three boards according to the Pair Score.
+                      as investment advice, endorsement, or a form of guarantee.
                     </div>
-                    <div>
-                      <span class="dots"></span> MAIN (STAGE2) Board means that
-                      more traders are involved and need to keep track of the
-                      risks.
+                    <div style="margin-bottom: 10px; font-size: 14px">
+                      The list of trading pairs is divided into three boards
+                      according to the Pair Score but as always its important to
+                      note every asset carries risks and you’re advised to do
+                      your own due diligence before trading.
                     </div>
-                    <div>
-                      <span class="dots"></span> SECOND (STAGE1) Board means
-                      that some traders are involved and need to keep track of
-                      the risks.
+                    <div style="margin-bottom: 5px">
+                      <span class="dots"></span> "Main" (STAGE2): Pairings in
+                      the "Main" category should not only
+                      <a
+                        href="https://medium.com/@ICLighthouse/a-guide-to-listing-tokens-on-icdex-25e1efae1471"
+                        target="_blank"
+                        style="color: #51b7c3"
+                        >meet the criteria outlined in our listing article</a
+                      >, they also have a combination of strong user engagement
+                      (high trade volumes), high liquidity, and typically a high
+                      level of trust within the IC ecosystem.
                     </div>
-                    <div>
-                      <span class="dots"></span> THIRD (STAGE0) Board means that
-                      fewer traders are involved and there are many unknown
-                      risks.
+                    <div style="margin-bottom: 5px">
+                      <span class="dots"></span> "Rising" (STAGE1): Pairings
+                      which make it into the “Rising” category have reasonable
+                      and consistent levels of trading activity and liquidity
+                      and are growing in trust and popularity in the ecosystem.
+                    </div>
+                    <div style="margin-bottom: 5px">
+                      <span class="dots"></span> "High Risk" (STAGE0): "High
+                      Risk" pairings are pairs where traders will likely want to
+                      proceed with higher levels of scrutiny and caution.
+                      <div>
+                        New pairings and/or pairings which typically have low
+                        liquidity and low trade volumes will be placed in this
+                        category.
+                      </div>
+                      <div>
+                        This ranking does not necessarily mean a project is bad
+                        or that you shouldn’t trade it at all, however it’s
+                        recommended you take extra precautions before trading.
+                        Over time, projects which eventually grow to meet the
+                        criteria for a higher pair score are able to move to a
+                        higher ranking.
+                      </div>
                     </div>
                   </div>
                 </template>
-                <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
-                  >About boards
+                <span style="font-size: 12px; flex-shrink: 0; margin: 0 10px">
                   <a-icon type="question-circle" />
                 </span>
               </a-tooltip>
@@ -132,9 +211,18 @@
                 <a-icon style="color: #adb3c4" slot="prefix" type="search" />
               </a-input>
             </div>
-            <ul class="trade-market-sort">
+            <ul
+              class="trade-market-sort"
+              v-show="currentTradeMarketSort !== 'Star'"
+            >
               <li
                 :class="[
+                  currentTradeMarketSort === 'Star' && item.value === 'Star'
+                    ? 'show-sort'
+                    : 'hide-sort',
+                  currentTradeMarketSort !== 'Star' && item.value !== 'Star'
+                    ? 'show-sort'
+                    : 'hide-sort',
                   item.value === currentTradeMarketSort ? 'active' : '',
                   item.value === 'Old' ? 'trade-market-old' : '',
                   item.value
@@ -144,19 +232,32 @@
                 @click="changeTradeMarketSort(item)"
               >
                 <a-icon
-                  v-show="item.value === 'Star'"
+                  v-show="
+                    currentTradeMarketSort === 'Star' && item.value === 'Star'
+                  "
                   type="star"
                   theme="filled"
                 />
                 <a-tooltip placement="top">
                   <template slot="title">
-                    <span>{{ item.value }} Board Market</span>
+                    <span>
+                      <span v-show="item.value === 'Main'">Main</span>
+                      <span v-show="item.value === 'Second'">Rising</span>
+                      <span v-show="item.value === 'Third'">Higher Risk</span>
+                      <span v-show="item.value === 'Hot'">Hot</span>
+                      Pairings</span
+                    >
                   </template>
                   <span
                     :class="{ 'trade-market-old-main': item.value === 'Main' }"
-                    v-show="item.value !== 'Star' && item.value !== 'Old'"
+                    v-show="
+                      currentTradeMarketSort !== 'Star' &&
+                      item.value !== 'Star' &&
+                      item.value !== 'Old'
+                    "
                   >
                     <span
+                      v-show="item.value !== 'Hot'"
                       class="circle"
                       :class="[
                         item.value === 'Main'
@@ -172,7 +273,7 @@
                 <span v-if="item.value === 'Old'">
                   {{ item.name }}
                 </span>
-                <span v-if="item.value === 'USDT'" class="base-red">TEST</span>
+                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
               </li>
             </ul>
             <table>
@@ -186,10 +287,11 @@
               <tbody
                 class="de-swap-list-item-pair de-swap-list-item-pair-market"
                 ref="deSwapListItemPair"
+                v-if="currentTradeMarketSort"
               >
                 <tr v-if="currentTradeMarketSort === 'Third' && !showThird">
                   <td colspan="3" style="line-height: 1.5; padding-left: 10px">
-                    The trading pairs on the THIRD board mean that very few
+                    The trading pairs on the High Risk mean that very few
                     traders are involved and there may be a higher risk. Sure
                     you want to show the list?
                     <button class="mt20 w100" @click="showThird = true">
@@ -204,7 +306,7 @@
                   "
                 >
                   <td colspan="3" style="line-height: 1.5; padding-left: 10px">
-                    There are no pairs on the MAIN board. Check out the
+                    There are no pairs on the MAIN Pairings. Check out the
                     <span
                       @click="
                         changeTradeMarketSort({
@@ -213,12 +315,275 @@
                         })
                       "
                       style="color: #51b7c3"
-                      >SECOND</span
+                      >Rising</span
                     >
-                    board.
+                    Pairings.
                   </td>
                 </tr>
+                <RecycleScroller
+                  v-if="currentTradeMarketSort !== 'Star'"
+                  style="height: 336px"
+                  :items="pairsScroll"
+                  :item-size="50"
+                  :buffer="800"
+                >
+                  <tr
+                    slot-scope="{ item, index }"
+                    @click="changePair(item.pair, index)"
+                    :class="{
+                      active:
+                        !(currentTradeMarketSort === 'Third' && !showThird) &&
+                        currentPairIndex !== null &&
+                        pairs[currentPairIndex] &&
+                        (currentPair[3] === currentTradeMarketSort ||
+                          !item.pair[1][0].marketBoard) &&
+                        item.pair[1][0].canisterId.toString() ===
+                          currentPair[1][0].canisterId.toString(),
+                      draggable: item.pair[3] === 'Star'
+                    }"
+                  >
+                    <a-tooltip
+                      :overlayClassName="
+                        drag ||
+                        item.pair[1][0].token1[0].toString() ===
+                          'hhaaz-2aaaa-aaaaq-aacla-cai'
+                          ? 'order-book-type-list-tooltip hide-order-book-type-list-tooltip'
+                          : 'order-book-type-list-tooltip'
+                      "
+                      placement="right"
+                    >
+                      <template slot="title">
+                        <dl>
+                          <dt>
+                            <span
+                              class="tabular-nums"
+                              v-if="
+                                tokens &&
+                                tokens[item.pair[1][0].token1[0].toString()] &&
+                                item.pair[2]
+                              "
+                            >
+                              24h: ${{
+                                item.pair[2].vol24h.value1
+                                  | icpToUsdt(
+                                    currentMarketPrice,
+                                    item.pair[1][0].token1[1],
+                                    tokens[item.pair[1][0].token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatNum
+                              }}
+                            </span>
+                          </dt>
+                          <dd>
+                            <span
+                              class="tabular-nums"
+                              v-if="
+                                tokens &&
+                                tokens[item.pair[1][0].token1[0].toString()] &&
+                                item.pair[2]
+                              "
+                            >
+                              Total: ${{
+                                item.pair[2].totalVol.value1
+                                  | icpToUsdt(
+                                    currentMarketPrice,
+                                    item.pair[1][0].token1[1],
+                                    tokens[item.pair[1][0].token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatNum
+                              }}
+                            </span>
+                          </dd>
+                        </dl>
+                      </template>
+                      <div
+                        style="display: table; width: 100%; table-layout: fixed"
+                        v-if="
+                          !(currentTradeMarketSort === 'Third' && !showThird)
+                        "
+                      >
+                        <td style="width: 100px">
+                          <dl>
+                            <dt
+                              :class="{
+                                'usdt-test-dt':
+                                  currentTradeMarketSort === 'USDC'
+                              }"
+                            >
+                              <a-tooltip placement="right">
+                                <template slot="title">
+                                  <span v-if="showReminder2(item.pair)">
+                                    REMINDER: This trading pair with a score
+                                    below the Main Pairings requirement for
+                                    {{ getMainDay(item.pair) }} days may be
+                                    downgraded to the Rising Pairings.
+                                  </span>
+                                  <span v-if="showReminder1(item.pair)">
+                                    REMINDER: This trading pair with a score
+                                    below the Rising Pairings requirement for
+                                    {{ getSecondDay(item.pair) }} days may be
+                                    downgraded to the Higher Risk Pairings.
+                                  </span>
+                                </template>
+                                <span
+                                  v-if="
+                                    (item.pair && showReminder1(item.pair)) ||
+                                    showReminder2(item.pair)
+                                  "
+                                  style="opacity: 0.8; color: #727a87"
+                                  class="pair-name"
+                                >
+                                  * {{ item.pair[1][0].token0[1]
+                                  }}<span class="pair-icp"
+                                    >/{{ item.pair[1][0].token1[1] }}</span
+                                  >
+                                </span>
+                              </a-tooltip>
+                              <span
+                                v-if="
+                                  item.pair &&
+                                  !showReminder1(item.pair) &&
+                                  !showReminder2(item.pair)
+                                "
+                                class="pair-name"
+                              >
+                                {{ item.pair[1][0].token0[1]
+                                }}<span class="pair-icp"
+                                  >/{{ item.pair[1][0].token1[1] }}</span
+                                >
+                              </span>
+                            </dt>
+                            <dd>
+                              <a-icon
+                                v-show="
+                                  !oldPairs.includes(item.pair[0].toString()) &&
+                                  item.pair[1][0].marketBoard
+                                "
+                                :theme="
+                                  star.includes(item.pair[0].toString())
+                                    ? 'filled'
+                                    : 'outlined'
+                                "
+                                @click.stop="onStar(item.pair)"
+                                type="star"
+                                :class="{
+                                  'base-font-title': star.includes(
+                                    item.pair[0].toString()
+                                  )
+                                }"
+                              />
+                              <span
+                                v-show="
+                                  oldPairs.includes(item.pair[0].toString())
+                                "
+                                >(Old)</span
+                              >
+                            </dd>
+                          </dl>
+                        </td>
+                        <td>
+                          <dl>
+                            <dt>
+                              <span
+                                class="tabular-nums"
+                                v-if="
+                                  tokens &&
+                                  tokens[
+                                    item.pair[1][0].token0[0].toString()
+                                  ] &&
+                                  tokens[
+                                    item.pair[1][0].token1[0].toString()
+                                  ] &&
+                                  item.pair[2]
+                                "
+                              >
+                                {{
+                                  item.pair[2].price
+                                    | filterPairTokenPrice(
+                                      tokens[
+                                        item.pair[1][0].token0[0].toString()
+                                      ].decimals,
+                                      tokens[
+                                        item.pair[1][0].token1[0].toString()
+                                      ].decimals
+                                    )
+                                }}
+                              </span>
+                            </dt>
+                            <dd>
+                              <span
+                                :class="{
+                                  'bid-pair-price':
+                                    Number(item.pair[2].change24h) > 0,
+                                  'ask-pair-price':
+                                    Number(item.pair[2].change24h) < 0
+                                }"
+                                class="tabular-nums"
+                                v-if="item.pair[2]"
+                              >
+                                {{ item.pair[2].change24h | filterChange }}%
+                              </span>
+                            </dd>
+                          </dl>
+                        </td>
+                        <td class="text-right">
+                          <dl>
+                            <dt>
+                              <span
+                                class="tabular-nums"
+                                v-if="
+                                  tokens &&
+                                  tokens[
+                                    item.pair[1][0].token1[0].toString()
+                                  ] &&
+                                  item.pair[2]
+                                "
+                              >
+                                {{
+                                  item.pair[2].vol24h.value1
+                                    | bigintToFloat(
+                                      2,
+                                      tokens[
+                                        item.pair[1][0].token1[0].toString()
+                                      ].decimals
+                                    )
+                                    | formatNum
+                                }}
+                              </span>
+                            </dt>
+                            <dd>
+                              <span
+                                class="tabular-nums"
+                                v-if="
+                                  tokens &&
+                                  tokens[
+                                    item.pair[1][0].token1[0].toString()
+                                  ] &&
+                                  item.pair[2]
+                                "
+                              >
+                                {{
+                                  item.pair[2].totalVol.value1
+                                    | bigintToFloat(
+                                      2,
+                                      tokens[
+                                        item.pair[1][0].token1[0].toString()
+                                      ].decimals
+                                    )
+                                    | formatNum
+                                }}
+                              </span>
+                            </dd>
+                          </dl>
+                        </td>
+                      </div>
+                    </a-tooltip>
+                  </tr>
+                </RecycleScroller>
                 <draggable
+                  v-if="currentTradeMarketSort === 'Star'"
                   @start="draggableStar"
                   @end="draggableEnd"
                   v-model="tradePairs[currentTradeMarketSort]"
@@ -319,22 +684,22 @@
                               <dt
                                 :class="{
                                   'usdt-test-dt':
-                                    currentTradeMarketSort === 'USDT'
+                                    currentTradeMarketSort === 'USDC'
                                 }"
                               >
                                 <a-tooltip placement="right">
                                   <template slot="title">
                                     <span v-if="showReminder2(pair)">
                                       REMINDER: This trading pair with a score
-                                      below the MAIN board requirement for
+                                      below the Main Pairings requirement for
                                       {{ getMainDay(pair) }} days may be
-                                      downgraded to the SECOND board.
+                                      downgraded to the Rising Pairings.
                                     </span>
                                     <span v-if="showReminder1(pair)">
                                       REMINDER: This trading pair with a score
-                                      below the SECOND board requirement for
+                                      below the Rising Pairings requirement for
                                       {{ getSecondDay(pair) }} days may be
-                                      downgraded to the THIRD board.
+                                      downgraded to the Higher Risk Pairings.
                                     </span>
                                   </template>
                                   <span
@@ -596,36 +961,16 @@
                 <a-tooltip placement="top">
                   <template slot="title">
                     <div class="base-font-title">
-                      <div>
-                        Listing on ICDex is non-censored, anyone can list a
-                        token on ICDex, the security and value of the tokens
-                        needs to be assessed by you and you bear all the
-                        consequences.
-                      </div>
-                      <div>
-                        Pair Score is an automatic evaluation mechanism of ICDex
-                        for trading pairs, which is based on the comprehensive
-                        evaluation of the number of sponsors, liquidity, volume,
-                        etc. It is for your reference only, and is not
-                        considered as investment advice. The list of trading
-                        pairs is divided into three boards according to the Pair
-                        Score.
-                      </div>
-                      <div>
-                        <span class="dots"></span> MAIN (STAGE2) Board means
-                        that more traders are involved and need to keep track of
-                        the risks.
-                      </div>
-                      <div>
-                        <span class="dots"></span> SECOND (STAGE1) Board means
-                        that some traders are involved and need to keep track of
-                        the risks.
-                      </div>
-                      <div>
-                        <span class="dots"></span> THIRD (STAGE0) Board means
-                        that fewer traders are involved and there are many
-                        unknown risks.
-                      </div>
+                      {{
+                        Object.keys(currentPair[1][0].marketBoard)[0] ===
+                        'STAGE2'
+                          ? 'Main'
+                          : Object.keys(currentPair[1][0].marketBoard)[0] ===
+                            'STAGE1'
+                          ? 'Rising'
+                          : 'Higher Risk'
+                      }}
+                      Pairings
                     </div>
                   </template>
                   <span
@@ -638,8 +983,8 @@
                         ? 'M'
                         : Object.keys(currentPair[1][0].marketBoard)[0] ===
                           'STAGE1'
-                        ? 'S'
-                        : 'T'
+                        ? 'R'
+                        : 'H'
                     }}
                   </span>
                 </a-tooltip>
@@ -704,8 +1049,8 @@
                         ? 'M'
                         : Object.keys(currentPair[1][0].marketBoard)[0] ===
                           'STAGE1'
-                        ? 'S'
-                        : 'T'
+                        ? 'R'
+                        : 'H'
                     }}
                   </span>
                   <span
@@ -819,12 +1164,6 @@
                   <span>Competitions</span>
                 </li>-->
               </ul>
-              <!--<trading-mining
-                class="margin-left-auto trading-mining"
-                ref="tradingMiningH5"
-                v-if="currentPair"
-                :pair-id="currentPair[0].toString()"
-              ></trading-mining>-->
               <!-- <trading-competitions
                 ref="tradingCompetitionH5"
                 v-if="currentPair"
@@ -1217,7 +1556,7 @@
                     <th>
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDT'
+                          'usdt-test': currentTradeMarketSort === 'USDC'
                         }"
                       >
                         Price<span
@@ -1233,7 +1572,7 @@
                     <th class="text-right">
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDT'
+                          'usdt-test': currentTradeMarketSort === 'USDC'
                         }"
                       >
                         Quantity
@@ -1388,13 +1727,12 @@
                 </a-menu>
               </a-dropdown>-->
             </div>
-            <trading-mining
+            <mining-info
+              v-if="currentPair"
+              :current-pair-id="currentPair[0].toString()"
               style="padding: 0 5px 0 0 !important; border: none"
               class="margin-left-auto trading-mining"
-              ref="tradingMining"
-              v-if="currentPair"
-              :pair-id="currentPair[0].toString()"
-            ></trading-mining>
+            ></mining-info>
             <a-icon
               v-show="
                 currentPair && !prePairs.includes(currentPair[0].toString())
@@ -1438,7 +1776,7 @@
                       v-if="
                         currentPair[1][0].token1[1]
                           .toLocaleLowerCase()
-                          .includes('usdt') ||
+                          .includes('usdc') ||
                         currentPair[1][0].token1[1]
                           .toLocaleLowerCase()
                           .includes('test')
@@ -1472,7 +1810,7 @@
                     v-if="
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
-                        .includes('usdt') &&
+                        .includes('usdc') &&
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
                         .includes('test')
@@ -2142,7 +2480,7 @@
                       v-if="
                         currentPair[1][0].token0[1]
                           .toLocaleLowerCase()
-                          .includes('usdt') ||
+                          .includes('usdc') ||
                         currentPair[1][0].token0[1]
                           .toLocaleLowerCase()
                           .includes('test')
@@ -2177,7 +2515,7 @@
                     v-if="
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
-                        .includes('usdt') &&
+                        .includes('usdc') &&
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
                         .includes('test')
@@ -3252,7 +3590,7 @@
                 <th>
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDT'
+                      'usdt-test': currentTradeMarketSort === 'USDC'
                     }"
                     class="font-10"
                   >
@@ -3269,7 +3607,7 @@
                 <th class="text-right">
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDT'
+                      'usdt-test': currentTradeMarketSort === 'USDC'
                     }"
                     class="font-10"
                   >
@@ -10226,6 +10564,7 @@
             />
           </div>
           <div class="de-swap-list-item-search base-font-title">
+            <a-icon type="menu" />
             <a-tooltip placement="top">
               <template slot="title">
                 <div class="base-font-title">
@@ -10243,23 +10582,20 @@
                     three boards according to the Pair Score.
                   </div>
                   <div>
-                    <span class="dots"></span> MAIN (STAGE2) Board means that
-                    more traders are involved and need to keep track of the
-                    risks.
+                    <span class="dots"></span> MAIN Pairings means that more
+                    traders are involved and need to keep track of the risks.
                   </div>
                   <div>
-                    <span class="dots"></span> SECOND (STAGE1) Board means that
-                    some traders are involved and need to keep track of the
-                    risks.
+                    <span class="dots"></span> Rising Pairings means that some
+                    traders are involved and need to keep track of the risks.
                   </div>
                   <div>
-                    <span class="dots"></span> THIRD (STAGE0) Board means that
+                    <span class="dots"></span> Higher Risk Pairings means that
                     fewer traders are involved and there are many unknown risks.
                   </div>
                 </div>
               </template>
-              <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px"
-                >About boards
+              <span style="font-size: 12px; flex-shrink: 0; margin-right: 5px">
                 <a-icon type="question-circle" />
               </span>
             </a-tooltip>
@@ -10275,10 +10611,20 @@
               <a-icon style="color: #adb3c4" slot="prefix" type="search" />
             </a-input>
           </div>
-          <ul class="trade-market-sort">
+          <ul
+            class="trade-market-sort"
+            v-show="currentTradeMarketSort !== 'Star'"
+          >
             <li
               :class="[
+                currentTradeMarketSort === 'Star' && item.value === 'Star'
+                  ? 'show-sort'
+                  : 'hide-sort',
+                currentTradeMarketSort !== 'Star' && item.value !== 'Star'
+                  ? 'show-sort'
+                  : 'hide-sort',
                 item.value === currentTradeMarketSort ? 'active' : '',
+                item.value === 'Old' ? 'trade-market-old' : '',
                 item.value
               ]"
               v-for="item in tradeMarketSort"
@@ -10286,13 +10632,19 @@
               @click="changeTradeMarketSort(item)"
             >
               <a-icon
-                v-show="item.value === 'Star'"
+                v-show="
+                  currentTradeMarketSort === 'Star' && item.value === 'Star'
+                "
                 type="star"
                 theme="filled"
               />
-              <span v-show="item.value !== 'Star'">
+              <span
+                v-show="
+                  currentTradeMarketSort !== 'Star' && item.value !== 'Star'
+                "
+              >
                 {{ item.name }}
-                <span v-if="item.value === 'USDT'" class="base-red">TEST</span>
+                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
               </span>
             </li>
           </ul>
@@ -10314,7 +10666,7 @@
                     padding-left: 10px;
                   "
                 >
-                  The trading pairs on the THIRD board mean that very few
+                  The trading pairs on the Higher Risk mean that very few
                   traders are involved and there may be a higher risk. Sure you
                   want to show the list?
                   <button class="mt20 w100" @click="showThird = true">
@@ -12537,8 +12889,6 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
 import {
-  DexName,
-  SwapCanister,
   SwapConfig,
   SwapTokenInfo,
   TrieListData1,
@@ -12555,14 +12905,13 @@ import {
   IC_LIGHTHOUSE_TOKEN_CANISTER_ID,
   LEDGER_CANISTER_ID
 } from '@/ic/utils';
-import TradingMining from '@/views/home/ICDex/components/TradingMining.vue';
+import MiningInfo from '@/views/home/ICDex/components/MiningInfo.vue';
 import TradingCompetitions from '@/views/home/ICDex/components/TradingCompetitions.vue';
 import Fallback from '@/views/home/ICDex/components/Fallback.vue';
 import TradeCompetitions from '@/views/home/ICDex/components/TradeCompetitions.vue';
 import EventBus from '@/utils/Event';
 import { Menu } from '@/components/menu/model';
 import { checkAuth } from '@/ic/CheckAuth';
-import { isInfinity } from '@/ic/isInfinity';
 import {
   currentPageConnectInfinity,
   needConnectInfinity
@@ -12575,7 +12924,7 @@ import ProOrder from '@/views/home/ICDex/components/ProOrder.vue';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import { toHttpRejectError } from '@/ic/httpError';
-import { SysConfig } from '@/ic/ICDexRouter/model';
+import { NFT, SysConfig } from '@/ic/ICDexRouter/model';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 import WithdrawToken from '@/components/withdrawToken/Index.vue';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
@@ -12591,7 +12940,7 @@ let lastCallTime = null;
 const interval = 10 * 1000;
 const SNS1Token = 'zfcdd-tqaaa-aaaaq-aaaga-cai';
 const OCToken = '2ouva-viaaa-aaaaq-aaamq-cai';
-const ICRC2Token = [
+let ICRC2Token = [
   CK_BTC_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID,
   LEDGER_CANISTER_ID,
@@ -12604,7 +12953,7 @@ let timer = null;
 @Component({
   name: 'Index',
   components: {
-    TradingMining,
+    MiningInfo,
     Fallback,
     AccountInfo,
     TradeCompetitions,
@@ -12646,10 +12995,10 @@ let timer = null;
         price = currentMarketPrice['icp'];
       } else if (
         token1 &&
-        (token1.toLocaleLowerCase().includes('usdt') ||
+        (token1.toLocaleLowerCase().includes('usdc') ||
           token1.toLocaleLowerCase().includes('test'))
       ) {
-        price = currentMarketPrice['usdt'];
+        price = currentMarketPrice['usdc'];
       } else if (token1 && token1.toLocaleLowerCase().includes('btc')) {
         price = currentMarketPrice['btc'];
       } else if (token1 && token1.toLocaleLowerCase().includes('eth')) {
@@ -12942,7 +13291,7 @@ export default class extends Vue {
   private ICDexRouterService: ICDexRouterService = null;
   private ICLighthouseService: ICLighthouseService = null;
   private NftService: NftService = null;
-  private NFTsExt: Array<TokenExt> = [];
+  private NFTsExt: Array<TokenExt> | Array<NFT> = [];
   private tokensBalance: { [key: string]: string } = {};
   private tokensBalanceSto: { [key: string]: string } = {};
   private pairs: Array<DePairs> = [];
@@ -12983,7 +13332,7 @@ export default class extends Vue {
     }
   ];
   private currentMarketPrice: { [key: string]: string } = {
-    usdt: '1'
+    usdc: '1'
   };
   private orderTypeEnum = OrderTypeEnum;
   private orderType: OrderTypeMenu | 'Pro' | 'Stop-limit' = OrderTypeEnum.LMT;
@@ -13109,8 +13458,8 @@ export default class extends Vue {
     }
   ];
   private currentKInterval = {
-    value: '1H',
-    key: 60 * 60
+    value: '1D',
+    key: 24 * 60 * 60
   };
   private KIntervals: Array<KBar> = [];
   private chartSpinning = false;
@@ -13178,22 +13527,21 @@ export default class extends Vue {
       path: '/ICDex'
     },
     {
-      value: 'Market',
-      path: '/ICDex/market'
-    },
-    {
       value: 'Pools',
       path: '/ICDex/pools'
+    },
+    {
+      value: 'Mining',
+      path: '/Mining'
+    },
+    {
+      value: 'Info',
+      path: '/ICDex/info'
     },
     {
       value: 'Competitions',
       path: '/ICDex/competitions'
     }
-    // ,
-    // {
-    //   value: 'Mining',
-    //   path: '/icl/tradingMining'
-    // }
   ];
   private pairInfo: PairInfo = null;
   private sysMode: { mode: SysMode; openingTime: Time } = null;
@@ -13223,15 +13571,38 @@ export default class extends Vue {
   private dragPair: DePairs = null;
   private prePairs: Array<string> = [];
   private star: Array<string> = [];
+  private allPairs = {
+    Markets: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
+    ICP: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
+    USDC: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
+    OTHER: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    }
+  };
   private tradePairs = {
-    // ICP: [],
-    // Old: [],
-    // USDT: []
     Star: [],
     Main: [],
     Second: [],
     Third: [],
-    Old: [],
+    Hot: [],
     Search: []
   };
   private tradeMarketSort = [
@@ -13240,15 +13611,19 @@ export default class extends Vue {
       value: 'Star'
     },
     {
+      name: 'HOT',
+      value: 'Hot'
+    },
+    {
       name: 'MAIN',
       value: 'Main'
     },
     {
-      name: 'SECOND',
+      name: 'RISING',
       value: 'Second'
     },
     {
-      name: 'THIRD',
+      name: 'HIGH RISK',
       value: 'Third'
     }
     // ,
@@ -13257,6 +13632,27 @@ export default class extends Vue {
     //   value: 'Old'
     // }
   ];
+  private marketMenu = [
+    {
+      name: 'Markets',
+      value: 'Markets'
+    },
+    {
+      name: 'ICP',
+      value: 'ICP'
+    },
+    {
+      name: 'USDC',
+      value: 'USDC'
+    },
+    {
+      name: 'OTHER',
+      value: 'OTHER'
+    }
+  ];
+  private currentMarketMenu = 'Markets';
+  private selectMarket = false;
+  private marketMenuVisible = false;
   private swapConfig: SwapConfig = null;
   private currentTradeMarketSort: string = null;
   private pairSearch = '';
@@ -13287,6 +13683,7 @@ export default class extends Vue {
     disabled: false,
     ghostClass: 'ghost'
   };
+  private pairsScroll = [];
   @Watch('buyTotal')
   private onBuyTotalChange() {
     if (Number(this.buyTotal)) {
@@ -13347,6 +13744,22 @@ export default class extends Vue {
     } else {
       this.currentMark = this.sellSlider = 0;
     }
+  }
+  @Watch('currentTradeMarketSort')
+  private onCurrentTradeMarketSort(val) {
+    console.log('currentTradeMarketSort');
+    console.log(val);
+    const pairs = [];
+    if (val && this.tradePairs[val].length) {
+      this.tradePairs[val].forEach((pair) => {
+        pairs.push({
+          id: pair[1][0].canisterId.toString(),
+          pair: pair
+        });
+      });
+    }
+    this.pairsScroll = pairs;
+    console.log(this.pairsScroll);
   }
   get showOpeningTime(): boolean {
     if (this.sysMode && this.sysMode.openingTime) {
@@ -13588,29 +14001,33 @@ export default class extends Vue {
     if (
       this.tokens &&
       this.currentPair &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()] &&
       this.tokens[this.currentPair[1][0].token1[0].toString()]
     ) {
       const token1Decimals =
         this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
+      const token0Decimals =
+        this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
       if (token1Decimals - this.tokenMinUnit > 0) {
         let unit = token1Decimals - this.tokenMinUnit;
         if (unit > 8) {
           unit = 8;
         }
-        if (
-          this.currentPair[2] &&
-          this.currentPair[2].price &&
-          Number(this.currentPair[2].price) >= 1 &&
-          unit > 4
-        ) {
-          unit = 4;
+        if (this.currentPair[2] && this.currentPair[2].price) {
+          const price = new BigNumber(this.currentPair[2].price)
+            .times(10 ** token0Decimals)
+            .div(10 ** token1Decimals)
+            .toNumber();
+          // if (price >= 1 && unit > 4) {
+          //   unit = 4;
+          // }
         }
         return unit;
       } else {
         return 0;
       }
     } else {
-      return 0;
+      return 8;
     }
   }
   get tokenMinUnit(): number {
@@ -13686,10 +14103,10 @@ export default class extends Vue {
       });
       this.getIcpPrice();
       this.initFallbackInfo();
-      const principal = localStorage.getItem('principal');
       // this.principal = principal;
-      if (principal) {
-        const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
+      if (this.getPrincipalId) {
+        const currentInfo =
+          JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
         this.tokensBalance = currentInfo.tokensBalance || {};
         this.getNTFs();
       }
@@ -13712,7 +14129,7 @@ export default class extends Vue {
     };
   }
   private getBasePrice(tokenSymbol: string): string {
-    let price = this.currentMarketPrice['usdt'];
+    let price = this.currentMarketPrice['usdc'];
     if (
       tokenSymbol.toLocaleLowerCase().includes('icp') &&
       this.currentMarketPrice['icp']
@@ -13743,6 +14160,16 @@ export default class extends Vue {
       this.NFTsExt = tokensExt;
     } else {
       this.NFTsExt = [];
+    }
+    if (!this.NFTsExt.length) {
+      this.NFTsExt = await this.ICDexRouterService.NFTBalance(
+        this.getPrincipalId
+      );
+    }
+    if (!this.NFTsExt.length) {
+      this.NFTsExt = await this.ICSwapRouterFiduciaryService.NFTBalance(
+        this.getPrincipalId
+      );
     }
     console.log(this.NFTsExt);
   }
@@ -13856,8 +14283,9 @@ export default class extends Vue {
   private async pushUser(): Promise<void> {
     const icxPrincipals =
       JSON.parse(localStorage.getItem('icxPrincipals')) || [];
-    const principal = localStorage.getItem('principal');
-    const address = principalToAccountIdentifier(Principal.fromText(principal));
+    const address = principalToAccountIdentifier(
+      Principal.fromText(this.getPrincipalId)
+    );
     await this.astroXUserService.pushUser(address, icxPrincipals[0]);
   }
   private showFallback(): void {
@@ -13865,12 +14293,11 @@ export default class extends Vue {
     (this.$refs as any).fallback.init();
   }
   private async getMakerRebate(): Promise<void> {
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const currentPair = this.currentPair[0].toString();
       const res = await this.currentICDexService.makerRebate(
         currentPair,
-        principal
+        this.getPrincipalId
       );
       console.log(res);
       if (res && res.pairId === this.currentPair[0].toString()) {
@@ -14076,8 +14503,8 @@ export default class extends Vue {
   }
   private resetChart(): void {
     this.currentKInterval = {
-      value: '1H',
-      key: 60 * 60
+      value: '1D',
+      key: 24 * 60 * 60
     };
     let style = {
       candle: {
@@ -14922,7 +15349,7 @@ export default class extends Vue {
       .minus(60 * 60 * 1000)
       .times(1000000)
       .lte(order.time.toString(10));
-    if (less1H && !order.filled.length) {
+    if (less1H && !order.filled.length && !this.dexRole.vipMaker) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       const side = this.filterSide(order.orderPrice);
@@ -15087,7 +15514,7 @@ export default class extends Vue {
     const hasGrid = localStorage.getItem('GridWarn');
     if (hasGrid) {
       this.orderType = 'Pro';
-      // this.currentTradesMenu = 'pro';
+      this.currentTradesMenu = 'pro';
       this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
       if (this.isH5) {
         this.currentProOrderMenu = ProOrderEnum.Grid;
@@ -15611,13 +16038,12 @@ export default class extends Vue {
     pendingList: Array<PendingList>,
     subaccountId = 0
   ): Promise<Array<PendingList>> {
-    const principal = localStorage.getItem('principal');
     const currentPair = this.currentPair[0].toString();
     const res = await this.currentICDexService.pending(
       currentPair,
       [
         principalToAccountIdentifier(
-          Principal.fromText(principal),
+          Principal.fromText(this.getPrincipalId),
           new Uint8Array(fromSubAccountId(subaccountId))
         )
       ],
@@ -16007,10 +16433,9 @@ export default class extends Vue {
     tokenStd: string,
     subAccountId = 0
   ): Promise<boolean> {
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const currentAddress = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (currentAddress !== address) {
         return false;
@@ -16157,14 +16582,10 @@ export default class extends Vue {
         price: price
       };
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       this.setPrepare(
         orderPrice,
         'Sell',
@@ -16175,14 +16596,6 @@ export default class extends Vue {
         address
       );
     }
-  }
-  private isPlug(): boolean {
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (principal && priList) {
-      return priList[principal] === 'Plug';
-    }
-    return false;
   }
   private needApprove(
     amount: bigint,
@@ -16307,8 +16720,9 @@ export default class extends Vue {
         ) {
           delete this.prepareOrder[currentPairId];
         }
-        const principal = localStorage.getItem('principal');
-        const address = principalToAccountIdentifier(Principal.from(principal));
+        const address = principalToAccountIdentifier(
+          Principal.from(this.getPrincipalId)
+        );
         localStorage.setItem(
           `prepareOrder-${address}`,
           JSON.stringify(this.prepareOrder)
@@ -16320,11 +16734,12 @@ export default class extends Vue {
   }
   private initPrepared(currentPairId: string): void {
     this.preparing = [];
-    const principal = localStorage.getItem('principal');
-    if (!principal) {
+    if (!this.getPrincipalId) {
       return;
     }
-    const address = principalToAccountIdentifier(Principal.from(principal));
+    const address = principalToAccountIdentifier(
+      Principal.from(this.getPrincipalId)
+    );
     this.prepareOrder =
       JSON.parse(localStorage.getItem(`prepareOrder-${address}`)) || {};
     if (!this.prepareOrder[currentPairId]) {
@@ -16371,8 +16786,9 @@ export default class extends Vue {
     const prepareOrder = JSON.parse(
       JSON.stringify(this.prepareOrder[currentPairId])
     );
-    const principal = localStorage.getItem('principal');
-    const address = principalToAccountIdentifier(Principal.from(principal));
+    const address = principalToAccountIdentifier(
+      Principal.from(this.getPrincipalId)
+    );
     for (let i = 0; i < prepareOrder.length; i++) {
       const nonce = prepareOrder[i];
       const currentOrder = `${currentPairId}-${address}-${nonce}`;
@@ -16691,10 +17107,9 @@ export default class extends Vue {
       const d = new Date().getTime();
       console.log(prepare[2] + ': ' + new Date());
       console.log(orderPrice);
-      const principal = localStorage.getItem('principal');
-      if (principal) {
+      if (this.getPrincipalId) {
         const currentAddress = principalToAccountIdentifier(
-          Principal.fromText(principal)
+          Principal.fromText(this.getPrincipalId)
         );
         if (currentAddress !== address) {
           return;
@@ -16722,6 +17137,9 @@ export default class extends Vue {
           this.$message.error('Order fail');
         })
         .finally(() => {
+          if (this.currentTradeMarketSort === 'Hot') {
+            this.sortHot();
+          }
           if (this.IDOConfig && this.IDOConfig[0] && this.IDOConfig[1]) {
             const now = new Date().getTime();
             if (
@@ -16737,8 +17155,10 @@ export default class extends Vue {
           }
         });
       setTimeout(() => {
-        this.executionQueue(currentPair, address);
+        console.log('plugLoading');
+        this.plugLoading[currentPair[0].toString()] = false;
       }, 3000);
+      this.executionQueue(currentPair, address);
       this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
       this.getIntervalPrice(6);
@@ -16982,10 +17402,9 @@ export default class extends Vue {
       }
       const d = new Date().getTime();
       console.log(prepare[2] + ': ' + new Date());
-      const principal = localStorage.getItem('principal');
-      if (principal) {
+      if (this.getPrincipalId) {
         const currentAddress = principalToAccountIdentifier(
-          Principal.fromText(principal)
+          Principal.fromText(this.getPrincipalId)
         );
         if (currentAddress !== address) {
           return;
@@ -17010,11 +17429,30 @@ export default class extends Vue {
           console.error(e);
           this.initPending(currentPair, prepare, address);
           this.$message.error('Order fail');
+        })
+        .finally(() => {
+          if (this.currentTradeMarketSort === 'Hot') {
+            this.sortHot();
+          }
+          if (this.IDOConfig && this.IDOConfig[0] && this.IDOConfig[1]) {
+            const now = new Date().getTime();
+            if (
+              new BigNumber(this.IDOConfig[1].IDOOpeningTime.toString(10))
+                .div(10 ** 6)
+                .lt(now) &&
+              new BigNumber(this.IDOConfig[1].IDOClosingTime.toString(10))
+                .div(10 ** 6)
+                .gt(now)
+            ) {
+              this.IDO_qualification(currentPair);
+            }
+          }
         });
       this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       setTimeout(() => {
-        this.executionQueue(currentPair, address);
+        this.plugLoading[currentPair[0].toString()] = false;
       }, 3000);
+      this.executionQueue(currentPair, address);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
       this.getIntervalPrice(6);
     } catch (e) {
@@ -17196,7 +17634,6 @@ export default class extends Vue {
           content: errMessage,
           class: 'connect-plug',
           icon: 'connect-plug',
-          okText: 'Confirm',
           onOk() {
             //
           }
@@ -17206,7 +17643,6 @@ export default class extends Vue {
           content: 'Nonce error, please re-order.',
           class: 'connect-plug',
           icon: 'connect-plug',
-          okText: 'Confirm',
           onOk() {
             //
           }
@@ -17343,8 +17779,7 @@ export default class extends Vue {
             content:
               'The trading matching engine (TME) is under computational pressure, busy trading mode (BTM) is on, and the system is only accepting orders within +/- 5% of the latest price.',
             class: 'connect-plug',
-            icon: 'connect-plug',
-            okText: 'Confirm'
+            icon: 'connect-plug'
           });
           return;
         }
@@ -17383,14 +17818,10 @@ export default class extends Vue {
         price: price
       };
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       if (this.orderType === 'Stop-limit') {
         const order = {
           side: { Sell: null },
@@ -17450,8 +17881,7 @@ export default class extends Vue {
     this.getLevel100(currentPair[0].toString());
     this.getPending(currentPair[0].toString());
     this.getAllowance(currentPair);
-    const principal = localStorage.getItem('principal');
-    this.getTradeList(currentPair[0].toString(), principal);
+    this.getTradeList(currentPair[0].toString(), this.getPrincipalId);
     this.latestFilled(currentPair[0].toString());
     const token0Info = currentPair[1][0].token0;
     const token1Info = currentPair[1][0].token1;
@@ -18010,10 +18440,9 @@ export default class extends Vue {
     amount: bigint,
     subAccount = 0
   ): Promise<void | string> {
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const currentAddress = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (currentAddress !== address) {
         return 'ErrAddress';
@@ -18084,14 +18513,10 @@ export default class extends Vue {
         price: price
       };
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       this.setPrepare(
         orderPrice,
         'Buy',
@@ -18173,8 +18598,7 @@ export default class extends Vue {
             content:
               'The trading matching engine (TME) is under computational pressure, busy trading mode (BTM) is on, and the system is only accepting orders within +/- 5% of the latest price.',
             class: 'connect-plug',
-            icon: 'connect-plug',
-            okText: 'Confirm'
+            icon: 'connect-plug'
           });
           return;
         }
@@ -18223,14 +18647,16 @@ export default class extends Vue {
       };
       console.log(orderPrice);
       const currentPairId = this.currentPair[0].toString();
-      if (this.isPlug() || isInfinity()) {
-        this.plugLoading[currentPairId] = true;
-        setTimeout(() => {
-          this.plugLoading[currentPairId] = false;
-        }, 3000);
-      }
-      const principal = localStorage.getItem('principal');
-      const address = principalToAccountIdentifier(Principal.from(principal));
+      this.plugLoading[currentPairId] = true;
+      // if (this.isPlug() || isInfinity()) {
+      //   this.plugLoading[currentPairId] = true;
+      //   setTimeout(() => {
+      //     this.plugLoading[currentPairId] = false;
+      //   }, 3000);
+      // }
+      const address = principalToAccountIdentifier(
+        Principal.from(this.getPrincipalId)
+      );
       if (this.orderType === 'Stop-limit') {
         const order = {
           side: { Buy: null },
@@ -18322,13 +18748,13 @@ export default class extends Vue {
       .toString(10);
     if (type === 'update') {
       sloFee = new BigNumber(this.stoConfig.sloFee1.toString(10))
-        .div(5)
+        .times(0.05)
         .div(10 ** this.tokens[sysToken].decimals)
         .toString(10);
     }
     let fee = new BigNumber(this.stoConfig.sloFee1.toString(10));
     if (type === 'update') {
-      fee = new BigNumber(this.stoConfig.sloFee1.toString(10)).div(5);
+      fee = new BigNumber(this.stoConfig.sloFee1.toString(10)).times(0.05);
     }
     console.log(fee.toString(10));
     const ICLBalance = await getTokenBalance({ icrc1: null }, sysToken);
@@ -18487,11 +18913,10 @@ export default class extends Vue {
     currentPair: DePairs,
     isValue0 = true
   ): Promise<void | string> {
-    const principal = localStorage.getItem('principal');
     let currentAddress;
-    if (principal) {
+    if (this.getPrincipalId) {
       currentAddress = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (currentAddress !== address) {
         return 'ErrAddress';
@@ -18892,12 +19317,12 @@ export default class extends Vue {
     console.log(item);
     this.orderType = item;
     this.currentMark = 0;
-    // this.currentTradesMenu = 'std';
-    // if (item === 'Stop-limit') {
-    //   this.currentTradeMenu = 'stop';
-    // } else {
-    //   this.currentTradeMenu = 'pending';
-    // }
+    this.currentTradesMenu = 'std';
+    if (item === 'Stop-limit') {
+      this.currentTradeMenu = 'stop';
+    } else {
+      this.currentTradeMenu = 'pending';
+    }
     this.currentProOrderMenu = null;
     this.init();
     if (this.getPrincipalId && item === 'Stop-limit') {
@@ -18980,47 +19405,113 @@ export default class extends Vue {
   }
   private async initPairsPrice(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 40;
     const pairs = [
-      { type: 'Main', value: this.tradePairs.Main },
-      { type: 'Second', value: this.tradePairs.Second },
-      { type: 'Third', value: this.tradePairs.Third }
-      // { type: 'Old', value: this.tradePairs.Old }
+      { type: 'Main', value: this.allPairs.Markets.Main },
+      { type: 'Second', value: this.allPairs.Markets.Second },
+      { type: 'Third', value: this.allPairs.Markets.Third }
     ];
     for (let i = 0; i < pairs.length; i++) {
       for (let j = 0; j < pairs[i].value.length; j++) {
         promiseAllValue.push(
-          this.getLiquidity(pairs[i].value[j][0].toString(), j, pairs[i].type)
+          this.getLiquidity(
+            pairs[i].value[j][0].toString(),
+            j,
+            pairs[i].type,
+            pairs[i].value
+          )
         );
         if (promiseAllValue.length === MAX_CONCURRENCY) {
           await Promise.all(promiseAllValue);
           promiseAllValue = [];
         }
-      }
-      if (i === pairs.length - 1 && promiseAllValue.length) {
-        await Promise.all(promiseAllValue);
-        promiseAllValue = [];
+        if (
+          i === pairs.length - 1 &&
+          j === pairs[i].value.length - 1 &&
+          promiseAllValue.length
+        ) {
+          await Promise.all(promiseAllValue);
+          promiseAllValue = [];
+        }
       }
     }
     const allPairs = []
-      .concat(this.tradePairs.Main)
-      .concat(this.tradePairs.Second)
-      .concat(this.tradePairs.Third);
-    this.tradePairs.Star.forEach((star) => {
-      const pairId = star[0].toString();
-      for (let i = 0; i < allPairs.length; i++) {
-        const pairId1 = allPairs[i][0].toString();
-        if (pairId === pairId1) {
-          star[2] = allPairs[i][2];
+      .concat(this.allPairs.Markets.Main)
+      .concat(this.allPairs.Markets.Second)
+      .concat(this.allPairs.Markets.Third);
+    allPairs.forEach((pair) => {
+      const pairId = pair[0].toString();
+      for (let i = 0; i < this.allPairs.Markets.Hot.length; i++) {
+        const hotId = this.allPairs.Markets.Hot[i][0].toString();
+        if (pairId === hotId) {
+          this.allPairs.Markets.Hot[i][2] = pair[2];
+          break;
+        }
+      }
+      for (let j = 0; j < this.tradePairs.Star.length; j++) {
+        const starId = this.tradePairs.Star[j][0].toString();
+        if (starId === pairId) {
+          this.tradePairs.Star[j][2] = pair[2];
           break;
         }
       }
     });
+    console.log(this.currentMarketMenu);
+    if (this.currentMarketMenu !== 'FAVORITES') {
+      this.tradePairs.Hot = this.allPairs[this.currentMarketMenu].Hot;
+      this.sortHot();
+    }
     console.log(this.tradePairs);
+  }
+  private sortHot(): void {
+    console.log('sortHot');
+    console.log(this.tradePairs);
+    this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
+      if (b[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+        return -1;
+      }
+      if (a[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+        return 1;
+      }
+      const basePrice = this.getBasePrice(a[1][0].token1[1]);
+      if (
+        this.tokens[a[1][0].token1[0].toString()] &&
+        this.tokens[b[1][0].token1[0].toString()]
+      ) {
+        const vol24 = new BigNumber(a[2].vol24h.value1.toString(10))
+          .div(10 ** this.tokens[a[1][0].token1[0].toString()].decimals)
+          .times(basePrice);
+        const basePrice1 = this.getBasePrice(b[1][0].token1[1]);
+        const vol241 = new BigNumber(b[2].vol24h.value1.toString(10))
+          .div(10 ** this.tokens[b[1][0].token1[0].toString()].decimals)
+          .times(basePrice1);
+        return vol241.minus(vol24).toNumber();
+      }
+      return 1;
+    });
+    if (this.currentTradeMarketSort === 'Hot') {
+      const res = [];
+      this.tradePairs.Hot.forEach((pair, index) => {
+        if (
+          this.currentPair &&
+          this.currentPair[3] === 'Hot' &&
+          this.currentPair[0].toString() === pair[1][0].canisterId.toString()
+        ) {
+          this.currentPairIndex = index;
+        }
+        res.push({
+          id: pair[1][0].canisterId.toString(),
+          pair: pair
+        });
+      });
+      this.pairsScroll = res;
+    }
+    this.scrollTop();
+    console.log(this.currentPairIndex);
   }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 20;
+    const MAX_CONCURRENCY = 200;
     let pairs = this.tradePairs[this.currentTradeMarketSort];
     if (this.pairSearch) {
       pairs = this.pairs;
@@ -19039,6 +19530,32 @@ export default class extends Vue {
         promiseAllValue = [];
       }
     }
+    if (this.currentTradeMarketSort === 'Hot') {
+      const prePair = this.currentPair;
+      this.sortHot();
+      if (
+        this.currentPair[3] === 'Hot' &&
+        this.tradePairs.Hot[this.currentPairIndex] &&
+        prePair[1][0].canisterId.toString() !==
+          this.tradePairs.Hot[this.currentPairIndex][1][0].canisterId.toString()
+      ) {
+        this.tradePairs.Hot.some((pair, index) => {
+          if (
+            pair[1][0].canisterId.toString() ===
+            prePair[1][0].canisterId.toString()
+          ) {
+            if (
+              this.currentPair[3] === 'Hot' &&
+              this.currentTradeMarketSort === 'Hot'
+            ) {
+              console.log(index);
+              this.currentPairIndex = index;
+            }
+            return true;
+          }
+        });
+      }
+    }
   }
   private initIntervalPrice(): void {
     try {
@@ -19046,11 +19563,16 @@ export default class extends Vue {
       this.getAllLiquidity();
       if (this.getPrincipalId) {
         this.getUserLiquidity(this.currentPair[0].toString());
-        const principal = localStorage.getItem('principal');
-        if (principal) {
+        if (this.getPrincipalId) {
           this.getPending(this.currentPair[0].toString());
-          this.getTradeList(this.currentPair[0].toString(), principal);
-          this.getStopOrders(this.currentPair[0].toString(), principal);
+          this.getTradeList(
+            this.currentPair[0].toString(),
+            this.getPrincipalId
+          );
+          this.getStopOrders(
+            this.currentPair[0].toString(),
+            this.getPrincipalId
+          );
         }
         if (
           !this.isTodo &&
@@ -19104,7 +19626,7 @@ export default class extends Vue {
             this.latestFilled(this.currentPair[0].toString());
           }, 0);
         }
-      }, 1000);
+      }, 1.5 * 1000);
       this.timerAccount = window.setInterval(async () => {
         if (!this.getCheckAuth) {
           setTimeout(async () => {
@@ -19137,10 +19659,9 @@ export default class extends Vue {
     }
     const currentDrc20Token = new DRC20TokenService();
     const spender = currentPairId;
-    const principal = localStorage.getItem('principal');
-    if (principal) {
+    if (this.getPrincipalId) {
       const account = principalToAccountIdentifier(
-        Principal.fromText(principal)
+        Principal.fromText(this.getPrincipalId)
       );
       if (tokenStd === 'drc20') {
         const allowance = await currentDrc20Token.drc20_allowance(
@@ -19157,7 +19678,7 @@ export default class extends Vue {
       } else if (tokenStd === 'dip20') {
         const allowance = await currentDrc20Token.allowance(
           tokenId,
-          Principal.fromText(principal),
+          Principal.fromText(this.getPrincipalId),
           Principal.fromText(currentPairId)
         );
         if (this.time !== 6) {
@@ -19168,7 +19689,7 @@ export default class extends Vue {
       } else if (tokenStd === 'icrc2') {
         const res = await currentDrc20Token.icrc2_allowance(tokenId, {
           account: {
-            owner: Principal.fromText(principal),
+            owner: Principal.fromText(this.getPrincipalId),
             subaccount: []
           },
           spender: {
@@ -19181,6 +19702,23 @@ export default class extends Vue {
             this.tokenAllowance[currentPairId][tokenId] = res.allowance;
           }
         }
+      }
+    }
+  }
+  private async setICRC2Token(
+    icrc2Tokens: Array<string>,
+    tokenId: string
+  ): Promise<void> {
+    const currentDrc20Token = new DRC20TokenService();
+    const standards = await currentDrc20Token.icrc1_supported_standards(
+      tokenId
+    );
+    if (standards && standards.length) {
+      const flag = standards.some((standard) => {
+        return standard.name.toLocaleLowerCase().includes('icrc-2');
+      });
+      if (flag) {
+        icrc2Tokens.push(tokenId);
       }
     }
   }
@@ -19205,18 +19743,36 @@ export default class extends Vue {
     // this.tradePairs.Old.forEach((pair) => {
     //   canisterIds.push(pair[0].toString());
     // });
+    const icrc2Tokens = JSON.parse(localStorage.getItem('icrc2')) || [];
+    const promiseValue = [];
     res.forEach((item) => {
+      const tokenId = item[0].toString();
+      if (!ICRC2Token.includes(tokenId) && !icrc2Tokens.includes(tokenId)) {
+        const std = Object.keys(item[2])[0];
+        if (std === 'icrc1') {
+          promiseValue.push(this.setICRC2Token(icrc2Tokens, tokenId));
+        }
+      }
       if (item[0].toString() !== LEDGER_CANISTER_ID) {
         canisterIds.push(item[0].toString());
       }
     });
     canisterIds = [...new Set(canisterIds)];
+    if (promiseValue.length) {
+      Promise.all(promiseValue).then(() => {
+        console.log(icrc2Tokens);
+        localStorage.setItem('icrc2', JSON.stringify(icrc2Tokens));
+      });
+    }
     await checkAuth();
     const flag = needConnectPlug(canisterIds);
-    const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const needConnectInfinity1 = await needConnectInfinity(canisterIds);
-    if (priList[principal] === 'Plug' && flag && this.$route.name === 'ICDex') {
+    if (
+      priList[this.getPrincipalId] === 'Plug' &&
+      flag &&
+      this.$route.name === 'ICDex'
+    ) {
       // this.loading.close();
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
@@ -19228,11 +19784,6 @@ export default class extends Vue {
         okText: 'Confirm',
         onOk() {
           currentPageConnectPlug(canisterIds).then(async () => {
-            if (_that.isH5) {
-              // _that.currentPair && (_that.$refs as any).tradingMiningH5.init();
-            } else {
-              _that.currentPair && (_that.$refs as any).tradingMining.init();
-            }
             if (res && res.length) {
               let promiseAllValue = [];
               const MAX_COCURRENCY = 10;
@@ -19258,7 +19809,7 @@ export default class extends Vue {
         }
       });
     } else if (
-      priList[principal] === 'Infinity' &&
+      priList[this.getPrincipalId] === 'Infinity' &&
       needConnectInfinity1 &&
       this.$route.name === 'ICDex'
     ) {
@@ -19273,11 +19824,6 @@ export default class extends Vue {
         okText: 'Confirm',
         onOk() {
           currentPageConnectInfinity(canisterIds).then(async () => {
-            if (_that.isH5) {
-              // _that.currentPair && (_that.$refs as any).tradingMiningH5.init();
-            } else {
-              _that.currentPair && (_that.$refs as any).tradingMining.init();
-            }
             if (res && res.length) {
               let promiseAllValue = [];
               const MAX_COCURRENCY = 10;
@@ -19314,11 +19860,6 @@ export default class extends Vue {
           JSON.stringify(newIcxCanisterIds)
         );
         await connectIcx(newIcxCanisterIds);
-      }
-      if (this.isH5) {
-        // this.currentPair && (this.$refs as any).tradingMiningH5.init();
-      } else {
-        this.currentPair && (this.$refs as any).tradingMining.init();
       }
       if (res && res.length) {
         let promiseAllValue = [];
@@ -19367,6 +19908,34 @@ export default class extends Vue {
     this.$router.push(`/ICDex/${token0}/${token1}`).then(() => {
       this.getDexPairs('icdex');
     });
+  }
+  private changeStarMenu(): void {
+    this.currentTradeMarketSort = 'Star';
+    this.tradePairs = Object.assign(
+      { Star: this.tradePairs.Star, Search: [] },
+      this.allPairs.Markets
+    );
+  }
+  private changeMarketMenu(val): void {
+    this.currentMarketMenu = val.value;
+    this.currentTradeMarketSort = 'Hot';
+    this.tradePairs = Object.assign(
+      { Star: this.tradePairs.Star, Search: [] },
+      this.allPairs[this.currentMarketMenu]
+    );
+    this.sortHot();
+    const res = [];
+    this.pairs = this.tradePairs[this.currentTradeMarketSort];
+    console.log(this.tradePairs);
+    this.tradePairs[this.currentTradeMarketSort].forEach((pair) => {
+      res.push({
+        id: pair[1][0].canisterId.toString(),
+        pair: pair
+      });
+    });
+    this.pairsScroll = res;
+    this.selectMarket = false;
+    this.marketMenuVisible = false;
   }
   private changeTradeMarketSort(val): void {
     this.currentTradeMarketSort = val.value;
@@ -19443,6 +20012,8 @@ export default class extends Vue {
         this.pairs = this.tradePairs.Search;
       } else if (this.currentTradeMarketSort === 'Star') {
         this.pairs = this.tradePairs.Star;
+      } else if (this.currentTradeMarketSort === 'Hot') {
+        this.pairs = this.tradePairs.Hot;
       } else if (stageType && stageType === 'STAGE2') {
         this.currentTradeMarketSort = 'Main';
         this.pairs = this.tradePairs.Main;
@@ -19760,10 +20331,14 @@ export default class extends Vue {
     console.log(this.pairSearch);
     if (this.pairSearch) {
       const allPairs = []
-        .concat(this.tradePairs.Main)
-        .concat(this.tradePairs.Second)
-        .concat(this.tradePairs.Third);
+        .concat(this.allPairs.Markets.Main)
+        .concat(this.allPairs.Markets.Second)
+        .concat(this.allPairs.Markets.Third);
+      const label = localStorage.getItem('label');
       const sort = localStorage.getItem('sort');
+      if (!label && this.currentMarketMenu) {
+        localStorage.setItem('label', this.currentMarketMenu);
+      }
       if (!sort && this.currentTradeMarketSort) {
         localStorage.setItem('sort', this.currentTradeMarketSort);
       }
@@ -19784,11 +20359,31 @@ export default class extends Vue {
         }
       });
       this.pairs = this.tradePairs.Search = pairs;
+      const res = [];
+      this.tradePairs.Search.forEach((pair) => {
+        res.push({
+          id: pair[1][0].canisterId.toString(),
+          pair: pair
+        });
+      });
+      this.pairsScroll = res;
+      console.log(this.pairsScroll);
     } else {
-      this.currentTradeMarketSort = localStorage.getItem('sort');
-      this.pairs = this.tradePairs[this.currentTradeMarketSort];
-      localStorage.removeItem('sort');
+      this.tradePairs.Search = [];
+      if (localStorage.getItem('label') && localStorage.getItem('sort')) {
+        this.currentMarketMenu = localStorage.getItem('label');
+        this.currentTradeMarketSort = localStorage.getItem('sort');
+        console.log(this.currentMarketMenu, this.currentTradeMarketSort);
+        this.tradePairs = Object.assign(
+          { Star: this.tradePairs.Star, Search: [] },
+          this.allPairs[this.currentMarketMenu]
+        );
+        this.pairs = this.tradePairs[this.currentTradeMarketSort];
+        localStorage.removeItem('label');
+        localStorage.removeItem('sort');
+      }
     }
+    console.log(this.currentTradeMarketSort);
     console.log(this.tradePairs);
     console.log(this.pairs);
   }
@@ -19803,16 +20398,45 @@ export default class extends Vue {
         [],
         []
       );
+      this.allPairs = {
+        Markets: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
+        ICP: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
+        USDC: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
+        OTHER: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        }
+      };
       this.tradePairs = {
         Star: [],
         Main: [],
         Second: [],
         Third: [],
-        Old: [],
+        Hot: [],
         Search: []
       };
       console.log(res);
       if (res.data && res.data.length) {
+        const localICRC2Tokens =
+          JSON.parse(localStorage.getItem('icrc2')) || [];
+        ICRC2Token = [...new Set(ICRC2Token.concat(localICRC2Tokens))];
         const pairs = res.data.sort((a: TrieListData1, b: TrieListData1) =>
           new BigNumber(b[1].score1.toString(10))
             .plus(b[1].score2.toString(10))
@@ -19822,6 +20446,7 @@ export default class extends Vue {
             .minus(a[1].score3.toString(10))
             .toNumber()
         );
+        const star = [];
         pairs.forEach((pair) => {
           const swapPair = pair[1] as TrieListData1SwapPair;
           const score = BigInt(
@@ -19849,47 +20474,44 @@ export default class extends Vue {
           if (marketBoard) {
             stage = Object.keys(marketBoard)[0];
           }
+          const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
           if (stage === 'STAGE2') {
             currentPair[3] = 'Main';
-            this.tradePairs.Main.push(currentPair);
+            // this.tradePairs.Main.push(currentPair);
           } else if (stage === 'STAGE1') {
             currentPair[3] = 'Second';
-            this.tradePairs.Second.push(currentPair);
+            // this.tradePairs.Second.push(currentPair);
           } else if (stage === 'STAGE0') {
             currentPair[3] = 'Third';
-            this.tradePairs.Third.push(currentPair);
+            // this.tradePairs.Third.push(currentPair);
+          }
+          const pairStage = currentPair[3] as string;
+          this.allPairs.Markets[pairStage].push(currentPair);
+          const hotPair = [].concat(currentPair);
+          hotPair[3] = 'Hot';
+          this.allPairs.Markets.Hot.push(hotPair);
+          if (token1Symbol.includes('icp')) {
+            this.allPairs.ICP[pairStage].push(currentPair);
+            this.allPairs.ICP.Hot.push(hotPair);
+          } else if (token1Symbol.includes('usdc')) {
+            this.allPairs.USDC[pairStage].push(currentPair);
+            this.allPairs.USDC.Hot.push(hotPair);
+          } else {
+            this.allPairs.OTHER[pairStage].push(currentPair);
+            this.allPairs.OTHER.Hot.push(hotPair);
           }
           const starIndex = this.star.indexOf(currentPair[0].toString());
           if (starIndex > -1) {
             let pair = [].concat(currentPair);
             pair[3] = 'Star';
-            this.tradePairs.Star.splice(starIndex, 0, pair);
+            star.splice(starIndex, 0, pair);
           }
-          // const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
-          // if (token1Symbol === 'icp') {
-          //   this.tradePairs.ICP.push(currentPair);
-          // }
-          // if (currentPair[1][0].token0[1].toLocaleLowerCase().includes('itest')) {
-          //   currentPair[1][0].token0[2] = { icrc2: null };
-          // }
-          // todo usdt test
-          // if (
-          //   token1Symbol.toLocaleLowerCase().includes('usdt') ||
-          //   token1Symbol.toLocaleLowerCase().includes('test')
-          // ) {
-          //   this.tradePairs.USDT.push(currentPair);
-          // }
         });
-        // this.tradePairs.Star.sort((a, b) => {
-        //   return (
-        //     this.star.indexOf(b[0].toString()) -
-        //     this.star.indexOf(a[0].toString())
-        //   );
-        // });
         let token0 = this.$route.params.token0;
         let token1 = this.$route.params.token1;
         let currentStage: string;
         let currentPairId = '';
+        let token1Symbol = '';
         if (token0 && token1) {
           console.log(token0, token1);
           for (let i = 0; i < pairs.length; i++) {
@@ -19898,6 +20520,7 @@ export default class extends Vue {
               if (currentPair.pair.canisterId.toString() === token1) {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
+                token1Symbol = currentPair.pair.token1[1].toLocaleLowerCase();
                 break;
               }
             } else {
@@ -19911,6 +20534,7 @@ export default class extends Vue {
               ) {
                 currentPairId = pairs[i][0].toString();
                 currentStage = Object.keys(currentPair.marketBoard)[0];
+                token1Symbol = currentPair.pair.token1[1].toLocaleLowerCase();
                 break;
               }
             }
@@ -19942,55 +20566,62 @@ export default class extends Vue {
                   ]);
                   currentPairId = token1;
                   currentStage = 'STAGE0';
+                  token1Symbol = res.pairInfo.token1[1].toLocaleLowerCase();
                 }
               } catch (e) {
                 console.log(e);
               }
             }
           }
+          this.tradePairs = Object.assign(
+            { Star: star, Search: [] },
+            this.allPairs.Markets
+          );
+          // if (token1Symbol) {
+          //   if (token1Symbol.includes('icp')) {
+          //     this.currentMarketMenu = 'ICP';
+          //     this.tradePairs = Object.assign(
+          //       { Star: star, Search: [] },
+          //       this.allPairs.ICP
+          //     );
+          //   } else if (token1Symbol.includes('usdc')) {
+          //     this.currentMarketMenu = 'USDC';
+          //     this.tradePairs = Object.assign(
+          //       { Star: star, Search: [] },
+          //       this.allPairs.USDC
+          //     );
+          //   } else {
+          //     this.currentMarketMenu = 'ALL';
+          //     this.tradePairs = Object.assign(
+          //       { Star: star, Search: [] },
+          //       this.allPairs.ALL
+          //     );
+          //   }
+          // } else {
+          //   this.tradePairs = Object.assign(
+          //     { Star: star, Search: [] },
+          //     this.allPairs[this.currentMarketMenu]
+          //   );
+          // }
           console.log(currentPairId, currentStage, this.star);
           if (currentPairId && this.star.includes(currentPairId)) {
+            this.currentMarketMenu = 'Markets';
             this.currentTradeMarketSort = 'Star';
             this.pairs = this.tradePairs.Star;
-          } else if (currentStage === 'STAGE2') {
-            this.currentTradeMarketSort = 'Main';
-            this.pairs = this.tradePairs.Main;
-          } else if (currentStage === 'STAGE1') {
-            this.currentTradeMarketSort = 'Second';
-            this.pairs = this.tradePairs.Second;
-          } else if (currentStage === 'STAGE0') {
-            this.currentTradeMarketSort = 'Third';
-            this.pairs = this.tradePairs.Third;
+          } else {
+            this.currentMarketMenu = 'Markets';
+            this.currentTradeMarketSort = 'Hot';
+            this.pairs = this.tradePairs.Hot;
           }
-          // if (
-          //   token1.toLocaleLowerCase() !== 'icp' &&
-          //   !token1.toLocaleLowerCase().includes('usdt') &&
-          //   !token1.toLocaleLowerCase().includes('test')
-          // ) {
-          //   for (let i = 0; i < pairs.length; i++) {
-          //     const currentPair = pairs[i][1] as TrieListData1SwapPair;
-          //     if (
-          //       (currentPair.pair.token0[1] === token0 ||
-          //         currentPair.pair.token0[0].toString() === token0) &&
-          //       (currentPair.pair.token1[1] === token1 ||
-          //         currentPair.pair.token1[0].toString() === token1)
-          //     ) {
-          //       token0 = currentPair.pair.token0[1];
-          //       token1 = currentPair.pair.token1[1];
-          //       break;
-          //     }
-          //   }
-          // }
-          // if (token1.toLocaleLowerCase() === 'icp') {
-          //   this.currentTradeMarketSort = 'ICP';
-          //   this.pairs = this.tradePairs.ICP;
-          // }
-          // if (
-          //   token1.toLocaleLowerCase().includes('usdt') ||
-          //   token1.toLocaleLowerCase().includes('test')
-          // ) {
-          //   this.currentTradeMarketSort = 'USDT';
-          //   this.pairs = this.tradePairs.USDT;
+          // else if (currentStage === 'STAGE2') {
+          //   this.currentTradeMarketSort = 'Main';
+          //   this.pairs = this.tradePairs.Main;
+          // } else if (currentStage === 'STAGE1') {
+          //   this.currentTradeMarketSort = 'Second';
+          //   this.pairs = this.tradePairs.Second;
+          // } else if (currentStage === 'STAGE0') {
+          //   this.currentTradeMarketSort = 'Third';
+          //   this.pairs = this.tradePairs.Third;
           // }
           for (let i = 0; i < this.pairs.length; i++) {
             if (token0 === 'pair') {
@@ -20014,19 +20645,21 @@ export default class extends Vue {
               }
             }
           }
-          console.log(this.currentPairIndex);
-          console.log(this.currentPair);
           if (!this.currentPair && this.$route.name === 'ICDex') {
-            if (this.tradePairs.Main.length) {
-              this.currentTradeMarketSort = 'Main';
-              this.pairs = this.tradePairs.Main;
-            } else if (this.tradePairs.Second.length) {
-              this.currentTradeMarketSort = 'Second';
-              this.pairs = this.tradePairs.Second;
-            } else if (this.tradePairs.Third.length) {
-              this.currentTradeMarketSort = 'Third';
-              this.pairs = this.tradePairs.Third;
+            if (this.tradePairs.Hot.length) {
+              this.currentTradeMarketSort = 'Hot';
+              this.pairs = this.tradePairs.Hot;
             }
+            // if (this.tradePairs.Main.length) {
+            //   this.currentTradeMarketSort = 'Main';
+            //   this.pairs = this.tradePairs.Main;
+            // } else if (this.tradePairs.Second.length) {
+            //   this.currentTradeMarketSort = 'Second';
+            //   this.pairs = this.tradePairs.Second;
+            // } else if (this.tradePairs.Third.length) {
+            //   this.currentTradeMarketSort = 'Third';
+            //   this.pairs = this.tradePairs.Third;
+            // }
             this.currentPair = this.pairs[this.currentPairIndex];
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
@@ -20057,16 +20690,25 @@ export default class extends Vue {
           }
         } else {
           if (this.$route.name === 'ICDex') {
-            if (this.tradePairs.Main.length) {
-              this.currentTradeMarketSort = 'Main';
-              this.pairs = this.tradePairs.Main;
-            } else if (this.tradePairs.Second.length) {
-              this.currentTradeMarketSort = 'Second';
-              this.pairs = this.tradePairs.Second;
-            } else if (this.tradePairs.Third.length) {
-              this.currentTradeMarketSort = 'Third';
-              this.pairs = this.tradePairs.Third;
-            }
+            this.currentMarketMenu = 'Markets';
+            this.tradePairs = Object.assign(
+              { Star: star, Search: [] },
+              this.allPairs.Markets
+            );
+            this.currentTradeMarketSort = 'Hot';
+            this.pairs = this.tradePairs.Hot;
+            // if (this.tradePairs.Main.length) {
+            //   this.currentTradeMarketSort = 'Main';
+            //   this.pairs = this.tradePairs.Main;
+            // } else if (this.tradePairs.Second.length) {
+            //   this.currentTradeMarketSort = 'Second';
+            //   this.pairs = this.tradePairs.Second;
+            // } else if (this.tradePairs.Third.length) {
+            //   this.currentTradeMarketSort = 'Third';
+            //   this.pairs = this.tradePairs.Third;
+            // }
+            console.log(this.currentMarketMenu);
+            console.log(this.pairs);
             this.currentPair = this.pairs[this.currentPairIndex];
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
@@ -20097,28 +20739,6 @@ export default class extends Vue {
           }
         }
       }
-      // const res1 = await this.iCSwapRouterService.getPairs2([dexName], [], []);
-      // if (res1.data && res1.data.length) {
-      //   const pairs = res1.data.sort(
-      //     (a, b) => Number(b[1].score) - Number(a[1].score)
-      //   );
-      //   pairs.forEach((pair) => {
-      //     const currentPair = [
-      //       pair[0],
-      //       [pair[1].pair, pair[1].score],
-      //       null,
-      //       'Old'
-      //     ];
-      //     this.prePairs.push(pair[0].toString());
-      //     const token1Symbol = currentPair[1][0].token1[1].toLocaleLowerCase();
-      //     if (token1Symbol === 'icp') {
-      //       this.tradePairs.Old.push(currentPair);
-      //     }
-      //   });
-      // }
-      // if (!this.pairs.length) {
-      //   this.pairs = this.tradePairs.Old;
-      // }
       const type = this.$route.query.type;
       if (type && type === 'referrer') {
         this.tradeCompetitionsMenu = TradeCompetitionsEnum.Referral;
@@ -20142,12 +20762,7 @@ export default class extends Vue {
           console.error(e);
         }
         this.resetChart();
-        const height = (this.$refs.deSwapListItemPair as any).clientHeight;
-        let top = (this.currentPairIndex + 1) * 50 - height;
-        if (top < 0) {
-          top = 0;
-        }
-        (this.$refs.deSwapListItemPair as any).scrollTop = top;
+        this.scrollTop();
       });
       this.getTokens();
       console.log(this.prePairs);
@@ -20157,6 +20772,18 @@ export default class extends Vue {
       console.log(e);
     }
     // this.loading.close();
+  }
+  private scrollTop(): void {
+    this.$nextTick(() => {
+      if (this.$refs.deSwapListItemPair) {
+        const height = (this.$refs.deSwapListItemPair as any).clientHeight;
+        let top = (this.currentPairIndex + 1) * 50 - height;
+        if (top < 0) {
+          top = 0;
+        }
+        (this.$refs.deSwapListItemPair as any).scrollTop = top;
+      }
+    });
   }
   private async IDO_qualification(currentPair: DePairs): Promise<void> {
     if (this.getPrincipalId) {
@@ -20253,9 +20880,8 @@ export default class extends Vue {
       this.initPrice();
     });
     this.getConfig();
-    const principal = localStorage.getItem('principal');
-    if (principal) {
-      this.getTradeList(this.currentPair[0].toString(), principal);
+    if (this.getPrincipalId) {
+      this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId);
       this.getPending(this.currentPair[0].toString(), true);
       this.getTotalPending();
       this.getPairInfo(this.currentPair);
@@ -20264,7 +20890,7 @@ export default class extends Vue {
     this.latestFilled(this.currentPair[0].toString());
     this.getIntervalPrice();
     try {
-      if (principal) {
+      if (this.getPrincipalId) {
         const currentPairId = this.currentPair[0].toString();
         const res = await this.getTxAccount(currentPairId);
         if (res && res.pairId === this.currentPair[0].toString()) {
@@ -20346,10 +20972,9 @@ export default class extends Vue {
   private async ta_getReferrer(): Promise<Array<[string, boolean]>> {
     try {
       const dexId = this.currentPair[0].toString();
-      const principal = localStorage.getItem('principal');
       const res = await this.currentICDexService.ta_getReferrer(
         dexId,
-        principal
+        this.getPrincipalId
       );
       if (res && res.pairId === this.currentPair[0].toString()) {
         return res.referrer;
@@ -20391,10 +21016,9 @@ export default class extends Vue {
       this.isToSetReferrer = true;
       const referrer = this.$cookies.get('referral') || {};
       const currentReferrer = referrer[this.currentPair[0].toString()];
-      const principal = localStorage.getItem('principal');
-      if (principal) {
+      if (this.getPrincipalId) {
         const address = principalToAccountIdentifier(
-          Principal.fromText(principal)
+          Principal.fromText(this.getPrincipalId)
         );
         if (
           currentReferrer &&
@@ -20432,7 +21056,8 @@ export default class extends Vue {
   private async getLiquidity(
     swapId: string,
     index: number,
-    currentTradeMarketSort: string
+    currentTradeMarketSort: string,
+    pairs?: Array<DePairs>
   ): Promise<void> {
     // const liquidity = await currentICDexService.liquidity(swapId);
     try {
@@ -20440,7 +21065,9 @@ export default class extends Vue {
       if (!res) {
         return;
       }
-      let pairs = this.tradePairs[currentTradeMarketSort];
+      if (!pairs) {
+        pairs = this.tradePairs[currentTradeMarketSort];
+      }
       if (this.pairSearch) {
         pairs = this.pairs;
       }
@@ -21407,6 +22034,26 @@ export default class extends Vue {
   background: #2a303a;
   border-radius: 20px;
 }
+.user-setting {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  padding: 10px 20px;
+  border-bottom: 1px solid #383e4e;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+  &.active {
+    color: #51b7c3;
+  }
+  &:last-child {
+    border: none;
+  }
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
 .set-pool {
   display: flex;
   align-items: center;
@@ -21494,8 +22141,9 @@ export default class extends Vue {
 }
 .preparing-table {
   max-height: 336px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: auto;
+  overflow-y: scroll;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
   table {
     color: #8c98a5 !important;
     font-size: 12px;
@@ -21896,10 +22544,17 @@ export default class extends Vue {
     border: 1px solid #242d38;
     border-left: none;
     transition: all 0.2s;
+    &.hide-sort {
+      display: none;
+      &.show-sort {
+        display: block;
+      }
+    }
     &:last-child {
       padding: 0 8px;
     }
-    &:first-child {
+    &:first-child,
+    &:nth-child(2) {
       border-left: 1px solid #242d38;
       &.active {
         z-index: 1;
@@ -21976,16 +22631,18 @@ export default class extends Vue {
       }*/
       &.de-swap-list-item-pair-trade {
         height: 180px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: auto;
+        overflow-y: scroll;
+        transform: translateZ(0);
+        -webkit-overflow-scrolling: touch;
         tr {
           height: 26px;
         }
       }
     }
     tbody.de-swap-list-item-pair {
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
+      overflow-y: scroll;
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
       &.de-swap-list-item-pair-market {
         height: 336px;
         tr {
@@ -22793,8 +23450,9 @@ div.kInterval-chart-h5 {
     tbody {
       display: block;
       height: 260px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
+      overflow-y: scroll;
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
     }
     tr {
       display: table;
@@ -23062,8 +23720,9 @@ div.kInterval-chart-h5 {
       height: calc(100% - 40px);
       width: 100%;
       overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
+      overflow-y: scroll;
+      transform: translateZ(0);
+      -webkit-overflow-scrolling: touch;
       tr {
         display: table;
         width: 100%;
@@ -23217,6 +23876,9 @@ div.kInterval-chart-h5 {
 }
 </style>
 <style lang="scss">
+.market-menu-tooltip .ant-tooltip-inner {
+  padding: 0;
+}
 .adopted-countdown {
   line-height: 1;
   .ant-statistic-content {

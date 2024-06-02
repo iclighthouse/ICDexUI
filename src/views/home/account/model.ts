@@ -1,6 +1,13 @@
 import { TokenItem } from '@/ic/ICLighthouse/model';
 import { Txid } from '@/ic/ICLighthouseToken/model';
-import { IcTokenInfo, TxIndex, TxStatus, Wei } from '@/ic/ckETHMinter/model';
+import {
+  IcTokenInfo,
+  RetrieveEthStatus,
+  TxIndex,
+  TxStatus,
+  Wei,
+  WithdrawErc20Response
+} from '@/ic/ckETHMinter/model';
 import { Time } from '@/ic/common/icType';
 
 export type SettingType = 'Modify' | 'Update';
@@ -164,10 +171,12 @@ export interface Active {
   retrieve2?: [TxIndex, TxStatus, Time]; // retrieve step2
   mintCKETH?: Array<ClaimActive>; // ckETH mint
   retrieveCKETH?: Array<RetrieveActive>; // ckETH retrieve
+  CKETHResponse?: Array<ClaimCKETHActiveResponse | RetrieveActiveResponse>;
 }
 export interface RetrieveActive {
   tokenId: string;
   amount: string;
+  status?: RetrieveEthStatus;
 }
 export interface MintActive {
   tokenId: string;
@@ -181,4 +190,18 @@ export interface ClaimCKETHActive {
   amount: string;
   txHash: string;
   tokenId: string;
+  blockNumber: string;
+}
+export interface ClaimCKETHActiveResponse {
+  amount: string;
+  txHash: string;
+  tokenId: string;
+  blockNumber: string;
+  type: string;
+}
+export interface RetrieveActiveResponse {
+  tokenId: string;
+  amount: string;
+  status?: RetrieveEthStatus;
+  type: string;
 }

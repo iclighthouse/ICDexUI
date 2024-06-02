@@ -56,9 +56,15 @@
               tokens[pool[1].pairInfo.token1[0].toString()].symbol
             }}
           </router-link>
+          <span
+            v-if="getPrincipalId"
+            class="margin-left-auto pointer main-color"
+            style="margin-right: 10px"
+            @click="eventVisible = true"
+            >Activities</span
+          >
           <button
             v-if="getPrincipalId"
-            class="margin-left-auto"
             type="button"
             :class="{ primary: type === 'Add' }"
             @click="changeType('Add')"
@@ -950,6 +956,55 @@
         </div>
       </div>
     </div>
+    <a-modal
+      v-model="eventVisible"
+      width="90%"
+      title="Activities"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="delete-modal"
+    >
+      <table class="ant-table-tbody mt20">
+        <thead>
+          <tr>
+            <th>Index</th>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Event</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(item, index) in events.slice(
+              (currentEventPage - 1) * 100,
+              currentEventPage * 100
+            )"
+            :key="index"
+          >
+            <td>{{ item[0].toString(10) }}</td>
+            <td style="white-space: nowrap">
+              {{ item[1][1] | formatDateFromSecondUTC }}
+            </td>
+            <td>{{ Object.keys(item[1][0])[0] }}</td>
+            <td>
+              <div style="word-break: break-all; white-space: normal">
+                {{ Object.values(item[1][0])[0] | filterJson }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <a-pagination
+        class="pagination"
+        v-show="events.length > 100"
+        :current="currentEventPage"
+        :defaultPageSize="100"
+        :total="events.length"
+        @change="changeEvents"
+      />
+    </a-modal>
     <transfer-token
       ref="transferToken"
       :current-token="currentToken"
@@ -973,9 +1028,10 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Menu } from '@/components/menu/model';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
-import { Icrc1Account, TokenInfo, TokenStd } from '@/ic/common/icType';
+import { Icrc1Account, Time, TokenInfo, TokenStd } from '@/ic/common/icType';
 import {
   MakerConfigure,
+  PoolEvent,
   PoolInfo,
   PoolStats,
   ShareWeighted
@@ -1039,6 +1095,17 @@ const commonModule = namespace('common');
         );
       }
       return '';
+    },
+    filterJson(val): string {
+      return JSON.stringify(val, (key, value) =>
+        value instanceof Array && value.length >= 16 // todo 16
+          ? toHexString(new Uint8Array(value))
+          : typeof value === 'bigint'
+          ? value.toString()
+          : value && value._isPrincipal
+          ? value.toString()
+          : value
+      );
     }
   }
 })
@@ -1123,6 +1190,9 @@ export default class extends Vue {
   private makerConfigure: MakerConfigure = {};
   private SNSWasmService: SNSWasmService = null;
   private listDeployedSnses: Array<DeployedSns> = [];
+  private eventVisible = false;
+  private currentEventPage = 1;
+  private events: Array<[bigint, [PoolEvent, Time]]> = [];
 
   get buttonDisabledRemove(): boolean {
     let flag = false;
@@ -1371,6 +1441,7 @@ export default class extends Vue {
       this.getUnitNetValues();
       this.getTokensExt();
       this.NFTBalance();
+      this.getEvents(this.$route.params.poolId, 1, []);
     }
     this.getPairs();
   }
@@ -1456,6 +1527,65 @@ export default class extends Vue {
       if (poolId) {
         this.$set(this.pool, 0, poolId);
         this.getPool(poolId);
+      }
+    }
+  }
+  private async getEvents(
+    pool: string,
+    page: number,
+    events: Array<[bigint, [PoolEvent, Time]]>
+  ): Promise<void> {
+    console.log(pool, page);
+    const res = await this.makerPoolService.get_events(
+      pool,
+      [BigInt(page)],
+      [BigInt(100)]
+    );
+    console.log(res);
+    const account = principalToAccountIdentifier(
+      Principal.fromText(this.getPrincipalId)
+    );
+    const max = new Date().getTime() - 6 * 30 * 86400 * 1000;
+    let flag = true;
+    if (res && res.data) {
+      for (let i = 0; i < res.data.length; i++) {
+        const item = res.data[i];
+        if (new BigNumber(item[1][1].toString(10)).times(1000).gt(max)) {
+          const type = Object.keys(item[1][0])[0];
+          let val;
+          if (
+            type === 'withdraw' ||
+            type === 'fallback' ||
+            type === 'deposit'
+          ) {
+            val = Object.values(item[1][0])[0];
+          }
+          if (type === 'add' || type === 'remove') {
+            val = Object.values(Object.values(item[1][0])[0])[0];
+          }
+          if (val && val.account) {
+            let subaccount = null;
+            if (val.account.subaccount.length) {
+              subaccount = new Uint8Array(val.account[0]);
+            }
+            const current = principalToAccountIdentifier(
+              val.account.owner,
+              subaccount
+            );
+            if (account === current) {
+              events.push(item);
+            }
+          }
+        } else {
+          flag = false;
+          break;
+        }
+      }
+      console.log(flag, page);
+      if (flag && page < Number(res.totalPage)) {
+        this.getEvents(this.$route.params.poolId, ++page, events);
+      } else {
+        this.events = events;
       }
     }
   }
@@ -2427,6 +2557,9 @@ export default class extends Vue {
       this.$message.error(e);
     }
     loading.close();
+  }
+  private changeEvents(page): void {
+    this.currentEventPage = page;
   }
 }
 </script>

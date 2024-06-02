@@ -107,7 +107,7 @@
                       :key="index"
                       @click.stop="changeMarketMenu(item)"
                     >
-                      <span>
+                      <span style="font-size: 13px">
                         {{ item.name }}
                       </span>
                     </div>
@@ -127,7 +127,9 @@
                     ]"
                   >
                     <a-icon style="font-size: 12px" type="menu" />
-                    <span style="margin: 0 2px">{{ currentMarketMenu }}</span>
+                    <span style="margin: 0 2px; font-size: 13px">{{
+                      currentMarketMenu
+                    }}</span>
                   </div>
                 </a-tooltip>
               </a-tooltip>
@@ -1780,7 +1782,7 @@
                           .toLocaleLowerCase()
                           .includes('test')
                       "
-                      :to="`/account?type=mint&token=${currentPair[1][0].token1[0].toString()}`"
+                      :to="`/icRouter?type=mint&token=${currentPair[1][0].token1[0].toString()}`"
                       >{{
                         tokensBalance[currentPair[1][0].token1[0].toString()]
                           | bigintToFloat(
@@ -2221,7 +2223,11 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         (isIDOPaused ||
-                          (!isIDOPaused && orderType !== 'FOK'))) ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -2241,7 +2247,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -2258,7 +2266,28 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -2393,7 +2422,12 @@
                   <button
                     v-if="getPrincipalId && currentPair"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -2408,7 +2442,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'MKT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -2424,7 +2460,28 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -2484,7 +2541,7 @@
                           .toLocaleLowerCase()
                           .includes('test')
                       "
-                      :to="`/account?type=mint&token=${currentPair[1][0].token0[0].toString()}`"
+                      :to="`/icRouter?type=mint&token=${currentPair[1][0].token0[0].toString()}`"
                     >
                       {{
                         tokensBalance[currentPair[1][0].token0[0].toString()]
@@ -2934,7 +2991,11 @@
                     :disabled="
                       (pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))) ||
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -2950,7 +3011,8 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -2966,7 +3028,28 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isPaused || (!isPaused && orderType !== 'LMT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -3089,7 +3172,12 @@
                     v-if="getPrincipalId && currentPair"
                     class="sell-button w100 mt20"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -3099,7 +3187,13 @@
                     "
                     @click="onSellMKT"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -3113,7 +3207,24 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(pairInfo && pairInfo.paused) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11224,7 +11335,11 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         (isIDOPaused ||
-                          (!isIDOPaused && orderType !== 'FOK'))) ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11240,7 +11355,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -11257,7 +11374,28 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11288,7 +11426,12 @@
                   <button
                     v-if="getPrincipalId && currentPair"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11303,7 +11446,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'MKT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -11319,7 +11464,28 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11706,7 +11872,11 @@
                     :disabled="
                       (pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))) ||
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11722,7 +11892,8 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -11738,7 +11909,28 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isPaused || (!isPaused && orderType !== 'LMT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11770,7 +11962,12 @@
                     v-if="getPrincipalId && currentPair"
                     class="sell-button w100 mt20"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !==
+                          getPrincipalId) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11780,7 +11977,13 @@
                     "
                     @click="onSellMKT"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -11794,7 +11997,24 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(pairInfo && pairInfo.paused) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -13653,6 +13873,7 @@ export default class extends Vue {
   private selectMarket = false;
   private marketMenuVisible = false;
   private swapConfig: SwapConfig = null;
+  private debugPairs: { [key: string]: string } = {};
   private currentTradeMarketSort: string = null;
   private pairSearch = '';
   private showThird = true;
@@ -14092,6 +14313,7 @@ export default class extends Vue {
     this.isH5 = width <= 768;
     try {
       this.getSysConfig();
+      this.getDebugPairs();
       this.getDexPairs('icdex').then(() => {
         // const tour = localStorage.getItem('confirmOldTrade');
         // if (!tour) {
@@ -15896,6 +16118,14 @@ export default class extends Vue {
     this.proPendingOrdersModel = true;
   }
   private async onCancel(order: TradingOrder, isPro: boolean): Promise<void> {
+    if (
+      this.debugPairs &&
+      this.debugPairs[this.currentPair[0].toString()] &&
+      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+    ) {
+      this.$message.error('This pair is under maintenance, try again later.');
+      return;
+    }
     await checkAuth();
     const loading = this.$loading({
       lock: true,
@@ -15929,7 +16159,8 @@ export default class extends Vue {
       .catch((e) => {
         console.log(e);
         loading.close();
-        this.$message.success('Cancel Error');
+        this.$message.error(toHttpRejectError(e));
+        // this.$message.error('Cancel Error');
       });
   }
   private getStatusByTxid(txid: Array<number>, loading, isPro: boolean): void {
@@ -16540,7 +16771,13 @@ export default class extends Vue {
     }
   }
   private async onSellMKT(): Promise<void> {
-    if (this.pairInfo && this.pairInfo.paused) {
+    if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
+      this.debugPairs &&
+      this.debugPairs[this.currentPair[0].toString()] &&
+      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+    ) {
       this.$message.warning('Trading pair has been paused.');
       return;
     }
@@ -17133,7 +17370,8 @@ export default class extends Vue {
         .catch((e) => {
           console.log(e);
           this.initPending(currentPair, prepare, address);
-          this.$message.error('Order fail');
+          this.$message.error(toHttpRejectError(e));
+          // this.$message.error('Order fail');
         })
         .finally(() => {
           if (this.currentTradeMarketSort === 'Hot') {
@@ -17427,7 +17665,8 @@ export default class extends Vue {
         .catch((e) => {
           console.error(e);
           this.initPending(currentPair, prepare, address);
-          this.$message.error('Order fail');
+          this.$message.error(toHttpRejectError(e));
+          // this.$message.error('Order fail');
         })
         .finally(() => {
           if (this.currentTradeMarketSort === 'Hot') {
@@ -17689,7 +17928,10 @@ export default class extends Vue {
     if (
       this.pairInfo &&
       this.pairInfo.paused &&
-      (this.isPaused || (!this.isPaused && this.orderType !== 'LMT'))
+      (this.isPaused || (!this.isPaused && this.orderType !== 'LMT')) &&
+      this.debugPairs &&
+      this.debugPairs[this.currentPair[0].toString()] &&
+      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -18462,7 +18704,13 @@ export default class extends Vue {
     console.timeEnd('deposit');
   }
   private async onBuyMKT(): Promise<void> {
-    if (this.pairInfo && this.pairInfo.paused) {
+    if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
+      this.debugPairs &&
+      this.debugPairs[this.currentPair[0].toString()] &&
+      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+    ) {
       this.$message.warning('Trading pair has been paused.');
       return;
     }
@@ -18532,7 +18780,10 @@ export default class extends Vue {
       this.pairInfo &&
       this.pairInfo.paused &&
       (this.isIDOPaused ||
-        (!this.isIDOPaused && this.orderType !== OrderTypeEnum.FOK))
+        (!this.isIDOPaused && this.orderType !== OrderTypeEnum.FOK)) &&
+      this.debugPairs &&
+      this.debugPairs[this.currentPair[0].toString()] &&
+      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -19463,8 +19714,6 @@ export default class extends Vue {
     console.log(this.tradePairs);
   }
   private sortHot(): void {
-    console.log('sortHot');
-    console.log(this.tradePairs);
     this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
       if (b[1][0].token1[1].toLocaleLowerCase().includes('test')) {
         return -1;
@@ -20276,7 +20525,9 @@ export default class extends Vue {
         }
       }
     }
-    localStorage.setItem('star', JSON.stringify(this.star));
+    if (!this.getPrincipalId) {
+      localStorage.setItem('star', JSON.stringify(this.star));
+    }
   }
   private async getFavorites(): Promise<Array<string>> {
     const res = await this.ICLighthouseService.getFavorites(
@@ -20310,16 +20561,16 @@ export default class extends Vue {
         }
         console.log(favorites);
         this.star = [].concat(favorites);
-        for (let i = 0; i < star.length; i++) {
-          if (
-            !favorites.includes(star[i]) &&
-            star[i] !== '5t3ek-haaaa-aaaar-qadia-cai'
-          ) {
-            this.star.push(star[i]);
-            this.addFavorites(Principal.fromText(star[i]));
-          }
-        }
-        localStorage.setItem('star', JSON.stringify(this.star));
+        // for (let i = 0; i < star.length; i++) {
+        //   if (
+        //     !favorites.includes(star[i]) &&
+        //     star[i] !== '5t3ek-haaaa-aaaar-qadia-cai'
+        //   ) {
+        //     this.star.push(star[i]);
+        //     this.addFavorites(Principal.fromText(star[i]));
+        //   }
+        // }
+        // localStorage.setItem('star', JSON.stringify(this.star));
       } else {
         this.star = star;
       }
@@ -20385,6 +20636,14 @@ export default class extends Vue {
     console.log(this.currentTradeMarketSort);
     console.log(this.tradePairs);
     console.log(this.pairs);
+  }
+  private async getDebugPairs(): Promise<void> {
+    const res = await this.ICSwapRouterFiduciaryService.debugPairs();
+    if (res && res.length) {
+      res.forEach((item) => {
+        this.$set(this.debugPairs, item.pair.toString(), item.dev.toString());
+      });
+    }
   }
   private async getDexPairs(dexName: DexNameType): Promise<void> {
     try {
@@ -20544,7 +20803,7 @@ export default class extends Vue {
                 const res = await this.currentICDexService.info(token1);
                 console.log(res);
                 if (res) {
-                  this.tradePairs.Third.push([
+                  this.allPairs.Markets.Hot.push([
                     Principal.fromText(token1),
                     [
                       {
@@ -20556,16 +20815,16 @@ export default class extends Vue {
                         token0: res.pairInfo.token0,
                         token1: res.pairInfo.token1,
                         dexName: res.pairInfo.name,
+                        marketBoard: { STAGE0: null },
                         canisterId: Principal.fromText(token1)
                       },
                       BigInt(0)
                     ],
                     null,
-                    'Old'
+                    'Hot'
                   ]);
                   currentPairId = token1;
                   currentStage = 'STAGE0';
-                  token1Symbol = res.pairInfo.token1[1].toLocaleLowerCase();
                 }
               } catch (e) {
                 console.log(e);
@@ -22011,7 +22270,9 @@ export default class extends Vue {
       favoritesList.push(item[1][0].canisterId);
       star.push(item[1][0].canisterId.toString());
     });
-    localStorage.setItem('star', JSON.stringify(star));
+    if (!this.getPrincipalId) {
+      localStorage.setItem('star', JSON.stringify(star));
+    }
     console.log(star);
     await this.ICLighthouseService.updateFavoritesListOrder(favoritesList);
   }

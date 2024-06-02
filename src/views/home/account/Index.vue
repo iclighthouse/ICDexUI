@@ -1,7 +1,29 @@
 <template>
   <div class="wallet-main container-width">
     <div v-if="getPrincipalId">
-      <div class="wallet-header base-font-title">
+      <ul class="icsns-menu">
+        <li
+          v-for="menu in ICSNSMenu"
+          :key="menu.name"
+          :class="{
+            active: menu.name === currentWalletMenu
+          }"
+          @click="changeMenu(menu)"
+        >
+          <span v-show="menu.name === 'icRouter'">
+            <a-tooltip placement="top">
+              <template slot="title">
+                Tokens cross-chaining based on Threshold Signature Scheme (TSS).
+              </template>
+              {{ menu.value }}
+            </a-tooltip>
+          </span>
+          <span v-show="menu.name !== 'icRouter'">
+            {{ menu.value }}
+          </span>
+        </li>
+      </ul>
+      <!--<div class="wallet-header base-font-title">
         <div class="base-title-size base-font-title-io">ICLight.io</div>
         <div class="margin-left-auto wallet-info">
           <div
@@ -32,8 +54,8 @@
             <img class="account-identicon-img" :src="identiconImg" alt="" />
           </div>
         </div>
-      </div>
-      <div class="wallet-item">
+      </div>-->
+      <div v-show="currentWalletMenu === 'icRouter'" class="wallet-item">
         <ledger
           :principal="getPrincipalId"
           type="cross"
@@ -42,7 +64,7 @@
           @addTokenSuccess="addTokenSuccess"
         ></ledger>
       </div>
-      <ul class="flex-center base-color-w wallet-header-menu">
+      <!--<ul class="flex-center base-color-w wallet-header-menu">
         <li
           v-for="item in walletMenu"
           :key="item.value"
@@ -51,8 +73,8 @@
         >
           {{ item.name }}
         </li>
-      </ul>
-      <div class="wallet-item">
+      </ul>-->
+      <div v-show="currentWalletMenu !== 'icRouter'" class="wallet-item">
         <p class="base-title-size flex-center">
           IC network
           <button
@@ -135,7 +157,10 @@
           </div>
         </div>
       </div>
-      <div class="wallet-item wallet-item-no-border">
+      <div
+        v-show="currentWalletMenu === 'wallet'"
+        class="wallet-item wallet-item-no-border"
+      >
         <div class="wallet-title">
           <span>
             Cycles Wallet
@@ -178,7 +203,10 @@
           </a-spin>
         </div>
       </div>
-      <div class="wallet-item wallet-item-no-border">
+      <div
+        v-show="currentWalletMenu === 'wallet'"
+        class="wallet-item wallet-item-no-border"
+      >
         <p class="wallet-title token-title">
           <span>NFTs (Only support ICLighthouse Planet Card NFT)</span>
         </p>
@@ -854,7 +882,24 @@ export default class extends Mixins(BalanceMixin) {
   private spinning = false;
   private isToken0 = true;
   private currentToken: AddTokenItem = null;
-  private currentWalletMenu: 'wallet' | 'proWallet' = 'wallet';
+  private currentWalletMenu: 'wallet' | 'proWallet' | 'icRouter' = 'wallet';
+  private ICSNSMenu = [
+    {
+      value: 'Main-Wallet',
+      name: 'wallet',
+      path: '/wallet?Main'
+    },
+    {
+      value: 'Pro-Wallet',
+      name: 'proWallet',
+      path: '/wallet?Pro'
+    },
+    {
+      value: 'icRouter',
+      name: 'icRouter',
+      path: '/icRouter'
+    }
+  ];
   get identiconImg(): string {
     if (this.account) {
       return (
@@ -874,6 +919,13 @@ export default class extends Mixins(BalanceMixin) {
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const principal = localStorage.getItem('principal');
+    if (this.$route.fullPath.toLocaleLowerCase().includes('icrouter')) {
+      this.currentWalletMenu = 'icRouter';
+    } else if (this.$route.fullPath.toLocaleLowerCase().includes('pro')) {
+      this.currentWalletMenu = 'proWallet';
+    } else {
+      this.currentWalletMenu = 'wallet';
+    }
     if ((window as any).icx) {
       this.isIcx = !!(window as any).icx;
       EventBus.$on('initSuccess', async () => {
@@ -902,6 +954,10 @@ export default class extends Mixins(BalanceMixin) {
       await this.getPairs();
       this.init();
     }
+  }
+  private changeMenu(val): void {
+    this.currentWalletMenu = val.name;
+    this.$router.push(val.path);
   }
   private init(): void {
     // this.getInfo();
@@ -2529,6 +2585,33 @@ export default class extends Mixins(BalanceMixin) {
   display: inline-block;
   width: 62px;
 }
+.icsns-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  width: 470px;
+  margin: 60px auto 40px;
+  background: #232730;
+  border-radius: 30px;
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 40px;
+    font-size: 16px;
+    color: #51b7c3;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 25px;
+    &.active {
+      background: #51b7c3;
+      border-color: #51b7c3;
+      color: #ffffff;
+    }
+  }
+}
 .pc-show {
   display: block;
 }
@@ -2541,6 +2624,14 @@ export default class extends Mixins(BalanceMixin) {
   }
   .h5-show {
     display: block;
+  }
+  .icsns-menu {
+    width: calc(100% - 20px);
+    margin: 20px auto 40px;
+    padding: 0 5px;
+    li {
+      font-size: 14px;
+    }
   }
   .wallet-main {
     margin-top: 20px;

@@ -2485,7 +2485,7 @@ export default class extends Vue {
           (SNSToken.lifecycle &&
             SNSToken.lifecycle.length &&
             Number(SNSToken.lifecycle[0]) !== 4) ||
-          SNSToken.lifecycle.length === 0
+          (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
         );
       }
     );

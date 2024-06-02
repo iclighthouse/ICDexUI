@@ -289,6 +289,7 @@ import { Icrc1Account, TokenInfo, TokenStd } from '@/ic/common/icType';
 import { getCompetitionsBalance, getDepositing } from '@/ic/getTokenBalance';
 import { checkAuth } from '@/ic/CheckAuth';
 import { getFee } from '@/ic/getTokenFee';
+import { toHttpRejectError } from '@/ic/httpError';
 
 const commonModule = namespace('common');
 
@@ -470,7 +471,8 @@ export default class extends Vue {
     } catch (e) {
       loading.close();
       console.error(e);
-      this.$message.error(e);
+      // this.$message.error(e);
+      this.$message.error(toHttpRejectError(e));
     }
   }
   private canFallback(balance: string, token: TokenInfo): boolean {

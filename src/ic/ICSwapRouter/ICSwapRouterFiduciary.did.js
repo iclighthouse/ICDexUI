@@ -260,14 +260,34 @@ export default ({ IDL }) => {
       [IDL.Vec(IDL.Tuple(AccountId, IDL.Vec(NFT)))],
       ['query']
     ),
+    addTokenMetadata: IDL.Func(
+      [IDL.Principal, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      []
+    ),
     autoPutPairToMarket: IDL.Func([PairCanisterId], [], []),
-    config: IDL.Func([ConfigRequest], [IDL.Bool], []),
+    config: IDL.Func(
+      [ConfigRequest, IDL.Opt(IDL.Principal), IDL.Opt(IDL.Principal)],
+      [IDL.Bool],
+      []
+    ),
+    debugPairs: IDL.Func(
+      [],
+      [IDL.Vec(IDL.Record({ dev: IDL.Principal, pair: IDL.Principal }))],
+      ['query']
+    ),
     debug_fetchCompData: IDL.Func([IDL.Opt(IDL.Nat)], [], []),
+    debug_updateLiquidity: IDL.Func([], [], []),
     delDex: IDL.Func([IDL.Principal], [], []),
     drc207: IDL.Func([], [DRC207Support], ['query']),
     dropListingReferrer: IDL.Func([IDL.Principal], [], []),
     getConfig: IDL.Func([], [Config], ['query']),
     getCurrencies: IDL.Func([], [IDL.Vec(TokenInfo__1)], ['query']),
+    getDAO: IDL.Func(
+      [],
+      [IDL.Record({ DAO: IDL.Principal, DAO_BOARD: IDL.Principal })],
+      ['query']
+    ),
     getDexCompetition: IDL.Func(
       [IDL.Nat],
       [IDL.Opt(DexCompetitionResponse)],
@@ -324,6 +344,11 @@ export default ({ IDL }) => {
       [IDL.Vec(IDL.Tuple(PairCanisterId, TradingPair))],
       ['query']
     ),
+    getTokenMetadata: IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      ['query']
+    ),
     getTokens: IDL.Func([IDL.Opt(DexName)], [IDL.Vec(TokenInfo__1)], ['query']),
     listingReferrer: IDL.Func([IDL.Principal], [IDL.Bool, IDL.Bool], ['query']),
     propose: IDL.Func([PairCanisterId], [], []),
@@ -358,6 +383,11 @@ export default ({ IDL }) => {
     removeByDex: IDL.Func([IDL.Principal], [], []),
     removeCurrency: IDL.Func([IDL.Principal], [], []),
     removePairFromMarket: IDL.Func([IDL.Opt(IDL.Text), PairCanisterId], [], []),
+    removeTokenMetadata: IDL.Func(
+      [IDL.Principal, IDL.Opt(IDL.Text)],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      []
+    ),
     route: IDL.Func(
       [IDL.Principal, IDL.Principal, IDL.Opt(DexName)],
       [IDL.Vec(IDL.Tuple(PairCanisterId, TradingPair))],

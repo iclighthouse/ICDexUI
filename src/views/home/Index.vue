@@ -14,7 +14,12 @@
       }"
     >
       <div class="home-header-main-menu">
-        <a-icon class="home-header-main-menu-left" type="double-left" />
+        <img
+          class="home-header-main-menu-left"
+          src="@/assets/img/logo-i.png"
+          alt=""
+        />
+        <!--<a-icon class="home-header-main-menu-left" type="double-left" />-->
         <div class="home-header-main-menu-span">
           <!--<a-icon type="double-right" />-->
           <span></span>
@@ -87,6 +92,14 @@
             </a-menu-item>
           </a-menu>
         </a-dropdown>
+        <li
+          @click="changeMenu('icRouter', '/icRouter')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/icrouter')
+          }"
+        >
+          <span>icRouter</span>
+        </li>
         <!--<li
           @click="changeMenu('ICSNS', '/ICSNS')"
           :class="{
@@ -120,6 +133,16 @@
           <span>Airdrop</span>
         </li>
         <li
+          @click="changeMenu('CyclesFinance', '/CyclesFinance')"
+          :class="{
+            active: $route.fullPath
+              .toLocaleLowerCase()
+              .startsWith('/cyclesfinance')
+          }"
+        >
+          <span>CyclesFinance</span>
+        </li>
+        <!--<li
           @click="changeMenu('dapps', '/dapps')"
           :class="{
             active:
@@ -132,7 +155,7 @@
           }"
         >
           <span>DApps</span>
-        </li>
+        </li>-->
         <!--<li
 					@click="changeMenu('ICDex', '/ICDex')"
 					:class="{
@@ -159,6 +182,14 @@
         >
           <span>Mining</span>
         </li>-->
+        <!--<li
+          @click="changeMenu('Dashboard', '/Dashboard')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/dashboard')
+          }"
+        >
+          <span>Dashboard</span>
+        </li>-->
         <li>
           <a
             href="https://ic.house"
@@ -167,7 +198,7 @@
             >ICHouse</a
           >
         </li>
-        <li
+        <!--<li
           v-if="
             hostname &&
             hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
@@ -186,7 +217,7 @@
             rel="nofollow noreferrer noopener"
             >OldVersion</a
           >
-        </li>
+        </li>-->
       </ul>
       <account-info> </account-info>
     </div>
@@ -222,7 +253,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.7
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.8
             </span>
           </span>
         </span>
@@ -665,7 +696,7 @@ export default class extends Vue {
   display: none;
 }
 .home-header-main {
-  background: #2c3e54;
+  background: #2b3845;
   top: -50px;
   z-index: 1000;
   box-shadow: 0 0 1px 1px rgba(52, 69, 94, 0.4);
@@ -677,11 +708,9 @@ export default class extends Vue {
   .home-header-main-menu-left {
     position: absolute;
     left: 15px;
-    bottom: 1px;
+    bottom: -9px;
+    width: 18px;
     display: inline-block;
-    color: #51b7c3;
-    font-size: 12px;
-    transform: rotate(-90deg);
   }
   .home-header-main-menu {
     position: absolute;

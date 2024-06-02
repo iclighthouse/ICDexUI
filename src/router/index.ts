@@ -49,6 +49,28 @@ const routes: Array<RouteConfig> = [
         }
       },
       {
+        path: '/wallet',
+        name: 'Account',
+        component: () => import('@/views/home/account/Index.vue'),
+        meta: {
+          title: 'ICLight Wallet',
+          version: '0.5beta',
+          requireAuth: true,
+          measurementId: 'G-GDQWYFKT8H'
+        }
+      },
+      {
+        path: '/icRouter',
+        name: 'Account',
+        component: () => import('@/views/home/account/Index.vue'),
+        meta: {
+          title: 'icRouter',
+          version: '0.5beta',
+          requireAuth: true,
+          measurementId: 'G-GDQWYFKT8H'
+        }
+      },
+      {
         path: '/account/TransactionList/:type',
         name: 'transactionList',
         component: () =>
@@ -57,6 +79,17 @@ const routes: Array<RouteConfig> = [
           title: 'ICLight Wallet',
           version: '0.5beta',
           requireAuth: true
+        }
+      },
+      {
+        path: '/Dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/home/dashboard/Index.vue'),
+        meta: {
+          title: 'Dashboard',
+          version: '0.5beta',
+          requireAuth: false,
+          measurementId: 'G-GDQWYFKT8H'
         }
       },
       ...neuronRouter,

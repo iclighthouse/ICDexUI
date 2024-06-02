@@ -71,7 +71,146 @@ export interface TrieListEvents {
   totalPage: bigint;
   data: Array<[bigint, [PoolEvent, Time]]>;
 }
-export type PoolEvent = any;
+export type PoolEvent =
+  | {
+      add:
+        | {
+            ok: {
+              toids: Array<bigint>;
+              shares: bigint;
+              token0: Amount;
+              token1: Amount;
+              account: Icrc1Account;
+            };
+          }
+        | {
+            err: {
+              toids: Array<bigint>;
+              account: Icrc1Account;
+              depositToken0: Amount;
+              depositToken1: Amount;
+            };
+          };
+    }
+  | {
+      remove:
+        | {
+            ok: {
+              shares: bigint;
+              toid: [] | [bigint];
+              token0: Amount;
+              token1: Amount;
+              account: Icrc1Account;
+            };
+          }
+        | {
+            err: {
+              addPoolToken0: Amount;
+              addPoolToken1: Amount;
+              toid: [] | [bigint];
+              account: Icrc1Account;
+            };
+          };
+    }
+  | {
+      dexWithdraw: {
+        toid: [] | [bigint];
+        token0: bigint;
+        token1: bigint;
+      };
+    }
+  | {
+      withdraw: {
+        toid: [] | [bigint];
+        token0: bigint;
+        token1: bigint;
+        account: Icrc1Account;
+      };
+    }
+  | {
+      fallback: {
+        toids: Array<bigint>;
+        token0: Amount;
+        token1: Amount;
+        account: Icrc1Account;
+      };
+    }
+  | { init: { initArgs: InitArgs } }
+  | { lock: { message: [] | [string] } }
+  | {
+      updateUnitNetValue: {
+        pairBalance:
+          | []
+          | [
+              {
+                token0: { locked: Amount; available: Amount };
+                token1: { locked: Amount; available: Amount };
+              }
+            ];
+        poolShares: bigint;
+        poolBalance: PoolBalance__1;
+        unitNetValue: UnitNetValue__1;
+        localBalance: PoolBalance__1;
+      };
+    }
+  | {
+      dexDeposit: {
+        toid: [] | [bigint];
+        token0: bigint;
+        token1: bigint;
+      };
+    }
+  | { changeOwner: { newOwner: Principal } }
+  | { unlock: { message: [] | [string] } }
+  | {
+      deposit: {
+        token0: bigint;
+        token1: bigint;
+        account: Icrc1Account;
+      };
+    }
+  | { deleteGridOrder: { soid: [] | [bigint]; toid: [] | [bigint] } }
+  | { updateGridOrder: { soid: [] | [bigint]; toid: [] | [bigint] } }
+  | { start: { message: [] | [string] } }
+  | { config: { setting: Config } }
+  | { createGridOrder: { toid: [] | [bigint] } }
+  | { suspend: { message: [] | [string] } };
+export interface Config {
+  lowerLimit: [] | [bigint];
+  threshold: [] | [Amount];
+  upperLimit: [] | [bigint];
+  volFactor: [] | [bigint];
+  spreadRatePpm: [] | [bigint];
+  withdrawalFeePpm: [] | [bigint];
+}
+export interface UnitNetValue__1 {
+  ts: Time;
+  shares: bigint;
+  token0: bigint;
+  token1: bigint;
+  price: bigint;
+}
+export interface PoolBalance__1 {
+  ts: Time;
+  balance0: Amount;
+  balance1: Amount;
+}
+export interface InitArgs {
+  creator: AccountId;
+  spreadRate: bigint;
+  allow: { Private: null } | { Public: null };
+  lowerLimit: bigint;
+  threshold: Amount;
+  upperLimit: bigint;
+  name: string;
+  pair: Principal;
+  token0: Principal;
+  token1: Principal;
+  token0Std: TokenStd;
+  token1Std: TokenStd;
+  volFactor: bigint;
+  unitSize: bigint;
+}
 export interface MakerConfigure {
   controllers?: Array<string>;
   moduleHash?: string;

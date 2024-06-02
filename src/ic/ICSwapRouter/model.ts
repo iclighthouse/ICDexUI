@@ -193,10 +193,7 @@ export default interface Service {
     size: Array<number>
   ): Promise<PairsTrieList>;
   listingReferrer(referrer: Principal): Promise<[Valid, Verified]>;
-  setListingReferrerByNft(
-    name: string,
-    nftId: string
-  ): Promise<void>;
+  setListingReferrerByNft(name: string, nftId: string): Promise<void>;
   getCompetitions(
     dexName: Array<DexName>,
     page: Array<number>,
@@ -222,5 +219,8 @@ export default interface Service {
   ): Promise<void>;
   NFTStaked(address: string): Promise<Array<StakedNFT>>;
   propose(pairCanisterId: Principal): Promise<void>;
-  getPairListingReferrers(pairCanisterId: Principal): Promise<[boolean, ListingReferrers]>;
+  getPairListingReferrers(
+    pairCanisterId: Principal
+  ): Promise<[boolean, ListingReferrers]>;
+  debugPairs(): Promise<Array<{ dev: Principal; pair: Principal }>>;
 }

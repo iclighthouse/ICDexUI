@@ -63,7 +63,7 @@
         <span>Total Pairs: {{ pairs.length }}</span>
         <span>Total Vol: {{ totalVol | formatNum }} USD</span>
         <span>Total TVL: {{ totalTVL | formatNum }} USD</span>
-        <span>24h Vol: {{ Vol24 | formatNum }} USD</span>
+        <span v-show="Number(Vol24)">24h Vol: {{ Vol24 | formatNum }} USD</span>
       </div>
       <div class="market-main-container">
         <div v-show="marketType === 'pairs'" class="table-main">
@@ -120,6 +120,21 @@
                           />
                           <a-icon
                             :class="{ active: sortType === '24Down' }"
+                            type="caret-down"
+                          />
+                        </span>
+                      </span>
+                    </th>
+                    <th class="text-right pointer" @click="onSort('24Vol')">
+                      <span class="sort-table-main">
+                        <span>Vol(24h)</span>
+                        <span class="sort-table">
+                          <a-icon
+                            :class="{ active: sortType === '24VolUp' }"
+                            type="caret-up"
+                          />
+                          <a-icon
+                            :class="{ active: sortType === '24VolDown' }"
                             type="caret-down"
                           />
                         </span>
@@ -191,15 +206,15 @@
                     </td>
                     <td>
                       <div>
-                        <span
-                          >Maker: <span class="table-number-color">0%</span>,
-                        </span>
-                        <span
-                          >Taker:
+                        <div>
+                          Maker: <span class="table-number-color">0%</span>,
+                        </div>
+                        <div>
+                          Taker:
                           <span class="table-number-color">{{
                             pair[1].pair.feeRate | filterBuyFee
                           }}</span>
-                        </span>
+                        </div>
                       </div>
                     </td>
                     <td align="right" style="padding: 0 10px">
@@ -214,7 +229,7 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
@@ -231,7 +246,7 @@
                               class="table-number-color"
                             >
                               ≈ ${{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
@@ -289,6 +304,43 @@
                         >{{ get24(pair[3].change24h) }}%</span
                       >
                       <span v-else>-</span>
+                    </td>
+                    <td align="right">
+                      <div class="pair-vol" v-if="pair[3]">
+                        <dl
+                          v-if="
+                            tokens && tokens[pair[1].pair.token1[0].toString()]
+                          "
+                        >
+                          <dd>
+                            <span class="table-number-color">
+                              {{
+                                times2(pair[3].vol24h.value1)
+                                  | bigintToFloat(
+                                    0,
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                            {{ pair[1].pair.token1[1] }}
+                          </dd>
+                          <dt>
+                            <span v-if="pair[3]" class="table-number-color">
+                              ≈ ${{
+                                times2(pair[3].vol24h.value1)
+                                  | filterIcpVol(
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals,
+                                    getBasePrice(pair[1].pair.token1[1])
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                          </dt>
+                        </dl>
+                      </div>
                     </td>
                     <td align="right">
                       <span class="table-number-color">{{
@@ -384,7 +436,7 @@
                       <dd>
                         <span class="table-number-color">
                           {{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | bigintToFloat(
                                 0,
                                 tokens[pair[1].pair.token1[0].toString()]
@@ -401,7 +453,7 @@
                           class="table-number-color"
                         >
                           ≈ ${{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | filterIcpVol(
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals,
@@ -572,7 +624,7 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
@@ -589,7 +641,7 @@
                               class="table-number-color"
                             >
                               ≈ ${{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
@@ -631,7 +683,7 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                pair[3].vol24h.value1
+                                times2(pair[3].vol24h.value1)
                                   | bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
@@ -645,7 +697,7 @@
                           <dt>
                             <span v-if="pair[3]" class="table-number-color">
                               ≈ ${{
-                                pair[3].vol24h.value1
+                                times2(pair[3].vol24h.value1)
                                   | filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
@@ -768,7 +820,7 @@
                       <dd>
                         <span class="table-number-color">
                           {{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | bigintToFloat(
                                 0,
                                 tokens[pair[1].pair.token1[0].toString()]
@@ -785,7 +837,7 @@
                           class="table-number-color"
                         >
                           ≈ ${{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | filterIcpVol(
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals,
@@ -2410,7 +2462,13 @@ import { NFT } from '@/ic/ICDexRouter/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import NftBalance from '@/views/home/ICDex/components/NFTBalance.vue';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
-import { BrokerInfo, IDOConfig, MakerInfo, TrieList_3 } from '@/ic/ICDex/model';
+import {
+  BrokerInfo,
+  IDOConfig,
+  MakerInfo,
+  Stats,
+  TrieList_3
+} from '@/ic/ICDex/model';
 import { connectIcx } from '@/ic/connectIcx';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import axios from 'axios';
@@ -3328,6 +3386,13 @@ export default class extends Vue {
         this.sortType = '24Down';
       }
     }
+    if (type === '24Vol') {
+      if (this.sortType === '24VolDown') {
+        this.sortType = '24VolUp';
+      } else {
+        this.sortType = '24VolDown';
+      }
+    }
     this.sort();
   }
   private sort(): void {
@@ -3479,10 +3544,74 @@ export default class extends Vue {
         }
       });
     }
+    if (this.sortType === '24VolDown') {
+      this.pairs.sort((a, b) => {
+        const token1Symbol = a[1].pair.token1[1];
+        const token1Symbol1 = b[1].pair.token1[1];
+        if (token1Symbol.toLocaleLowerCase().includes('test')) {
+          return 1;
+        }
+        if (token1Symbol1.toLocaleLowerCase().includes('test')) {
+          return -1;
+        }
+        let aPrice = this.getBasePrice(a[1].pair.token1[1]);
+        let bPrice = this.getBasePrice(b[1].pair.token1[1]);
+        const vol = this.get24Vol(
+          a[3],
+          this.tokens,
+          a[1].pair.token1[0].toString(),
+          aPrice
+        );
+        const vol1 = this.get24Vol(
+          b[3],
+          this.tokens,
+          b[1].pair.token1[0].toString(),
+          bPrice
+        );
+        if (new BigNumber(vol1).gt(vol)) {
+          return 1;
+        } else {
+          return -1;
+        }
+      });
+    }
+    if (this.sortType === '24VolUp') {
+      this.pairs.sort((a, b) => {
+        const token1Symbol = a[1].pair.token1[1];
+        const token1Symbol1 = b[1].pair.token1[1];
+        if (token1Symbol.toLocaleLowerCase().includes('test')) {
+          return 1;
+        }
+        if (token1Symbol1.toLocaleLowerCase().includes('test')) {
+          return -1;
+        }
+        let aPrice = this.getBasePrice(a[1].pair.token1[1]);
+        let bPrice = this.getBasePrice(b[1].pair.token1[1]);
+        const vol = this.get24Vol(
+          a[3],
+          this.tokens,
+          a[1].pair.token1[0].toString(),
+          aPrice
+        );
+        const vol1 = this.get24Vol(
+          b[3],
+          this.tokens,
+          b[1].pair.token1[0].toString(),
+          bPrice
+        );
+        if (new BigNumber(vol).gt(vol1)) {
+          return 1;
+        } else {
+          return -1;
+        }
+      });
+    }
   }
   private getBasePrice(tokenSymbol: string): string {
     let price = this.icpPrice;
-    if (tokenSymbol.toLocaleLowerCase().includes('btc')) {
+    if (tokenSymbol.toLocaleLowerCase().includes('icp')) {
+      price = this.icpPrice;
+    } else if (tokenSymbol.toLocaleLowerCase().includes('btc')) {
       price = this.BTCPrice;
     } else if (tokenSymbol.toLocaleLowerCase().includes('eth')) {
       price = this.ETHPrice;
@@ -3497,6 +3626,21 @@ export default class extends Vue {
       }
     }
     return price;
+  }
+  private get24Vol(
+    val: Stats,
+    tokens: { [key: string]: TokenInfo },
+    token: string,
+    icpPrice: string
+  ): string {
+    if (val) {
+      return new BigNumber(val.vol24h.value1.toString(10))
+        .div(10 ** tokens[token].decimals)
+        .times(icpPrice)
+        .decimalPlaces(0)
+        .toString(10);
+    }
+    return '0';
   }
   private getVol(
     val: PairTrieResponse,
@@ -4000,6 +4144,9 @@ export default class extends Vue {
         });
       }
     });
+  }
+  private times2(val: bigint): bigint {
+    return BigInt(new BigNumber(val.toString(10)).times(2).toString(10));
   }
 }
 </script>

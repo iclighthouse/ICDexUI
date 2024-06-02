@@ -305,6 +305,16 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       console.log(tokens);
       localStorage.setItem('tokens', JSON.stringify(tokens));
     }
+    const RICHToken = '77xez-aaaaa-aaaar-qaezq-cai';
+    if (tokens[RICHToken] && tokens[RICHToken].symbol !== 'RICH') {
+      tokens[RICHToken] = await getTokenInfo(Principal.fromText(RICHToken), {
+        icrc1: null
+      });
+      tokens[RICHToken].fee = tokens[RICHToken].fee.toString();
+      delete tokens[RICHToken].totalSupply;
+      console.log(tokens);
+      localStorage.setItem('tokens', JSON.stringify(tokens));
+    }
     if (!tokens[LEDGER_CANISTER_ID]) {
       tokens[LEDGER_CANISTER_ID] = {
         decimals: 8,

@@ -786,21 +786,668 @@
               >
                 Continue
               </button>
-              <span
-                v-show="
-                  activePending.claim ||
-                  activePending.claim2 ||
-                  activePending.mint ||
-                  activePending.deposit ||
-                  activePending.retrieve ||
-                  activePending.retrieve2 ||
-                  activePending.mintCKETH ||
-                  activePending.retrieveCKETH
-                "
-                class="pointer main-color"
-                @click="onActive"
-                >Activities</span
+            </div>
+            <div
+              v-show="
+                activePending.claim ||
+                activePending.claim2 ||
+                activePending.mint ||
+                activePending.deposit ||
+                activePending.retrieve ||
+                activePending.retrieve2 ||
+                activePending.mintCKETH ||
+                activePending.retrieveCKETH
+              "
+            >
+              <div
+                class="base-font-title"
+                style="margin: 20px 0 10px; font-size: 14px; font-weight: bold"
               >
+                Activities:
+              </div>
+              <div>
+                <div v-if="activePending.claim && activePending.claim.length">
+                  <div
+                    class="active-pending-item"
+                    v-for="(item, index) in activePending.claim"
+                    :key="index"
+                  >
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].symbol }}
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                    </span>
+                    <span class="margin-left-auto">
+                      {{ item.txHash | ellipsisAccount }}
+                    </span>
+                    <button
+                      class="primary"
+                      @click="toActive('claim', item.tokenId, item.txHash)"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div v-if="activePending.claim2 && activePending.claim2.length">
+                  <div
+                    class="active-pending-item"
+                    v-for="(item, index) in activePending.claim2"
+                    :key="index"
+                  >
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].symbol }}
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                    </span>
+                    <span class="margin-left-auto">
+                      {{ item.txHash | ellipsisAccount }}
+                    </span>
+                    <button
+                      class="primary"
+                      @click="toActive('claim2', item.tokenId)"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div v-if="activePending.mint && activePending.mint.length">
+                  <div
+                    class="active-pending-item"
+                    v-for="(item, index) in activePending.mint"
+                    :key="index"
+                  >
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].symbol }}
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                    </span>
+                    <span class="margin-left-auto">
+                      {{
+                        item.amount
+                          | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
+                          | formatAmount(8)
+                      }}
+                    </span>
+                    <button
+                      class="primary"
+                      @click="toActive('mint', item.tokenId)"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  v-if="
+                    activePending.deposit &&
+                    activePending.deposit[2] &&
+                    activePending.deposit[2][0]
+                  "
+                >
+                  <div class="active-pending-item">
+                    <span
+                      v-if="
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.deposit[2][0].tokenId
+                          ]
+                        ]
+                      "
+                    >
+                      {{
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.deposit[2][0].tokenId
+                          ]
+                        ].symbol
+                      }}
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span
+                      v-if="
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.deposit[2][0].tokenId
+                          ]
+                        ]
+                      "
+                    >
+                      {{
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.deposit[2][0].tokenId
+                          ]
+                        ].ckSymbol
+                      }}(IC Network)
+                    </span>
+                    <span
+                      v-if="
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.deposit[2][0].tokenId
+                          ]
+                        ]
+                      "
+                      class="margin-left-auto"
+                    >
+                      {{
+                        activePending.deposit[2][0].amount
+                          | bigintToFloat(
+                            8,
+                            ckTokenInfo[
+                              ethersTokenIdToCkTokenId[
+                                activePending.deposit[2][0].tokenId
+                              ]
+                            ].decimals
+                          )
+                          | formatAmount(8)
+                      }}
+                    </span>
+                    <button
+                      class="primary"
+                      @click="
+                        toActive(
+                          'deposit',
+                          ethersTokenIdToCkTokenId[
+                            activePending.deposit[2][0].tokenId
+                          ]
+                        )
+                      "
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  v-if="activePending.retrieve && activePending.retrieve.length"
+                >
+                  <div
+                    class="active-pending-item"
+                    v-for="(item, index) in activePending.retrieve"
+                    :key="index"
+                  >
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].symbol }}
+                    </span>
+                    <span class="margin-left-auto">
+                      {{
+                        item.amount
+                          | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
+                          | formatAmount(8)
+                      }}
+                    </span>
+                    <button
+                      class="primary"
+                      @click="toActive('retrieve', item.tokenId)"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  v-if="
+                    activePending.retrieve2 && activePending.retrieve2.length
+                  "
+                >
+                  <div class="active-pending-item">
+                    <span
+                      v-if="
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.retrieve2[1].tokenId
+                          ]
+                        ]
+                      "
+                    >
+                      {{
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.retrieve2[1].tokenId
+                          ]
+                        ].ckSymbol
+                      }}(IC Network)
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span
+                      v-if="
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.retrieve2[1].tokenId
+                          ]
+                        ]
+                      "
+                    >
+                      {{
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.retrieve2[1].tokenId
+                          ]
+                        ].symbol
+                      }}
+                    </span>
+                    <span
+                      v-if="
+                        ckTokenInfo[
+                          ethersTokenIdToCkTokenId[
+                            activePending.retrieve2[1].tokenId
+                          ]
+                        ]
+                      "
+                      class="margin-left-auto"
+                    >
+                      {{
+                        activePending.retrieve2[1].amount
+                          | bigintToFloat(
+                            8,
+                            ckTokenInfo[
+                              ethersTokenIdToCkTokenId[
+                                activePending.retrieve2[1].tokenId
+                              ]
+                            ].decimals
+                          )
+                          | formatAmount(8)
+                      }}
+                    </span>
+                    <button
+                      class="primary"
+                      @click="
+                        toActive(
+                          'retrieve',
+                          ethersTokenIdToCkTokenId[
+                            activePending.retrieve2[1].tokenId
+                          ]
+                        )
+                      "
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  v-if="
+                    activePending.mintCKETH && activePending.mintCKETH.length
+                  "
+                >
+                  <div
+                    class="active-pending-item"
+                    v-for="(item, index) in activePending.mintCKETH"
+                    :key="index"
+                  >
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].symbol }}
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                    </span>
+                    <span class="margin-left-auto">
+                      <a
+                        :href="`${ckEthLink}/tx/${item.txHash}`"
+                        rel="nofollow noreferrer noopener"
+                        target="_blank"
+                        class="link"
+                      >
+                        {{ item.txHash | ellipsisAccount() }}
+                      </a>
+                    </span>
+                    <span
+                      style="
+                        margin: 0 10px 0 20px;
+                        width: 80px;
+                        text-align: right;
+                      "
+                      class="base-font-title"
+                    >
+                      <span v-show="!item.blockNumber"> Pending </span>
+                      <span
+                        v-show="
+                          lastScrapedBlockNumber &&
+                          item.blockNumber &&
+                          lastScrapedBlockNumber >= Number(item.blockNumber)
+                        "
+                      >
+                        Confirmed
+                      </span>
+                      <span
+                        v-show="
+                          lastScrapedBlockNumber &&
+                          item.blockNumber &&
+                          lastScrapedBlockNumber < Number(item.blockNumber)
+                        "
+                      >
+                        Submitted
+                      </span>
+                    </span>
+                    <button
+                      v-show="
+                        !(
+                          lastScrapedBlockNumber &&
+                          item.blockNumber &&
+                          lastScrapedBlockNumber >= Number(item.blockNumber)
+                        )
+                      "
+                      class="primary"
+                      @click="toActive('mintCKETH', item.tokenId)"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  v-if="
+                    activePending.retrieveCKETH &&
+                    activePending.retrieveCKETH.length
+                  "
+                >
+                  <div
+                    class="active-pending-item"
+                    v-for="(item, index) in activePending.retrieveCKETH"
+                    :key="index"
+                  >
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                    </span>
+                    &nbsp;->&nbsp;
+                    <span v-if="ckTokenInfo[item.tokenId]">
+                      {{ ckTokenInfo[item.tokenId].symbol }}
+                    </span>
+                    <span
+                      v-if="ckTokenInfo[item.tokenId]"
+                      class="margin-left-auto"
+                    >
+                      <a
+                        v-if="
+                          item.status &&
+                          Object.keys(item.status)[0] === 'TxSent'
+                        "
+                        :href="`${ckEthLink}/tx/${
+                          Object.values(item.status)[0].transaction_hash
+                        }`"
+                        rel="nofollow noreferrer noopener"
+                        target="_blank"
+                        class="link"
+                      >
+                        {{
+                          item.amount
+                            | bigintToFloat(
+                              8,
+                              ckTokenInfo[item.tokenId].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </a>
+                      <a
+                        v-if="
+                          item.status &&
+                          Object.keys(item.status)[0] === 'TxFinalized' &&
+                          Object.values(item.status)[0] &&
+                          Object.values(item.status)[0].Success &&
+                          Object.values(item.status)[0].Success.transaction_hash
+                        "
+                        :href="`${ckEthLink}/tx/${
+                          Object.values(item.status)[0].Success.transaction_hash
+                        }`"
+                        rel="nofollow noreferrer noopener"
+                        target="_blank"
+                        class="link"
+                      >
+                        {{
+                          item.amount
+                            | bigintToFloat(
+                              8,
+                              ckTokenInfo[item.tokenId].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </a>
+                      <span
+                        v-if="
+                          (item.status &&
+                            Object.keys(item.status)[0] !== 'TxSent' &&
+                            Object.keys(item.status)[0] !== 'TxFinalized') ||
+                          !item.status
+                        "
+                      >
+                        {{
+                          item.amount
+                            | bigintToFloat(
+                              8,
+                              ckTokenInfo[item.tokenId].decimals
+                            )
+                            | formatAmount(8)
+                        }}
+                      </span>
+                    </span>
+                    <span
+                      style="
+                        margin: 0 10px 0 20px;
+                        width: 80px;
+                        text-align: right;
+                      "
+                      class="base-font-title"
+                      v-if="item.status && Object.keys(item.status)[0]"
+                    >
+                      {{ Object.keys(item.status)[0] }}
+                    </span>
+                    <button
+                      v-if="
+                        !item.status ||
+                        (item.status &&
+                          Object.keys(item.status)[0] &&
+                          Object.keys(item.status)[0] !== 'TxFinalized' &&
+                          Object.keys(item.status)[0] !== 'NotFound')
+                      "
+                      class="primary"
+                      @click="toActive('retrieveCKETH', item.tokenId)"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <!-- <div
+                  v-if="
+                    activePending.CKETHResponse &&
+                    activePending.CKETHResponse.length
+                  "
+                >
+                  <div
+                    v-for="(item, index) in activePending.CKETHResponse.slice(
+                      (CKETHResponsePage - 1) * 10,
+                      CKETHResponsePage * 10
+                    )"
+                    :key="index"
+                  >
+                    <div
+                      class="active-pending-item"
+                      v-if="item.type === 'mint'"
+                    >
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].symbol }}
+                      </span>
+                      &nbsp;->&nbsp;
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                      </span>
+                      <span class="margin-left-auto">
+                        <a
+                          :href="`${ckEthLink}/tx/${item.txHash}`"
+                          rel="nofollow noreferrer noopener"
+                          target="_blank"
+                          class="link"
+                        >
+                          {{ item.txHash | ellipsisAccount() }}
+                        </a>
+                      </span>
+                      <span
+                        style="
+                          margin: 0 10px 0 20px;
+                          width: 80px;
+                          text-align: right;
+                        "
+                        class="base-font-title"
+                      >
+                        <span v-show="!item.blockNumber"> Pending </span>
+                        <span
+                          v-show="
+                            lastScrapedBlockNumber &&
+                            item.blockNumber &&
+                            lastScrapedBlockNumber >= Number(item.blockNumber)
+                          "
+                        >
+                          Confirmed
+                        </span>
+                        <span
+                          v-show="
+                            lastScrapedBlockNumber &&
+                            item.blockNumber &&
+                            lastScrapedBlockNumber < Number(item.blockNumber)
+                          "
+                        >
+                          Submitted
+                        </span>
+                      </span>
+                      <button
+                        v-show="
+                          !(
+                            lastScrapedBlockNumber &&
+                            item.blockNumber &&
+                            lastScrapedBlockNumber >= Number(item.blockNumber)
+                          )
+                        "
+                        class="primary"
+                        @click="toActive('mintCKETH', item.tokenId)"
+                      >
+                        View
+                      </button>
+                    </div>
+                    <div
+                      class="active-pending-item"
+                      v-if="item.type === 'retrieve'"
+                    >
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                      </span>
+                      &nbsp;->&nbsp;
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].symbol }}
+                      </span>
+                      <span
+                        v-if="ckTokenInfo[item.tokenId]"
+                        class="margin-left-auto"
+                      >
+                        <a
+                          v-if="
+                            item.status &&
+                            Object.keys(item.status)[0] === 'TxSent'
+                          "
+                          :href="`${ckEthLink}/tx/${
+                            Object.values(item.status)[0].transaction_hash
+                          }`"
+                          rel="nofollow noreferrer noopener"
+                          target="_blank"
+                          class="link"
+                        >
+                          {{
+                            item.amount
+                              | bigintToFloat(
+                                8,
+                                ckTokenInfo[item.tokenId].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </a>
+                        <a
+                          v-if="
+                            item.status &&
+                            Object.keys(item.status)[0] === 'TxFinalized' &&
+                            Object.values(item.status)[0] &&
+                            Object.values(item.status)[0].Success &&
+                            Object.values(item.status)[0].Success
+                              .transaction_hash
+                          "
+                          :href="`${ckEthLink}/tx/${
+                            Object.values(item.status)[0].Success
+                              .transaction_hash
+                          }`"
+                          rel="nofollow noreferrer noopener"
+                          target="_blank"
+                          class="link"
+                        >
+                          {{
+                            item.amount
+                              | bigintToFloat(
+                                8,
+                                ckTokenInfo[item.tokenId].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </a>
+                        <span
+                          v-if="
+                            (item.status &&
+                              Object.keys(item.status)[0] !== 'TxSent' &&
+                              Object.keys(item.status)[0] !== 'TxFinalized') ||
+                            !item.status
+                          "
+                        >
+                          {{
+                            item.amount
+                              | bigintToFloat(
+                                8,
+                                ckTokenInfo[item.tokenId].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                      </span>
+                      <span
+                        style="
+                          margin: 0 10px 0 20px;
+                          width: 80px;
+                          text-align: right;
+                        "
+                        class="base-font-title"
+                        v-if="item.status && Object.keys(item.status)[0]"
+                      >
+                        {{ Object.keys(item.status)[0] }}
+                      </span>
+                      <button
+                        v-if="
+                          !item.status ||
+                          (item.status &&
+                            Object.keys(item.status)[0] &&
+                            Object.keys(item.status)[0] !== 'TxFinalized' &&
+                            Object.keys(item.status)[0] !== 'NotFound')
+                        "
+                        class="primary"
+                        @click="toActive('retrieveCKETH', item.tokenId)"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                  <div class="pagination-transaction-main">
+                    <a-pagination
+                      v-if="activePending.CKETHResponse.length > 10"
+                      class="pagination-transaction"
+                      style="margin-right: 10px"
+                      :default-page-size="10"
+                      :current="CKETHResponsePage"
+                      :total="activePending.CKETHResponse.length"
+                      @change="pageChangeCKETHResponse"
+                    />
+                  </div>
+                </div>-->
+              </div>
             </div>
           </div>
         </div>
@@ -2034,7 +2681,10 @@
                   </span>
                 </span>
               </div>
-              <div class="cell" style="align-items: center; width: 80px">
+              <div
+                class="cell"
+                style="align-items: center; width: 80px; text-align: right"
+              >
                 <span>
                   {{ Object.keys(item.status)[0] }}
                 </span>
@@ -4158,12 +4808,19 @@
                   | formatAmount(8)
               }}
             </span>
-            <button
+            <!--<button
               class="primary"
+              v-if="
+                (item.status &&
+                  Object.keys(item.status)[0] &&
+                  Object.keys(item.status)[0] !== 'TxFinalized' &&
+                  Object.keys(item.status)[0] !== 'NotFound') ||
+                !Object.keys(item.status)[0]
+              "
               @click="toActive('retrieveCKETH', item.tokenId)"
             >
               View
-            </button>
+            </button>-->
           </div>
         </div>
       </div>
@@ -4218,12 +4875,14 @@ import {
   BTCTypeEnum,
   ClaimActive,
   ClaimCKETHActive,
+  ClaimCKETHActiveResponse,
   ICNetworkTokensInterface,
   MintActive,
   networkIds,
   networkList,
   networkTokens,
-  RetrieveActive
+  RetrieveActive,
+  RetrieveActiveResponse
 } from '@/views/home/account/model';
 import { Principal } from '@dfinity/principal';
 import TransferToken from '@/components/transferToken/Index.vue';
@@ -4418,6 +5077,7 @@ export default class extends Mixins(BalanceMixin) {
     txStatus?: string;
   }> = [];
   private ckETHMintPage = 1;
+  private CKETHResponsePage = 1;
   private lastScrapedBlockNumber: number = null;
   private ckETHTimer = null;
   private forgeModalETH = false;
@@ -4735,7 +5395,11 @@ export default class extends Mixins(BalanceMixin) {
     if (this.type === 'cross') {
       this.getMinterInfo().then(() => {
         this.networkTokenDisabled = true;
-        this.getCkTokens();
+        this.getCkTokens().then(() => {
+          this.getActive();
+          timer && clearTimeout(timer);
+          timer = window.setInterval(() => this.getActive(), 60 * 1000);
+        });
         if (this.minterInfo.depositMethod === 1) {
           this.depositMethod = 1;
         } else {
@@ -5210,7 +5874,6 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
     this.networkTokenDisabled = false;
-    this.getActive();
     this.initICRouter();
     console.log(this.networkTokens);
   }
@@ -5250,6 +5913,16 @@ export default class extends Mixins(BalanceMixin) {
           if (item.tokenId === tokenId) {
             if (item.networkId === '3') {
               this.networkIdMint = 4;
+            }
+            return true;
+          }
+        });
+      } else if (type === 'dexMint') {
+        this.networkTokens.some((item) => {
+          if (item.tokenId === tokenId) {
+            console.log(item);
+            if (item.networkId === '1') {
+              this.networkIdMint = 2;
             }
             return true;
           }
@@ -5400,6 +6073,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async getActive(): Promise<void> {
     if (this.getPrincipalId) {
+      console.log('getActive');
       // method2 claim step1
       this.onGetClaimPending();
       // method2 claim step2
@@ -5420,17 +6094,45 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private onGetRetrieveCKETHPending(): void {
-    this.getRetrieveCKETHPending().then((retrieveActive) => {
-      if (retrieveActive && retrieveActive.length) {
-        console.log(retrieveActive);
-        this.$set(this.activePending, 'retrieveCKETH', retrieveActive);
+    this.getRetrieveCKETHPending().then((res) => {
+      console.log(res);
+      if (res.pending && res.pending.length) {
+        this.$set(this.activePending, 'retrieveCKETH', res.pending);
       } else {
         this.$set(this.activePending, 'retrieveCKETH', null);
       }
+      const CKETHResponse = [];
+      if (
+        this.activePending.CKETHResponse &&
+        this.activePending.CKETHResponse.length
+      ) {
+        this.activePending.CKETHResponse.forEach((item) => {
+          if (item.type === 'mint') {
+            CKETHResponse.push(item);
+          }
+        });
+        this.activePending.CKETHResponse = CKETHResponse.concat(res.retrieve);
+      } else {
+        this.activePending.CKETHResponse = res.retrieve;
+      }
+      if (this.activePending.CKETHResponse.length) {
+        console.log(res.retrieve);
+        this.$set(
+          this.activePending,
+          'CKETHResponse',
+          this.activePending.CKETHResponse
+        );
+      } else {
+        this.$set(this.activePending, 'CKETHResponse', null);
+      }
     });
   }
-  private async getRetrieveCKETHPending(): Promise<Array<RetrieveActive>> {
+  private async getRetrieveCKETHPending(): Promise<{
+    retrieve: Array<RetrieveActiveResponse>;
+    pending: Array<RetrieveActive>;
+  }> {
     let retrievePending: Array<RetrieveActive> = [];
+    let retrieve: Array<RetrieveActiveResponse> = [];
     const currentInfo =
       JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
     for (let ckETHRetrieveKey in currentInfo) {
@@ -5445,10 +6147,16 @@ export default class extends Mixins(BalanceMixin) {
                 if (type !== 'TxFinalized' && type !== 'NotFound') {
                   retrievePending.push({
                     amount: retrieveCKETH[key][i].amount,
-                    tokenId: key
+                    tokenId: key,
+                    status: retrieveCKETH[key][i].status
                   });
                 } else {
-                  break;
+                  retrieve.push({
+                    amount: retrieveCKETH[key][i].amount,
+                    tokenId: key,
+                    status: retrieveCKETH[key][i].status,
+                    type: 'retrieve'
+                  });
                 }
               }
             }
@@ -5456,20 +6164,48 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     }
-    return retrievePending;
+    return { retrieve: retrieve, pending: retrievePending };
   }
   private onGetMintCKETHPending(): void {
-    this.getMintCKETHPending().then((mintPending) => {
-      if (mintPending && mintPending.length) {
-        console.log(mintPending);
-        this.$set(this.activePending, 'mintCKETH', mintPending);
+    this.getMintCKETHPending().then((res) => {
+      console.log(res);
+      if (res && res.mintPending && res.mintPending.length) {
+        this.$set(this.activePending, 'mintCKETH', res.mintPending);
       } else {
         this.$set(this.activePending, 'mintCKETH', null);
       }
+      const CKETHResponse = [];
+      if (
+        this.activePending.CKETHResponse &&
+        this.activePending.CKETHResponse.length
+      ) {
+        this.activePending.CKETHResponse.forEach((item) => {
+          if (item.type === 'retrieve') {
+            CKETHResponse.push(item);
+          }
+        });
+        this.activePending.CKETHResponse = res.mint.concat(CKETHResponse);
+      } else {
+        this.activePending.CKETHResponse = res.mint;
+      }
+      if (this.activePending.CKETHResponse.length) {
+        console.log(res.mint);
+        this.$set(
+          this.activePending,
+          'CKETHResponse',
+          this.activePending.CKETHResponse
+        );
+      } else {
+        this.$set(this.activePending, 'CKETHResponse', null);
+      }
     });
   }
-  private async getMintCKETHPending(): Promise<Array<ClaimCKETHActive>> {
+  private async getMintCKETHPending(): Promise<{
+    mint: Array<ClaimCKETHActiveResponse>;
+    mintPending: Array<ClaimCKETHActive>;
+  }> {
     let mintPending: Array<ClaimCKETHActive> = [];
+    let mint: Array<ClaimCKETHActiveResponse> = [];
     const currentInfo =
       JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
     const lastScrapedBlockNumber = await this.getLastScrapedBlockNumber(
@@ -5499,6 +6235,7 @@ export default class extends Mixins(BalanceMixin) {
                   ) {
                     blockNumber = lastScrapedBlockNumberTest;
                   }
+                  this.lastScrapedBlockNumber = blockNumber;
                   if (
                     !mintCKETH[key][i].blockNum ||
                     new BigNumber(blockNumber).lt(mintCKETH[key][i].blockNum)
@@ -5506,10 +6243,17 @@ export default class extends Mixins(BalanceMixin) {
                     mintPending.push({
                       txHash: mintCKETH[key][i].txHash,
                       amount: mintCKETH[key][i].amount,
-                      tokenId: key
+                      tokenId: key,
+                      blockNumber: mintCKETH[key][i].blockNum
                     });
                   } else {
-                    break;
+                    mint.push({
+                      txHash: mintCKETH[key][i].txHash,
+                      amount: mintCKETH[key][i].amount,
+                      tokenId: key,
+                      blockNumber: mintCKETH[key][i].blockNum,
+                      type: 'mint'
+                    });
                   }
                 }
               }
@@ -5518,7 +6262,7 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     }
-    return mintPending;
+    return { mint: mint, mintPending: mintPending };
   }
   private async getRetrievePending(): Promise<Array<RetrieveActive>> {
     let retrievePending: Array<RetrieveActive> = [];
@@ -7528,11 +8272,6 @@ export default class extends Mixins(BalanceMixin) {
     this.BTCType = type;
     this.hasShowWarning('forge');
   }
-  private onActive(): void {
-    timer && clearTimeout(timer);
-    timer = window.setTimeout(() => this.getActive(), 300);
-    this.activePendingModal = true;
-  }
   private onContinue(): void {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -7865,6 +8604,9 @@ export default class extends Mixins(BalanceMixin) {
   }
   private pageChangeCKETHMint(page: number) {
     this.ckETHMintPage = page;
+  }
+  private pageChangeCKETHResponse(page: number) {
+    this.CKETHResponsePage = page;
   }
   private mintEventPageChange(page: number): void {
     this.mintEventPage = page;

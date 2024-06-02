@@ -225,4 +225,13 @@ export class ICSwapRouterFiduciaryService {
       return null;
     }
   };
+  public debugPairs = async (): Promise<Array<{ dev: Principal; pair: Principal }>> => {
+    await this.check(false, false);
+    try {
+      return await this.service.debugPairs();
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 }

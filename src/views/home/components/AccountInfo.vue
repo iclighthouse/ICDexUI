@@ -44,6 +44,18 @@
         slot="overlay"
         class="user-setting base-bg-box user-setting-account"
       >
+        <a-menu-item class="user-setting-item" v-if="getPrincipalId">
+          <div class="user-setting-item-setting flex-center">
+            <span style="margin-right: 5px">AccountId: </span>
+            <copy-account
+              :account="getCurrentAccount()"
+              placement="left"
+              :is-copy="false"
+              copy-text="Account ID"
+              class="user-setting-item-setting-copy"
+            ></copy-account>
+          </div>
+        </a-menu-item>
         <a-menu-item
           v-if="activeKey"
           class="user-setting-item"
@@ -198,6 +210,17 @@
         </a-menu-item>
         <a-menu-item
           class="user-setting-item"
+          @click="changeMenu('icRouter', '/icRouter')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/icrouter')
+          }"
+        >
+          <router-link to="/icRouter">
+            <span>icRouter</span>
+          </router-link>
+        </a-menu-item>
+        <a-menu-item
+          class="user-setting-item"
           @click="changeMenu('ICDex', '/ICDex')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
@@ -231,6 +254,19 @@
         </a-menu-item>
         <a-menu-item
           class="user-setting-item"
+          @click="changeMenu('CyclesFinance', '/CyclesFinance')"
+          :class="{
+            active: $route.fullPath
+              .toLocaleLowerCase()
+              .startsWith('/cyclesfinance')
+          }"
+        >
+          <router-link to="/CyclesFinance">
+            <span>CyclesFinance</span>
+          </router-link>
+        </a-menu-item>
+        <!--<a-menu-item
+          class="user-setting-item"
           @click="changeMenu('dapps', '/dapps')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/dapps')
@@ -239,7 +275,7 @@
           <router-link to="/dapps">
             <span>DApps</span>
           </router-link>
-        </a-menu-item>
+        </a-menu-item>-->
         <!--<a-menu-item
           class="user-setting-item"
           @click="changeMenu('ICDex', '/ICDex')"
@@ -275,6 +311,17 @@
             <span>Mining</span>
           </router-link>
         </a-menu-item>-->
+        <!--<a-menu-item
+          class="user-setting-item"
+          @click="changeMenu('Dashboard', '/Dashboard')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/dashboard')
+          }"
+        >
+          <router-link to="/Dashboard">
+            <span>Dashboard</span>
+          </router-link>
+        </a-menu-item>-->
         <a-menu-item class="user-setting-item">
           <a
             href="https://ic.house"
@@ -283,7 +330,7 @@
             >ICHouse</a
           >
         </a-menu-item>
-        <a-menu-item
+        <!--<a-menu-item
           v-if="
             hostname &&
             hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
@@ -302,7 +349,7 @@
             rel="nofollow noreferrer noopener"
             >OldVersion</a
           >
-        </a-menu-item>
+        </a-menu-item>-->
       </a-menu>
     </a-dropdown>
     <a-dropdown
@@ -656,6 +703,13 @@ export default class extends Vue {
       } else {
         return require('@/assets/img/logo-i.png');
       }
+    }
+  }
+  private getCurrentAccount(): string {
+    if (this.getPrincipalId) {
+      return principalToAccountIdentifier(
+        Principal.fromText(this.getPrincipalId)
+      );
     }
   }
   private getAccountImg(principal: string) {

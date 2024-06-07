@@ -2204,28 +2204,26 @@
     <a-modal
       v-model="ambassadorsvisible"
       width="650px"
-      title="About Trading Ambassador"
+      title="About Trading Ambassadors"
       centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
     >
       <p>
-        An account who has completed at least one trade automatically qualify as
-        a trading ambassador and can promote the pair by sharing the referral
-        link.
+        An account which has completed at least one trade automatically
+        qualifies as a trading ambassador and can promote the pair by sharing
+        the referral link.
       </p>
-      <p class="ambassadors-visible-title">
-        How to promote the pair to others.
-      </p>
+      <p class="ambassadors-visible-title">Promoting The Trading Pair</p>
       <p>
         You can go to the "Trading Ambassador" page of each trading pair to get
-        a referral link, send it to your friends or post it on social media.
+        a referral link to send it to your friends or post on social media.
       </p>
       <p>Note:</p>
       <p>
         (1) Each promotion is only for one trading pair, the referral link is
-        exclusive to the trading pair.
+        exclusive to that pairing.
       </p>
       <p>
         (2) Each trading account (referee) can submit one trading ambassador
@@ -2233,14 +2231,14 @@
         for the setting to take effect.
       </p>
       <p class="ambassadors-visible-title">
-        Benefits of being a trading ambassador.
+        Benefits of Being A Trading Ambassador.
       </p>
       <p>
-        The pair will count the number of accounts and the volume of trading
-        from your promotion. It is possible that there is a reward program for
-        ambassadors that comes from the project's funder or Dex platform, as
-        described on the "Trading Ambassadors" page of that trading pair. Note:
-        Not every trading pair has a reward program.
+        The pair will count the number of accounts and the volume of trades from
+        your promotion. It is possible for projects to engage in reward programs
+        to encourage these activities but these are typically funded by the
+        project’s team so not every trading pair has a reward program and its at
+        that project’s discretion if they would like to start one on ICDex.
       </p>
       <button
         type="button"
@@ -2325,25 +2323,29 @@
     <a-modal
       v-model="scorevisible"
       width="650px"
-      title="Pair scoring rule"
+      title="Pair Scoring Rules"
       centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
     >
       <p class="ambassadors-visible-title">
-        pair_score = score1 + score2 + score3
+        The pair score is calculated as pair_score = score1 + score2 + score3
       </p>
       <p class="ambassadors-visible-title">score1 (max 70)</p>
       <p>
-        <span class="dots"></span> (Not verified) ListingReferrer Propose: +10
-        per Sponsor.
+        <span class="dots"></span> Unverified ListingReferrer: Each sponsorship
+        from an unverified listing referrer adds +10 to the Pair Score.
       </p>
       <p>
-        <span class="dots"></span> Verified ListingReferrer Propose: +15 per
-        Sponsor.
+        <span class="dots"></span> Verified ListingReferrer: Sponsorships from
+        verified listing referrers contribute +15 to the Pair Score.
       </p>
-      <p><span class="dots"></span> Sponsored (Sponsors >= 5): +10.</p>
+      <p>
+        <span class="dots"></span> Group Sponsorship Bonus: A trading pair
+        receiving sponsorship from 5 or more sponsors gains an additional +10 to
+        its Pair Score.
+      </p>
       <p class="ambassadors-visible-title">score2 (max 20)</p>
       <p>
         <span class="dots"></span> Set a score through DAO proposal. Typically,

@@ -29,8 +29,8 @@
         class="pointer"
       />
       <router-link
-        v-show="!$route.fullPath.toLocaleLowerCase().startsWith('/account')"
-        to="/account"
+        v-show="!$route.fullPath.toLocaleLowerCase().startsWith('/wallet')"
+        to="/wallet"
       >
         <img src="@/assets/img/wallet.svg" class="wallet-icon" alt="" />
       </router-link>
@@ -149,12 +149,12 @@
         </a-menu-item>
       </a-menu>
     </a-dropdown>
-    <router-link to="/account">
+    <router-link to="/wallet">
       <img
         v-if="
           getPrincipalId &&
           !isIcx &&
-          !$route.fullPath.toLocaleLowerCase().startsWith('/account')
+          !$route.fullPath.toLocaleLowerCase().startsWith('/wallet')
         "
         src="@/assets/img/wallet.svg"
         class="h5-menu wallet-icon"
@@ -177,12 +177,12 @@
       <a-menu slot="overlay" class="user-setting base-bg-box medium-menu">
         <a-menu-item
           class="user-setting-item"
-          @click="changeMenu('account', '/account')"
+          @click="changeMenu('wallet', '/wallet')"
           :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/account')
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/wallet')
           }"
         >
-          <router-link to="/account">
+          <router-link to="/wallet">
             <span>Wallet</span>
           </router-link>
         </a-menu-item>
@@ -643,7 +643,7 @@ export default class extends Vue {
         EventBus.$emit('initSuccess');
       }
       if (isConnect) {
-        if (this.$route.fullPath.toLocaleLowerCase().startsWith('/account')) {
+        if (this.$route.fullPath.toLocaleLowerCase().startsWith('/wallet')) {
           EventBus.$emit('initAccount');
         }
       }

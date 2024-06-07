@@ -135,9 +135,9 @@ const formatDateToCalendarSecond = (date: Date): string => {
   const hour = date.getUTCHours();
   const minute = date.getUTCMinutes();
   return (
-    day +
+    Appendzero(day) +
     '/' +
-    month +
+    Appendzero(month) +
     ' ' +
     year +
     ' ' +

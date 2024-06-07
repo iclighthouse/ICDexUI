@@ -44,7 +44,7 @@
             ref="homeHeaderMain"
             :class="{
               active:
-                $route.fullPath.toLocaleLowerCase().startsWith('/account') ||
+                $route.fullPath.toLocaleLowerCase().startsWith('/wallet') ||
                 $route.fullPath.toLocaleLowerCase().startsWith('/nns') ||
                 $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
             }"
@@ -55,11 +55,11 @@
           <a-menu slot="overlay" class="base-bg-box home-header-menu">
             <a-menu-item class="home-header-item">
               <div
-                @click="changeMenu('account', '/account')"
+                @click="changeMenu('wallet', '/wallet')"
                 :class="{
                   active: $route.fullPath
                     .toLocaleLowerCase()
-                    .startsWith('/account')
+                    .startsWith('/wallet')
                 }"
                 class="home-header-item-info"
               >
@@ -253,7 +253,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.8
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.9
             </span>
           </span>
         </span>
@@ -480,7 +480,7 @@ export default class extends Vue {
     ];
     this.icdexIcxMenu = [
       {
-        path: '/account',
+        path: '/wallet',
         value: 'ICLight Wallet'
       },
       {
@@ -523,7 +523,7 @@ export default class extends Vue {
         EventBus.$emit('initSuccess');
       }
       if (isConnect) {
-        if (this.$route.fullPath.toLocaleLowerCase().startsWith('/account')) {
+        if (this.$route.fullPath.toLocaleLowerCase().startsWith('/wallet')) {
           EventBus.$emit('initAccount');
         }
       }

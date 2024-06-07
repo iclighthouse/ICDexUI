@@ -98,10 +98,9 @@
           </p>
         </div>
         <div v-if="type === 'BecomeVipMaker'">
-          You grant vip-maker status to an account through ICLighthouse NEPTUNE
-          NFT, then the account will have Maker rebate (rebate = 90%), and if
-          the account is an OAMM Pool, it will be eligible to create and update
-          grid orders without ICL fees.
+          Users can grant VIP-Maker status to accounts using an ICLighthouse
+          NEPTUNE NFT. This will grant the account a Maker rebate. This rebate
+          gives the VIP-Maker 90% of the taker’s trading fee.
         </div>
         <div v-if="type === 'mining'" class="base-font-title">
           <div>

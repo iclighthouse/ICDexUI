@@ -549,6 +549,7 @@ export default class extends Vue {
   private hasPath = '';
   private votingLeast = '3%';
   private votingAbsolute = '50%';
+  private timer = null;
   get votingYes(): string {
     if (this.proposal) {
       const total = this.proposal.latest_tally[0].total;
@@ -607,6 +608,10 @@ export default class extends Vue {
   beforeRouteEnter(to, from, next): void {
     this.hasPath = from;
     next();
+  }
+  beforeDestroy(): void {
+    window.clearTimeout(this.timer);
+    this.timer = null;
   }
   async mounted(): Promise<void> {
     this.SNSWasmService = new SNSWasmService();
@@ -1004,6 +1009,15 @@ export default class extends Vue {
       }
     } catch (e) {
       console.log(e);
+    }
+    const now = new Date().getTime();
+    console.log(now, this.deadline);
+    if (now < this.deadline) {
+      window.clearTimeout(this.timer);
+      this.timer = window.setTimeout(() => {
+        console.log('setTimeout');
+        this.getProposal(governanceId);
+      }, 60 * 1000);
     }
     if (
       this.proposal &&

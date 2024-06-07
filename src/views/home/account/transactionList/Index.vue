@@ -174,7 +174,7 @@ export default class extends Vue {
     this.getTransactionList();
   }
   private back(): void {
-    this.$router.replace('/account');
+    this.$router.replace('/wallet');
   }
   private async getLastBlockIndex(): Promise<void> {
     try {

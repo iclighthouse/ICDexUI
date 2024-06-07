@@ -1,7 +1,7 @@
 import { Principal } from '@dfinity/principal';
 import { Address } from '@/ic/DRC20Token/model';
 import { Amount, DexInfo, TokenLiquidity, Vol } from '@/ic/ICSwap/model';
-import { Txid, Time, Icrc1Account, AccountId } from '@/ic/common/icType';
+import { Txid, Time, Icrc1Account, AccountId, Gas } from '@/ic/common/icType';
 import { TxnRecordStatus } from '@/ic/cyclesFinance/model';
 import { SwapTokenInfo } from '@/ic/ICSwapRouter/model';
 import exp from 'constants';
@@ -655,6 +655,194 @@ export interface BrokerInfo {
   rate: string;
   commission: Vol;
 }
+export interface OrderHealth {
+  freezeUntil: Time;
+  order: bigint;
+  fail: bigint;
+  message: string;
+  freezingCount: bigint;
+  cancelledTime: Time;
+  cancel: bigint;
+  failedTime: Time;
+}
+export interface TTsResponse {
+  total: bigint;
+  data: Array<[bigint, TaskEvent]>;
+  totalPage: bigint;
+}
+export interface TTErrorsResponse {
+  total: bigint;
+  data: Array<[bigint, ErrorLog]>;
+  totalPage: bigint;
+}
+export interface ErrorLog {
+  result: [] | [TaskResult];
+  time: Time;
+  ttid: Ttid;
+  callee: [] | [Principal];
+}
+export interface TaskEvent {
+  result: TaskResult;
+  callbackStatus: [] | [Status__2];
+  task: Task;
+  time: Time;
+  toid: [] | [bigint];
+  ttid: Ttid;
+  attempts: bigint;
+  txHash: Uint8Array | number[];
+}
+export type Status__2 =
+  | { Error: null }
+  | { Done: null }
+  | { Todo: null }
+  | { Doing: null }
+  | { Unknown: null };
+export type TaskResult = [Status__1, [] | [Receipt], [] | [Err]];
+export interface Err {
+  code: ErrorCode;
+  message: string;
+}
+export type ErrorCode =
+  | { canister_error: null }
+  | { call_error: { err_code: number } }
+  | { system_transient: null }
+  | { future: number }
+  | { canister_reject: null }
+  | { destination_invalid: null }
+  | { system_fatal: null };
+export type Receipt =
+  | { __block: null }
+  | {
+      ICDex:
+        | { withdraw: [bigint, bigint] }
+        | { depositFallback: [bigint, bigint] }
+        | { deposit: null };
+    }
+  | {
+      ICRC1:
+        | { icrc1_balance_of: bigint }
+        | { icrc1_transfer: { Ok: bigint } | { Err: TransferError } };
+    }
+  | {
+      This:
+        | {
+            updatePoolLocalBalance: {
+              ts: bigint;
+              balance0: bigint;
+              balance1: bigint;
+            };
+          }
+        | {
+            batchTransfer: Array<{
+              token0: { locked: bigint; available: bigint };
+              token1: { locked: bigint; available: bigint };
+            }>;
+          }
+        | { dexDepositFallback: [bigint, bigint] };
+    }
+  | {
+      StratOrder:
+        | { sto_updateProOrder: bigint }
+        | { sto_createProOrder: bigint }
+        | { sto_cancelPendingOrders: null };
+    }
+  | {
+      DRC20:
+        | { transferBatch: Array<TxnResult> }
+        | { transferFrom: TxnResult }
+        | { approve: TxnResult }
+        | { balanceOf: bigint }
+        | { txnRecord: [] | [TxnRecord__2] }
+        | { lockTransfer: TxnResult }
+        | { transfer: TxnResult }
+        | { dropAccount: null }
+        | { executeTransfer: TxnResult }
+        | { lockTransferFrom: TxnResult };
+    }
+  | {
+      ICRC1New:
+        | { icrc1_balance_of: bigint }
+        | { icrc1_transfer: { Ok: bigint } | { Err: TransferError__1 } };
+    }
+  | { __skip: null };
+export interface TxnRecord__2 {
+  gas: Gas;
+  msgCaller: [] | [Principal];
+  transaction: Transaction;
+  txid: Txid__5;
+  nonce: bigint;
+  timestamp: Time;
+  caller: AccountId;
+  index: bigint;
+}
+export interface Transaction {
+  to: AccountId;
+  value: bigint;
+  data: [] | [Uint8Array | number[]];
+  from: AccountId;
+  operation: Operation;
+}
+export type Operation =
+  | { approve: { allowance: bigint } }
+  | {
+      lockTransfer: {
+        locked: bigint;
+        expiration: Time;
+        decider: AccountId;
+      };
+    }
+  | {
+      transfer: {
+        action: { burn: null } | { mint: null } | { send: null };
+      };
+    }
+  | { executeTransfer: { fallback: bigint; lockedTxid: Txid__5 } };
+export type TxnResult =
+  | { ok: Txid__5 }
+  | {
+      err: {
+        code:
+          | { NonceError: null }
+          | { InsufficientGas: null }
+          | { InsufficientAllowance: null }
+          | { UndefinedError: null }
+          | { InsufficientBalance: null }
+          | { NoLockedTransfer: null }
+          | { DuplicateExecutedTransfer: null }
+          | { LockedTransferExpired: null };
+        message: string;
+      };
+    };
+export type Txid__5 = Uint8Array | number[];
+export type TransferError__1 =
+  | {
+      GenericError: { message: string; error_code: bigint };
+    }
+  | { TemporarilyUnavailable: null }
+  | { BadBurn: { min_burn_amount: bigint } }
+  | { Duplicate: { duplicate_of: bigint } }
+  | { BadFee: { expected_fee: bigint } }
+  | { CreatedInFuture: { ledger_time: bigint } }
+  | { TooOld: null }
+  | { InsufficientFunds: { balance: bigint } };
+export type TransferError =
+  | {
+      GenericError: { message: string; error_code: bigint };
+    }
+  | { TemporarilyUnavailable: null }
+  | { BadBurn: { min_burn_amount: bigint } }
+  | { Duplicate: { duplicate_of: bigint } }
+  | { BadFee: { expected_fee: bigint } }
+  | { CreatedInFuture: null }
+  | { TooOld: { allowed_window_nanos: bigint } }
+  | { InsufficientFunds: { balance: bigint } };
+export type Status__1 =
+  | { Error: null }
+  | { Done: null }
+  | { Todo: null }
+  | { Doing: null }
+  | { Unknown: null };
+export type TOPoolResponse = Array<[bigint, [] | [Order]]>;
 
 export default interface Service {
   liquidity(address: Array<Address>): Promise<TokenLiquidity>;
@@ -777,4 +965,9 @@ export default interface Service {
   ictc_getAdmins(): Promise<Array<Principal>>;
   getAuctionMode(): Promise<[boolean, AccountId]>;
   brokerList(page: Array<bigint>, size: Array<bigint>): Promise<TrieList_5>;
+  health(address: string): Promise<OrderHealth>;
+  ictc_getTOCount(): Promise<bigint>;
+  ictc_getTTs(page: bigint, size: bigint): Promise<TTsResponse>;
+  ictc_getTTErrors(page: bigint, size: bigint): Promise<TTErrorsResponse>;
+  ictc_getTOPool(): Promise<TOPoolResponse>;
 }

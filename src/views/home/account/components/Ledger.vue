@@ -1,3 +1,4 @@
+import { BTCTypeEnum } from '@/views/home/account/model';
 <template>
   <div>
     <div class="ic-balance-main">
@@ -796,7 +797,8 @@
                 activePending.retrieve ||
                 activePending.retrieve2 ||
                 activePending.mintCKETH ||
-                activePending.retrieveCKETH
+                activePending.retrieveCKETH ||
+                activePending.CKETHResponse
               "
             >
               <div
@@ -1101,13 +1103,17 @@
                     </span>
                     <span
                       style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-end;
                         margin: 0 10px 0 20px;
-                        width: 80px;
-                        text-align: right;
+                        width: 100px;
                       "
                       class="base-font-title"
                     >
-                      <span v-show="!item.blockNumber"> Pending </span>
+                      <span v-show="!item.blockNumber"
+                        >Pending<span class="loading-spinner"></span
+                      ></span>
                       <span
                         v-show="
                           lastScrapedBlockNumber &&
@@ -1124,7 +1130,7 @@
                           lastScrapedBlockNumber < Number(item.blockNumber)
                         "
                       >
-                        Submitted
+                        Submitted<span class="loading-spinner"></span>
                       </span>
                     </span>
                     <button
@@ -1229,14 +1235,25 @@
                     </span>
                     <span
                       style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-end;
                         margin: 0 10px 0 20px;
-                        width: 80px;
-                        text-align: right;
+                        width: 100px;
                       "
                       class="base-font-title"
                       v-if="item.status && Object.keys(item.status)[0]"
                     >
-                      {{ Object.keys(item.status)[0] }}
+                      {{ Object.keys(item.status)[0]
+                      }}<span
+                        v-show="
+                          item.status &&
+                          ['Pending', 'TxCreated', 'TxSent'].includes(
+                            Object.keys(item.status)[0]
+                          )
+                        "
+                        class="loading-spinner"
+                      ></span>
                     </span>
                     <button
                       v-if="
@@ -1253,7 +1270,7 @@
                     </button>
                   </div>
                 </div>
-                <!-- <div
+                <div
                   v-if="
                     activePending.CKETHResponse &&
                     activePending.CKETHResponse.length
@@ -1265,11 +1282,151 @@
                       CKETHResponsePage * 10
                     )"
                     :key="index"
+                    style="color: #adb7c2"
                   >
+                    <div
+                      class="active-pending-item"
+                      v-if="item.type === 'BTCRetrieve'"
+                    >
+                      <span style="width: 170px" v-if="item.time">
+                        {{ item.time | formatDateToCalendar }}
+                      </span>
+                      <span> ckBTC(IC Network) </span>
+                      &nbsp;->&nbsp;
+                      <span> BTC </span>
+                      <span class="margin-left-auto">
+                        <a
+                          v-if="getRetrieveBtcTxidResponse(item.status)"
+                          :href="`https://www.blockchain.com/btc/tx/${getRetrieveBtcTxidResponse(
+                            item.status
+                          )}`"
+                          rel="nofollow noreferrer noopener"
+                          target="_blank"
+                          class="link"
+                        >
+                          {{
+                            getRetrieveBtcTxidResponse(item.status)
+                              | ellipsisAccount()
+                          }}
+                        </a>
+                      </span>
+                      <span
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: flex-end;
+                          margin: 0 10px 0 20px;
+                          width: 100px;
+                        "
+                        :class="{
+                          'base-green':
+                            Object.keys(item.status)[0] === 'Confirmed'
+                        }"
+                      >
+                        <span>
+                          {{ item.status && Object.keys(item.status)[0] }}
+                        </span>
+                        <span
+                          v-show="
+                            item.status &&
+                            [
+                              'Pending',
+                              'Sending',
+                              'Submitted',
+                              'Signing'
+                            ].includes(Object.keys(item.status)[0])
+                          "
+                          class="loading-spinner"
+                        ></span>
+                      </span>
+                      <button
+                        v-show="
+                          !item.status ||
+                          (item.status &&
+                            Object.keys(item.status)[0] &&
+                            Object.keys(item.status)[0] !== 'Confirmed' &&
+                            Object.keys(item.status)[0] !== 'NotFound' &&
+                            Object.keys(item.status)[0] !== 'AmountTooLow')
+                        "
+                        class="primary"
+                        @click="toActive('BTCRetrieve', null)"
+                      >
+                        View
+                      </button>
+                    </div>
+                    <div
+                      class="active-pending-item"
+                      v-if="item.type === 'BTCMint'"
+                    >
+                      <span style="width: 170px" v-if="item.time">
+                        {{ item.time | formatDateToCalendar }}
+                      </span>
+                      <span> BTC </span>
+                      &nbsp;->&nbsp;
+                      <span> ckBTC(IC Network) </span>
+                      <div class="margin-left-auto">
+                        <div v-for="(out, index) in item.vout" :key="index">
+                          <a
+                            v-show="out.scriptpubkey_address === BTCAddressCk"
+                            class="link"
+                            :href="`https://www.blockchain.com/btc/tx/${item.txid}`"
+                            rel="nofollow noreferrer noopener"
+                            target="_blank"
+                            >{{
+                              out.value | bigintToFloat(8, 8) | formatAmount(8)
+                            }}
+                          </a>
+                        </div>
+                      </div>
+                      <span
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: flex-end;
+                          margin: 0 10px 0 20px;
+                          width: 100px;
+                        "
+                        v-show="
+                          item.status.block_height &&
+                          item.status.block_height <= updateCkBlockHeight
+                        "
+                        :class="{
+                          'base-green':
+                            item.status.block_height &&
+                            item.status.block_height <= updateCkBlockHeight
+                        }"
+                      >
+                        {{ filterStatus(item.status.block_height) }}
+                        <span
+                          v-if="
+                            item.status.block_height &&
+                            blockCount - item.status.block_height < 11
+                          "
+                        >
+                          ({{ blockCount - item.status.block_height + 1 }})
+                        </span>
+                      </span>
+                      <button
+                        style="margin-left: 40px"
+                        v-show="
+                          !(
+                            item.status.block_height &&
+                            item.status.block_height <= updateCkBlockHeight
+                          )
+                        "
+                        class="primary"
+                        @click="toActive('mintCKBTC', null)"
+                      >
+                        View
+                      </button>
+                    </div>
                     <div
                       class="active-pending-item"
                       v-if="item.type === 'mint'"
                     >
+                      <span style="width: 170px" v-if="item.time">
+                        {{ item.time | formatDateToCalendar }}
+                      </span>
                       <span v-if="ckTokenInfo[item.tokenId]">
                         {{ ckTokenInfo[item.tokenId].symbol }}
                       </span>
@@ -1284,24 +1441,36 @@
                           target="_blank"
                           class="link"
                         >
-                          {{ item.txHash | ellipsisAccount() }}
+                          {{
+                            item.amount
+                              | bigintToFloat(
+                                8,
+                                ckTokenInfo[item.tokenId].decimals
+                              )
+                              | formatAmount(8)
+                          }}
                         </a>
                       </span>
                       <span
                         style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: flex-end;
                           margin: 0 10px 0 20px;
-                          width: 80px;
-                          text-align: right;
+                          width: 100px;
                         "
                         class="base-font-title"
                       >
-                        <span v-show="!item.blockNumber"> Pending </span>
+                        <span v-show="!item.blockNumber">
+                          Pending<span class="loading-spinner"></span
+                        ></span>
                         <span
                           v-show="
                             lastScrapedBlockNumber &&
                             item.blockNumber &&
                             lastScrapedBlockNumber >= Number(item.blockNumber)
                           "
+                          class="base-green"
                         >
                           Confirmed
                         </span>
@@ -1312,7 +1481,7 @@
                             lastScrapedBlockNumber < Number(item.blockNumber)
                           "
                         >
-                          Submitted
+                          Submitted<span class="loading-spinner"></span>
                         </span>
                       </span>
                       <button
@@ -1333,6 +1502,9 @@
                       class="active-pending-item"
                       v-if="item.type === 'retrieve'"
                     >
+                      <span style="width: 170px" v-if="item.time">
+                        {{ item.time | formatDateToCalendar }}
+                      </span>
                       <span v-if="ckTokenInfo[item.tokenId]">
                         {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
                       </span>
@@ -1411,14 +1583,28 @@
                       </span>
                       <span
                         style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: flex-end;
                           margin: 0 10px 0 20px;
-                          width: 80px;
-                          text-align: right;
+                          width: 100px;
                         "
-                        class="base-font-title"
+                        :class="{
+                          'base-green':
+                            Object.keys(item.status)[0] === 'TxFinalized'
+                        }"
                         v-if="item.status && Object.keys(item.status)[0]"
                       >
-                        {{ Object.keys(item.status)[0] }}
+                        {{ Object.keys(item.status)[0]
+                        }}<span
+                          v-show="
+                            item.status &&
+                            ['Pending', 'TxCreated', 'TxSent'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
+                          class="loading-spinner"
+                        ></span>
                       </span>
                       <button
                         v-if="
@@ -1446,7 +1632,7 @@
                       @change="pageChangeCKETHResponse"
                     />
                   </div>
-                </div>-->
+                </div>
               </div>
             </div>
           </div>
@@ -4878,11 +5064,13 @@ import {
   ClaimCKETHActiveResponse,
   ICNetworkTokensInterface,
   MintActive,
+  MintCKBTCResponse,
   networkIds,
   networkList,
   networkTokens,
   RetrieveActive,
-  RetrieveActiveResponse
+  RetrieveActiveResponse,
+  RetrieveCKBTCResponse
 } from '@/views/home/account/model';
 import { Principal } from '@dfinity/principal';
 import TransferToken from '@/components/transferToken/Index.vue';
@@ -5069,12 +5257,14 @@ export default class extends Mixins(BalanceMixin) {
     blockIndex: string;
     ckerc20BlockIndex?: string;
     status: RetrieveEthStatus;
+    time?: string;
   }> = [];
   private ckETHMint: Array<{
     txHash: string;
     blockNum: string;
     amount: string;
     txStatus?: string;
+    time?: string;
   }> = [];
   private ckETHMintPage = 1;
   private CKETHResponsePage = 1;
@@ -5154,6 +5344,7 @@ export default class extends Mixins(BalanceMixin) {
   private ckEthLink = 'https://etherscan.io';
   private canRetrieveCkerc20 = true;
   private ckerc20RetrieveFee = '';
+  private activeTimer = null;
   private signatureForm = {
     txHash: ''
   };
@@ -5383,6 +5574,8 @@ export default class extends Mixins(BalanceMixin) {
     this.updateDepositETHStatusTimer = null;
     window.clearInterval(this.ckETHTimer);
     this.ckETHTimer = null;
+    window.clearInterval(this.activeTimer);
+    this.activeTimer = null;
   }
   created(): void {
     this.DRC20TokenService = new DRC20TokenService();
@@ -5397,8 +5590,11 @@ export default class extends Mixins(BalanceMixin) {
         this.networkTokenDisabled = true;
         this.getCkTokens().then(() => {
           this.getActive();
-          timer && clearTimeout(timer);
-          timer = window.setInterval(() => this.getActive(), 60 * 1000);
+          this.activeTimer && clearTimeout(this.activeTimer);
+          this.activeTimer = window.setInterval(
+            () => this.getActive(),
+            60 * 1000
+          );
         });
         if (this.minterInfo.depositMethod === 1) {
           this.depositMethod = 1;
@@ -5723,6 +5919,7 @@ export default class extends Mixins(BalanceMixin) {
       icTokenInfo,
       { symbol: 'ETH' }
     );
+    console.log(this.ckTokenInfo);
   }
   private async getCKERC20TokenInfo(
     info: CkErc20Token,
@@ -5894,7 +6091,63 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private toActive(type: ActiveType, tokenId: string, txHash?: string): void {
-    if (
+    if (type === 'mintCKBTC') {
+      this.networkIdMint = 1;
+      let network;
+      network = this.networkListFrom[this.networkIdMint as number];
+      this.changeNetworkIdMint(this.networkIdMint as number);
+      console.log(this.networkTokensFrom);
+      this.networkTokensFrom.some((item, index) => {
+        if (item.tokenId === 'btc' && network.id === item.networkId) {
+          this.networkTokenIdMint = index;
+          this.changeNetworkTokenIdMint(index);
+          return true;
+        }
+      });
+      this.networkIdMintTo = 0;
+      this.changeNetworkIdMintTo(this.networkIdMintTo);
+      console.log(this.networkTokensTo);
+      this.networkTokensTo.some((item, index) => {
+        if (
+          item.tokenId === CK_BTC_CANISTER_ID &&
+          network.id === item.networkToIcId
+        ) {
+          this.networkTokenIdMintTo = index;
+          this.changeNetworkTokenIdMintTo(index);
+          return true;
+        }
+      });
+      this.mintStep = 2;
+      this.showForge(BTCTypeEnum.ckBTC);
+    } else if (type === 'BTCRetrieve') {
+      this.networkIdMint = 0;
+      let network;
+      network = this.networkListFrom[this.networkIdMint as number];
+      this.changeNetworkIdMint(this.networkIdMint as number);
+      console.log(this.networkTokensFrom);
+      this.networkTokensFrom.some((item, index) => {
+        if (
+          item.tokenId === CK_BTC_CANISTER_ID &&
+          network.id === item.networkId
+        ) {
+          this.networkTokenIdMint = index;
+          this.changeNetworkTokenIdMint(index);
+          return true;
+        }
+      });
+      this.networkIdMintTo = 0;
+      this.changeNetworkIdMintTo(this.networkIdMintTo);
+      console.log(this.networkTokensTo);
+      this.networkTokensTo.some((item, index) => {
+        if (item.tokenId === 'btc' && network.id === item.networkToIcId) {
+          this.networkTokenIdMintTo = index;
+          this.changeNetworkTokenIdMintTo(index);
+          return true;
+        }
+      });
+      this.retrieveStep = 3;
+      this.showDissolve(BTCTypeEnum.ckBTC);
+    } else if (
       type === 'claim' ||
       type === 'claim2' ||
       type === 'mint' ||
@@ -6090,7 +6343,238 @@ export default class extends Mixins(BalanceMixin) {
       this.onGetMintCKETHPending();
       // ckETH retrieve
       this.onGetRetrieveCKETHPending();
+      // ckBTC mint
+      this.onGetMintCKBTCPending();
+      // ckBTC retrieve
+      this.onGetRetrieveCKBTCPending();
       console.log(this.activePending);
+    }
+  }
+  private onGetMintCKBTCPending(): void {
+    const principal = localStorage.getItem('principal');
+    if (principal) {
+      const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
+      this.updateBlockHeight = Number(currentInfo.icBTCUpdateBlockHeight);
+      this.updateCkBlockHeight = Number(currentInfo.ckBTCUpdateBlockHeight);
+      console.log(this.updateBlockHeight, this.updateCkBlockHeight);
+    }
+    this.BTCAddress('1.0', BTCTypeEnum.ckBTC);
+    this.ckBTCMinterService
+      .getBtcAddress(BTCTypeEnum.ckBTC)
+      .then((btcAddress) => {
+        axios
+          .get('https://blockchain.info/q/getblockcount')
+          .then((blockRes) => {
+            axios
+              .get(`https://blockstream.info/api/address/${btcAddress}/txs`)
+              .then((res) => {
+                this.blockCount = blockRes.data;
+                const txs = this.filterBTCTxRes(
+                  res,
+                  blockRes.data,
+                  BTCTypeEnum.ckBTC,
+                  btcAddress
+                );
+                console.log(txs);
+                const CKETHResponse = [];
+                if (
+                  this.activePending.CKETHResponse &&
+                  this.activePending.CKETHResponse.length
+                ) {
+                  this.activePending.CKETHResponse.forEach((item) => {
+                    if (item.type !== 'BTCMint') {
+                      CKETHResponse.push(item);
+                    }
+                  });
+                  this.activePending.CKETHResponse = CKETHResponse.concat(txs);
+                } else {
+                  this.activePending.CKETHResponse = txs;
+                }
+                if (this.activePending.CKETHResponse.length) {
+                  const CKETHResponse = this.activePending.CKETHResponse.sort(
+                    (a, b) => {
+                      return Number(b.time) - Number(a.time);
+                    }
+                  );
+                  this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
+                } else {
+                  this.$set(this.activePending, 'CKETHResponse', null);
+                }
+              });
+          });
+      });
+  }
+  private filterBTCTxRes(
+    res: any,
+    block: number,
+    BTCType: BTCTypeEnum,
+    BTCAddress: string
+  ): Array<MintCKBTCResponse> {
+    if (res && res.data) {
+      const txs = res.data;
+      console.log(txs);
+      let needUpdate = false;
+      if (txs && txs.length) {
+        for (let i = 0; i < txs.length; i++) {
+          const tx = txs[i];
+          let input = [];
+          let out = [];
+          if (tx.vin && tx.vin.length) {
+            tx.vin.forEach((val) => {
+              if (val.prevout.scriptpubkey_address === BTCAddress) {
+                input.push(val);
+              }
+            });
+            if (!input.length) {
+              input.push(tx.vin[0]);
+            }
+            tx.vin = input;
+          }
+          if (tx.vout && tx.vout.length) {
+            tx.vout.forEach((val) => {
+              if (val.scriptpubkey_address === BTCAddress) {
+                out.push(val);
+              }
+            });
+            if (!out.length) {
+              out.push(tx.vout[0]);
+            }
+            tx.vout = out;
+          }
+          const flag = out.some((val) => {
+            return val.scriptpubkey_address === BTCAddress;
+          });
+          if (flag && block && txs[i].status.block_height) {
+            tx.time = txs[i].status.block_time;
+            tx.type = 'BTCMint';
+            if (
+              (BTCType === BTCTypeEnum.icBTC &&
+                block - txs[i].status.block_height < 5) ||
+              (BTCType === BTCTypeEnum.ckBTC &&
+                block - txs[i].status.block_height < 11)
+            ) {
+              //  hasConfirmedLoading = true;
+            }
+            let updateBlockHeight;
+            if (BTCType === BTCTypeEnum.icBTC) {
+              updateBlockHeight = this.updateBlockHeight;
+            } else {
+              updateBlockHeight = this.updateCkBlockHeight;
+            }
+            // todo Synchronized Blocks
+            if (
+              ((BTCType === BTCTypeEnum.icBTC &&
+                block - txs[i].status.block_height >= 6) ||
+                (BTCType === BTCTypeEnum.ckBTC &&
+                  block - txs[i].status.block_height >= 12)) &&
+              (txs[i].status.block_height > updateBlockHeight ||
+                !updateBlockHeight)
+            ) {
+              needUpdate = true;
+            }
+          } else if (flag && !txs[i].status.block_height) {
+            // hasConfirmedLoading = true;
+          }
+          if (!flag) {
+            txs.splice(i, 1);
+            i--;
+          }
+        }
+      }
+      if (BTCType === BTCTypeEnum.icBTC) {
+        this.BTCTransactions = txs;
+      } else {
+        this.ckBTCTransactions = txs;
+      }
+      console.log(needUpdate);
+      if (needUpdate) {
+        this.forge(BTCType, false);
+        this.setUpdateBlockHeight(BTCType);
+      }
+      return txs;
+    }
+  }
+  private onGetRetrieveCKBTCPending(): void {
+    const currentInfo =
+      JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+    if (currentInfo.ckBTCBlock) {
+      const ckBTCRetrieve =
+        JSON.parse(JSON.stringify(currentInfo.ckBTCBlock)) || [];
+      ckBTCRetrieve.map((info) => {
+        info.type = 'BTCRetrieve';
+        if (Number(info.time) > 9999999999) {
+          info.time = Math.floor(info.time / 1000);
+        }
+      });
+      console.log(ckBTCRetrieve);
+      const CKETHResponse = [];
+      if (
+        this.activePending.CKETHResponse &&
+        this.activePending.CKETHResponse.length
+      ) {
+        this.activePending.CKETHResponse.forEach((item) => {
+          if (item.type !== 'BTCRetrieve') {
+            CKETHResponse.push(item);
+          }
+        });
+        this.activePending.CKETHResponse = CKETHResponse.concat(ckBTCRetrieve);
+      } else {
+        this.activePending.CKETHResponse = ckBTCRetrieve;
+      }
+      if (this.activePending.CKETHResponse.length) {
+        const CKETHResponse = this.activePending.CKETHResponse.sort((a, b) => {
+          return Number(b.time) - Number(a.time);
+        });
+        this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
+      } else {
+        this.$set(this.activePending, 'CKETHResponse', null);
+      }
+      this.updateRetrieveBtcStatusResponse(ckBTCRetrieve);
+    }
+  }
+  private updateRetrieveBtcStatusResponse(
+    response: Array<RetrieveCKBTCResponse>
+  ): void {
+    if (this.getPrincipalId) {
+      const currentInfo =
+        JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+      const time = new Date().getTime();
+      response.forEach((val, index) => {
+        let status;
+        let canGetStatus = ['Pending', 'Signing', 'Sending', 'Submitted'];
+        if (val.status) {
+          status = Object.keys(val.status)[0];
+        }
+        if (canGetStatus.includes(status) || !status) {
+          this.getRetrieveBtcStatus(val.blockIndex).then(async (res) => {
+            console.log(res);
+            const currentStatus = Object.keys(res)[0];
+            if (
+              status === 'Pending' &&
+              time - Number(val.time) > 10 * 60 * 1000
+            ) {
+              this.$set(response, index, {
+                blockIndex: val.blockIndex,
+                status: res,
+                time: time
+              });
+              this.batchSend(val.blockIndex);
+            }
+            if (currentStatus !== status) {
+              this.$set(response, index, {
+                blockIndex: val.blockIndex,
+                status: res,
+                time: val.time
+              });
+              currentInfo.ckBTCBlock = response;
+              localStorage.setItem(
+                this.getPrincipalId,
+                JSON.stringify(currentInfo)
+              );
+            }
+          });
+        }
+      });
     }
   }
   private onGetRetrieveCKETHPending(): void {
@@ -6102,26 +6586,31 @@ export default class extends Mixins(BalanceMixin) {
         this.$set(this.activePending, 'retrieveCKETH', null);
       }
       const CKETHResponse = [];
+      const response = [];
+      res.retrieve.forEach((item: RetrieveActiveResponse) => {
+        if (this.ckTokenInfo[item.tokenId]) {
+          response.push(item);
+        }
+      });
       if (
         this.activePending.CKETHResponse &&
         this.activePending.CKETHResponse.length
       ) {
         this.activePending.CKETHResponse.forEach((item) => {
-          if (item.type === 'mint') {
+          if (item.type !== 'retrieve') {
             CKETHResponse.push(item);
           }
         });
-        this.activePending.CKETHResponse = CKETHResponse.concat(res.retrieve);
+        this.activePending.CKETHResponse = CKETHResponse.concat(response);
       } else {
-        this.activePending.CKETHResponse = res.retrieve;
+        this.activePending.CKETHResponse = response;
       }
       if (this.activePending.CKETHResponse.length) {
         console.log(res.retrieve);
-        this.$set(
-          this.activePending,
-          'CKETHResponse',
-          this.activePending.CKETHResponse
-        );
+        const CKETHResponse = this.activePending.CKETHResponse.sort((a, b) => {
+          return Number(b.time) - Number(a.time);
+        });
+        this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
       } else {
         this.$set(this.activePending, 'CKETHResponse', null);
       }
@@ -6139,28 +6628,79 @@ export default class extends Mixins(BalanceMixin) {
       if (ckETHRetrieveKey.startsWith('ckETHRetrieve-')) {
         const retrieveCKETH = currentInfo[ckETHRetrieveKey] || {};
         console.log(retrieveCKETH);
+        let flag = false;
         if (retrieveCKETH) {
           for (let key in retrieveCKETH) {
             if (retrieveCKETH[key]) {
               for (let i = 0; i < retrieveCKETH[key].length; i++) {
+                let ETHHttps = ETHHttpsMainnet;
+                if (
+                  this.tokens &&
+                  this.tokens[key] &&
+                  this.tokens[key].symbol
+                    .toLocaleLowerCase()
+                    .includes('sepolia')
+                ) {
+                  ETHHttps = ETHHttpsSepolia;
+                }
+                const status = Object.keys(retrieveCKETH[key][i].status)[0];
+                if (status === 'TxFinalized' && !retrieveCKETH[key][i].time) {
+                  const hash = Object.values(
+                    retrieveCKETH[key][i].status as RetrieveEthStatus
+                  )[0].Success.transaction_hash;
+                  const receipt = await this.getEthTransactionReceipt(
+                    hash,
+                    0,
+                    0,
+                    ETHHttps
+                  );
+                  if (receipt && receipt.data.result) {
+                    console.log(receipt.data.result);
+                    const block = Number(receipt.data.result.blockNumber);
+                    const resReceipt = await this.getBlockByNumber(
+                      block,
+                      0,
+                      0,
+                      ETHHttps
+                    );
+                    if (resReceipt && resReceipt.data.result) {
+                      console.log(resReceipt);
+                      if (!flag) {
+                        flag = true;
+                      }
+                      retrieveCKETH[key][i].time = Number(
+                        resReceipt.data.result.timestamp
+                      ).toString(10);
+                    }
+                  }
+                }
                 const type = Object.keys(retrieveCKETH[key][i].status)[0];
                 if (type !== 'TxFinalized' && type !== 'NotFound') {
                   retrievePending.push({
                     amount: retrieveCKETH[key][i].amount,
                     tokenId: key,
-                    status: retrieveCKETH[key][i].status
+                    status: retrieveCKETH[key][i].status,
+                    time: retrieveCKETH[key][i].time
                   });
                 } else {
                   retrieve.push({
                     amount: retrieveCKETH[key][i].amount,
                     tokenId: key,
                     status: retrieveCKETH[key][i].status,
+                    time: retrieveCKETH[key][i].time,
                     type: 'retrieve'
                   });
                 }
               }
             }
           }
+        }
+        if (flag) {
+          currentInfo[ckETHRetrieveKey] = retrieveCKETH;
+          localStorage.setItem(
+            this.getPrincipalId,
+            JSON.stringify(currentInfo)
+          );
         }
       }
     }
@@ -6175,26 +6715,31 @@ export default class extends Mixins(BalanceMixin) {
         this.$set(this.activePending, 'mintCKETH', null);
       }
       const CKETHResponse = [];
+      const response = [];
+      res.mint.forEach((item) => {
+        if (this.ckTokenInfo[item.tokenId]) {
+          response.push(item);
+        }
+      });
       if (
         this.activePending.CKETHResponse &&
         this.activePending.CKETHResponse.length
       ) {
         this.activePending.CKETHResponse.forEach((item) => {
-          if (item.type === 'retrieve') {
+          if (item && item.type !== 'mint') {
             CKETHResponse.push(item);
           }
         });
-        this.activePending.CKETHResponse = res.mint.concat(CKETHResponse);
+        this.activePending.CKETHResponse = response.concat(CKETHResponse);
       } else {
-        this.activePending.CKETHResponse = res.mint;
+        this.activePending.CKETHResponse = response;
       }
       if (this.activePending.CKETHResponse.length) {
-        console.log(res.mint);
-        this.$set(
-          this.activePending,
-          'CKETHResponse',
-          this.activePending.CKETHResponse
-        );
+        console.log(response);
+        const CKETHResponse = this.activePending.CKETHResponse.sort((a, b) => {
+          return Number(b.time) - Number(a.time);
+        });
+        this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
       } else {
         this.$set(this.activePending, 'CKETHResponse', null);
       }
@@ -6220,12 +6765,14 @@ export default class extends Mixins(BalanceMixin) {
       if (ckETHMintKey.startsWith('ckETHMint-')) {
         const mintCKETH = currentInfo[ckETHMintKey] || {};
         console.log(mintCKETH);
+        let flag = false;
         if (mintCKETH) {
           if (lastScrapedBlockNumber && lastScrapedBlockNumberTest) {
             for (let key in mintCKETH) {
               if (mintCKETH[key]) {
                 for (let i = 0; i < mintCKETH[key].length; i++) {
                   let blockNumber = lastScrapedBlockNumber;
+                  let ETHHttps = ETHHttpsMainnet;
                   if (
                     this.tokens &&
                     this.tokens[key] &&
@@ -6234,8 +6781,26 @@ export default class extends Mixins(BalanceMixin) {
                       .includes('sepolia')
                   ) {
                     blockNumber = lastScrapedBlockNumberTest;
+                    ETHHttps = ETHHttpsSepolia;
                   }
                   this.lastScrapedBlockNumber = blockNumber;
+                  if (mintCKETH[key][i].blockNum && !mintCKETH[key][i].time) {
+                    const resReceipt = await this.getBlockByNumber(
+                      Number(mintCKETH[key][i].blockNum),
+                      0,
+                      0,
+                      ETHHttps
+                    );
+                    if (resReceipt && resReceipt.data.result) {
+                      console.log(resReceipt);
+                      if (!flag) {
+                        flag = true;
+                      }
+                      mintCKETH[key][i].time = Number(
+                        resReceipt.data.result.timestamp
+                      ).toString(10);
+                    }
+                  }
                   if (
                     !mintCKETH[key][i].blockNum ||
                     new BigNumber(blockNumber).lt(mintCKETH[key][i].blockNum)
@@ -6244,7 +6809,8 @@ export default class extends Mixins(BalanceMixin) {
                       txHash: mintCKETH[key][i].txHash,
                       amount: mintCKETH[key][i].amount,
                       tokenId: key,
-                      blockNumber: mintCKETH[key][i].blockNum
+                      blockNumber: mintCKETH[key][i].blockNum,
+                      time: mintCKETH[key][i].time
                     });
                   } else {
                     mint.push({
@@ -6252,6 +6818,7 @@ export default class extends Mixins(BalanceMixin) {
                       amount: mintCKETH[key][i].amount,
                       tokenId: key,
                       blockNumber: mintCKETH[key][i].blockNum,
+                      time: mintCKETH[key][i].time,
                       type: 'mint'
                     });
                   }
@@ -6259,6 +6826,13 @@ export default class extends Mixins(BalanceMixin) {
               }
             }
           }
+        }
+        if (flag) {
+          currentInfo[ckETHMintKey] = mintCKETH;
+          localStorage.setItem(
+            this.getPrincipalId,
+            JSON.stringify(currentInfo)
+          );
         }
       }
     }
@@ -6680,6 +7254,7 @@ export default class extends Mixins(BalanceMixin) {
               const type = Object.keys(withdraw)[0];
               if (type === 'Ok') {
                 this.$message.success('Success');
+                const time = Math.floor(new Date().getTime() / 1000);
                 this.ckETHRetrieve.unshift({
                   recipient: this.ethDissolveFormCK.address.trim(),
                   amount: amount,
@@ -6693,7 +7268,8 @@ export default class extends Mixins(BalanceMixin) {
                       Ok: RetrieveErc20Request;
                     }
                   ).Ok.ckerc20_block_index.toString(10),
-                  status: { Pending: null }
+                  status: { Pending: null },
+                  time: time.toString(10)
                 });
                 const currentInfo =
                   JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
@@ -6736,6 +7312,7 @@ export default class extends Mixins(BalanceMixin) {
               const type = Object.keys(withdraw)[0];
               if (type === 'Ok') {
                 this.$message.success('Success');
+                const time = Math.floor(new Date().getTime() / 1000);
                 this.ckETHRetrieve.unshift({
                   recipient: this.ethDissolveFormCK.address.trim(),
                   amount: amount,
@@ -6744,7 +7321,8 @@ export default class extends Mixins(BalanceMixin) {
                       Ok: RetrieveEthRequest;
                     }
                   ).Ok.block_index.toString(10),
-                  status: { Pending: null }
+                  status: { Pending: null },
+                  time: time.toString(10)
                 });
                 const currentInfo =
                   JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
@@ -7203,20 +7781,21 @@ export default class extends Mixins(BalanceMixin) {
   private async getEthTransactionByHash(
     txHash: string,
     ETHHttpsNum?: number,
-    retry = 0
+    retry = 0,
+    ETHHttpsKeys: Array<string> = ETHHttps
   ): Promise<any> {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
-        ETHHttpsNum = Math.floor(Math.random() * ETHHttps.length);
+        ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
         console.log(ETHHttpsNum);
       } else {
-        if (ETHHttpsNum + 1 >= ETHHttps.length) {
+        if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
         } else {
           ETHHttpsNum += 1;
         }
       }
-      return await axios.post(ETHHttps[ETHHttpsNum], {
+      return await axios.post(ETHHttpsKeys[ETHHttpsNum], {
         id: 1,
         jsonrpc: '2.0',
         params: [txHash],
@@ -7224,8 +7803,44 @@ export default class extends Mixins(BalanceMixin) {
       });
     } catch (e) {
       console.error(e);
-      if (retry < ETHHttps.length) {
-        await this.getEthTransactionByHash(txHash, ETHHttpsNum, ++retry);
+      if (retry < ETHHttpsKeys.length) {
+        await this.getEthTransactionByHash(
+          txHash,
+          ETHHttpsNum,
+          ++retry,
+          ETHHttpsKeys
+        );
+      }
+    }
+  }
+  private async getBlockByNumber(
+    block: number,
+    ETHHttpsNum?: number,
+    retry = 0,
+    ETHHttpsKeys: Array<string> = ETHHttps
+  ): Promise<any> {
+    try {
+      if (!ETHHttpsNum && ETHHttpsNum !== 0) {
+        ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
+        console.log(ETHHttpsNum);
+      } else {
+        if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
+          ETHHttpsNum = 0;
+        } else {
+          ETHHttpsNum += 1;
+        }
+      }
+      const num = '0x' + block.toString(16);
+      return await axios.post(ETHHttpsKeys[ETHHttpsNum], {
+        id: 1,
+        jsonrpc: '2.0',
+        params: [num, true],
+        method: 'eth_getBlockByNumber'
+      });
+    } catch (e) {
+      console.error(e);
+      if (retry < ETHHttpsKeys.length) {
+        await this.getBlockByNumber(block, ETHHttpsNum, ++retry, ETHHttpsKeys);
       }
     }
   }
@@ -8494,7 +9109,11 @@ export default class extends Mixins(BalanceMixin) {
                         ).then((res) => {
                           this.ethereumIsConnected = true;
                           const balance = new BigNumber(res)
-                            .div(10 ** 18)
+                            .div(
+                              10 **
+                                this.tokens[this.networkTokensFrom[val].tokenId]
+                                  .decimals
+                            )
                             .decimalPlaces(8, 1)
                             .toString(10);
                           this.$set(
@@ -8572,7 +9191,11 @@ export default class extends Mixins(BalanceMixin) {
                         ).then((res) => {
                           this.ethereumIsConnected = true;
                           const balance = new BigNumber(res)
-                            .div(10 ** 18)
+                            .div(
+                              10 **
+                                this.tokens[this.networkTokensTo[val].tokenId]
+                                  .decimals
+                            )
                             .decimalPlaces(8, 1)
                             .toString(10);
                           this.$set(
@@ -10074,6 +10697,18 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+  private getRetrieveBtcTxidResponse(val: RetrieveBtcStatus): string {
+    if (val) {
+      const status = Object.keys(val)[0];
+      const hasTxid = ['Submitted', 'Sending', 'Confirmed'];
+      if (hasTxid.includes(status)) {
+        let txid = JSON.parse(JSON.stringify(Object.values(val)[0].txid));
+        txid = txid.reverse();
+        return toHexString(new Uint8Array(txid));
+      }
+    }
+    return null;
+  }
   private getRetrieveBtcTxid(val: RetrieveBtcStatus): string {
     if (val) {
       const status = Object.keys(val)[0];
@@ -10242,10 +10877,12 @@ export default class extends Mixins(BalanceMixin) {
               const amountMint = new BigNumber(this.erc20Form.amount)
                 .times(10 ** 18)
                 .toString(10);
+              const time = Math.floor(new Date().getTime() / 1000);
               this.ckETHMint.unshift({
                 txHash: sendTransactionRes,
                 amount: amountMint,
-                blockNum: ''
+                blockNum: '',
+                time: time.toString(10)
               });
               const currentInfo =
                 JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
@@ -10284,10 +10921,12 @@ export default class extends Mixins(BalanceMixin) {
               const amountMint = new BigNumber(this.erc20Form.amount)
                 .times(10 ** 18)
                 .toString(10);
+              const time = Math.floor(new Date().getTime() / 1000);
               this.ckETHMint.unshift({
                 txHash: sendTransactionRes,
                 amount: amountMint,
-                blockNum: ''
+                blockNum: '',
+                time: time.toString(10)
               });
               const currentInfo =
                 JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
@@ -10347,10 +10986,12 @@ export default class extends Mixins(BalanceMixin) {
               const amountMint = new BigNumber(this.erc20Form.amount)
                 .times(10 ** this.tokens[this.icNetworkTokens.tokenId].decimals)
                 .toString(10);
+              const time = Math.floor(new Date().getTime() / 1000);
               this.ckETHMint.unshift({
                 txHash: sendTransactionRes,
                 amount: amountMint,
-                blockNum: ''
+                blockNum: '',
+                time: time.toString(10)
               });
               const currentInfo =
                 JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};

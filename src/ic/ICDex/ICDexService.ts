@@ -31,10 +31,13 @@ import Service, {
   STOrder,
   StoSetting,
   SysMode,
+  TOPoolResponse,
   TradingResult,
   TrieList,
   TrieList_3,
   TrieList_5,
+  TTErrorsResponse,
+  TTsResponse,
   TxAccount,
   TxnRecord,
   UpdateStopLossOrderConfig
@@ -940,6 +943,56 @@ export class ICDexService {
     const service = await this.check(canisterId, false, false);
     try {
       const res = await service.brokerList(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTOCount = async (canisterId: string): Promise<bigint> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.ictc_getTOCount();
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTTs = async (
+    canisterId: string,
+    page: bigint,
+    size: bigint
+  ): Promise<TTsResponse> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.ictc_getTTs(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTTErrors = async (
+    canisterId: string,
+    page: bigint,
+    size: bigint
+  ): Promise<TTErrorsResponse> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.ictc_getTTErrors(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTOPool = async (
+    canisterId: string
+  ): Promise<TOPoolResponse> => {
+    const service = await this.check(canisterId);
+    try {
+      const res = await service.ictc_getTOPool();
       return SerializableIC(res);
     } catch (e) {
       console.log(e);

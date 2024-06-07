@@ -35,6 +35,15 @@
               proposalStatusFilter.length
             }}/{{ proposalStatus.length }})
           </button>
+          <span class="load-icon">
+            <a-icon
+              @click="initProposals"
+              class="pointer"
+              v-show="!showLoading"
+              type="reload"
+            />
+            <a-icon v-show="showLoading" type="loading" class="reload-icon" />
+          </span>
           <!--<div class="can-still">
 						<a-checkbox> Show only proposals you can still vote for </a-checkbox>
 					</div>-->
@@ -312,6 +321,7 @@ export default class extends Vue {
   private statusVisible = false;
   private checkStatus = [];
   private checkAllStatus = false;
+  private showLoading = false;
   activated(): void {
     if (!this.$route.meta.isBack) {
       this.$nextTick(() => {
@@ -848,6 +858,15 @@ export default class extends Vue {
         margin-right: 5px;
         font-size: 14px;
       }
+    }
+    .load-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      color: #adb3c4;
+      margin-right: 10px;
+      margin-top: 10px;
     }
   }
 }

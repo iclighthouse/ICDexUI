@@ -565,7 +565,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
   private leave(): void {
     this.showRiskWarning = false;
-    this.$router.replace('/account');
+    this.$router.replace('/wallet');
   }
 }
 </script>

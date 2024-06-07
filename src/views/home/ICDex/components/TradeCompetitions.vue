@@ -7,18 +7,9 @@
     >
       <div class="trade-competitions-main-header">
         <a-icon class="back-arrow" type="arrow-left" @click="back" />
-        <span
-          v-if="
-            tokens &&
-            tokens[currentPair[1][0].token0[0].toString()] &&
-            tokens[currentPair[1][0].token1[0].toString()]
-          "
-          class="trade-competitions-main-name"
-          >{{ tokens[currentPair[1][0].token0[0].toString()].symbol }}/{{
-            tokens[currentPair[1][0].token1[0].toString()].symbol
-          }}
-          {{ menu }}</span
-        >
+        <span class="trade-competitions-main-name" v-if="dexInfo">
+          {{ dexInfo.token0[1] }}/{{ dexInfo.token1[1] }}
+        </span>
       </div>
       <div
         v-show="menu === tradeCompetitionsEnum.Info"
@@ -60,7 +51,7 @@
                     tokens[currentPair[1][0].token0[0].toString()].decimals
                   )
               }}
-              {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
+							{{ dexInfo.token0[1] }}
             </span>
           </div>
           <div class="trade-competitions-info-metadata-item">
@@ -136,11 +127,7 @@
               </div>
               <div class="trade-competitions-info-item">
                 <span>Token Name:</span>
-                <span
-                  v-if="
-                    tokens && tokens[currentPair[1][0].token0[0].toString()]
-                  "
-                >
+                <span v-if="dexInfo">
                   <span
                     v-if="
                       tokens[
@@ -185,12 +172,8 @@
               </div>
               <div class="trade-competitions-info-item">
                 <span>Symbol:</span>
-                <span
-                  v-if="
-                    tokens && tokens[currentPair[1][0].token0[0].toString()]
-                  "
-                >
-                  {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
+                <span v-if="dexInfo">
+                  {{ dexInfo.token0[1] }}
                 </span>
               </div>
               <div class="trade-competitions-info-item">
@@ -326,12 +309,8 @@
               </div>
               <div class="trade-competitions-info-item">
                 <span>Symbol:</span>
-                <span
-                  v-if="
-                    tokens && tokens[currentPair[1][0].token1[0].toString()]
-                  "
-                >
-                  {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                <span v-if="dexInfo">
+                  {{ dexInfo.token1[1] }}
                 </span>
               </div>
               <div class="trade-competitions-info-item">
@@ -536,7 +515,9 @@
                         | formatNum
                     }}
                   </span>
-                  {{ tokens[currentPair[1][0].token0[0].toString()].symbol }},
+                  <span v-if="dexInfo">
+                    {{ dexInfo.token0[1] }} </span
+                  >,
                   <span class="base-font-title">
                     {{
                       ambassador[3].value1
@@ -549,7 +530,9 @@
                         | formatNum
                     }}
                   </span>
-                  {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                  <span v-if="dexInfo">
+                    {{ dexInfo.token1[1] }}
+                  </span>
                 </span>
               </div>
             </div>

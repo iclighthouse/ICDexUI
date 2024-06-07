@@ -7,7 +7,7 @@
           class="no-cycles-wallet"
         >
           You don't have a cycles wallet yet,
-          <router-link to="/account">create or bind one.</router-link>
+          <router-link to="/wallet">create or bind one.</router-link>
         </div>
         <div class="swap-setting-item">
           <span

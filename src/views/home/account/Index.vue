@@ -686,7 +686,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator';
+import { Component, Mixins, Watch } from 'vue-property-decorator';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import CyclesWallet from '@/views/home/account/components/CyclesWallet.vue';
 import Ledger from '@/views/home/account/components/Ledger.vue';
@@ -900,6 +900,16 @@ export default class extends Mixins(BalanceMixin) {
       path: '/icRouter'
     }
   ];
+  @Watch('$route')
+  private onRouteChange() {
+    if (this.$route.fullPath.toLocaleLowerCase().includes('icrouter')) {
+      this.currentWalletMenu = 'icRouter';
+    } else if (this.$route.fullPath.toLocaleLowerCase().includes('pro')) {
+      this.currentWalletMenu = 'proWallet';
+    } else {
+      this.currentWalletMenu = 'wallet';
+    }
+  }
   get identiconImg(): string {
     if (this.account) {
       return (

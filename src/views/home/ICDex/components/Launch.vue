@@ -507,7 +507,7 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
 
 **TokenIsDecentralized**: true, // The token must be controlled by a DAO or have no controller
 
-**TokenModuleHash:** "1d20aafd24d656e9ed93 89325b4a113c5dda9bc6a 06faf13934f30beb9d2d87 e",
+**TokenModuleHash:** "1d20aafd24d656e9ed9389325b4a113c5dda9bc6a06faf13934f30beb9d2d87e",
 
 **TokenMintable:** false, // Indicates whether the token is mintable
 

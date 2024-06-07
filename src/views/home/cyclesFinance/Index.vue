@@ -209,7 +209,7 @@
               class="no-cycles-wallet"
             >
               You don't have a cycles wallet yet,
-              <router-link to="/account">create or bind one.</router-link>
+              <router-link to="/wallet">create or bind one.</router-link>
             </div>
             <div
               v-show="swapType === 'cyclesToIcp'"
@@ -307,7 +307,7 @@
               class="no-cycles-wallet no-cycles-wallet-cycles"
             >
               You don't have a cycles wallet yet,
-              <router-link to="/account">create or bind one.</router-link>
+              <router-link to="/wallet">create or bind one.</router-link>
             </div>
             <div
               v-show="swapType === 'icpToCycles'"
@@ -707,7 +707,7 @@
                 v-show="wallets ? !wallets.length : false"
               >
                 You don't have a cycles wallet yet,
-                <router-link to="/account">create or bind one.</router-link>
+                <router-link to="/wallet">create or bind one.</router-link>
               </div>
               <div class="exchange-swap-item-top">
                 <div class="exchange-swap-item-top-title">Cycles Wallet:</div>
@@ -906,7 +906,7 @@
                 v-show="wallets ? !wallets.length : false"
               >
                 You don't have a cycles wallet yet,
-                <router-link to="/account">create or bind one.</router-link>
+                <router-link to="/wallet">create or bind one.</router-link>
               </div>
               <div class="exchange-swap-item-top">Cycles Wallet:</div>
               <div class="exchange-swap-item-top">
@@ -1020,7 +1020,7 @@
                 v-show="wallets ? !wallets.length : false"
               >
                 You don't have a cycles wallet yet,
-                <router-link to="/account">create or bind one.</router-link>
+                <router-link to="/wallet">create or bind one.</router-link>
               </div>
               <div class="exchange-swap-item-top">
                 Cycles Wallet:
@@ -2260,7 +2260,7 @@ export default class extends Mixins(BalanceMixin) {
           icon: 'connect-plug',
           okText: 'OK',
           onOk() {
-            that.$router.push('/account');
+            that.$router.push('/wallet');
           }
         });
       } else {

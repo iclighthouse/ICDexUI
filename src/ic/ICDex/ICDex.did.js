@@ -280,7 +280,6 @@ export default ({ IDL }) => {
   const Ttid = IDL.Nat;
   const Toid__1 = IDL.Nat;
   const Sa__2 = IDL.Vec(IDL.Nat8);
-  const Data__3 = IDL.Vec(IDL.Nat8);
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Account = IDL.Record({
     owner: IDL.Principal,
@@ -338,13 +337,6 @@ export default ({ IDL }) => {
   const CallType = IDL.Variant({
     __block: IDL.Null,
     ICDex: IDL.Variant({
-      cancelAll: IDL.Tuple(
-        IDL.Variant({
-          self_sa: IDL.Opt(Sa__2),
-          management: IDL.Opt(AccountId__2)
-        }),
-        IDL.Opt(IDL.Variant({ Buy: IDL.Null, Sell: IDL.Null }))
-      ),
       withdraw: IDL.Tuple(
         IDL.Opt(Amount__1),
         IDL.Opt(Amount__1),
@@ -355,26 +347,6 @@ export default ({ IDL }) => {
         IDL.Variant({ token0: IDL.Null, token1: IDL.Null }),
         IDL.Nat,
         IDL.Opt(Sa__2)
-      ),
-      trade_b: IDL.Tuple(
-        OrderPrice__1,
-        OrderType__1,
-        IDL.Opt(IDL.Int),
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__3),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
-      ),
-      cancel: IDL.Tuple(IDL.Nat, IDL.Opt(Sa__2)),
-      cancelByTxid: IDL.Tuple(IDL.Vec(IDL.Nat8), IDL.Opt(Sa__2)),
-      tradeMKT_b: IDL.Tuple(
-        IDL.Principal,
-        Amount__1,
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Nonce__2),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__3),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
       )
     }),
     ICRC1: IDL.Variant({
@@ -583,25 +555,6 @@ export default ({ IDL }) => {
     Doing: IDL.Null,
     Unknown: IDL.Null
   });
-  const TradingResult__1 = IDL.Variant({
-    ok: IDL.Record({
-      status: TradingStatus,
-      txid: Txid,
-      filled: IDL.Vec(OrderFilled)
-    }),
-    err: IDL.Record({
-      code: IDL.Variant({
-        NonceError: IDL.Null,
-        InvalidAmount: IDL.Null,
-        UndefinedError: IDL.Null,
-        UnacceptableVolatility: IDL.Null,
-        TransactionBlocking: IDL.Null,
-        InsufficientBalance: IDL.Null,
-        TransferException: IDL.Null
-      }),
-      message: IDL.Text
-    })
-  });
   const Duration = IDL.Nat64;
   const TransferError = IDL.Variant({
     GenericError: IDL.Record({
@@ -692,14 +645,9 @@ export default ({ IDL }) => {
   const Receipt = IDL.Variant({
     __block: IDL.Null,
     ICDex: IDL.Variant({
-      cancelAll: IDL.Null,
       withdraw: IDL.Tuple(IDL.Nat, IDL.Nat),
       depositFallback: IDL.Tuple(IDL.Nat, IDL.Nat),
-      deposit: IDL.Null,
-      trade_b: TradingResult__1,
-      cancel: IDL.Null,
-      cancelByTxid: IDL.Null,
-      tradeMKT_b: TradingResult__1
+      deposit: IDL.Null
     }),
     ICRC1: IDL.Variant({
       icrc1_balance_of: IDL.Nat,
@@ -910,6 +858,14 @@ export default ({ IDL }) => {
   const GridOrder = IDL.Record({
     setting: GridSetting,
     level1Filled: IDL.Opt(IDL.Record({ buy1: Amount__2, sell1: Amount__2 })),
+    filter: IDL.Opt(
+      IDL.Record({
+        gridTop: Price__2,
+        gridBottom: Price__2,
+        buyingBlankLocked: IDL.Vec(IDL.Tuple(Price__2, Price__2)),
+        sellingBlankLocked: IDL.Vec(IDL.Tuple(Price__2, Price__2))
+      })
+    ),
     gridPrices: GridPrices
   });
   const STStrategy = IDL.Variant({
@@ -1176,17 +1132,21 @@ export default ({ IDL }) => {
     ICP_FEE: IcpE8s
   });
   const TxAccount = IDL.Text;
+  const Timestamp__5 = IDL.Nat;
+  const OrderHealth = IDL.Record({
+    freezeUntil: Timestamp__5,
+    order: IDL.Nat,
+    fail: IDL.Nat,
+    message: IDL.Text,
+    freezingCount: IDL.Nat,
+    cancelledTime: Timestamp__5,
+    cancel: IDL.Nat,
+    failedTime: Timestamp__5
+  });
   const Toid__4 = IDL.Nat;
   const CallType__1 = IDL.Variant({
     __block: IDL.Null,
     ICDex: IDL.Variant({
-      cancelAll: IDL.Tuple(
-        IDL.Variant({
-          self_sa: IDL.Opt(Sa__2),
-          management: IDL.Opt(AccountId__2)
-        }),
-        IDL.Opt(IDL.Variant({ Buy: IDL.Null, Sell: IDL.Null }))
-      ),
       withdraw: IDL.Tuple(
         IDL.Opt(Amount__1),
         IDL.Opt(Amount__1),
@@ -1197,26 +1157,6 @@ export default ({ IDL }) => {
         IDL.Variant({ token0: IDL.Null, token1: IDL.Null }),
         IDL.Nat,
         IDL.Opt(Sa__2)
-      ),
-      trade_b: IDL.Tuple(
-        OrderPrice__1,
-        OrderType__1,
-        IDL.Opt(IDL.Int),
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__3),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
-      ),
-      cancel: IDL.Tuple(IDL.Nat, IDL.Opt(Sa__2)),
-      cancelByTxid: IDL.Tuple(IDL.Vec(IDL.Nat8), IDL.Opt(Sa__2)),
-      tradeMKT_b: IDL.Tuple(
-        IDL.Principal,
-        Amount__1,
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Nonce__2),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__3),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
       )
     }),
     ICRC1: IDL.Variant({
@@ -1367,7 +1307,6 @@ export default ({ IDL }) => {
   });
   const TokenInfo = IDL.Tuple(IDL.Principal, TokenSymbol, TokenStd);
   const Toid__3 = IDL.Nat;
-  const Timestamp__5 = IDL.Nat;
   const OrderFilled__1 = IDL.Record({
     time: Time,
     token0Value: BalanceChange,
@@ -1692,10 +1631,40 @@ export default ({ IDL }) => {
       ],
       []
     ),
+    clearAccountHealth: IDL.Func([], [], []),
     clearAccountSetting: IDL.Func([], [], []),
+    clearFailedOrders: IDL.Func([], [], []),
     clearNonCoreData: IDL.Func([], [], []),
     config: IDL.Func([DexConfig], [IDL.Bool], []),
     count: IDL.Func([IDL.Opt(Address)], [IDL.Nat], ['query']),
+    dataSize: IDL.Func(
+      [],
+      [
+        IDL.Record({
+          icdex_keepingBalances: IDL.Nat,
+          timeSortedTxids: IDL.Nat,
+          accountHealth: IDL.Nat,
+          icdex_failedOrders: IDL.Nat,
+          icdex_stOrderTxids: IDL.Nat,
+          icdex_vols: IDL.Nat,
+          icdex_lastVisits: IDL.Nat,
+          icdex_pendingOrders: IDL.Nat,
+          fallbacking_txids: IDL.Nat,
+          icdex_userStopLossOrderList: IDL.Nat,
+          icdex_activeStopLossOrderList: IDL.Tuple(IDL.Nat, IDL.Nat),
+          clearingTxids: IDL.Nat,
+          icdex_nonces: IDL.Nat,
+          icdex_userProOrderList: IDL.Nat,
+          icdex_orders: IDL.Nat,
+          icdex_orderBook: IDL.Tuple(IDL.Nat, IDL.Nat),
+          icdex_latestfilled: IDL.Nat,
+          icdex_activeProOrderList: IDL.Nat,
+          accountWithdrawToids: IDL.Nat,
+          icdex_stOrderRecords: IDL.Nat
+        })
+      ],
+      ['query']
+    ),
     debug_gridOrders: IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(Soid, ICRC1Account__1, OrderPrice))],
@@ -1776,6 +1745,7 @@ export default ({ IDL }) => {
       [Account__1, TxAccount, Nonce, Txid__1],
       ['query']
     ),
+    health: IDL.Func([Address], [IDL.Opt(OrderHealth)], ['query']),
     ictc_TM: IDL.Func([], [IDL.Text], ['query']),
     ictc_addAdmin: IDL.Func([IDL.Principal], [], []),
     ictc_appendTT: IDL.Func(
@@ -1869,6 +1839,16 @@ export default ({ IDL }) => {
     ictc_removeAdmin: IDL.Func([IDL.Principal], [], []),
     ictc_runTO: IDL.Func([Toid__4], [IDL.Opt(OrderStatus)], []),
     ictc_runTT: IDL.Func([], [IDL.Bool], []),
+    ictc_updateTT: IDL.Func(
+      [
+        Toid__4,
+        Ttid__2,
+        IDL.Tuple(IDL.Principal, CallType__1, IDL.Vec(Ttid__2)),
+        IDL.Opt(IDL.Tuple(IDL.Principal, CallType__1, IDL.Vec(Ttid__2)))
+      ],
+      [IDL.Opt(Ttid__2)],
+      []
+    ),
     info: IDL.Func(
       [],
       [
@@ -1948,6 +1928,7 @@ export default ({ IDL }) => {
     prepare: IDL.Func([Address], [TxAccount, Nonce], ['query']),
     recovery: IDL.Func([BackupResponse], [IDL.Bool], []),
     removeVipMaker: IDL.Func([Address], [], []),
+    rename: IDL.Func([], [], []),
     safeAccountBalance: IDL.Func(
       [Address],
       [
@@ -1967,6 +1948,7 @@ export default ({ IDL }) => {
     ),
     setOrderFail: IDL.Func([IDL.Text, Amount, Amount], [IDL.Bool], []),
     setPause: IDL.Func([IDL.Bool, IDL.Opt(Time)], [IDL.Bool], []),
+    setTodoOrdersFail: IDL.Func([], [IDL.Nat], []),
     setUpgradeMode: IDL.Func(
       [IDL.Variant({ All: IDL.Null, Base: IDL.Null })],
       [],

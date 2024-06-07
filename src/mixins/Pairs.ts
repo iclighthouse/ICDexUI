@@ -205,7 +205,7 @@ export class PairsMixin extends Vue {
           icon: 'connect-plug',
           okText: 'OK',
           onOk() {
-            that.$router.push('/account');
+            that.$router.push('/wallet');
           }
         });
       } else {

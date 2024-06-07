@@ -6,6 +6,7 @@ export interface GetMetadataResponse {
   logo: Array<string>;
   name: Array<string>;
   description: Array<string>;
+  root?: string;
 }
 export interface ListNeurons {
   of_principal: Array<Principal>;

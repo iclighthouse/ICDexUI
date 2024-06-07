@@ -67,6 +67,87 @@
         </div>
       </div>
     </div>
+    <div class="dashboard-data mt20">
+      <div class="dashboard-data-title">ICDex Data</div>
+      <div class="dashboard-data-main">
+        <div class="dashboard-data-item">
+          <dl>
+            <dt>Pairs</dt>
+            <dd v-show="pairs.length">{{ pairs.length }}</dd>
+          </dl>
+        </div>
+        <div class="dashboard-data-item">
+          <dl>
+            <dt>OAMMs</dt>
+            <dd v-show="pools.length">{{ pools.length }}</dd>
+          </dl>
+        </div>
+        <div class="dashboard-data-item">
+          <dl>
+            <dt>Total Vol</dt>
+            <dd v-show="totalVol">{{ totalVol | formatNum }} USD</dd>
+          </dl>
+        </div>
+        <div class="dashboard-data-item">
+          <dl>
+            <dt>Total TVL</dt>
+            <dd v-show="totalTVL">{{ totalTVL | formatNum }} USD</dd>
+          </dl>
+        </div>
+        <div class="dashboard-data-item">
+          <dl>
+            <dt>24h Vol</dt>
+            <dd v-show="Vol24">{{ Vol24 | formatNum }} USD</dd>
+          </dl>
+        </div>
+        <div class="dashboard-data-item">
+          <dl>
+            <dt>Proposals</dt>
+            <dd>
+              <span
+                v-if="
+                  snsNumberProposals && SNSList.length === snsNumberProposals
+                "
+              >
+                {{ proposals }}
+              </span>
+              <span v-else>-</span>
+              <span
+                v-if="
+                  snsNumberProposals && SNSList.length === snsNumberProposals
+                "
+                class="pointer"
+              >
+                (
+                <router-link to="/icsns/proposals"
+                  ><span :class="{ link: open > 0 }">{{
+                    open
+                  }}</span></router-link
+                >
+                )
+              </span>
+              <span v-else>(-)</span>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-icdex-main mt20">
+      <div class="dashboard-icdex-item">
+        <div class="dashboard-sns-item-bold link pointer">
+          <div>
+            ICDex
+            <span v-if="pairs.length">{{ pairs.length }}</span>
+          </div>
+        </div>
+        <div>
+          <span> Paused </span>
+          <span> TOs </span>
+          <span> TTs </span>
+          <span> Blocking </span>
+        </div>
+      </div>
+    </div>
     <a-modal
       v-model="SNSCanistersVisible"
       width="860px"
@@ -75,11 +156,32 @@
       :keyboard="false"
       :maskClosable="false"
     >
-      <div class="canisters-modal">
+      <div class="canisters-modal mt20">
+        <a-dropdown
+          overlayClassName="canisters-modal-dropdown"
+          placement="bottomLeft"
+          :trigger="['click']"
+        >
+          <div class="user-menu pointer">
+            {{ currentSNS }} &nbsp;<a-icon type="caret-down" />
+          </div>
+          <a-menu
+            class="user-setting base-bg-box user-setting-account"
+            slot="overlay"
+          >
+            <a-menu-item
+              @click="changeSNS(value)"
+              class="user-setting-item"
+              v-for="(value, index) in SNSMetadataList"
+              :key="index"
+            >
+              {{ value.name[0] }}
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
         <table>
           <thead>
             <tr>
-              <th>SNS DAO</th>
               <th>Canister-id</th>
               <th>Type</th>
               <th>Cycles</th>
@@ -88,6 +190,40 @@
           </thead>
           <tbody>
             <tr
+              v-for="(item, index) in SNSDappsForDapp[currentRoot]"
+              :key="index"
+            >
+              <td>
+                <span v-if="item.canister_id[0]">
+                  {{ item.canister_id[0].toString() }}
+                </span>
+              </td>
+              <td>
+                {{ item.type }}
+              </td>
+              <td>
+                <span
+                  v-if="item.status[0]"
+                  :class="{
+                    'base-red': Number(item.status[0].cycles) < 5 * 10 ** 12
+                  }"
+                >
+                  {{ item.status[0].cycles | bigintToFloat(4, 12) }}
+                </span>
+              </td>
+              <td>
+                <span
+                  v-if="item.status[0]"
+                  :class="{
+                    'base-red':
+                      Object.keys(item.status[0].status)[0] !== 'running'
+                  }"
+                >
+                  {{ Object.keys(item.status[0].status)[0] }}
+                </span>
+              </td>
+            </tr>
+            <!--<tr
               v-for="(item, index) in SNSDapps.slice(
                 (page - 1) * 10,
                 page * 10
@@ -134,10 +270,10 @@
                   {{ Object.keys(item.status[0].status)[0] }}
                 </span>
               </td>
-            </tr>
+            </tr>-->
           </tbody>
         </table>
-        <div class="nft-main-pagination">
+        <!--<div class="nft-main-pagination">
           <a-pagination
             v-if="SNSDapps.length > 10"
             class="pagination"
@@ -146,7 +282,7 @@
             :total="SNSDapps.length"
             @change="pageChange"
           />
-        </div>
+        </div>-->
       </div>
     </a-modal>
   </div>
@@ -169,6 +305,15 @@ import {
   ListProposals,
   ProposalData
 } from '@/ic/SNSGovernance/model';
+import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
+import { PairsData } from '@/ic/ICSwapRouter/model';
+import { Principal } from '@dfinity/principal';
+import { AccountId } from '@/ic/common/icType';
+import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
+import axios from 'axios';
+import { ICTCStatus } from '@/views/home/dashboard/model';
+import { ICDexService } from '@/ic/ICDex/ICDexService';
+import { PairInfo } from '@/ic/ICDex/model';
 
 @Component({
   name: 'Index',
@@ -179,9 +324,16 @@ export default class extends Vue {
   private SNSSwapService: SNSSwapService;
   private SNSRootService: SNSRootService;
   private SNSGovernanceService: SNSGovernanceService;
+  private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
+  private ICDexRouterService: ICDexRouterService;
+  private ICDexService: ICDexService;
   private SNSList: Array<DeployedSns> = [];
   private SNSDapps: Array<SnsCanistersSummaryResponse> = [];
+  private SNSDappsForDapp: {
+    [key: string]: Array<SnsCanistersSummaryResponse>;
+  } = {};
   private SNSMetadata: { [key: string]: GetMetadataResponse } = {};
+  private SNSMetadataList: Array<GetMetadataResponse> = [];
   private page = 1;
   private snsNumber = 0;
   private canistersNum = 0;
@@ -191,12 +343,121 @@ export default class extends Vue {
   private proposals = 0;
   private open = 0;
   private SNSCanistersVisible = false;
+  private currentSNS = '';
+  private currentRoot = '';
+  private pairs: Array<PairsData> = [];
+  private pools: Array<[Principal, Array<[Principal, AccountId]>]> = [];
+  private totalTVL = '';
+  private totalVol = '';
+  private Vol24 = '';
+  private ICTC: Array<ICTCStatus> = [];
   created(): void {
     this.SNSWasmService = new SNSWasmService();
     this.SNSSwapService = new SNSSwapService();
     this.SNSRootService = new SNSRootService();
     this.SNSGovernanceService = new SNSGovernanceService();
-    this.getSNSList();
+    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
+    this.ICDexRouterService = new ICDexRouterService();
+    this.ICDexService = new ICDexService();
+    // this.getSNSList();
+    this.getPairs().then(() => {
+      this.getPools([], 1);
+    });
+    this.getTVL();
+    this.getVol();
+  }
+  private async getVol(): Promise<void> {
+    let total = '0';
+    let Vol24 = '0';
+    try {
+      const res = await axios.get(
+        'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
+      );
+      console.log(res);
+      if (res && res.data) {
+        for (let key in res.data) {
+          const totalVol = res.data[key].usd_volume;
+          Vol24 = new BigNumber(Vol24)
+            .plus(res.data[key].usd_24h_volume)
+            .toString(10);
+          total = new BigNumber(total).plus(totalVol).toString(10);
+        }
+      }
+    } catch (e) {
+      console.log(e);
+    }
+    this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
+    this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
+  }
+  private async getTVL(): Promise<void> {
+    try {
+      const res = await axios.get(
+        'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/pools/tvls'
+      );
+      console.log(res);
+      let total = '0';
+      if (res && res.data && res.data.pairs) {
+        res.data.pairs.forEach((res) => {
+          if (res.pair && !res.pair.toLocaleString().includes('test')) {
+            total = new BigNumber(total).plus(res.tvl).toString(10);
+            // this.pairsTVL[res.pairId] = res.tvl;
+          }
+        });
+        this.totalTVL = new BigNumber(total).decimalPlaces(0).toString(10);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  private async getPools(
+    pools: Array<[Principal, Array<[Principal, AccountId]>]>,
+    page: number
+  ): Promise<void> {
+    let pair = [];
+    const res = await this.ICDexRouterService.maker_getPublicMakers(
+      pair,
+      [BigInt(page)],
+      [BigInt(100)]
+    );
+    console.log(res);
+    if (res && res.data && res.data.length) {
+      pools = pools.concat(res.data);
+    } else {
+      res.total = BigInt(0);
+    }
+    if (pools.length < Number(res.total)) {
+      await this.getPools(pools, ++page);
+    } else {
+      pools.forEach((pool) => {
+        pool[1].forEach((item) => {
+          this.pools.unshift([pool[0], [item]]);
+        });
+      });
+      this.getICTC();
+    }
+  }
+  private async getICTC(): Promise<void> {
+    const ICTC = [];
+    const promiseValue = [];
+    this.pairs.forEach((pair) => {
+      promiseValue.push(this.getPairInfo(pair[0].toString()));
+    });
+  }
+  private async
+  private async getPairInfo(
+    id: string
+  ): Promise<{ pairId: string; pairInfo: PairInfo }> {
+    return this.ICDexService.info(id);
+  }
+  private async getPairs(): Promise<void> {
+    const res = await this.ICSwapRouterFiduciaryService.getPairs(
+      ['icdex'],
+      [],
+      []
+    );
+    if (res && res.data) {
+      this.pairs = res.data;
+    }
   }
   private async getSNSList(): Promise<void> {
     const SNSList = await this.SNSWasmService.listDeployedSnses();
@@ -205,10 +466,17 @@ export default class extends Vue {
       promiseValue.push(this.getLifecycle(item));
     });
     const res = await Promise.all(promiseValue);
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
     SNSList.forEach((item, index) => {
       if (res[index]) {
         this.SNSList.push(item);
-        this.get_sns_canisters_summary(item.root_canister_id[0].toString());
+        this.get_sns_canisters_summary(
+          item.root_canister_id[0].toString(),
+          loading
+        );
         this.getProposalsInfo(item.governance_canister_id[0].toString());
         this.getOpening(item.governance_canister_id[0].toString(), null, 0);
         this.getMetadata(
@@ -223,6 +491,14 @@ export default class extends Vue {
   private async getMetadata(governance: string, root: string): Promise<void> {
     const res = await this.SNSGovernanceService.getMetadata(governance);
     this.$set(this.SNSMetadata, root, res);
+    this.SNSMetadataList.push({ root: root, ...res });
+    if (this.SNSMetadataList.length === this.SNSList.length) {
+      this.SNSMetadataList.sort((a, b) => {
+        return a.name[0].localeCompare(b.name[0]);
+      });
+      this.currentSNS = this.SNSMetadataList[0].name[0];
+      this.currentRoot = this.SNSMetadataList[0].root;
+    }
   }
   private async getProposalsInfo(governance: string): Promise<void> {
     const totalRequest: ListProposals = {
@@ -280,7 +556,10 @@ export default class extends Vue {
         ++this.snsNumberProposals;
       });
   }
-  private async get_sns_canisters_summary(root: string): Promise<void> {
+  private async get_sns_canisters_summary(
+    root: string,
+    loading
+  ): Promise<void> {
     const res = await this.SNSRootService.get_sns_canisters_summary(root);
     ++this.snsNumber;
     if (res) {
@@ -288,6 +567,14 @@ export default class extends Vue {
         res[key].forEach((item: CanisterSummary) => {
           ++this.canistersNum;
           this.SNSDapps.unshift({
+            type: key,
+            root: root,
+            ...item
+          });
+          if (!this.SNSDappsForDapp[root]) {
+            this.SNSDappsForDapp[root] = [];
+          }
+          this.SNSDappsForDapp[root].push({
             type: key,
             root: root,
             ...item
@@ -308,7 +595,14 @@ export default class extends Vue {
         });
       }
     }
+    if (this.snsNumber && this.SNSList.length === this.snsNumber) {
+      loading.close();
+    }
     console.log(this.snsNumber);
+  }
+  private changeSNS(val: GetMetadataResponse): void {
+    this.currentSNS = val.name[0];
+    this.currentRoot = val.root;
   }
   private async getLifecycle(item: DeployedSns): Promise<boolean> {
     const res = await this.SNSSwapService.getLifecycle(
@@ -330,17 +624,19 @@ export default class extends Vue {
 <style scoped lang="scss">
 .dashboard-main {
   margin-top: 40px;
-  background: #131920;
-  padding: 16px;
-  border-radius: 8px;
-  .dashboard-sns-main {
+  .dashboard-sns-main,
+  .dashboard-icdex-main {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    background: #131920;
+    padding: 30px 16px;
+    border-radius: 8px;
     .dashboard-sns-item {
       width: 50%;
     }
   }
+
   .dashboard-sns-item-bold {
     margin-bottom: 10px;
     font-size: 18px;
@@ -354,5 +650,81 @@ export default class extends Vue {
     position: absolute;
     right: 0;
   }
+}
+.user-setting {
+  ::v-deep.ant-dropdown-menu-item {
+    padding: 0;
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      .user-principal {
+        color: #51b7c3;
+      }
+      i {
+        color: #51b7c3;
+      }
+    }
+  }
+}
+.user-setting-item {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  padding: 8px 15px !important;
+  border-bottom: 1px solid #383e4e;
+  cursor: pointer;
+  &:hover,
+  &.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: #51b7c3;
+  }
+  &:last-child {
+    border-bottom: none;
+  }
+}
+.user-menu {
+  font-size: 16px;
+  color: #fff;
+}
+.dashboard-data-title {
+  font-size: 16px;
+  color: #fff;
+}
+.dashboard-data-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  height: 160px;
+  background: #131920;
+  .dashboard-data-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 120px;
+    border-right: 1px solid #5e6170;
+    &:last-child {
+      border-right: none;
+    }
+    dt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    dd {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
+    }
+  }
+}
+</style>
+<style lang="scss">
+.canisters-modal-dropdown {
+  max-height: 400px;
+  min-width: auto !important;
+  overflow: auto;
 }
 </style>

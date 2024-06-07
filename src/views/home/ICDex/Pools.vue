@@ -61,42 +61,46 @@
                         style="font-size: 16px; margin-bottom: 10px"
                         class="base-font-title base-color-w"
                       >
-                        LPs yield
+                        LP Yield
                       </div>
                       <div style="margin-bottom: 10px" class="base-font-title">
                         <span v-show="currentPoolsMenu === 'public'">
                           LPs may benefit from adding liquidity to the liquidity
-                          pool, but it is risky and does not result in a stable
-                          gain or may result in a loss. Possible gains include:
+                          pool, but similar to providing liquidity on any
+                          platform it can be risky and does not result in a
+                          stable gain or may even result in a loss. Possible
+                          gains include:
                         </span>
                         <span v-show="currentPoolsMenu === 'private'">
-                          Private OAMM LPs yield similar benefits to public
+                          Private OAMM LP Yield similar benefits to public
                           OAMMs, but do not participate in liquidity
                           mining.Possible gains include:
                         </span>
                       </div>
                       <div style="margin-bottom: 10px">
                         <span class="dots"></span> Grid spread gain: ICDexMaker
-                        opens a grid strategy in the trading pair, there exists
-                        a spread between every two grids, if the price shows
-                        upward and downward fluctuations, ICDexMaker can get the
-                        grid spread gain. However, if the price fluctuates in
-                        one direction, the number of ICDexMaker's one token will
-                        become more and the number of the other token will
-                        become less, and it will not get the spread gain.
-                        Therefore, the amount of grid spread gain is related to
-                        the volatility of the trading pair.
+                        employs a grid strategy in the associated trading pair.
+                        Using this strategy there exists a spread between every
+                        two grids and if the price shows upward and downward
+                        fluctuations, ICDexMaker aims to capitalize and profit
+                        from it. However, if the price fluctuates heavily in one
+                        direction, the number of tokens in ICDexMaker will
+                        become increasingly more of one token and less of the
+                        other token and therefore it will be able to capitalize
+                        on the spread between its orders. Due to this, the
+                        amount of grid spread gain is related to the volatility
+                        of the trading pair.
                       </div>
                       <div style="margin-bottom: 10px">
                         <span class="dots"></span> Vip-maker rebate: When
-                        ICDexMaker has the role of vip-maker, it can get the
-                        trading fee rebate, and this part of the gain will be
-                        added to the liquidity pool.
+                        ICDexMaker has the role of vip-maker, it qualifies for a
+                        trading fee rebate, and the gain from this will be added
+                        to the liquidity pool.
                       </div>
                       <div style="margin-bottom: 10px">
                         <span class="dots"></span> Withdrawal fee on removal of
-                        liquidity: When an LP withdraws liquidity, he will be
-                        charged a withdrawal fee to be added to the liquidity
+                        liquidity: When an LP withdraws liquidity, they are
+                        charged a withdrawal fee which is added to the liquidity
                         pool.
                       </div>
                       <div
@@ -105,10 +109,11 @@
                       >
                         <span class="dots"></span> Liquidity mining/airdrop:
                         this is a contingent benefit, ICDexMaker itself does not
-                        provide liquidity mining or token airdrop, which
-                        requires LPs to pay attention to the Dex platform side
-                        or the project side of the liquidity mining or airdrop
-                        activity announcement.
+                        provide liquidity mining or token airdrops, this
+                        requires Liquidity Providers to pay attention to the
+                        announcements and news regarding these events published
+                        by the ICLighthouse team or the associated project’s
+                        team.
                       </div>
                     </div>
                   </template>
@@ -116,7 +121,7 @@
                     style="margin-left: 10px; font-size: 12px"
                     class="base-font-title pc-show"
                   >
-                    LPs yield <a-icon type="question-circle" />
+                    LP Yield <a-icon type="question-circle" />
                   </span>
                 </a-tooltip>
               </span>
@@ -151,51 +156,53 @@
                       style="font-size: 16px"
                       class="base-font-title base-color-w"
                     >
-                      LPs yield
+                      LP Yield
                     </div>
                     <div class="base-font-title">
                       LPs may benefit from adding liquidity to the liquidity
-                      pool, but it is risky and does not result in a stable gain
-                      or may result in a loss. Possible gains include:
+                      pool, but similar to providing liquidity on any platform
+                      it can be risky and does not result in a stable gain or
+                      may even result in a loss. Possible gains include:
                     </div>
                     <div>
                       <span class="dots"></span> Grid spread gain: ICDexMaker
-                      opens a grid strategy in the trading pair, there exists a
-                      spread between every two grids, if the price shows upward
-                      and downward fluctuations, ICDexMaker can get the grid
-                      spread gain. However, if the price fluctuates in one
-                      direction, the number of ICDexMaker's one token will
-                      become more and the number of the other token will become
-                      less, and it will not get the spread gain. Therefore, the
-                      amount of grid spread gain is related to the volatility of
-                      the trading pair.
+                      employs a grid strategy in the associated trading pair.
+                      Using this strategy there exists a spread between every
+                      two grids and if the price shows upward and downward
+                      fluctuations, ICDexMaker aims to capitalize and profit
+                      from it. However, if the price fluctuates heavily in one
+                      direction, the number of tokens in ICDexMaker will become
+                      increasingly more of one token and less of the other token
+                      and therefore it will be able to capitalize on the spread
+                      between its orders. Due to this, the amount of grid spread
+                      gain is related to the volatility of the trading pair.
                     </div>
                     <div>
                       <span class="dots"></span> Vip-maker rebate: When
-                      ICDexMaker has the role of vip-maker, it can get the
-                      trading fee rebate, and this part of the gain will be
-                      added to the liquidity pool.
+                      ICDexMaker has the role of vip-maker, it qualifies for a
+                      trading fee rebate, and the gain from this will be added
+                      to the liquidity pool.
                     </div>
                     <div>
                       <span class="dots"></span> Withdrawal fee on removal of
-                      liquidity: When an LP withdraws liquidity, he will be
-                      charged a withdrawal fee to be added to the liquidity
+                      liquidity: When an LP withdraws liquidity, they are
+                      charged a withdrawal fee which is added to the liquidity
                       pool.
                     </div>
                     <div>
                       <span class="dots"></span> Liquidity mining/airdrop: this
                       is a contingent benefit, ICDexMaker itself does not
-                      provide liquidity mining or token airdrop, which requires
-                      LPs to pay attention to the Dex platform side or the
-                      project side of the liquidity mining or airdrop activity
-                      announcement.
+                      provide liquidity mining or token airdrops, this requires
+                      Liquidity Providers to pay attention to the announcements
+                      and news regarding these events published by the
+                      ICLighthouse team or the associated project’s team.
                     </div>
                   </template>
                   <span
                     style="margin-left: 10px; font-size: 12px"
                     class="base-font-title pc-show"
                   >
-                    LPs yield <a-icon type="question-circle" />
+                    LP Yield <a-icon type="question-circle" />
                   </span>
                 </a-tooltip>
               </span>
@@ -452,6 +459,7 @@
                 </td>
                 <td>
                   <span
+                    v-show="item[2] && item[2].initialized"
                     @click.stop="
                       jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
                     "
@@ -461,6 +469,7 @@
                     Add
                   </span>
                   <span
+                    v-show="item[2] && item[2].initialized"
                     @click.stop="
                       jump(
                         `/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`
@@ -471,6 +480,17 @@
                     class="pointer main-color"
                   >
                     Remove
+                  </span>
+                  <span
+                    v-show="item[2] && !item[2].initialized"
+                    class="primary"
+                    @click.stop="
+                      jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
+                    "
+                    style="margin-left: 10px"
+                    :disabled="!item[3] || !isCreator(item[1])"
+                  >
+                    Activate by the creator adding the 1st liquidity
                   </span>
                 </td>
               </tr>
@@ -743,6 +763,7 @@
               </div>
               <div class="flex-center mt20 pool-bottom">
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
@@ -752,6 +773,7 @@
                   Add
                 </button>
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`)
@@ -760,6 +782,17 @@
                   :disabled="!item[3]"
                 >
                   Remove
+                </button>
+                <button
+                  v-show="item[2] && !item[2].initialized"
+                  class="primary"
+                  @click.stop="
+                    jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
+                  "
+                  style="width: 160px; height: 48px; line-height: 1.4"
+                  :disabled="!item[3] || !isCreator(item[1])"
+                >
+                  Activate by the creator adding the 1st liquidity
                 </button>
                 <div class="margin-left-auto">
                   <span
@@ -1080,6 +1113,7 @@
               </div>
               <div class="flex-center mt20 pool-bottom">
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
@@ -1089,6 +1123,7 @@
                   Add
                 </button>
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`)
@@ -1097,6 +1132,17 @@
                   :disabled="!item[3]"
                 >
                   Remove
+                </button>
+                <button
+                  v-show="item[2] && !item[2].initialized"
+                  class="primary"
+                  @click.stop="
+                    jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
+                  "
+                  style="width: 160px; height: 48px; line-height: 1.4"
+                  :disabled="!item[3] || !isCreator(item[1])"
+                >
+                  Activate by the creator adding the 1st liquidity
                 </button>
                 <div class="margin-left-auto">
                   <span
@@ -1406,6 +1452,7 @@
               </div>
               <div class="flex-center mt20 pool-bottom">
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(
@@ -1417,6 +1464,7 @@
                   Add
                 </button>
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(
@@ -1427,6 +1475,19 @@
                   :disabled="!item[3]"
                 >
                   Remove
+                </button>
+                <button
+                  v-show="item[2] && !item[2].initialized"
+                  class="primary"
+                  @click.stop="
+                    jump(
+                      `/ICDex/pools/pool/${item[1][0][0].toString()}/Add?private`
+                    )
+                  "
+                  style="width: 160px; height: 48px; line-height: 1.4"
+                  :disabled="!item[3] || !isCreator(item[1])"
+                >
+                  Activate by the creator adding the 1st liquidity
                 </button>
                 <div class="margin-left-auto">
                   <span

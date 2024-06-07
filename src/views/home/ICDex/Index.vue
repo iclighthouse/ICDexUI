@@ -75,17 +75,37 @@
               class="de-swap-list-item-search base-font-title"
             >
               <a-icon
-                :theme="
-                  currentTradeMarketSort === 'Star' ? 'filled' : 'outlined'
-                "
+                theme="filled"
                 type="star"
                 class="pointer"
                 :class="{
                   'base-font-normal': currentTradeMarketSort === 'Star'
                 }"
-                style="margin-right: 10px; font-size: 13px"
+                style="margin-right: 4px; font-size: 13px"
                 @click.stop="changeStarMenu"
               />
+              <svg
+                t="1717654043106"
+                class="icon pointer"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                p-id="4440"
+                width="36"
+                height="16"
+                style="margin-right: 5px"
+                @click.stop="changeHotMenu"
+              >
+                <path
+                  d="M423.477333 938.666667S45.045333 855.424 214.186667 442.282667c0 0 38.4 45.909333 33.12 68 0 0 30.101333-104.277333 95.072-166.570667C398.165333 290.186667 454.848 139.712 402.570667 85.333333c0 0 258.933333 54.378667 287.754666 326.378667 0 0 33.12-86.666667 101.12-95.232 0 0-20.906667 47.616 0 119.04 0 0 214.485333 367.146667-155.157333 491.242667 0 0 110.805333-125.813333-124.181333-341.717334 0 0-55.402667 115.626667-88.533334 156.373334-0.096 0.106667-92.522667 103.722667-0.096 197.248z"
+                  :fill="`${
+                    currentTradeMarketSort === 'Hot' && !isMarket
+                      ? '#ffffff'
+                      : '#adb3c4'
+                  }`"
+                  p-id="4441"
+                ></path>
+              </svg>
               <a-tooltip
                 :getPopupContainer="() => $refs.deSwapListmenu"
                 :visible="marketMenuVisible"
@@ -101,7 +121,8 @@
                       :class="{
                         active:
                           currentMarketMenu === item.value &&
-                          currentTradeMarketSort !== 'Star'
+                          currentTradeMarketSort !== 'Star' &&
+                          isMarket
                       }"
                       v-for="(item, index) in marketMenu"
                       :key="index"
@@ -121,9 +142,7 @@
                     @click.stop="marketMenuVisible = true"
                     class="flex-center pointer base-font-title"
                     :class="[
-                      currentTradeMarketSort === 'Star'
-                        ? 'base-font-title'
-                        : 'base-font-normal'
+                      !isMarket ? 'base-font-title' : 'base-font-normal'
                     ]"
                   >
                     <a-icon style="font-size: 12px" type="menu" />
@@ -213,10 +232,7 @@
                 <a-icon style="color: #adb3c4" slot="prefix" type="search" />
               </a-input>
             </div>
-            <ul
-              class="trade-market-sort"
-              v-show="currentTradeMarketSort !== 'Star'"
-            >
+            <ul class="trade-market-sort" v-show="isMarket">
               <li
                 :class="[
                   currentTradeMarketSort === 'Star' && item.value === 'Star'
@@ -956,10 +972,33 @@
                     >{{
                       tokens[currentPair[1][0].token0[0].toString()].name
                     }}({{ currentPair[1][0].token0[0].toString() }})</template
-                  >{{
-                    tokens[currentPair[1][0].token0[0].toString()].symbol
-                  }}</a-tooltip
-                >/{{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                  >
+                  <span>
+                    <a-icon
+                      v-show="
+                        !oldPairs.includes(currentPair[0].toString()) &&
+                        currentPair[1][0].marketBoard
+                      "
+                      :theme="
+                        star.includes(currentPair[0].toString())
+                          ? 'filled'
+                          : 'outlined'
+                      "
+                      @click.stop="onStar(currentPair)"
+                      type="star"
+                      :class="{
+                        'base-font-title': !star.includes(
+                          currentPair[0].toString()
+                        )
+                      }"
+                    />
+                    {{
+                      tokens[currentPair[1][0].token0[0].toString()].symbol
+                    }}/{{
+                      tokens[currentPair[1][0].token1[0].toString()].symbol
+                    }}
+                  </span></a-tooltip
+                >
                 <a-tooltip placement="top">
                   <template slot="title">
                     <div class="base-font-title">
@@ -2269,6 +2308,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -2463,6 +2504,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -3031,6 +3074,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -3210,6 +3255,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -5349,9 +5396,11 @@
                     Fee
                     <a-tooltip placement="top">
                       <template slot="title"
-                        >Fee includes trading fee, network gas, brokerage and
-                        maker yield, negative values indicate income.</template
-                      >
+                        >This column includes the trading fee, network fees
+                        (gas), 3rd party fees for trades performed through
+                        applications provided by 3rd parties, and VIP-Maker
+                        yield. Negative values indicate profit rather than loss.
+                      </template>
                       <a-icon class="pointer" type="question-circle" />
                     </a-tooltip>
                   </th>
@@ -6366,9 +6415,11 @@
                   Fee
                   <a-tooltip placement="top">
                     <template slot="title"
-                      >Fee includes trading fee, network gas, brokerage and
-                      maker yield, negative values indicate income.</template
-                    >
+                      >This column includes the trading fee, network fees (gas),
+                      3rd party fees for trades performed through applications
+                      provided by 3rd parties, and VIP-Maker yield. Negative
+                      values indicate profit rather than loss.
+                    </template>
                     <a-icon class="pointer" type="question-circle" />
                   </a-tooltip>
                 </th>
@@ -9027,9 +9078,11 @@
                   >Fee
                   <a-tooltip placement="top">
                     <template slot="title"
-                      >Fee includes trading fee, network gas, brokerage and
-                      maker yield, negative values indicate income.</template
-                    >
+                      >This column includes the trading fee, network fees (gas),
+                      3rd party fees for trades performed through applications
+                      provided by 3rd parties, and VIP-Maker yield. Negative
+                      values indicate profit rather than loss.
+                    </template>
                     <a-icon
                       class="pointer"
                       type="question-circle"
@@ -10587,9 +10640,11 @@
                   >Fee
                   <a-tooltip placement="top">
                     <template slot="title"
-                      >Fee includes trading fee, network gas, brokerage and
-                      maker yield, negative values indicate income.</template
-                    >
+                      >This column includes the trading fee, network fees (gas),
+                      3rd party fees for trades performed through applications
+                      provided by 3rd parties, and VIP-Maker yield. Negative
+                      values indicate profit rather than loss.
+                    </template>
                     <a-icon
                       class="pointer"
                       type="question-circle"
@@ -11377,6 +11432,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -11467,6 +11524,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -11912,6 +11971,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -12000,6 +12061,8 @@
                     </span>
                     <span
                       v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
                         debugPairs &&
                         debugPairs[currentPair[0].toString()] &&
                         debugPairs[currentPair[0].toString()] !== getPrincipalId
@@ -13786,7 +13849,8 @@ export default class extends Vue {
     'scjza-fiaaa-aaaak-ac2kq-cai',
     'ig3ej-haaaa-aaaak-adrva-cai',
     'oru4a-nqaaa-aaaak-acufa-cai',
-    '5t3ek-haaaa-aaaar-qadia-cai'
+    '5t3ek-haaaa-aaaar-qadia-cai',
+		'7aehk-pyaaa-aaaar-qadgq-cai'
   ];
   private dragPair: DePairs = null;
   private prePairs: Array<string> = [];
@@ -13905,6 +13969,7 @@ export default class extends Vue {
     ghostClass: 'ghost'
   };
   private pairsScroll = [];
+  private isMarket = false;
   @Watch('buyTotal')
   private onBuyTotalChange() {
     if (Number(this.buyTotal)) {
@@ -16120,6 +16185,8 @@ export default class extends Vue {
   }
   private async onCancel(order: TradingOrder, isPro: boolean): Promise<void> {
     if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
       this.debugPairs &&
       this.debugPairs[this.currentPair[0].toString()] &&
       this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
@@ -20159,13 +20226,34 @@ export default class extends Vue {
     });
   }
   private changeStarMenu(): void {
+    this.isMarket = false;
     this.currentTradeMarketSort = 'Star';
     this.tradePairs = Object.assign(
       { Star: this.tradePairs.Star, Search: [] },
       this.allPairs.Markets
     );
   }
+  private changeHotMenu(): void {
+    this.isMarket = false;
+    this.currentTradeMarketSort = 'Hot';
+    this.tradePairs = Object.assign(
+      { Star: this.tradePairs.Star, Search: [] },
+      this.allPairs.Markets
+    );
+    this.sortHot();
+    const res = [];
+    this.pairs = this.tradePairs[this.currentTradeMarketSort];
+    console.log(this.tradePairs);
+    this.tradePairs[this.currentTradeMarketSort].forEach((pair) => {
+      res.push({
+        id: pair[1][0].canisterId.toString(),
+        pair: pair
+      });
+    });
+    this.pairsScroll = res;
+  }
   private changeMarketMenu(val): void {
+    this.isMarket = true;
     this.currentMarketMenu = val.value;
     this.currentTradeMarketSort = 'Hot';
     this.tradePairs = Object.assign(
@@ -20645,6 +20733,7 @@ export default class extends Vue {
         this.$set(this.debugPairs, item.pair.toString(), item.dev.toString());
       });
     }
+    console.log(this.debugPairs);
   }
   private async getDexPairs(dexName: DexNameType): Promise<void> {
     try {

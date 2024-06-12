@@ -640,10 +640,12 @@ export default class extends Vue {
                     this.subaccountId
                   );
                 } else {
-                  const err = Object.keys(
-                    (res as { Err: IcrcTransferError }).Err
-                  )[0];
-                  this.$message.error(err);
+                  const err = (res as { Err: IcrcTransferError }).Err;
+                  this.$message.error(
+                    JSON.stringify(err, (key, value) =>
+                      typeof value === 'bigint' ? value.toString(10) : value
+                    )
+                  );
                 }
               } else {
                 if (
@@ -705,6 +707,7 @@ export default class extends Vue {
               loading.close();
             }
           } catch (e) {
+            console.log(e);
             loading.close();
             this.$message.error('Transfer fail');
           }

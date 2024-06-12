@@ -311,7 +311,7 @@
             <span>Mining</span>
           </router-link>
         </a-menu-item>-->
-        <!--<a-menu-item
+        <a-menu-item
           class="user-setting-item"
           @click="changeMenu('Dashboard', '/Dashboard')"
           :class="{
@@ -321,7 +321,7 @@
           <router-link to="/Dashboard">
             <span>Dashboard</span>
           </router-link>
-        </a-menu-item>-->
+        </a-menu-item>
         <a-menu-item class="user-setting-item">
           <a
             href="https://ic.house"

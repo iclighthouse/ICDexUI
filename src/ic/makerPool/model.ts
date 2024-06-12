@@ -1,6 +1,11 @@
 import { AccountId, Icrc1Account, Time, TokenStd } from '@/ic/common/icType';
 import { Amount } from '@/ic/ICSwap/model';
 import { Principal } from '@dfinity/principal';
+import {
+  TOPoolResponse,
+  TTErrorsResponse,
+  TTsResponse
+} from '@/ic/ICDex/model';
 
 export interface PoolStats {
   latestUnitNetValue: UnitNetValue;
@@ -239,4 +244,9 @@ export default interface Service {
   get_events(page: Array<bigint>, size: Array<bigint>): Promise<TrieListEvents>;
   ictc_getAdmins(): Promise<Array<Principal>>;
   fallback(subaccount: Array<Array<number>>): Promise<[bigint, bigint]>;
+  ictc_getTOCount(): Promise<bigint>;
+  ictc_getTTs(page: bigint, size: bigint): Promise<TTsResponse>;
+  ictc_getTTErrors(page: bigint, size: bigint): Promise<TTErrorsResponse>;
+  ictc_getTOPool(): Promise<TOPoolResponse>;
+  get_account_events(accountId: Array<number>): Promise<Array<[PoolEvent, Time]>>;
 }

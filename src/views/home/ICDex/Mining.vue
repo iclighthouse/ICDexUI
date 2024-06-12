@@ -1189,7 +1189,9 @@ export default class extends Vue {
         const res = await this.MiningService.getRound([
           BigInt(Number(this.currentRound.round) - 1)
         ]);
-        this.currentRound.data[0].config.startTime = res.data[0].config.endTime;
+        this.currentRound.data[0].config.startTime = BigInt(
+          Number(res.data[0].config.endTime) + 1
+        );
       }
     }
     if (

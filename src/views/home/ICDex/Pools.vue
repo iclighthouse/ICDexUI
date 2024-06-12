@@ -575,20 +575,40 @@
                     <span class="vip-maker-pool"></span>
                   </a-tooltip>
                 </span>
-                <span
-                  v-if="item[5] && !item[5].vipMaker"
-                  class="margin-left-auto main-color"
-                  @click.stop="
-                    onBindMaker(
-                      item[2].pairInfo.pairPrincipal.toString(),
-                      item[1][0][0].toString(),
-                      index,
-                      true
-                    )
-                  "
+                <a-tooltip
+                  overlayClassName="become-vip-tooltip"
+                  placement="top"
                 >
-                  Become a Vip-Maker
-                </span>
+                  <template slot="title">
+                    <div class="become-vip">
+                      <div>
+                        This OAMM Pool doesn't get a maker rebate because it
+                        doesn't have vip-maker status.
+                      </div>
+                      <button
+                        class="primary"
+                        @click.stop="
+                          onBindMaker(
+                            item[2].pairInfo.pairPrincipal.toString(),
+                            item[1][0][0].toString(),
+                            index,
+                            true,
+                            $event
+                          )
+                        "
+                      >
+                        Apply for vip-maker status
+                      </button>
+                    </div>
+                  </template>
+                  <span
+                    v-if="item[5] && !item[5].vipMaker"
+                    class="margin-left-auto"
+                    @click.stop.prevent
+                  >
+                    <span class="vip-maker-pool vip-maker-pool-n"></span>
+                  </span>
+                </a-tooltip>
                 <mining-info
                   :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
                   type="pool"
@@ -711,6 +731,11 @@
                       | formatNum
                   }}
                 </span>
+                <a-icon
+                  @click.stop="getAccountEvents(item)"
+                  class="main-color"
+                  type="history"
+                />
               </div>
               <div class="pool-apy">
                 <span>APY (Estimated):</span>
@@ -945,20 +970,40 @@
                     <span class="vip-maker-pool"></span>
                   </a-tooltip>
                 </span>
-                <span
-                  v-if="item[5] && !item[5].vipMaker && getPrincipalId"
-                  class="margin-left-auto main-color"
-                  @click.stop="
-                    onBindMaker(
-                      item[2].pairInfo.pairPrincipal.toString(),
-                      item[1][0][0].toString(),
-                      index,
-                      false
-                    )
-                  "
+                <a-tooltip
+                  overlayClassName="become-vip-tooltip"
+                  placement="top"
                 >
-                  Become a Vip-Maker
-                </span>
+                  <template slot="title">
+                    <div class="become-vip">
+                      <div>
+                        This OAMM Pool doesn't get a maker rebate because it
+                        doesn't have vip-maker status.
+                      </div>
+                      <button
+                        class="primary"
+                        @click.stop="
+                          onBindMaker(
+                            item[2].pairInfo.pairPrincipal.toString(),
+                            item[1][0][0].toString(),
+                            index,
+                            true,
+                            $event
+                          )
+                        "
+                      >
+                        Apply for vip-maker status
+                      </button>
+                    </div>
+                  </template>
+                  <span
+                    v-if="item[5] && !item[5].vipMaker && getPrincipalId"
+                    class="margin-left-auto"
+                    @click.stop.prevent
+                  >
+                    <span class="vip-maker-pool vip-maker-pool-n"></span>
+                  </span>
+                </a-tooltip>
                 <mining-info
                   :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
                   type="pool"
@@ -1270,20 +1315,40 @@
                     <span class="vip-maker-pool"></span>
                   </a-tooltip>
                 </span>
-                <span
-                  v-if="item[5] && !item[5].vipMaker"
-                  class="margin-left-auto main-color"
-                  @click.stop="
-                    onBindMaker(
-                      item[2].pairInfo.pairPrincipal.toString(),
-                      item[1][0][0].toString(),
-                      index,
-                      false
-                    )
-                  "
+                <a-tooltip
+                  overlayClassName="become-vip-tooltip"
+                  placement="top"
                 >
-                  Become a Vip-Maker
-                </span>
+                  <template slot="title">
+                    <div class="become-vip">
+                      <div>
+                        This OAMM Pool doesn't get a maker rebate because it
+                        doesn't have vip-maker status.
+                      </div>
+                      <button
+                        class="primary"
+                        @click.stop="
+                          onBindMaker(
+                            item[2].pairInfo.pairPrincipal.toString(),
+                            item[1][0][0].toString(),
+                            index,
+                            true,
+                            $event
+                          )
+                        "
+                      >
+                        Apply for vip-maker status
+                      </button>
+                    </div>
+                  </template>
+                  <span
+                    v-if="item[5] && !item[5].vipMaker"
+                    class="margin-left-auto"
+                    @click.stop.prevent
+                  >
+                    <span class="vip-maker-pool vip-maker-pool-n"></span>
+                  </span>
+                </a-tooltip>
               </div>
               <div
                 v-if="
@@ -2997,6 +3062,59 @@
         </div>
       </a-spin>
     </a-modal>
+    <a-modal
+      v-model="accountEventsVisible"
+      width="100%"
+      title="Pool Events"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="delete-modal"
+    >
+      <a-spin :spinning="accountEventsSpinning">
+        <table class="ant-table-tbody mt20">
+          <thead>
+            <tr>
+              <th>Index</th>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Event</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(item, index) in accountEvents.slice(
+                (currentAccountEventPage - 1) * 10,
+                currentAccountEventPage * 10
+              )"
+              :key="index"
+            >
+              <td>{{ (currentAccountEventPage - 1) * 10 + index + 1 }}</td>
+              <td style="white-space: nowrap">
+                {{ item[1] | formatDateFromSecondUTC }}
+              </td>
+              <td>{{ Object.keys(item[0])[0] }}</td>
+              <td>
+                <div style="word-break: break-all; white-space: normal">
+                  {{ Object.values(item[0])[0] | filterJson }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="nft-main-pagination mt20 flex-center">
+          <a-pagination
+            class="pagination"
+            v-show="accountEvents.length > 10"
+            :current="currentAccountEventPage"
+            :defaultPageSize="10"
+            :total="accountEvents.length"
+            @change="changeAccountEvents"
+          />
+        </div>
+      </a-spin>
+    </a-modal>
     <nft-balance
       ref="nftBalance"
       :nft-balance="nftBalance"
@@ -3028,6 +3146,7 @@ import { NftService } from '@/ic/nft/Service';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { NFT } from '@/ic/ICDexRouter/model';
 import {
+  hexToBytes,
   principalToAccount,
   principalToAccountIdentifier,
   toHexString
@@ -3189,6 +3308,10 @@ export default class extends Vue {
   private eventSpinning = false;
   private eventsTotal = 0;
   private currentEventPage = 1;
+  private accountEventsVisible = false;
+  private accountEventsSpinning = false;
+  private accountEvents: Array<[PoolEvent, Time]> = [];
+  private currentAccountEventPage = 1;
   activated(): void {
     const poolId = this.$route.query.id;
     if (
@@ -3322,12 +3445,34 @@ export default class extends Vue {
       this.timer[i] = null;
     }
   }
+  private async getAccountEvents(item: Pool): Promise<void> {
+    const poolId = item[1][0][0].toString();
+    this.currentAccountEventPage = 1;
+    this.accountEventsVisible = true;
+    this.accountEventsSpinning = true;
+    const accountId = hexToBytes(
+      principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
+    );
+    const accountEvents = await this.makerPoolService.get_account_events(
+      poolId,
+      accountId
+    );
+    const accountTypes = ['withdraw', 'fallback', 'deposit', 'add', 'remove'];
+    this.accountEvents = accountEvents.filter((item) => {
+      const type = Object.keys(item[0])[0];
+      return accountTypes.includes(type);
+    });
+    this.accountEventsSpinning = false;
+  }
   private changeMenu(value: string): void {
     this.currentPoolsMenu = value;
   }
   private changeEvents(page): void {
     this.currentEventPage = page;
     this.getEvents(this.currentPool[1][0][0].toString());
+  }
+  private changeAccountEvents(page): void {
+    this.currentAccountEventPage = page;
   }
   private changeHistory(page): void {
     this.currentHistoryPage = page;
@@ -4092,8 +4237,13 @@ export default class extends Vue {
     pair?: string,
     pool?: string,
     index?: number,
-    isHold = false
+    isHold?: boolean,
+    event?
   ): void {
+    const current =
+      event.target.parentElement.parentElement.parentElement.parentElement;
+    const mouseoutEvent = new MouseEvent('mouseleave');
+    current.dispatchEvent(mouseoutEvent);
     this.isBecomeMaker = true;
     if (pair) {
       this.becomeMakerIndex = index;
@@ -4318,6 +4468,18 @@ export default class extends Vue {
   border-radius: 10px;
   background: #21c77d;
   color: #fff;
+  &.vip-maker-pool-n {
+    background: #adb3c4;
+  }
+}
+.become-vip {
+  padding: 15px 16px;
+  font-size: 14px;
+  color: #adb3c4;
+  button {
+    width: 180px;
+    margin-top: 20px;
+  }
 }
 .pool-pair-img {
   display: flex;
@@ -4472,6 +4634,11 @@ export default class extends Vue {
 .yield-tooltip {
   .ant-tooltip-inner {
     padding: 0;
+  }
+}
+.become-vip-tooltip {
+  &.ant-tooltip {
+    max-width: 370px;
   }
 }
 </style>

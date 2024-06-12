@@ -54,13 +54,11 @@
               v-if="snsNumberProposals && SNSList.length === snsNumberProposals"
               class="pointer"
             >
-              (
-              <router-link to="/icsns/proposals"
+              (<router-link to="/icsns/proposals"
                 ><span :class="{ link: open > 0 }">{{
                   open
                 }}</span></router-link
-              >
-              )
+              >)
             </span>
             <span v-else>-</span>
           </span>
@@ -118,13 +116,11 @@
                 "
                 class="pointer"
               >
-                (
-                <router-link to="/icsns/proposals"
+                (<router-link to="/icsns/proposals"
                   ><span :class="{ link: open > 0 }">{{
                     open
                   }}</span></router-link
-                >
-                )
+                >)
               </span>
               <span v-else>(-)</span>
             </dd>
@@ -135,16 +131,34 @@
     <div class="dashboard-icdex-main mt20">
       <div class="dashboard-icdex-item">
         <div class="dashboard-sns-item-bold link pointer">
-          <div>
+          <div @click="showICDexCanisters">
             ICDex
-            <span v-if="pairs.length">{{ pairs.length }}</span>
+            <span v-if="pairs.length && pools.length">{{
+              pairs.length + pools.length
+            }}</span>
           </div>
         </div>
-        <div>
-          <span> Paused </span>
-          <span> TOs </span>
-          <span> TTs </span>
-          <span> Blocking </span>
+        <div v-if="ICTC">
+          <span>
+            Paused (<span :class="{ 'base-red': ICTC.paused }">{{
+              ICTC.paused
+            }}</span
+            >)&nbsp;
+          </span>
+          <span>
+            TOs (<span>{{ ICTC.TOs | formatNum }}</span
+            >)</span
+          >&nbsp;
+          <span>
+            TTs (<span>{{ ICTC.TTs | formatNum }}</span
+            >)</span
+          >&nbsp;
+          <span>
+            Blocking (<span :class="{ 'base-red': ICTC.TOBlocking }">{{
+              ICTC.TOBlocking
+            }}</span
+            >)</span
+          >
         </div>
       </div>
     </div>
@@ -168,12 +182,14 @@
           <a-menu
             class="user-setting base-bg-box user-setting-account"
             slot="overlay"
+            v-if="SNSMetadataList.length"
           >
             <a-menu-item
               @click="changeSNS(value)"
               class="user-setting-item"
               v-for="(value, index) in SNSMetadataList"
               :key="index"
+              :class="{ active: currentSNS === value.name[0] }"
             >
               {{ value.name[0] }}
             </a-menu-item>
@@ -285,6 +301,180 @@
         </div>-->
       </div>
     </a-modal>
+    <a-modal
+      v-model="ICDexCanistersVisible"
+      width="1000px"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+    >
+      <div class="canisters-modal mt20">
+        <table>
+          <thead>
+            <tr>
+              <th>Canister-id</th>
+              <th>Name</th>
+              <th>Version</th>
+              <th>Status</th>
+              <th>Type</th>
+              <th>TOs</th>
+              <th>TTs</th>
+              <th>TO Blocking</th>
+              <th>TT Errors</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(item, index) in ICDexCanisters.slice(
+                (pageICDexCanisters - 1) * 10,
+                pageICDexCanisters * 10
+              )"
+              :key="index"
+            >
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span v-if="item[0].pairId">
+                    {{ item[0].pairId }}
+                  </span>
+                  <span v-else>{{ item[0].poolId }}</span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span v-if="item[0].pairId">
+                    {{ item[0].pairInfo.name }}
+                  </span>
+                  <span v-else>{{ item[0].poolInfo.name }}</span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span v-if="item[0].pairId">
+                    {{ item[0].pairInfo.version }}
+                  </span>
+                  <span v-else>{{ item[0].poolInfo.version }}</span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span v-if="item[0].pairId">
+                    <span class="base-red" v-if="item[0].pairInfo.paused">
+                      Paused
+                    </span>
+                    <span v-else>Running</span>
+                  </span>
+                  <span v-else>
+                    <span class="base-red" v-if="item[0].poolInfo.paused">
+                      Paused
+                    </span>
+                    <span v-else>Running</span>
+                  </span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span v-if="item[0].pairId"> Pair </span>
+                  <span v-else>Maker</span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span>
+                    {{ item[1].toString(10) }}
+                  </span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span>
+                    {{ item[2].total.toString(10) }}
+                  </span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span :class="{ 'base-red': getBlocking(item[4]) }">
+                    {{ getBlocking(item[4]) }}
+                  </span>
+                </a>
+              </td>
+              <td>
+                <a
+                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                    item[0].pairId ? item[0].pairId : item[0].poolId
+                  }`"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span :class="{ 'base-red': item[3].total }">
+                    {{ item[3].total.toString(10) }}
+                  </span>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="nft-main-pagination">
+          <a-pagination
+            v-if="ICDexCanisters.length > 10"
+            class="pagination"
+            :defaultPageSize="10"
+            :current="pageICDexCanisters"
+            :total="ICDexCanisters.length"
+            @change="pageICDexCanistersChange"
+          />
+        </div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -311,9 +501,16 @@ import { Principal } from '@dfinity/principal';
 import { AccountId } from '@/ic/common/icType';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 import axios from 'axios';
-import { ICTCStatus } from '@/views/home/dashboard/model';
+import { ICTCInfo } from '@/views/home/dashboard/model';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
-import { PairInfo } from '@/ic/ICDex/model';
+import {
+  PairInfo,
+  TOPoolResponse,
+  TTErrorsResponse,
+  TTsResponse
+} from '@/ic/ICDex/model';
+import { PoolInfo } from '@/ic/makerPool/model';
+import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 
 @Component({
   name: 'Index',
@@ -327,6 +524,7 @@ export default class extends Vue {
   private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   private ICDexRouterService: ICDexRouterService;
   private ICDexService: ICDexService;
+  private makerPoolService: makerPoolService;
   private SNSList: Array<DeployedSns> = [];
   private SNSDapps: Array<SnsCanistersSummaryResponse> = [];
   private SNSDappsForDapp: {
@@ -350,7 +548,21 @@ export default class extends Vue {
   private totalTVL = '';
   private totalVol = '';
   private Vol24 = '';
-  private ICTC: Array<ICTCStatus> = [];
+  private ICTC: ICTCInfo = null;
+  private pageICDexCanisters = 1;
+  private ICDexCanistersVisible = false;
+  private ICDexCanisters: Array<
+    [
+      (
+        | { pairId: string; pairInfo: PairInfo }
+        | { poolId: string; poolInfo: PoolInfo }
+      ),
+      bigint,
+      TTsResponse,
+      TTErrorsResponse,
+      TOPoolResponse
+    ]
+  > = [];
   created(): void {
     this.SNSWasmService = new SNSWasmService();
     this.SNSSwapService = new SNSSwapService();
@@ -359,7 +571,8 @@ export default class extends Vue {
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.ICDexRouterService = new ICDexRouterService();
     this.ICDexService = new ICDexService();
-    // this.getSNSList();
+    this.makerPoolService = new makerPoolService();
+    this.getSNSList();
     this.getPairs().then(() => {
       this.getPools([], 1);
     });
@@ -437,13 +650,181 @@ export default class extends Vue {
     }
   }
   private async getICTC(): Promise<void> {
-    const ICTC = [];
+    const pools = [];
+    const pairs = [];
     const promiseValue = [];
     this.pairs.forEach((pair) => {
-      promiseValue.push(this.getPairInfo(pair[0].toString()));
+      promiseValue.push(
+        this.getPairInfo(pair[0].toString()),
+        this.ictc_getTOCount(pair[0].toString()),
+        this.ictc_getTTs(pair[0].toString()),
+        this.ictc_getTTErrors(pair[0].toString()),
+        this.ictc_getTOPool(pair[0].toString())
+      );
     });
+    const res = await Promise.all(promiseValue);
+    console.log(res);
+    let chunk = [];
+    const chunkSize = 5;
+    res.forEach((item, index) => {
+      chunk.push(item);
+      if (chunk.length === chunkSize || index === res.length - 1) {
+        pairs.push(chunk);
+        chunk = [];
+      }
+    });
+    console.log(pairs);
+    const promiseValuePool = [];
+    this.pools.forEach((pool) => {
+      promiseValuePool.push(
+        this.getPoolInfo(pool[1][0][0].toString()),
+        this.pool_ictc_getTOCount(pool[1][0][0].toString()),
+        this.pool_ictc_getTTs(pool[1][0][0].toString()),
+        this.pool_ictc_getTTErrors(pool[1][0][0].toString()),
+        this.pool_ictc_getTOPool(pool[1][0][0].toString())
+      );
+    });
+    const resPool = await Promise.all(promiseValuePool);
+    console.log(resPool);
+    let chunkPool = [];
+    const chunkSizePool = 5;
+    resPool.forEach((item, index) => {
+      chunkPool.push(item);
+      if (chunkPool.length === chunkSizePool || index === resPool.length - 1) {
+        pools.push(chunkPool);
+        chunkPool = [];
+      }
+    });
+    console.log(pools);
+    let paused = 0;
+    let TOs = 0;
+    let TTs = 0;
+    let TTErrors = 0;
+    let TOBlocking = 0;
+    pairs.forEach(
+      (
+        pair: [
+          { pairId: string; pairInfo: PairInfo },
+          bigint,
+          TTsResponse,
+          TTErrorsResponse,
+          TOPoolResponse
+        ]
+      ) => {
+        if (pair[0] && pair[0].pairInfo.paused) {
+          ++paused;
+        }
+        TOs = TOs + Number(pair[1]);
+        TTs = TTs + Number(pair[2].total);
+        TTErrors = TTErrors + Number(pair[3].total);
+        if (pair[4]) {
+          pair[4].forEach((item) => {
+            if (item[1] && item[1][0]) {
+              const type = Object.keys(item[1][0].status)[0];
+              if (type === 'Blocking') {
+                ++TOBlocking;
+              }
+            }
+          });
+        }
+      }
+    );
+    pools.forEach(
+      (
+        pool: [
+          { poolId: string; poolInfo: PoolInfo },
+          bigint,
+          TTsResponse,
+          TTErrorsResponse,
+          TOPoolResponse
+        ]
+      ) => {
+        if (pool[0] && pool[0].poolInfo.paused) {
+          ++paused;
+        }
+        TOs = TOs + Number(pool[1]);
+        TTs = TTs + Number(pool[2].total);
+        TTErrors = TTErrors + Number(pool[3].total);
+        if (pool[4]) {
+          pool[4].forEach((item) => {
+            if (item[1] && item[1][0]) {
+              const type = Object.keys(item[1][0].status)[0];
+              if (type === 'Blocking') {
+                ++TOBlocking;
+              }
+            }
+          });
+        }
+      }
+    );
+    this.ICTC = {
+      paused: paused,
+      TOs: TOs,
+      TTs: TTs,
+      TOBlocking: TOBlocking,
+      TTErrors: TTErrors
+    };
+    this.ICDexCanisters = pairs.concat(pools);
   }
-  private async
+  private getBlocking(val: TOPoolResponse): number {
+    let num = 0;
+    val.forEach((item) => {
+      if (item[1] && item[1][0]) {
+        const type = Object.keys(item[1][0].status)[0];
+        if (type === 'Blocking') {
+          ++num;
+        }
+      }
+    });
+    return num;
+  }
+  private async getPoolInfo(
+    poolId: string
+  ): Promise<{ poolId: string; poolInfo: PoolInfo }> {
+    const res = await this.makerPoolService.info(poolId);
+    return {
+      poolId: poolId,
+      poolInfo: res
+    };
+  }
+  private async pool_ictc_getTOPool(pairId: string): Promise<TOPoolResponse> {
+    return await this.makerPoolService.ictc_getTOPool(pairId);
+  }
+  private async pool_ictc_getTTErrors(
+    pairId: string
+  ): Promise<TTErrorsResponse> {
+    return await this.makerPoolService.ictc_getTTErrors(
+      pairId,
+      BigInt(1),
+      BigInt(1)
+    );
+  }
+  private async pool_ictc_getTTs(pairId: string): Promise<TTsResponse> {
+    return await this.makerPoolService.ictc_getTTs(
+      pairId,
+      BigInt(1),
+      BigInt(1)
+    );
+  }
+  private async pool_ictc_getTOCount(pairId: string): Promise<bigint> {
+    return await this.makerPoolService.ictc_getTOCount(pairId);
+  }
+  private async ictc_getTOPool(pairId: string): Promise<TOPoolResponse> {
+    return await this.ICDexService.ictc_getTOPool(pairId);
+  }
+  private async ictc_getTTErrors(pairId: string): Promise<TTErrorsResponse> {
+    return await this.ICDexService.ictc_getTTErrors(
+      pairId,
+      BigInt(1),
+      BigInt(1)
+    );
+  }
+  private async ictc_getTTs(pairId: string): Promise<TTsResponse> {
+    return await this.ICDexService.ictc_getTTs(pairId, BigInt(1), BigInt(1));
+  }
+  private async ictc_getTOCount(pairId: string): Promise<bigint> {
+    return await this.ICDexService.ictc_getTOCount(pairId);
+  }
   private async getPairInfo(
     id: string
   ): Promise<{ pairId: string; pairInfo: PairInfo }> {
@@ -460,16 +841,16 @@ export default class extends Vue {
     }
   }
   private async getSNSList(): Promise<void> {
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
     const SNSList = await this.SNSWasmService.listDeployedSnses();
     const promiseValue = [];
     SNSList.forEach((item) => {
       promiseValue.push(this.getLifecycle(item));
     });
     const res = await Promise.all(promiseValue);
-    const loading = this.$loading({
-      lock: true,
-      background: 'rgba(0, 0, 0, 0.5)'
-    });
     SNSList.forEach((item, index) => {
       if (res[index]) {
         this.SNSList.push(item);
@@ -618,6 +999,13 @@ export default class extends Vue {
   private pageChange(page: number): void {
     this.page = page;
   }
+  private pageICDexCanistersChange(page: number): void {
+    this.pageICDexCanisters = page;
+  }
+  private showICDexCanisters(): void {
+    this.pageICDexCanisters = 1;
+    this.ICDexCanistersVisible = true;
+  }
 }
 </script>
 
@@ -717,6 +1105,17 @@ export default class extends Vue {
       align-items: center;
       justify-content: center;
       margin-top: 20px;
+    }
+  }
+}
+.canisters-modal {
+  table {
+    td {
+      padding: 0;
+      a {
+        display: block;
+        padding: 5px;
+      }
     }
   }
 }

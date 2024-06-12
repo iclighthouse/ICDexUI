@@ -1,11 +1,7 @@
-export interface ICTCStatus {
-  id: string;
-  name: string;
-  version: string;
-  type: string;
-  paused: boolean;
+export interface ICTCInfo {
+  paused: number;
   TOs: number;
   TTs: number;
   TOBlocking: number;
-  TTErrors: number
+  TTErrors: number;
 }

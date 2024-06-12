@@ -304,7 +304,6 @@
               </thead>
               <tbody
                 class="de-swap-list-item-pair de-swap-list-item-pair-market"
-                ref="deSwapListItemPair"
                 v-if="currentTradeMarketSort"
               >
                 <tr v-if="currentTradeMarketSort === 'Third' && !showThird">
@@ -340,6 +339,7 @@
                 </tr>
                 <RecycleScroller
                   v-if="currentTradeMarketSort !== 'Star'"
+                  ref="deSwapListItemPair"
                   style="height: 336px"
                   :items="pairsScroll"
                   :item-size="50"
@@ -4129,7 +4129,7 @@
               tokens[currentPair[1][0].token0[0].toString()] &&
               tokens[currentPair[1][0].token1[0].toString()] &&
               unit &&
-              buyUnit
+              buyUnit.toString()
             "
           >
             {{
@@ -4273,7 +4273,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4296,7 +4296,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4336,7 +4336,7 @@
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4436,7 +4436,7 @@
                       <div
                         v-if="
                           unit &&
-                          buyUnit &&
+                          buyUnit.toString() &&
                           currentPair &&
                           tokens &&
                           tokens[currentPair[1][0].token0[0].toString()]
@@ -4508,7 +4508,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit
+                            tokenMinUnit.toString()
                           "
                         >
                           {{
@@ -4593,7 +4593,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4621,7 +4621,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit
+                            tokenMinUnit.toString()
                           "
                         >
                           {{
@@ -4711,7 +4711,7 @@
                             tokens &&
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4752,8 +4752,8 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit &&
-                            buyUnit &&
+                            tokenMinUnit.toString() &&
+                            buyUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting.totalLimit
                             )[0] === 'Token0'
@@ -4792,8 +4792,8 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
-                            tokenMinUnit &&
-                            buyUnit &&
+                            tokenMinUnit.toString() &&
+                            buyUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting.totalLimit
                             )[0] === 'Token1'
@@ -4845,7 +4845,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4877,7 +4877,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4907,7 +4907,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit &&
+                            tokenMinUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting
                                 .amountPerTrigger
@@ -4935,7 +4935,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
-                            buyUnit &&
+                            buyUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting
                                 .amountPerTrigger
@@ -7812,7 +7812,7 @@
                         currentPair &&
                         tokens &&
                         tokens[currentPair[1][0].token0[0].toString()] &&
-                        tokenMinUnit
+                        tokenMinUnit.toString()
                       "
                     >
                       {{
@@ -7841,7 +7841,7 @@
                         tokens[currentPair[1][0].token0[0].toString()] &&
                         tokens[currentPair[1][0].token1[0].toString()] &&
                         buyUnit.toString() &&
-                        tokenMinUnit
+                        tokenMinUnit.toString()
                       "
                     >
                       {{
@@ -8397,7 +8397,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit
+                    tokenMinUnit.toString()
                   "
                 >
                   {{
@@ -8505,7 +8505,7 @@
                       tokens[currentPair[1][0].token0[0].toString()] &&
                       tokens[currentPair[1][0].token1[0].toString()] &&
                       buyUnit.toString() &&
-                      tokenMinUnit
+                      tokenMinUnit.toString()
                     "
                   >
                     {{
@@ -9317,7 +9317,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token1[0].toString()].decimals &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                 >
                   {{
@@ -9344,7 +9344,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit &&
+                    tokenMinUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.totalLimit
                     )[0] === 'Token0'
@@ -9377,7 +9377,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
-                    buyUnit &&
+                    buyUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.totalLimit
                     )[0] === 'Token1'
@@ -9416,7 +9416,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit
+                    tokenMinUnit.toString()
                   "
                 >
                   {{
@@ -9465,7 +9465,7 @@
                       tokens &&
                       tokens[currentPair[1][0].token1[0].toString()].decimals &&
                       unit &&
-                      buyUnit
+                      buyUnit.toString()
                     "
                   >
                     {{
@@ -9506,7 +9506,7 @@
                     tokens[currentPair[1][0].token0[0].toString()] &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
                     unit &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                 >
                   {{
@@ -9540,7 +9540,7 @@
                     tokens[currentPair[1][0].token0[0].toString()] &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
                     unit &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                   class="pending-item-right"
                 >
@@ -9574,7 +9574,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit &&
+                    tokenMinUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.amountPerTrigger
                     )[0] === 'Token0'
@@ -9597,7 +9597,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
-                    buyUnit &&
+                    buyUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.amountPerTrigger
                     )[0] === 'Token1'
@@ -9628,7 +9628,7 @@
                     tokens[currentPair[1][0].token0[0].toString()] &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
                     unit &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                 >
                   {{
@@ -9658,7 +9658,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit
+                    tokenMinUnit.toString()
                   "
                 >
                   {{
@@ -12766,7 +12766,7 @@
                       tokens[currentPair[1][0].token0[0].toString()] &&
                       tokens[currentPair[1][0].token1[0].toString()] &&
                       unit &&
-                      buyUnit
+                      buyUnit.toString()
                     "
                   >
                     {{
@@ -12927,7 +12927,7 @@
               <span
                 v-if="
                   unit &&
-                  buyUnit &&
+                  buyUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()] &&
@@ -12949,7 +12949,7 @@
             <td>
               <span
                 v-if="
-                  tokenMinUnit &&
+                  tokenMinUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()]
@@ -12986,7 +12986,7 @@
               <span
                 v-if="
                   unit &&
-                  buyUnit &&
+                  buyUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()] &&
@@ -13008,7 +13008,7 @@
             <td>
               <span
                 v-if="
-                  tokenMinUnit &&
+                  tokenMinUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()]
@@ -13850,7 +13850,7 @@ export default class extends Vue {
     'ig3ej-haaaa-aaaak-adrva-cai',
     'oru4a-nqaaa-aaaak-acufa-cai',
     '5t3ek-haaaa-aaaar-qadia-cai',
-		'7aehk-pyaaa-aaaar-qadgq-cai'
+    '7aehk-pyaaa-aaaar-qadgq-cai'
   ];
   private dragPair: DePairs = null;
   private prePairs: Array<string> = [];
@@ -19778,6 +19778,7 @@ export default class extends Vue {
     if (this.currentMarketMenu !== 'FAVORITES') {
       this.tradePairs.Hot = this.allPairs[this.currentMarketMenu].Hot;
       this.sortHot();
+      this.scrollTop();
     }
     console.log(this.tradePairs);
   }
@@ -19822,7 +19823,6 @@ export default class extends Vue {
       });
       this.pairsScroll = res;
     }
-    this.scrollTop();
     console.log(this.currentPairIndex);
   }
   private async getAllLiquidity(): Promise<void> {
@@ -21110,7 +21110,6 @@ export default class extends Vue {
           console.error(e);
         }
         this.resetChart();
-        this.scrollTop();
       });
       this.getTokens();
       console.log(this.prePairs);
@@ -21123,13 +21122,17 @@ export default class extends Vue {
   }
   private scrollTop(): void {
     this.$nextTick(() => {
-      if (this.$refs.deSwapListItemPair) {
-        const height = (this.$refs.deSwapListItemPair as any).clientHeight;
+      if (
+        this.$refs.deSwapListItemPair &&
+        (this.$refs.deSwapListItemPair as any).$el
+      ) {
+        console.dir(this.$refs.deSwapListItemPair);
+        const height = (this.$refs.deSwapListItemPair as any).$el.clientHeight;
         let top = (this.currentPairIndex + 1) * 50 - height;
         if (top < 0) {
           top = 0;
         }
-        (this.$refs.deSwapListItemPair as any).scrollTop = top;
+        (this.$refs.deSwapListItemPair as any).$el.scrollTop = top;
       }
     });
   }

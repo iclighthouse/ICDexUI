@@ -983,14 +983,14 @@
             )"
             :key="index"
           >
-            <td>{{ item[0].toString(10) }}</td>
+            <td>{{ (currentEventPage - 1) * 100 + index + 1 }}</td>
             <td style="white-space: nowrap">
-              {{ item[1][1] | formatDateFromSecondUTC }}
+              {{ item[1] | formatDateFromSecondUTC }}
             </td>
-            <td>{{ Object.keys(item[1][0])[0] }}</td>
+            <td>{{ Object.keys(item[0])[0] }}</td>
             <td>
               <div style="word-break: break-all; white-space: normal">
-                {{ Object.values(item[1][0])[0] | filterJson }}
+                {{ Object.values(item[0])[0] | filterJson }}
               </div>
             </td>
           </tr>
@@ -1047,7 +1047,11 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { LedgerService } from '@/ic/ledger/ledgerService';
 import { toHttpRejectError } from '@/ic/httpError';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
-import { principalToAccountIdentifier, toHexString } from '@/ic/converter';
+import {
+  hexToBytes,
+  principalToAccountIdentifier,
+  toHexString
+} from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import { DexRole, PairInfo, StoSetting } from '@/ic/ICDex/model';
 import { getTokenLogo } from '@/ic/getTokenLogo';
@@ -1192,7 +1196,7 @@ export default class extends Vue {
   private listDeployedSnses: Array<DeployedSns> = [];
   private eventVisible = false;
   private currentEventPage = 1;
-  private events: Array<[bigint, [PoolEvent, Time]]> = [];
+  private events: Array<[PoolEvent, Time]> = [];
 
   get buttonDisabledRemove(): boolean {
     let flag = false;
@@ -1441,7 +1445,7 @@ export default class extends Vue {
       this.getUnitNetValues();
       this.getTokensExt();
       this.NFTBalance();
-      this.getEvents(this.$route.params.poolId, 1, []);
+      this.getEvents(this.$route.params.poolId);
     }
     this.getPairs();
   }
@@ -1530,64 +1534,17 @@ export default class extends Vue {
       }
     }
   }
-  private async getEvents(
-    pool: string,
-    page: number,
-    events: Array<[bigint, [PoolEvent, Time]]>
-  ): Promise<void> {
-    console.log(pool, page);
-    const res = await this.makerPoolService.get_events(
-      pool,
-      [BigInt(page)],
-      [BigInt(100)]
+  private async getEvents(pool: string): Promise<void> {
+    console.log(pool);
+    const accountId = hexToBytes(
+      principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
     );
-    console.log(res);
-    const account = principalToAccountIdentifier(
-      Principal.fromText(this.getPrincipalId)
-    );
-    const max = new Date().getTime() - 6 * 30 * 86400 * 1000;
-    let flag = true;
-    if (res && res.data) {
-      for (let i = 0; i < res.data.length; i++) {
-        const item = res.data[i];
-        if (new BigNumber(item[1][1].toString(10)).times(1000).gt(max)) {
-          const type = Object.keys(item[1][0])[0];
-          let val;
-          if (
-            type === 'withdraw' ||
-            type === 'fallback' ||
-            type === 'deposit'
-          ) {
-            val = Object.values(item[1][0])[0];
-          }
-          if (type === 'add' || type === 'remove') {
-            val = Object.values(Object.values(item[1][0])[0])[0];
-          }
-          if (val && val.account) {
-            let subaccount = null;
-            if (val.account.subaccount.length) {
-              subaccount = new Uint8Array(val.account[0]);
-            }
-            const current = principalToAccountIdentifier(
-              val.account.owner,
-              subaccount
-            );
-            if (account === current) {
-              events.push(item);
-            }
-          }
-        } else {
-          flag = false;
-          break;
-        }
-      }
-      console.log(flag, page);
-      if (flag && page < Number(res.totalPage)) {
-        this.getEvents(this.$route.params.poolId, ++page, events);
-      } else {
-        this.events = events;
-      }
-    }
+    const res = await this.makerPoolService.get_account_events(pool, accountId);
+    const accountTypes = ['withdraw', 'fallback', 'deposit', 'add', 'remove'];
+    this.events = res.filter((item) => {
+      const type = Object.keys(item[0])[0];
+      return accountTypes.includes(type);
+    });
   }
   private async NFTBalance(): Promise<void> {
     this.nftBalance = await this.ICDexRouterService.NFTBalance(

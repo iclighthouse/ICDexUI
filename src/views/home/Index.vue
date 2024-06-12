@@ -182,14 +182,14 @@
         >
           <span>Mining</span>
         </li>-->
-        <!--<li
+        <li
           @click="changeMenu('Dashboard', '/Dashboard')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/dashboard')
           }"
         >
           <span>Dashboard</span>
-        </li>-->
+        </li>
         <li>
           <a
             href="https://ic.house"
@@ -253,7 +253,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.9
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.10
             </span>
           </span>
         </span>

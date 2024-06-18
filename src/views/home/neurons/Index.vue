@@ -1,31 +1,40 @@
 <template>
   <div>
-    <ul class="icsns-menu" v-if="!$route.meta.hideMenu" >
-      <li
-        v-for="menu in menuList"
-        :key="menu.path"
-        :class="{
-          active: menu.name === $route.name
-        }"
-        @click="changeMenu(menu.path)"
-      >
-        {{ menu.value }}
-      </li>
-    </ul>
-    <keep-alive>
-      <router-view v-if="$route.meta.keepAlive"></router-view>
-    </keep-alive>
-    <router-view v-if="!$route.meta.keepAlive"></router-view>
+    <div class="home-header" style="margin-top: 14px">
+      <div class="home-header-left">
+        <span class="home-header-title">NNS</span>
+      </div>
+      <account-info> </account-info>
+    </div>
+    <div>
+      <ul class="icsns-menu" v-if="!$route.meta.hideMenu">
+        <li
+          v-for="menu in menuList"
+          :key="menu.path"
+          :class="{
+            active: menu.name === $route.name
+          }"
+          @click="changeMenu(menu.path)"
+        >
+          {{ menu.value }}
+        </li>
+      </ul>
+      <keep-alive>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { Menu } from './model';
 
 @Component({
   name: 'Index',
-  components: {}
+  components: { AccountInfo }
 })
 export default class extends Vue {
   public menuList: Menu[] = [];

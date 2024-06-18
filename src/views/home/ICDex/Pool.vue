@@ -989,21 +989,211 @@
             </td>
             <td>{{ Object.keys(item[0])[0] }}</td>
             <td>
-              <div style="word-break: break-all; white-space: normal">
-                {{ Object.values(item[0])[0] | filterJson }}
+              <div
+                v-if="
+                  pool &&
+                  pool[1] &&
+                  tokens &&
+                  tokens[pool[1].pairInfo.token0[0].toString()] &&
+                  tokens[pool[1].pairInfo.token1[0].toString()]
+                "
+              >
+                <div v-if="Object.keys(item[0])[0] === 'add'">
+                  <div v-if="Object.keys(item[0].add)[0] === 'ok'">
+                    {{
+                      item[0].add.ok.token0
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].add.ok.token1
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                    ->
+                    {{
+                      item[0].add.ok.shares
+                        | bigintToFloat(
+                          pool[1].shareDecimals,
+                          pool[1].shareDecimals
+                        )
+                        | formatNum
+                    }}
+                    Shares
+                  </div>
+                  <div
+                    class="base-red"
+                    v-if="Object.keys(item[0].add)[0] === 'err'"
+                  >
+                    Error:
+                    {{
+                      item[0].add.err.depositToken0
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].add.err.depositToken1
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </div>
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'remove'">
+                  <div v-if="Object.keys(item[0].remove)[0] === 'ok'">
+                    {{
+                      item[0].remove.ok.shares
+                        | bigintToFloat(
+                          pool[1].shareDecimals,
+                          pool[1].shareDecimals
+                        )
+                        | formatNum
+                    }}
+                    Shares ->
+                    {{
+                      item[0].remove.ok.token0
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].remove.ok.token1
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </div>
+                  <div
+                    class="base-red"
+                    v-if="Object.keys(item[0].remove)[0] === 'err'"
+                  >
+                    Error:
+                    {{
+                      item[0].remove.err.addPoolToken0
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].remove.err.addPoolToken1
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </div>
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'withdraw'">
+                  {{
+                    item[0].withdraw.token0
+                      | bigintToFloat(
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  +
+                  {{
+                    item[0].withdraw.token1
+                      | bigintToFloat(
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'fallback'">
+                  {{
+                    item[0].fallback.token0
+                      | bigintToFloat(
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  +
+                  {{
+                    item[0].fallback.token1
+                      | bigintToFloat(
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'deposit'">
+                  <span v-show="item[0].deposit.token0">
+                    {{
+                      item[0].deposit.token0
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  </span>
+                  <span
+                    v-show="item[0].deposit.token0 && item[0].deposit.token1"
+                    >+</span
+                  >
+                  <span v-show="item[0].deposit.token1">
+                    {{
+                      item[0].deposit.token1
+                        | bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </span>
+                </div>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
-      <a-pagination
-        class="pagination"
-        v-show="events.length > 100"
-        :current="currentEventPage"
-        :defaultPageSize="100"
-        :total="events.length"
-        @change="changeEvents"
-      />
+      <div class="nft-main-pagination mt20 flex-center">
+        <a-pagination
+          class="pagination"
+          v-show="events.length > 100"
+          :current="currentEventPage"
+          :defaultPageSize="100"
+          :total="events.length"
+          @change="changeEvents"
+        />
+      </div>
     </a-modal>
     <transfer-token
       ref="transferToken"

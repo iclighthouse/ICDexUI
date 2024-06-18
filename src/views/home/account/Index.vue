@@ -1,687 +1,723 @@
 <template>
-  <div class="wallet-main container-width">
-    <div v-if="getPrincipalId">
-      <ul class="icsns-menu">
-        <li
-          v-for="menu in ICSNSMenu"
-          :key="menu.name"
-          :class="{
-            active: menu.name === currentWalletMenu
-          }"
-          @click="changeMenu(menu)"
-        >
-          <span v-show="menu.name === 'icRouter'">
-            <a-tooltip placement="top">
-              <template slot="title">
-                Tokens cross-chaining based on Threshold Signature Scheme (TSS).
-              </template>
-              {{ menu.value }}
-            </a-tooltip>
-          </span>
-          <span v-show="menu.name !== 'icRouter'">
-            {{ menu.value }}
-          </span>
-        </li>
-      </ul>
-      <!--<div class="wallet-header base-font-title">
-        <div class="base-title-size base-font-title-io">ICLight.io</div>
-        <div class="margin-left-auto wallet-info">
-          <div
-            v-show="!isIcx && loginType !== 'ICLight'"
-            class="wallet-info-type"
+  <div>
+    <div class="home-header" style="margin-top: 14px">
+      <div class="home-header-left">
+        <span class="home-header-title">Wallet</span>
+      </div>
+      <account-info> </account-info>
+    </div>
+    <div class="wallet-main container-width">
+      <div v-if="getPrincipalId">
+        <ul class="icsns-menu">
+          <li
+            v-for="menu in ICSNSMenu"
+            :key="menu.name"
+            :class="{
+              active: menu.name === currentWalletMenu
+            }"
+            @click="changeMenu(menu)"
           >
-            <img :src="source[loginType]" alt="" />
-            <span>connected</span>
-            <span v-show="loginType === 'MetaMask'"
-              >({{ ethAccount | ellipsisAccount(8) }})</span
+            <span v-show="menu.name === 'icRouter'">
+              <a-tooltip placement="top">
+                <template slot="title">
+                  Tokens cross-chaining based on Threshold Signature Scheme
+                  (TSS).
+                </template>
+                {{ menu.value }}
+              </a-tooltip>
+            </span>
+            <span v-show="menu.name !== 'icRouter'">
+              {{ menu.value }}
+            </span>
+          </li>
+        </ul>
+        <!--<div class="wallet-header base-font-title">
+					<div class="base-title-size base-font-title-io">ICLight.io</div>
+					<div class="margin-left-auto wallet-info">
+						<div
+							v-show="!isIcx && loginType !== 'ICLight'"
+							class="wallet-info-type"
+						>
+							<img :src="source[loginType]" alt="" />
+							<span>connected</span>
+							<span v-show="loginType === 'MetaMask'"
+								>({{ ethAccount | ellipsisAccount(8) }})</span
+							>
+						</div>
+						<div>
+							<div class="wallet-item-account">
+								<div class="wallet-item-account-item">
+									<span>Account ID:&nbsp;</span>
+									<copy-account :front="8" :account="account"></copy-account>
+								</div>
+								<div class="wallet-item-account-item">
+									<span>Principal ID:&nbsp;</span>
+									<copy-account
+										:front="8"
+										:account="getPrincipalId"
+										copy-text="Principal ID"
+									></copy-account>
+								</div>
+							</div>
+							<img class="account-identicon-img" :src="identiconImg" alt="" />
+						</div>
+					</div>
+				</div>-->
+        <div v-show="currentWalletMenu === 'icRouter'" class="wallet-item">
+          <ledger
+            :principal="getPrincipalId"
+            type="cross"
+            ref="ledger1"
+            @topUpSuccess="topUpSuccess"
+            @addTokenSuccess="addTokenSuccess"
+          ></ledger>
+        </div>
+        <!--<ul class="flex-center base-color-w wallet-header-menu">
+					<li
+						v-for="item in walletMenu"
+						:key="item.value"
+						:class="{ active: currentWalletMenu === item.value }"
+						@click="changeWalletMenu(item.value)"
+					>
+						{{ item.name }}
+					</li>
+				</ul>-->
+        <div v-show="currentWalletMenu !== 'icRouter'" class="wallet-item">
+          <p class="base-title-size flex-center">
+            IC network
+            <button
+              v-show="currentWalletMenu === 'wallet'"
+              type="button"
+              class="margin-left-auto"
+              @click="showTraderAccounts"
             >
-          </div>
-          <div>
-            <div class="wallet-item-account">
-              <div class="wallet-item-account-item">
-                <span>Account ID:&nbsp;</span>
-                <copy-account :front="8" :account="account"></copy-account>
-              </div>
-              <div class="wallet-item-account-item">
-                <span>Principal ID:&nbsp;</span>
-                <copy-account
-                  :front="8"
-                  :account="getPrincipalId"
-                  copy-text="Principal ID"
-                ></copy-account>
-              </div>
+              <span>TraderAccounts</span>
+            </button>
+            <span
+              v-show="currentWalletMenu === 'proWallet'"
+              class="flex-center base-tip-size base-font-title pc-show"
+              style="display: flex; margin-left: 10px"
+            >
+              subaccount:&nbsp;<copy-account
+                account="0000000000000000000000000000000000000000000000000000000000000001"
+                copyText="Subaccount"
+              ></copy-account>
+            </span>
+            <span
+              v-show="currentWalletMenu === 'proWallet'"
+              class="
+                flex-center
+                base-tip-size
+                margin-left-auto
+                base-font-title
+                h5-show
+              "
+            >
+              subaccount:&nbsp;<copy-account
+                account="0000000000000000000000000000000000000000000000000000000000000001"
+                copyText="Subaccount"
+              ></copy-account>
+            </span>
+            <button
+              v-show="currentWalletMenu === 'proWallet'"
+              type="button"
+              class="margin-left-auto"
+              @click="showTraderAccounts"
+            >
+              <span>TraderAccounts</span>
+            </button>
+          </p>
+          <ledger
+            :principal="getPrincipalId"
+            :wallet-menu="currentWalletMenu"
+            type="ic"
+            ref="ledger"
+            @topUpSuccess="topUpSuccess"
+            @showTraderAccounts="showTraderAccounts"
+          ></ledger>
+          <div class="ic-token-item">
+            <p class="wallet-title token-title">
+              <span>
+                Tokens
+                <a-icon
+                  v-show="!refreshTokensLoading"
+                  @click="refreshTokens"
+                  type="reload"
+                  class="reload-icon"
+                />
+                <a-icon
+                  v-show="refreshTokensLoading"
+                  type="loading"
+                  class="reload-icon"
+                />
+              </span>
+              <button
+                style="margin-left: auto"
+                type="button"
+                @click="onAddToken"
+              >
+                Add Token
+              </button>
+            </p>
+            <div class="wallet-item-table">
+              <added-tokens
+                :principal="getPrincipalId"
+                :wallet-menu="currentWalletMenu"
+                ref="addedTokens"
+                @showTraderAccounts="showTraderAccounts"
+              ></added-tokens>
             </div>
-            <img class="account-identicon-img" :src="identiconImg" alt="" />
           </div>
         </div>
-      </div>-->
-      <div v-show="currentWalletMenu === 'icRouter'" class="wallet-item">
-        <ledger
-          :principal="getPrincipalId"
-          type="cross"
-          ref="ledger1"
-          @topUpSuccess="topUpSuccess"
-          @addTokenSuccess="addTokenSuccess"
-        ></ledger>
-      </div>
-      <!--<ul class="flex-center base-color-w wallet-header-menu">
-        <li
-          v-for="item in walletMenu"
-          :key="item.value"
-          :class="{ active: currentWalletMenu === item.value }"
-          @click="changeWalletMenu(item.value)"
+        <div
+          v-show="currentWalletMenu === 'wallet'"
+          class="wallet-item wallet-item-no-border"
         >
-          {{ item.name }}
-        </li>
-      </ul>-->
-      <div v-show="currentWalletMenu !== 'icRouter'" class="wallet-item">
-        <p class="base-title-size flex-center">
-          IC network
-          <button
-            v-show="currentWalletMenu === 'wallet'"
-            type="button"
-            class="margin-left-auto"
-            @click="showTraderAccounts"
-          >
-            <span>TraderAccounts</span>
-          </button>
-          <span
-            v-show="currentWalletMenu === 'proWallet'"
-            class="flex-center base-tip-size base-font-title pc-show"
-            style="display: flex; margin-left: 10px"
-          >
-            subaccount:&nbsp;<copy-account
-              account="0000000000000000000000000000000000000000000000000000000000000001"
-              copyText="Subaccount"
-            ></copy-account>
-          </span>
-          <span
-            v-show="currentWalletMenu === 'proWallet'"
-            class="
-              flex-center
-              base-tip-size
-              margin-left-auto
-              base-font-title
-              h5-show
-            "
-          >
-            subaccount:&nbsp;<copy-account
-              account="0000000000000000000000000000000000000000000000000000000000000001"
-              copyText="Subaccount"
-            ></copy-account>
-          </span>
-          <button
-            v-show="currentWalletMenu === 'proWallet'"
-            type="button"
-            class="margin-left-auto"
-            @click="showTraderAccounts"
-          >
-            <span>TraderAccounts</span>
-          </button>
-        </p>
-        <ledger
-          :principal="getPrincipalId"
-          :wallet-menu="currentWalletMenu"
-          type="ic"
-          ref="ledger"
-          @topUpSuccess="topUpSuccess"
-          @showTraderAccounts="showTraderAccounts"
-        ></ledger>
-        <div class="ic-token-item">
-          <p class="wallet-title token-title">
+          <div class="wallet-title">
             <span>
-              Tokens
+              Cycles Wallet
               <a-icon
-                v-show="!refreshTokensLoading"
-                @click="refreshTokens"
+                v-show="!refreshBalanceLoading"
+                @click="refreshCycles"
                 type="reload"
                 class="reload-icon"
               />
               <a-icon
-                v-show="refreshTokensLoading"
+                v-show="refreshBalanceLoading"
                 type="loading"
                 class="reload-icon"
               />
             </span>
-            <button style="margin-left: auto" type="button" @click="onAddToken">
-              Add Token
-            </button>
+            <div>
+              <button type="button" @click="onCreateWallet">
+                Create Wallet
+              </button>
+              <button type="button" @click="onManageWallet">Bind Wallet</button>
+            </div>
+          </div>
+          <div class="wallet-item-table wallet-item-table-cycles">
+            <a-spin :spinning="walletSpinning">
+              <table>
+                <tbody>
+                  <tr class="no-wallet" v-if="!wallets.length">
+                    No binding Cycles Wallet
+                  </tr>
+                  <cycles-wallet
+                    v-else
+                    v-for="(wallet, index) in wallets"
+                    :key="wallet.walletId.toString()"
+                    @removeWalletSuccess="removeWalletSuccess(index)"
+                    @setDefaultSuccess="setDefaultSuccess"
+                    @showTopUp="showTopUp"
+                    :wallet="wallet"
+                    :ref="'cyclesWallet' + index"
+                  ></cycles-wallet>
+                </tbody>
+              </table>
+            </a-spin>
+          </div>
+        </div>
+        <div
+          v-show="currentWalletMenu === 'wallet'"
+          class="wallet-item wallet-item-no-border"
+        >
+          <p class="wallet-title token-title">
+            <span>NFTs (Only support ICLighthouse Planet Card NFT)</span>
           </p>
-          <div class="wallet-item-table">
-            <added-tokens
-              :principal="getPrincipalId"
-              :wallet-menu="currentWalletMenu"
-              ref="addedTokens"
-              @showTraderAccounts="showTraderAccounts"
-            ></added-tokens>
-          </div>
-        </div>
-      </div>
-      <div
-        v-show="currentWalletMenu === 'wallet'"
-        class="wallet-item wallet-item-no-border"
-      >
-        <div class="wallet-title">
-          <span>
-            Cycles Wallet
-            <a-icon
-              v-show="!refreshBalanceLoading"
-              @click="refreshCycles"
-              type="reload"
-              class="reload-icon"
-            />
-            <a-icon
-              v-show="refreshBalanceLoading"
-              type="loading"
-              class="reload-icon"
-            />
-          </span>
-          <div>
-            <button type="button" @click="onCreateWallet">Create Wallet</button>
-            <button type="button" @click="onManageWallet">Bind Wallet</button>
-          </div>
-        </div>
-        <div class="wallet-item-table wallet-item-table-cycles">
-          <a-spin :spinning="walletSpinning">
-            <table>
-              <tbody>
-                <tr class="no-wallet" v-if="!wallets.length">
-                  No binding Cycles Wallet
-                </tr>
-                <cycles-wallet
-                  v-else
-                  v-for="(wallet, index) in wallets"
-                  :key="wallet.walletId.toString()"
-                  @removeWalletSuccess="removeWalletSuccess(index)"
-                  @setDefaultSuccess="setDefaultSuccess"
-                  @showTopUp="showTopUp"
-                  :wallet="wallet"
-                  :ref="'cyclesWallet' + index"
-                ></cycles-wallet>
-              </tbody>
-            </table>
+          <a-spin :spinning="nftSpinning">
+            <div class="wallet-item-table wallet-item-table-nft">
+              <ul class="nft-main">
+                <li
+                  v-for="(ext, index) in tokensExt.slice(
+                    extPage * extPageNum,
+                    (extPage + 1) * extPageNum
+                  )"
+                  :key="index"
+                >
+                  <div>
+                    <a
+                      :href="`https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai/${ext[0]}`"
+                      rel="nofollow noreferrer noopener"
+                      target="_blank"
+                      ><img :src="getExtInfo(ext[2]).thumb" alt=""
+                    /></a>
+                  </div>
+                  <div class="ext-info">{{ getExtInfo(ext[2]).name }}</div>
+                  <div class="ext-transfer" @click="showTransferToken(ext[0])">
+                    Transfer
+                  </div>
+                </li>
+              </ul>
+              <div
+                class="no-nft-data"
+                v-show="!nftSpinning && !tokensExt.length"
+              >
+                You have no NFTs right now
+              </div>
+              <div class="nft-main-pagination">
+                <a-pagination
+                  v-if="tokensExt.length > 20"
+                  class="pagination"
+                  :defaultPageSize="extPageNum"
+                  :current="extPage + 1"
+                  :total="tokensExt.length"
+                  @change="pageChange"
+                />
+              </div>
+            </div>
           </a-spin>
         </div>
-      </div>
-      <div
-        v-show="currentWalletMenu === 'wallet'"
-        class="wallet-item wallet-item-no-border"
-      >
-        <p class="wallet-title token-title">
-          <span>NFTs (Only support ICLighthouse Planet Card NFT)</span>
-        </p>
-        <a-spin :spinning="nftSpinning">
-          <div class="wallet-item-table wallet-item-table-nft">
-            <ul class="nft-main">
-              <li
-                v-for="(ext, index) in tokensExt.slice(
-                  extPage * extPageNum,
-                  (extPage + 1) * extPageNum
-                )"
-                :key="index"
-              >
-                <div>
-                  <a
-                    :href="`https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai/${ext[0]}`"
-                    rel="nofollow noreferrer noopener"
-                    target="_blank"
-                    ><img :src="getExtInfo(ext[2]).thumb" alt=""
-                  /></a>
+        <create-wallet
+          @createWalletSuccess="createWalletSuccess"
+          :balance="balance"
+          ref="createWallet"
+        ></create-wallet>
+        <a-modal
+          v-model="visibleTransferNFT"
+          centered
+          title="Transfer NFT"
+          width="550px"
+          :footer="null"
+          :keyboard="false"
+          :maskClosable="false"
+          class="manage-wallet-modal"
+          :after-close="afterNftClose"
+        >
+          <div>
+            <a-form-model
+              ref="transferNFTForm"
+              :model="transferNFTForm"
+              :rules="transferNFTFormRules"
+            >
+              <a-form-model-item label="To" prop="to">
+                <a-input
+                  v-model="transferNFTForm.to"
+                  autocomplete="off"
+                  placeholder="Principal Or Account Id"
+                />
+                <div class="base-font">
+                  Beware, not all wallets support all NFT.
                 </div>
-                <div class="ext-info">{{ getExtInfo(ext[2]).name }}</div>
-                <div class="ext-transfer" @click="showTransferToken(ext[0])">
+              </a-form-model-item>
+              <a-form-model-item>
+                <button
+                  type="button"
+                  class="transfer-submit large-primary primary mt20"
+                  @click="transferNFT"
+                >
                   Transfer
-                </div>
-              </li>
-            </ul>
-            <div class="no-nft-data" v-show="!nftSpinning && !tokensExt.length">
-              You have no NFTs right now
-            </div>
-            <div class="nft-main-pagination">
-              <a-pagination
-                v-if="tokensExt.length > 20"
-                class="pagination"
-                :defaultPageSize="extPageNum"
-                :current="extPage + 1"
-                :total="tokensExt.length"
-                @change="pageChange"
-              />
-            </div>
+                </button>
+              </a-form-model-item>
+            </a-form-model>
           </div>
-        </a-spin>
-      </div>
-      <create-wallet
-        @createWalletSuccess="createWalletSuccess"
-        :balance="balance"
-        ref="createWallet"
-      ></create-wallet>
-      <a-modal
-        v-model="visibleTransferNFT"
-        centered
-        title="Transfer NFT"
-        width="550px"
-        :footer="null"
-        :keyboard="false"
-        :maskClosable="false"
-        class="manage-wallet-modal"
-        :after-close="afterNftClose"
-      >
-        <div>
+        </a-modal>
+        <a-modal
+          v-model="visibleManageWallet"
+          centered
+          title="Bind Cycles Wallet"
+          width="550px"
+          :footer="null"
+          :keyboard="false"
+          :maskClosable="false"
+          class="manage-wallet-modal"
+          :after-close="afterClose"
+        >
           <a-form-model
-            ref="transferNFTForm"
-            :model="transferNFTForm"
-            :rules="transferNFTFormRules"
+            :model="manageWalletForm"
+            ref="manageWalletForm"
+            :rules="manageWalletFormRules"
           >
-            <a-form-model-item label="To" prop="to">
+            <a-form-model-item label="Wallet" prop="wallet">
               <a-input
-                v-model="transferNFTForm.to"
+                v-model="manageWalletForm.wallet"
                 autocomplete="off"
-                placeholder="Principal Or Account Id"
+                placeholder="Cycles Wallet"
               />
-              <div class="base-font">
-                Beware, not all wallets support all NFT.
-              </div>
             </a-form-model-item>
             <a-form-model-item>
               <button
                 type="button"
-                class="transfer-submit large-primary primary mt20"
-                @click="transferNFT"
+                class="transfer-submit primary large-primary"
+                @click="manageWalletSubmit"
               >
-                Transfer
+                Bind Wallet
               </button>
             </a-form-model-item>
           </a-form-model>
-        </div>
-      </a-modal>
-      <a-modal
-        v-model="visibleManageWallet"
-        centered
-        title="Bind Cycles Wallet"
-        width="550px"
-        :footer="null"
-        :keyboard="false"
-        :maskClosable="false"
-        class="manage-wallet-modal"
-        :after-close="afterClose"
-      >
-        <a-form-model
-          :model="manageWalletForm"
-          ref="manageWalletForm"
-          :rules="manageWalletFormRules"
+        </a-modal>
+        <a-modal
+          v-model="metaMaskVisible"
+          centered
+          width="400px"
+          :footer="null"
+          :keyboard="false"
+          :maskClosable="false"
+          :closable="false"
+          class="delete-modal"
         >
-          <a-form-model-item label="Wallet" prop="wallet">
-            <a-input
-              v-model="manageWalletForm.wallet"
-              autocomplete="off"
-              placeholder="Cycles Wallet"
-            />
-          </a-form-model-item>
-          <a-form-model-item>
-            <button
-              type="button"
-              class="transfer-submit primary large-primary"
-              @click="manageWalletSubmit"
-            >
-              Bind Wallet
+          <p>MetaMask is not installed. Click "OK" to install MetaMask!</p>
+          <div class="delete-button">
+            <button type="button" @click="metaMaskVisible = false">
+              Cancel
             </button>
-          </a-form-model-item>
-        </a-form-model>
-      </a-modal>
-      <a-modal
-        v-model="metaMaskVisible"
-        centered
-        width="400px"
-        :footer="null"
-        :keyboard="false"
-        :maskClosable="false"
-        :closable="false"
-        class="delete-modal"
-      >
-        <p>MetaMask is not installed. Click "OK" to install MetaMask!</p>
-        <div class="delete-button">
-          <button type="button" @click="metaMaskVisible = false">Cancel</button>
-          <button type="button" class="default" @click="installMetaMask">
-            OK
+            <button type="button" class="default" @click="installMetaMask">
+              OK
+            </button>
+          </div>
+        </a-modal>
+        <a-modal
+          v-model="chooseCreateWallet"
+          width="400px"
+          centered
+          :footer="null"
+          :keyboard="false"
+          :maskClosable="false"
+          class="choose-create-wallet"
+        >
+          <div class="choose-create-wallet">
+            <p @click="createWalletWithAccount">
+              Create a wallet with main account
+            </p>
+            <p @click="createWalletWithWallet">
+              Create a wallet with cycles wallet
+            </p>
+          </div>
+        </a-modal>
+        <create-wallet
+          @createWalletSuccess="createWalletSuccess"
+          :wallet-id="currentWallet.walletId.toString()"
+          :cycles="currentWallet.cycles"
+          ref="cyclesCreateWallet"
+        ></create-wallet>
+      </div>
+      <div v-else>
+        <div class="wallet-empty container-width">
+          <img src="@/assets/img/empty.png" alt="" />
+          <p>Connect wallet to view</p>
+          <button type="button" class="default" @click="connectWallet">
+            Connect Wallet
           </button>
         </div>
-      </a-modal>
+      </div>
       <a-modal
-        v-model="chooseCreateWallet"
-        width="400px"
+        v-model="traderAccountsModal"
+        width="90%"
         centered
         :footer="null"
         :keyboard="false"
         :maskClosable="false"
-        class="choose-create-wallet"
+        class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
       >
-        <div class="choose-create-wallet">
-          <p @click="createWalletWithAccount">
-            Create a wallet with main account
-          </p>
-          <p @click="createWalletWithWallet">
-            Create a wallet with cycles wallet
-          </p>
-        </div>
+        <a-spin :spinning="spinning">
+          <table style="margin-top: 40px">
+            <thead>
+              <tr>
+                <th>Pair</th>
+                <th>Canister Id</th>
+                <th>Token0 Balance</th>
+                <th>Token1 Balance</th>
+                <th>Operations</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in pairList.slice(
+                  (pairListPage - 1) * 10,
+                  pairListPage * 10
+                )"
+                :key="index"
+              >
+                <td>{{ item[1][0].token0[1] }}/{{ item[1][0].token1[1] }}</td>
+                <td>
+                  <copy-account
+                    :account="item[1][0].canisterId.toString()"
+                    copyText="Canister ID"
+                  ></copy-account>
+                </td>
+                <td>
+                  <dl>
+                    <dt>
+                      <span class="balance-left">Available:</span>
+                      <span v-show="currentWalletMenu === 'wallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token0[0].toString()] &&
+                            mainTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token0 &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.available
+                          "
+                        >
+                          {{
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.available
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token0[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                      <span v-show="currentWalletMenu === 'proWallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token0[0].toString()] &&
+                            proTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token0 &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.available
+                          "
+                        >
+                          {{
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.available
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token0[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                    </dt>
+                    <dd>
+                      <span class="balance-left">Locked:</span>
+                      <span v-show="currentWalletMenu === 'wallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token0[0].toString()] &&
+                            mainTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token0 &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.locked
+                          "
+                        >
+                          {{
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.locked
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token0[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                      <span v-show="currentWalletMenu === 'proWallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token0[0].toString()] &&
+                            proTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token0 &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.locked
+                          "
+                        >
+                          {{
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token0.locked
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token0[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                    </dd>
+                  </dl>
+                </td>
+                <td>
+                  <dl>
+                    <dt>
+                      <span class="balance-left">Available:</span>
+                      <span v-show="currentWalletMenu === 'wallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token1[0].toString()] &&
+                            mainTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token1 &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.available
+                          "
+                        >
+                          {{
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.available
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token1[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                      <span v-show="currentWalletMenu === 'proWallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token1[0].toString()] &&
+                            proTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token1 &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.available
+                          "
+                        >
+                          {{
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.available
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token1[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                    </dt>
+                    <dd>
+                      <span class="balance-left">Locked:</span>
+                      <span v-show="currentWalletMenu === 'wallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token1[0].toString()] &&
+                            mainTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token1 &&
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.locked
+                          "
+                        >
+                          {{
+                            mainTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.locked
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token1[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                      <span v-show="currentWalletMenu === 'proWallet'">
+                        <span
+                          v-if="
+                            tokens &&
+                            tokens[item[1][0].token1[0].toString()] &&
+                            proTokensBalance[
+                              item[1][0].canisterId.toString()
+                            ] &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token1 &&
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.locked
+                          "
+                        >
+                          {{
+                            proTokensBalance[item[1][0].canisterId.toString()]
+                              .token1.locked
+                              | bigintToFloat(
+                                8,
+                                tokens[item[1][0].token1[0].toString()].decimals
+                              )
+                              | formatAmount(8)
+                          }}
+                        </span>
+                        <span v-else>-</span>
+                      </span>
+                    </dd>
+                  </dl>
+                </td>
+                <td class="operation-td">
+                  <div class="operation">
+                    <span
+                      :class="{
+                        disabled:
+                          currentWalletMenu === 'wallet'
+                            ? !item[2].main
+                            : !item[2].pro
+                      }"
+                      class="operation-name pointer"
+                      @click="onWithdraw(item)"
+                    >
+                      Withdraw
+                    </span>
+                    <span
+                      class="operation-name"
+                      @click="onDepositKeepingBalance(item)"
+                    >
+                      Deposit
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="nft-main-pagination">
+            <a-pagination
+              v-if="pairList.length > 10"
+              class="pagination"
+              :defaultPageSize="10"
+              :current="pairListPage"
+              :total="pairList.length"
+              @change="pairListPageChange"
+            />
+          </div>
+        </a-spin>
       </a-modal>
-      <create-wallet
-        @createWalletSuccess="createWalletSuccess"
-        :wallet-id="currentWallet.walletId.toString()"
-        :cycles="currentWallet.cycles"
-        ref="cyclesCreateWallet"
-      ></create-wallet>
+      <withdraw-token
+        ref="withdrawToken"
+        :current-pair="currentPair"
+        :is-wallets="true"
+        @withdrawSuccess="withdrawSuccess"
+        @changeWithdrawToken="onWithdraw"
+      >
+      </withdraw-token>
+      <transfer-token
+        :current-token="currentToken"
+        :current-pair="currentPair"
+        :is-wallets="true"
+        ref="transferToken"
+        type="Deposit"
+        transferButton="Deposit"
+        @transferTokenSuccess="transferTokenSuccess"
+        @changeDepositToken="changeDepositToken"
+      ></transfer-token>
     </div>
-    <div v-else>
-      <div class="wallet-empty container-width">
-        <img src="@/assets/img/empty.png" alt="" />
-        <p>Connect wallet to view</p>
-        <button type="button" class="default" @click="connectWallet">
-          Connect Wallet
-        </button>
-      </div>
-    </div>
-    <a-modal
-      v-model="traderAccountsModal"
-      width="90%"
-      centered
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-      class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
-    >
-      <a-spin :spinning="spinning">
-        <table style="margin-top: 40px">
-          <thead>
-            <tr>
-              <th>Pair</th>
-              <th>Canister Id</th>
-              <th>Token0 Balance</th>
-              <th>Token1 Balance</th>
-              <th>Operations</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(item, index) in pairList.slice(
-                (pairListPage - 1) * 10,
-                pairListPage * 10
-              )"
-              :key="index"
-            >
-              <td>{{ item[1][0].token0[1] }}/{{ item[1][0].token1[1] }}</td>
-              <td>
-                <copy-account
-                  :account="item[1][0].canisterId.toString()"
-                  copyText="Canister ID"
-                ></copy-account>
-              </td>
-              <td>
-                <dl>
-                  <dt>
-                    <span class="balance-left">Available:</span>
-                    <span v-show="currentWalletMenu === 'wallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token0[0].toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token0 &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.available
-                        "
-                      >
-                        {{
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.available
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token0[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                    <span v-show="currentWalletMenu === 'proWallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token0[0].toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token0 &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.available
-                        "
-                      >
-                        {{
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.available
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token0[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                  </dt>
-                  <dd>
-                    <span class="balance-left">Locked:</span>
-                    <span v-show="currentWalletMenu === 'wallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token0[0].toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token0 &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.locked
-                        "
-                      >
-                        {{
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.locked
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token0[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                    <span v-show="currentWalletMenu === 'proWallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token0[0].toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token0 &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.locked
-                        "
-                      >
-                        {{
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token0.locked
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token0[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                  </dd>
-                </dl>
-              </td>
-              <td>
-                <dl>
-                  <dt>
-                    <span class="balance-left">Available:</span>
-                    <span v-show="currentWalletMenu === 'wallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token1[0].toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token1 &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.available
-                        "
-                      >
-                        {{
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.available
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token1[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                    <span v-show="currentWalletMenu === 'proWallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token1[0].toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token1 &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.available
-                        "
-                      >
-                        {{
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.available
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token1[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                  </dt>
-                  <dd>
-                    <span class="balance-left">Locked:</span>
-                    <span v-show="currentWalletMenu === 'wallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token1[0].toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()] &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token1 &&
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.locked
-                        "
-                      >
-                        {{
-                          mainTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.locked
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token1[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                    <span v-show="currentWalletMenu === 'proWallet'">
-                      <span
-                        v-if="
-                          tokens &&
-                          tokens[item[1][0].token1[0].toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()] &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token1 &&
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.locked
-                        "
-                      >
-                        {{
-                          proTokensBalance[item[1][0].canisterId.toString()]
-                            .token1.locked
-                            | bigintToFloat(
-                              8,
-                              tokens[item[1][0].token1[0].toString()].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                      <span v-else>-</span>
-                    </span>
-                  </dd>
-                </dl>
-              </td>
-              <td class="operation-td">
-                <div class="operation">
-                  <span
-                    :class="{
-                      disabled:
-                        currentWalletMenu === 'wallet'
-                          ? !item[2].main
-                          : !item[2].pro
-                    }"
-                    class="operation-name pointer"
-                    @click="onWithdraw(item)"
-                  >
-                    Withdraw
-                  </span>
-                  <span
-                    class="operation-name"
-                    @click="onDepositKeepingBalance(item)"
-                  >
-                    Deposit
-                  </span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="nft-main-pagination">
-          <a-pagination
-            v-if="pairList.length > 10"
-            class="pagination"
-            :defaultPageSize="10"
-            :current="pairListPage"
-            :total="pairList.length"
-            @change="pairListPageChange"
-          />
-        </div>
-      </a-spin>
-    </a-modal>
-    <withdraw-token
-      ref="withdrawToken"
-      :current-pair="currentPair"
-      :is-wallets="true"
-      @withdrawSuccess="withdrawSuccess"
-      @changeWithdrawToken="onWithdraw"
-    >
-    </withdraw-token>
-    <transfer-token
-      :current-token="currentToken"
-      :current-pair="currentPair"
-      :is-wallets="true"
-      ref="transferToken"
-      type="Deposit"
-      transferButton="Deposit"
-      @transferTokenSuccess="transferTokenSuccess"
-      @changeDepositToken="changeDepositToken"
-    ></transfer-token>
   </div>
 </template>
 
@@ -769,6 +805,7 @@ import { PairTokenStdMenu } from '@/views/home/ICSwap/model';
 import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
+import AccountInfo from '@/views/home/components/AccountInfo.vue';
 // const plugIc = (window as any).ic;
 
 const commonModule = namespace('common');
@@ -785,7 +822,8 @@ if (ethereum && ethereum.providers) {
     CreateWallet,
     AddedTokens,
     WithdrawToken,
-    TransferToken
+    TransferToken,
+    AccountInfo
   }
 })
 export default class extends Mixins(BalanceMixin) {

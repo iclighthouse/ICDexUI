@@ -1,480 +1,532 @@
 <template>
-  <div class="dashboard-main container-width base-font-title">
-    <div class="dashboard-sns-main">
-      <div class="dashboard-sns-item">
-        <div
-          class="dashboard-sns-item-bold link pointer"
-          @click="SNSCanistersVisible = true"
-        >
-          <div>
-            Canisters
-            <span v-if="snsNumber && SNSList.length === snsNumber">{{
-              canistersNum
-            }}</span>
-            <span v-else>-</span>
-          </div>
-        </div>
-        <div>
-          <span>
-            Stopped
-            <span v-if="snsNumber && SNSList.length === snsNumber">
-              (<span :class="{ 'base-red': stopped > 0 }">{{ stopped }}</span
-              >)
-            </span>
-            <span v-else>-</span>
-          </span>
-          <span>
-            Insufficient Cycles
-            <span v-if="snsNumber && SNSList.length === snsNumber">
-              (<span :class="{ 'base-red': insufficient > 0 }">{{
-                insufficient
-              }}</span
-              >)
-            </span>
-            <span v-else>-</span>
-          </span>
-        </div>
+  <div>
+    <div class="home-header">
+      <div class="home-header-left">
+        <span class="home-header-title">Dashboard</span>
       </div>
-      <div class="dashboard-sns-item">
-        <div class="dashboard-sns-item-bold">
-          <div>
-            Proposals
-            <span
-              v-if="snsNumberProposals && SNSList.length === snsNumberProposals"
-            >
-              {{ proposals }}
-            </span>
-            <span v-else>-</span>
-          </div>
-        </div>
-        <div>
-          <span>
-            Open
-            <span
-              v-if="snsNumberProposals && SNSList.length === snsNumberProposals"
-              class="pointer"
-            >
-              (<router-link to="/icsns/proposals"
-                ><span :class="{ link: open > 0 }">{{
-                  open
-                }}</span></router-link
-              >)
-            </span>
-            <span v-else>-</span>
-          </span>
-        </div>
-      </div>
+      <account-info> </account-info>
     </div>
-    <div class="dashboard-data mt20">
-      <div class="dashboard-data-title">ICDex Data</div>
-      <div class="dashboard-data-main">
-        <div class="dashboard-data-item">
-          <dl>
-            <dt>Pairs</dt>
-            <dd v-show="pairs.length">{{ pairs.length }}</dd>
-          </dl>
-        </div>
-        <div class="dashboard-data-item">
-          <dl>
-            <dt>OAMMs</dt>
-            <dd v-show="pools.length">{{ pools.length }}</dd>
-          </dl>
-        </div>
-        <div class="dashboard-data-item">
-          <dl>
-            <dt>Total Vol</dt>
-            <dd v-show="totalVol">{{ totalVol | formatNum }} USD</dd>
-          </dl>
-        </div>
-        <div class="dashboard-data-item">
-          <dl>
-            <dt>Total TVL</dt>
-            <dd v-show="totalTVL">{{ totalTVL | formatNum }} USD</dd>
-          </dl>
-        </div>
-        <div class="dashboard-data-item">
-          <dl>
-            <dt>24h Vol</dt>
-            <dd v-show="Vol24">{{ Vol24 | formatNum }} USD</dd>
-          </dl>
-        </div>
-        <div class="dashboard-data-item">
-          <dl>
-            <dt>Proposals</dt>
-            <dd>
+    <div class="dashboard-main container-width base-font-title">
+      <div class="dashboard-sns-main">
+        <div class="dashboard-sns-item">
+          <div
+            class="dashboard-sns-item-bold link pointer"
+            @click="showSNSDappsForDappAll"
+          >
+            <div>
+              Canisters
+              <span v-if="snsNumber && SNSList.length === snsNumber">{{
+                canistersNum
+              }}</span>
+              <span v-else>-</span>
+            </div>
+          </div>
+          <div>
+            <span>
               <span
+                class="pointer"
+                v-if="snsNumber && SNSList.length === snsNumber"
+                @click="showStopped"
+              >
+                Stopped (<span :class="{ 'base-red': stopped > 0 }">{{
+                  stopped
+                }}</span
+                >)
+              </span>
+              <span v-else>Stopped -</span>
+            </span>
+            <span>
+              &nbsp;
+              <span
+                class="pointer"
+                v-if="snsNumber && SNSList.length === snsNumber"
+                @click="showInsufficient"
+                >Insufficient Cycles (<span
+                  :class="{ 'base-red': insufficient > 0 }"
+                  >{{ insufficient }}</span
+                >)
+              </span>
+              <span v-else>Insufficient Cycles -</span>
+            </span>
+          </div>
+        </div>
+        <div class="dashboard-sns-item">
+          <div class="dashboard-sns-item-bold link pointer">
+            <div>
+              <router-link
                 v-if="
                   snsNumberProposals && SNSList.length === snsNumberProposals
                 "
+                to="/icsns/proposals?id=hhaaz-2aaaa-aaaaq-aacla-cai"
               >
-                {{ proposals }}
-              </span>
-              <span v-else>-</span>
+                <span> Proposals {{ proposals }} </span>
+              </router-link>
+              <span v-else>Proposals -</span>
+            </div>
+          </div>
+          <div>
+            <span>
+              Open
               <span
                 v-if="
                   snsNumberProposals && SNSList.length === snsNumberProposals
                 "
                 class="pointer"
               >
-                (<router-link to="/icsns/proposals"
+                (<router-link
+                  to="/icsns/proposals?id=hhaaz-2aaaa-aaaaq-aacla-cai"
                   ><span :class="{ link: open > 0 }">{{
                     open
                   }}</span></router-link
                 >)
               </span>
-              <span v-else>(-)</span>
-            </dd>
-          </dl>
-        </div>
-      </div>
-    </div>
-    <div class="dashboard-icdex-main mt20">
-      <div class="dashboard-icdex-item">
-        <div class="dashboard-sns-item-bold link pointer">
-          <div @click="showICDexCanisters">
-            ICDex
-            <span v-if="pairs.length && pools.length">{{
-              pairs.length + pools.length
-            }}</span>
+              <span v-else>-</span>
+            </span>
           </div>
         </div>
-        <div v-if="ICTC">
-          <span>
-            Paused (<span :class="{ 'base-red': ICTC.paused }">{{
-              ICTC.paused
-            }}</span
-            >)&nbsp;
-          </span>
-          <span>
-            TOs (<span>{{ ICTC.TOs | formatNum }}</span
-            >)</span
-          >&nbsp;
-          <span>
-            TTs (<span>{{ ICTC.TTs | formatNum }}</span
-            >)</span
-          >&nbsp;
-          <span>
-            Blocking (<span :class="{ 'base-red': ICTC.TOBlocking }">{{
-              ICTC.TOBlocking
-            }}</span
-            >)</span
-          >
-        </div>
       </div>
-    </div>
-    <a-modal
-      v-model="SNSCanistersVisible"
-      width="860px"
-      centered
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-    >
-      <div class="canisters-modal mt20">
-        <a-dropdown
-          overlayClassName="canisters-modal-dropdown"
-          placement="bottomLeft"
-          :trigger="['click']"
-        >
-          <div class="user-menu pointer">
-            {{ currentSNS }} &nbsp;<a-icon type="caret-down" />
+      <div class="dashboard-data mt20">
+        <div class="dashboard-data-title">ICDex Data</div>
+        <div class="dashboard-data-main">
+          <div class="dashboard-data-item">
+            <dl>
+              <dt>Pairs</dt>
+              <dd v-show="pairs.length">{{ pairs.length }}</dd>
+            </dl>
           </div>
-          <a-menu
-            class="user-setting base-bg-box user-setting-account"
-            slot="overlay"
-            v-if="SNSMetadataList.length"
-          >
-            <a-menu-item
-              @click="changeSNS(value)"
-              class="user-setting-item"
-              v-for="(value, index) in SNSMetadataList"
-              :key="index"
-              :class="{ active: currentSNS === value.name[0] }"
-            >
-              {{ value.name[0] }}
-            </a-menu-item>
-          </a-menu>
-        </a-dropdown>
-        <table>
-          <thead>
-            <tr>
-              <th>Canister-id</th>
-              <th>Type</th>
-              <th>Cycles</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(item, index) in SNSDappsForDapp[currentRoot]"
-              :key="index"
-            >
-              <td>
-                <span v-if="item.canister_id[0]">
-                  {{ item.canister_id[0].toString() }}
-                </span>
-              </td>
-              <td>
-                {{ item.type }}
-              </td>
-              <td>
-                <span
-                  v-if="item.status[0]"
-                  :class="{
-                    'base-red': Number(item.status[0].cycles) < 5 * 10 ** 12
-                  }"
-                >
-                  {{ item.status[0].cycles | bigintToFloat(4, 12) }}
-                </span>
-              </td>
-              <td>
-                <span
-                  v-if="item.status[0]"
-                  :class="{
-                    'base-red':
-                      Object.keys(item.status[0].status)[0] !== 'running'
-                  }"
-                >
-                  {{ Object.keys(item.status[0].status)[0] }}
-                </span>
-              </td>
-            </tr>
-            <!--<tr
-              v-for="(item, index) in SNSDapps.slice(
-                (page - 1) * 10,
-                page * 10
-              )"
-              :key="index"
-            >
-              <td>
+          <div class="dashboard-data-item">
+            <dl>
+              <dt>OAMMs</dt>
+              <dd v-show="pools.length">{{ pools.length }}</dd>
+            </dl>
+          </div>
+          <div class="dashboard-data-item">
+            <dl>
+              <dt>Total Vol</dt>
+              <dd v-show="totalVol">{{ totalVol | formatNum }} USD</dd>
+            </dl>
+          </div>
+          <div class="dashboard-data-item">
+            <dl>
+              <dt>Total TVL</dt>
+              <dd v-show="totalTVL">{{ totalTVL | formatNum }} USD</dd>
+            </dl>
+          </div>
+          <div class="dashboard-data-item">
+            <dl>
+              <dt>24h Vol</dt>
+              <dd v-show="Vol24">{{ Vol24 | formatNum }} USD</dd>
+            </dl>
+          </div>
+          <div class="dashboard-data-item">
+            <dl>
+              <dt>Proposals</dt>
+              <dd>
                 <span
                   v-if="
-                    SNSMetadata[item.root] &&
-                    SNSMetadata[item.root].name &&
-                    SNSMetadata[item.root].name[0]
+                    snsNumberProposals && SNSList.length === snsNumberProposals
                   "
                 >
-                  {{ SNSMetadata[item.root].name[0] }}
+                  {{ proposals }}
                 </span>
-              </td>
-              <td>
-                <span v-if="item.canister_id[0]">
-                  {{ item.canister_id[0].toString() }}
-                </span>
-              </td>
-              <td>
-                {{ item.type }}
-              </td>
-              <td>
+                <span v-else>-</span>
                 <span
-                  v-if="item.status[0]"
-                  :class="{
-                    'base-red': Number(item.status[0].cycles) < 5 * 10 ** 12
-                  }"
+                  v-if="
+                    snsNumberProposals && SNSList.length === snsNumberProposals
+                  "
+                  class="pointer"
                 >
-                  {{ item.status[0].cycles | bigintToFloat(4, 12) }}
+                  (<router-link
+                    to="/icsns/proposals?id=hhaaz-2aaaa-aaaaq-aacla-cai"
+                    ><span :class="{ link: open > 0 }">{{
+                      open
+                    }}</span></router-link
+                  >)
                 </span>
-              </td>
-              <td>
-                <span
-                  v-if="item.status[0]"
-                  :class="{
-                    'base-red':
-                      Object.keys(item.status[0].status)[0] !== 'running'
-                  }"
-                >
-                  {{ Object.keys(item.status[0].status)[0] }}
-                </span>
-              </td>
-            </tr>-->
-          </tbody>
-        </table>
-        <!--<div class="nft-main-pagination">
-          <a-pagination
-            v-if="SNSDapps.length > 10"
-            class="pagination"
-            :defaultPageSize="10"
-            :current="page"
-            :total="SNSDapps.length"
-            @change="pageChange"
-          />
-        </div>-->
-      </div>
-    </a-modal>
-    <a-modal
-      v-model="ICDexCanistersVisible"
-      width="1000px"
-      centered
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-    >
-      <div class="canisters-modal mt20">
-        <table>
-          <thead>
-            <tr>
-              <th>Canister-id</th>
-              <th>Name</th>
-              <th>Version</th>
-              <th>Status</th>
-              <th>Type</th>
-              <th>TOs</th>
-              <th>TTs</th>
-              <th>TO Blocking</th>
-              <th>TT Errors</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(item, index) in ICDexCanisters.slice(
-                (pageICDexCanisters - 1) * 10,
-                pageICDexCanisters * 10
-              )"
-              :key="index"
-            >
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span v-if="item[0].pairId">
-                    {{ item[0].pairId }}
-                  </span>
-                  <span v-else>{{ item[0].poolId }}</span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span v-if="item[0].pairId">
-                    {{ item[0].pairInfo.name }}
-                  </span>
-                  <span v-else>{{ item[0].poolInfo.name }}</span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span v-if="item[0].pairId">
-                    {{ item[0].pairInfo.version }}
-                  </span>
-                  <span v-else>{{ item[0].poolInfo.version }}</span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span v-if="item[0].pairId">
-                    <span class="base-red" v-if="item[0].pairInfo.paused">
-                      Paused
-                    </span>
-                    <span v-else>Running</span>
-                  </span>
-                  <span v-else>
-                    <span class="base-red" v-if="item[0].poolInfo.paused">
-                      Paused
-                    </span>
-                    <span v-else>Running</span>
-                  </span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span v-if="item[0].pairId"> Pair </span>
-                  <span v-else>Maker</span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span>
-                    {{ item[1].toString(10) }}
-                  </span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span>
-                    {{ item[2].total.toString(10) }}
-                  </span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span :class="{ 'base-red': getBlocking(item[4]) }">
-                    {{ getBlocking(item[4]) }}
-                  </span>
-                </a>
-              </td>
-              <td>
-                <a
-                  :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
-                    item[0].pairId ? item[0].pairId : item[0].poolId
-                  }`"
-                  target="_blank"
-                  rel="nofollow noreferrer noopener"
-                >
-                  <span :class="{ 'base-red': item[3].total }">
-                    {{ item[3].total.toString(10) }}
-                  </span>
-                </a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="nft-main-pagination">
-          <a-pagination
-            v-if="ICDexCanisters.length > 10"
-            class="pagination"
-            :defaultPageSize="10"
-            :current="pageICDexCanisters"
-            :total="ICDexCanisters.length"
-            @change="pageICDexCanistersChange"
-          />
+                <span v-else>(-)</span>
+              </dd>
+            </dl>
+          </div>
         </div>
       </div>
-    </a-modal>
+      <div class="dashboard-icdex-main mt20">
+        <div class="dashboard-icdex-item w100">
+          <div class="dashboard-sns-item-bold link pointer">
+            <div @click="showICDexCanisters">
+              ICDex
+              <span v-if="pairs.length && pools.length">{{
+                pairs.length + pools.length
+              }}</span>
+            </div>
+          </div>
+          <div v-if="ICTC" class="ictc-main w100">
+            <div class="ictc-item">
+              <div class="link pointer" @click="showTradingPairs">
+                Trading Pairs&nbsp;<span v-show="pairs.length">{{
+                  pairs.length
+                }}</span>
+              </div>
+              <div class="pointer" @click="showTradingPairsPaused">
+                Paused (<span :class="{ 'base-red': ICTC.paused }">{{
+                  ICTC.paused
+                }}</span
+                >)
+              </div>
+              <div class="pointer" @click="showTradingPairsBlocking">
+                Blocking (<span :class="{ 'base-red': ICTC.TOBlocking }">{{
+                  ICTC.TOBlocking
+                }}</span
+                >)
+              </div>
+            </div>
+            <div class="ictc-item ictc-item-s">
+              <div class="link pointer" @click="showTradingPools">
+                OAMMs&nbsp;<span v-show="pools.length">{{ pools.length }}</span>
+              </div>
+              <div class="pointer" @click="showTradingPoolsPaused">
+                Paused (<span :class="{ 'base-red': ICTC.pausedOAMM }">{{
+                  ICTC.pausedOAMM
+                }}</span
+                >)
+              </div>
+              <div class="pointer" @click="showTradingPoolsBlocking">
+                Blocking (<span :class="{ 'base-red': ICTC.TOBlockingOAMM }">{{
+                  ICTC.TOBlockingOAMM
+                }}</span
+                >)
+              </div>
+            </div>
+            <div class="ictc-item ictc-item-s">
+              <div @click="showICDexCanisters" class="link pointer">ICTC</div>
+              <div>
+                TOs (<span>{{ ICTC.TOs | formatNum }}</span
+                >)
+              </div>
+              <div>
+                TTs (<span>{{ ICTC.TTs | formatNum }}</span
+                >)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a-modal
+        v-model="SNSCanistersVisible"
+        width="860px"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+      >
+        <div class="canisters-modal mt20">
+          <!--<a-dropdown
+						overlayClassName="canisters-modal-dropdown"
+						placement="bottomLeft"
+						:trigger="['click']"
+					>
+						<div class="user-menu pointer">
+							{{ currentSNS }} &nbsp;<a-icon type="caret-down" />
+						</div>
+						<a-menu
+							class="user-setting base-bg-box user-setting-account"
+							slot="overlay"
+							v-if="SNSMetadataList.length"
+						>
+							<a-menu-item
+								@click="changeSNS(value)"
+								class="user-setting-item"
+								v-for="(value, index) in SNSMetadataList"
+								:key="index"
+								:class="{ active: currentSNS === value.name[0] }"
+							>
+								{{ value.name[0] }}
+							</a-menu-item>
+						</a-menu>
+					</a-dropdown>-->
+          <table>
+            <thead>
+              <tr>
+                <th>Canister-id</th>
+                <th>Type</th>
+                <th>Cycles</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in SNSDappsForDapp[currentRoot]"
+                :key="index"
+              >
+                <td>
+                  <span v-if="item.canister_id[0]">
+                    {{ item.canister_id[0].toString() }}
+                  </span>
+                </td>
+                <td>
+                  {{ item.type }}
+                </td>
+                <td>
+                  <span
+                    v-if="item.status[0]"
+                    :class="{
+                      'base-red': Number(item.status[0].cycles) < 5 * 10 ** 12
+                    }"
+                  >
+                    {{ item.status[0].cycles | bigintToFloat(4, 12) }}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    v-if="item.status[0]"
+                    :class="{
+                      'base-red':
+                        Object.keys(item.status[0].status)[0] !== 'running'
+                    }"
+                  >
+                    {{ Object.keys(item.status[0].status)[0] }}
+                  </span>
+                </td>
+              </tr>
+              <!--<tr
+							v-for="(item, index) in SNSDapps.slice(
+								(page - 1) * 10,
+								page * 10
+							)"
+							:key="index"
+						>
+							<td>
+								<span
+									v-if="
+										SNSMetadata[item.root] &&
+										SNSMetadata[item.root].name &&
+										SNSMetadata[item.root].name[0]
+									"
+								>
+									{{ SNSMetadata[item.root].name[0] }}
+								</span>
+							</td>
+							<td>
+								<span v-if="item.canister_id[0]">
+									{{ item.canister_id[0].toString() }}
+								</span>
+							</td>
+							<td>
+								{{ item.type }}
+							</td>
+							<td>
+								<span
+									v-if="item.status[0]"
+									:class="{
+										'base-red': Number(item.status[0].cycles) < 5 * 10 ** 12
+									}"
+								>
+									{{ item.status[0].cycles | bigintToFloat(4, 12) }}
+								</span>
+							</td>
+							<td>
+								<span
+									v-if="item.status[0]"
+									:class="{
+										'base-red':
+											Object.keys(item.status[0].status)[0] !== 'running'
+									}"
+								>
+									{{ Object.keys(item.status[0].status)[0] }}
+								</span>
+							</td>
+						</tr>-->
+            </tbody>
+          </table>
+          <!--<div class="nft-main-pagination">
+						<a-pagination
+							v-if="SNSDapps.length > 10"
+							class="pagination"
+							:defaultPageSize="10"
+							:current="page"
+							:total="SNSDapps.length"
+							@change="pageChange"
+						/>
+					</div>-->
+        </div>
+      </a-modal>
+      <a-modal
+        v-model="ICDexCanistersVisible"
+        width="1000px"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+      >
+        <div class="canisters-modal mt20">
+          <table>
+            <thead>
+              <tr>
+                <th>Canister-id</th>
+                <th>Name</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>TOs</th>
+                <th>TTs</th>
+                <th>TO Blocking</th>
+                <th>TT Errors</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in currentICDexCanisters.slice(
+                  (pageICDexCanisters - 1) * 30,
+                  pageICDexCanisters * 30
+                )"
+                :key="index"
+              >
+                <td>
+                  <a
+                    :href="`https://ic.house/canister/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span v-if="item[0].pairId">
+                      {{ item[0].pairId }}
+                    </span>
+                    <span v-else>{{ item[0].poolId }}</span>
+                  </a>
+                </td>
+                <td>
+                  <router-link
+                    v-if="item[0].pairId"
+                    :to="`/ICDex/${item[0].pairInfo.token0[1]}/${item[0].pairInfo.token1[1]}`"
+                  >
+                    {{ item[0].pairInfo.name }}
+                  </router-link>
+                  <router-link
+                    v-else
+                    :to="`/ICDex/pools/pool/${item[0].poolId}`"
+                  >
+                    {{ item[0].poolInfo.name }}
+                  </router-link>
+                </td>
+                <td>
+                  <a
+                    :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span v-if="item[0].pairId">
+                      {{ item[0].pairInfo.version }}
+                    </span>
+                    <span v-else>{{ item[0].poolInfo.version }}</span>
+                  </a>
+                </td>
+                <td>
+                  <a
+                    :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span v-if="item[0].pairId">
+                      <span class="base-red" v-if="item[0].pairInfo.paused">
+                        Paused
+                      </span>
+                      <span v-else>Running</span>
+                    </span>
+                    <span v-else>
+                      <span class="base-red" v-if="item[0].poolInfo.paused">
+                        Paused
+                      </span>
+                      <span v-else>Running</span>
+                    </span>
+                  </a>
+                </td>
+                <td>
+                  <a
+                    :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span v-if="item[0].pairId"> Pair </span>
+                    <span v-else>Maker</span>
+                  </a>
+                </td>
+                <td>
+                  <a
+                    :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span>
+                      {{ item[1].toString(10) }}
+                    </span>
+                  </a>
+                </td>
+                <td>
+                  <a
+                    :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span>
+                      {{ item[2].total.toString(10) }}
+                    </span>
+                  </a>
+                </td>
+                <td>
+                  <a
+                    :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span :class="{ 'base-red': getBlocking(item[4]) }">
+                      {{ getBlocking(item[4]) }}
+                    </span>
+                  </a>
+                </td>
+                <td>
+                  <a
+                    :href="`https://cmqwp-uiaaa-aaaaj-aihzq-cai.raw.ic0.app/saga/${
+                      item[0].pairId ? item[0].pairId : item[0].poolId
+                    }`"
+                    target="_blank"
+                    rel="nofollow noreferrer noopener"
+                  >
+                    <span :class="{ 'base-red': item[3].total }">
+                      {{ item[3].total.toString(10) }}
+                    </span>
+                  </a>
+                </td>
+              </tr>
+              <tr v-show="!currentICDexCanisters.length">
+                <td class="text-center" colspan="9">No Data</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="nft-main-pagination">
+            <a-pagination
+              v-if="currentICDexCanisters.length > 30"
+              class="pagination"
+              :defaultPageSize="30"
+              :current="pageICDexCanisters"
+              :total="currentICDexCanisters.length"
+              @change="pageICDexCanistersChange"
+            />
+          </div>
+        </div>
+      </a-modal>
+    </div>
   </div>
 </template>
 
@@ -511,10 +563,15 @@ import {
 } from '@/ic/ICDex/model';
 import { PoolInfo } from '@/ic/makerPool/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
+import AccountInfo from '@/views/home/components/AccountInfo.vue';
+
+const ICLighthouseRoot = 'hjcnr-bqaaa-aaaaq-aacka-cai';
 
 @Component({
   name: 'Index',
-  components: {}
+  components: {
+    AccountInfo
+  }
 })
 export default class extends Vue {
   private SNSWasmService: SNSWasmService;
@@ -527,6 +584,9 @@ export default class extends Vue {
   private makerPoolService: makerPoolService;
   private SNSList: Array<DeployedSns> = [];
   private SNSDapps: Array<SnsCanistersSummaryResponse> = [];
+  private SNSDappsForDappAll: {
+    [key: string]: Array<SnsCanistersSummaryResponse>;
+  } = {};
   private SNSDappsForDapp: {
     [key: string]: Array<SnsCanistersSummaryResponse>;
   } = {};
@@ -552,6 +612,18 @@ export default class extends Vue {
   private pageICDexCanisters = 1;
   private ICDexCanistersVisible = false;
   private ICDexCanisters: Array<
+    [
+      (
+        | { pairId: string; pairInfo: PairInfo }
+        | { poolId: string; poolInfo: PoolInfo }
+      ),
+      bigint,
+      TTsResponse,
+      TTErrorsResponse,
+      TOPoolResponse
+    ]
+  > = [];
+  private currentICDexCanisters: Array<
     [
       (
         | { pairId: string; pairInfo: PairInfo }
@@ -701,6 +773,8 @@ export default class extends Vue {
     let TTs = 0;
     let TTErrors = 0;
     let TOBlocking = 0;
+    let pausedOAMM = 0;
+    let TOBlockingOAMM = 0;
     pairs.forEach(
       (
         pair: [
@@ -740,7 +814,7 @@ export default class extends Vue {
         ]
       ) => {
         if (pool[0] && pool[0].poolInfo.paused) {
-          ++paused;
+          ++pausedOAMM;
         }
         TOs = TOs + Number(pool[1]);
         TTs = TTs + Number(pool[2].total);
@@ -750,7 +824,7 @@ export default class extends Vue {
             if (item[1] && item[1][0]) {
               const type = Object.keys(item[1][0].status)[0];
               if (type === 'Blocking') {
-                ++TOBlocking;
+                ++TOBlockingOAMM;
               }
             }
           });
@@ -762,7 +836,9 @@ export default class extends Vue {
       TOs: TOs,
       TTs: TTs,
       TOBlocking: TOBlocking,
-      TTErrors: TTErrors
+      TTErrors: TTErrors,
+      pausedOAMM: pausedOAMM,
+      TOBlockingOAMM: TOBlockingOAMM
     };
     this.ICDexCanisters = pairs.concat(pools);
   }
@@ -846,13 +922,13 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     const SNSList = await this.SNSWasmService.listDeployedSnses();
-    const promiseValue = [];
-    SNSList.forEach((item) => {
-      promiseValue.push(this.getLifecycle(item));
-    });
-    const res = await Promise.all(promiseValue);
+    // const promiseValue = [];
+    // SNSList.forEach((item) => {
+    //   promiseValue.push(this.getLifecycle(item));
+    // });
+    // const res = await Promise.all(promiseValue);
     SNSList.forEach((item, index) => {
-      if (res[index]) {
+      if (item.root_canister_id[0].toString() === ICLighthouseRoot) {
         this.SNSList.push(item);
         this.get_sns_canisters_summary(
           item.root_canister_id[0].toString(),
@@ -952,10 +1028,10 @@ export default class extends Vue {
             root: root,
             ...item
           });
-          if (!this.SNSDappsForDapp[root]) {
-            this.SNSDappsForDapp[root] = [];
+          if (!this.SNSDappsForDappAll[root]) {
+            this.SNSDappsForDappAll[root] = [];
           }
-          this.SNSDappsForDapp[root].push({
+          this.SNSDappsForDappAll[root].push({
             type: key,
             root: root,
             ...item
@@ -1004,7 +1080,124 @@ export default class extends Vue {
   }
   private showICDexCanisters(): void {
     this.pageICDexCanisters = 1;
+    this.currentICDexCanisters = this.ICDexCanisters;
     this.ICDexCanistersVisible = true;
+  }
+  private showTradingPairs(): void {
+    this.pageICDexCanisters = 1;
+    this.currentICDexCanisters = this.ICDexCanisters.filter((item) => {
+      if ((item[0] as { pairId: string; pairInfo: PairInfo }).pairId) {
+        return true;
+      }
+    });
+    this.ICDexCanistersVisible = true;
+  }
+  private showTradingPairsPaused(): void {
+    this.pageICDexCanisters = 1;
+    this.currentICDexCanisters = this.ICDexCanisters.filter((item) => {
+      if ((item[0] as { pairId: string; pairInfo: PairInfo }).pairId) {
+        if (
+          (item[0] as { pairId: string; pairInfo: PairInfo }).pairInfo.paused
+        ) {
+          return true;
+        }
+      }
+    });
+    this.ICDexCanistersVisible = true;
+  }
+  private showTradingPoolsPaused(): void {
+    this.pageICDexCanisters = 1;
+    this.currentICDexCanisters = this.ICDexCanisters.filter((item) => {
+      if ((item[0] as { poolId: string; poolInfo: PoolInfo }).poolId) {
+        if (
+          (item[0] as { poolId: string; poolInfo: PoolInfo }).poolInfo.paused
+        ) {
+          return true;
+        }
+      }
+    });
+    this.ICDexCanistersVisible = true;
+  }
+  private showTradingPairsBlocking(): void {
+    this.pageICDexCanisters = 1;
+    this.currentICDexCanisters = this.ICDexCanisters.filter((item) => {
+      if ((item[0] as { pairId: string; pairInfo: PairInfo }).pairId) {
+        let flag = false;
+        if (item[4]) {
+          for (let i = 0; i < item[4].length; i++) {
+            if (item[4][i][1] && item[4][i][1][0]) {
+              const type = Object.keys(item[4][i][1][0].status)[0];
+              if (type === 'Blocking') {
+                flag = true;
+                break;
+              }
+            }
+          }
+        }
+        return flag;
+      }
+    });
+    this.ICDexCanistersVisible = true;
+  }
+  private showTradingPoolsBlocking(): void {
+    this.pageICDexCanisters = 1;
+    this.currentICDexCanisters = this.ICDexCanisters.filter((item) => {
+      if ((item[0] as { poolId: string; poolInfo: PoolInfo }).poolId) {
+        let flag = false;
+        if (item[4]) {
+          for (let i = 0; i < item[4].length; i++) {
+            if (item[4][i][1] && item[4][i][1][0]) {
+              const type = Object.keys(item[4][i][1][0].status)[0];
+              if (type === 'Blocking') {
+                flag = true;
+                break;
+              }
+            }
+          }
+        }
+        return flag;
+      }
+    });
+    this.ICDexCanistersVisible = true;
+  }
+  private showTradingPools(): void {
+    this.pageICDexCanisters = 1;
+    this.currentICDexCanisters = this.ICDexCanisters.filter((item) => {
+      if ((item[0] as { poolId: string; poolInfo: PoolInfo }).poolId) {
+        return true;
+      }
+    });
+    this.ICDexCanistersVisible = true;
+  }
+  private showSNSDappsForDappAll(): void {
+    this.SNSDappsForDapp[this.currentRoot] =
+      this.SNSDappsForDappAll[this.currentRoot];
+    this.SNSCanistersVisible = true;
+  }
+  private showStopped(): void {
+    this.SNSDappsForDapp[this.currentRoot] = this.SNSDappsForDappAll[
+      this.currentRoot
+    ].filter((item) => {
+      if (item.status && item.status.length) {
+        const type = Object.keys(item.status[0].status)[0];
+        return type === 'stopped';
+      }
+    });
+    this.SNSCanistersVisible = true;
+  }
+  private showInsufficient(): void {
+    this.SNSDappsForDapp[this.currentRoot] = this.SNSDappsForDappAll[
+      this.currentRoot
+    ].filter((item) => {
+      if (item.status && item.status.length) {
+        //30 days
+        const min = new BigNumber(
+          item.status[0].idle_cycles_burned_per_day.toString(10)
+        ).times(30);
+        return min.gt(item.status[0].cycles.toString(10));
+      }
+    });
+    this.SNSCanistersVisible = true;
   }
 }
 </script>
@@ -1075,7 +1268,38 @@ export default class extends Vue {
 }
 .dashboard-data-title {
   font-size: 16px;
-  color: #fff;
+  color: #adb3c4;
+}
+.ictc-main {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 90px;
+  font-size: 15px;
+  .ictc-item {
+    &:first-child {
+      > div {
+        padding-right: 80px;
+      }
+    }
+    &.ictc-item-s {
+      > div {
+        padding: 0 80px;
+      }
+    }
+    > div {
+      display: flex;
+      align-items: center;
+      height: 20px;
+      margin: 5px 0;
+      border-right: 1px solid #5e6170;
+    }
+    &:last-child {
+      > div {
+        border-right: none;
+      }
+    }
+  }
 }
 .dashboard-data-main {
   display: flex;
@@ -1118,6 +1342,9 @@ export default class extends Vue {
       }
     }
   }
+}
+.home-header {
+  margin-top: 14px;
 }
 </style>
 <style lang="scss">

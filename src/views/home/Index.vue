@@ -1,18 +1,6 @@
 <template>
   <div class="base-bg">
-    <div
-      class="home-header"
-      :class="{
-        'home-header-main':
-          $route.fullPath.toLocaleLowerCase().startsWith('/icl') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/icdex') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/market') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/competitions') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/cyclesfinance') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/icswap') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/mining')
-      }"
-    >
+    <div class="home-header home-header-main">
       <div class="home-header-main-menu">
         <img
           class="home-header-main-menu-left"
@@ -253,7 +241,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.10
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.11
             </span>
           </span>
         </span>

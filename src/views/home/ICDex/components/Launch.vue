@@ -70,7 +70,7 @@
             v-model="form.token0"
             autocomplete="off"
             type="text"
-            placeholder="Base token (token0)"
+            placeholder="Base token (token0), only ICRC1 and DRC20 standards are supported."
             @change="tokenChange(form.token0)"
           />
           <div class="token-info" v-show="token0Info.name">
@@ -86,7 +86,7 @@
             v-model="form.token1"
             autocomplete="off"
             type="text"
-            placeholder="Quote token (token1)"
+            placeholder="Quote token (token1), only ICRC1 and DRC20 standards are supported."
             @change="tokenChange(form.token1)"
           />
           <div class="token-info" v-show="token1Info.name">

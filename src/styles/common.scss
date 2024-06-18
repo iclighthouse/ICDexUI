@@ -1278,6 +1278,12 @@ dt {
     }
   }
 }
+.home-header-title {
+  display: inline-block;
+  color: #fff;
+  padding-left: 4px;
+  padding-top: 4px;
+}
 @media screen and (max-width: 768px) {
   .home-header-right-info {
     width: auto;

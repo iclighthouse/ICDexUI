@@ -48,8 +48,8 @@ const common = {
     SET_EXPIRE_SESSION_TIMEOUT: (state: State): void => {
       const ONE_MINUTE_MILLIS = 60 * 1000;
       const nowTimestamp = new Date().getTime();
-      // console.log(nowTimestamp, 30 * ONE_MINUTE_MILLIS);
-      state.expireSessionTimeout = nowTimestamp + 30 * ONE_MINUTE_MILLIS;
+      // console.log(nowTimestamp, 120 * ONE_MINUTE_MILLIS);
+      state.expireSessionTimeout = nowTimestamp + 120 * ONE_MINUTE_MILLIS;
     },
     SET_PRINCIPAL_ID: (state: State, principalId: string): void => {
       state.principalId = principalId;
@@ -58,7 +58,7 @@ const common = {
       state.identity = identity;
       const ONE_MINUTE_MILLIS = 60 * 1000;
       const nowTimestamp = new Date().getTime();
-      state.expireSessionTimeout = nowTimestamp + 30 * ONE_MINUTE_MILLIS;
+      state.expireSessionTimeout = nowTimestamp + 120 * ONE_MINUTE_MILLIS;
     },
     SET_SHOW_CHECK_AUTH: (state: State, showCheckAuth: boolean): void => {
       state.showCheckAuth = showCheckAuth;

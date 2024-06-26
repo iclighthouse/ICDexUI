@@ -45,6 +45,13 @@
                 <!--<dd></dd>-->
               </dl>
             </div>
+            <div class="connect-list-item pc-show" @click="connect('NFID')">
+              <span><img src="@/assets/img/NFID.svg" alt="" /></span>
+              <dl>
+                <dt>Connect NFID Wallet</dt>
+                <!--<dd></dd>-->
+              </dl>
+            </div>
             <!--<div class="connect-list-item pc-show" @click="connect('Infinity')">
               <span><img src="@/assets/img/infinity.png" alt="" /></span>
               <dl>
@@ -216,6 +223,8 @@ import { namespace } from 'vuex-class';
 import { ConnectMetaMaskMixin } from '@/mixins';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
+import { NFID } from '@nfid/embed';
+import { getNfid, nfidEmbedLogin } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 @Component({
   name: 'Index',
@@ -253,6 +262,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.type = 'Existing';
   }
   public async connect(type: LoginType): Promise<void> {
+    console.log(type);
     this.setCheckAuth(false);
     if (type === 'InternetIdentitiy') {
       this.connectSpinning = true;
@@ -339,6 +349,24 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } else if (type === 'HardwareWallet') {
       this.modalType = type;
       this.comingVisible = true;
+    } else if (type === 'NFID') {
+      this.connectSpinning = true;
+      const nfid = await getNfid();
+      console.log(nfid);
+      const nfidLogin = await nfidEmbedLogin(nfid);
+      console.log(nfidLogin);
+      this.connectSpinning = false;
+      if (nfidLogin) {
+        if (this.$route.query.redirect) {
+          this.$router.push(this.$route.query.redirect as any).catch(() => {
+            return;
+          });
+        } else {
+          this.$router.push('/ICDex').catch(() => {
+            return;
+          });
+        }
+      }
     }
   }
   private loginByExists(): void {

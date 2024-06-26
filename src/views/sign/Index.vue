@@ -12,7 +12,8 @@
               loginType !== 'authClient' &&
               loginType !== 'plug' &&
               loginType !== 'Infinity' &&
-              loginType !== 'MetaMask'
+              loginType !== 'MetaMask' &&
+              loginType !== 'NFID'
             "
             class="account-list-title"
           >
@@ -66,6 +67,14 @@
           </div>
           <div
             class="verify-internet"
+            v-if="loginType === 'NFID'"
+            @click="authNFIDClient"
+          >
+            <img src="@/assets/img/NFID.svg" alt="" />Re-verify your NFID
+            identity
+          </div>
+          <div
+            class="verify-internet"
             v-if="loginType === 'Infinity'"
             @click="authInfinityClient"
           >
@@ -78,7 +87,8 @@
               loginType !== 'authClient' &&
               loginType !== 'plug' &&
               loginType !== 'Infinity' &&
-              loginType !== 'MetaMask'
+              loginType !== 'MetaMask' &&
+              loginType !== 'NFID'
             "
             placeholder="input password"
             v-model="password"
@@ -88,7 +98,8 @@
               loginType !== 'authClient' &&
               loginType !== 'plug' &&
               loginType !== 'Infinity' &&
-              loginType !== 'MetaMask'
+              loginType !== 'MetaMask' &&
+              loginType !== 'NFID'
             "
             type="button"
             class="primary large-primary large-primary form-button"
@@ -149,6 +160,7 @@ import { ConnectMetaMaskMixin } from '@/mixins';
 import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
+import { getNfid, nfidEmbedLogin } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
 
@@ -279,7 +291,9 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       const isConnect = await connectInfinity.connect(whitelist);
       if (isConnect) {
         await createInfinityWhiteActor();
-        const principalId = await (window as any).ic.infinityWallet.getPrincipal();
+        const principalId = await (
+          window as any
+        ).ic.infinityWallet.getPrincipal();
         if (principalId && principalId.toString() !== this.selectedAccount) {
           this.localAccount = this.selectedAccount;
           this.plugAccount = principalId.toString();
@@ -300,6 +314,33 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       }
     } catch (e) {
       console.log(e);
+    }
+    this.spinning = false;
+  }
+  private async authNFIDClient(): Promise<void> {
+    this.spinning = true;
+    const nfid = await getNfid();
+    const identity = await nfidEmbedLogin(nfid);
+    console.log(identity);
+    if (identity) {
+      const principal = identity.getPrincipal();
+      if (principal && principal.toString() !== this.selectedAccount) {
+        this.localAccount = this.selectedAccount;
+        this.accountType = 'NFID';
+        this.plugAccount = principal.toString();
+        (this.$refs as any).switchPlugAccount.plugVisible = true;
+      } else {
+        this.setCheckAuth(false);
+        if (this.$route.query.redirect) {
+          this.$router.push(this.$route.query.redirect as any).catch(() => {
+            return;
+          });
+        } else {
+          this.$router.push('/ICDex').catch(() => {
+            return;
+          });
+        }
+      }
     }
     this.spinning = false;
   }

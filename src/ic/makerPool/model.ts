@@ -12,6 +12,7 @@ export interface PoolStats {
   apy7d: {
     token0: string;
     token1: string;
+    apy: string[];
   };
   poolShares: bigint;
   poolBalance: PoolBalance;
@@ -19,6 +20,7 @@ export interface PoolStats {
   apy24h: {
     token0: string;
     token1: string;
+    apy: string[];
   };
   holders: bigint;
   poolShareWeighted: ShareWeighted;
@@ -248,5 +250,7 @@ export default interface Service {
   ictc_getTTs(page: bigint, size: bigint): Promise<TTsResponse>;
   ictc_getTTErrors(page: bigint, size: bigint): Promise<TTErrorsResponse>;
   ictc_getTOPool(): Promise<TOPoolResponse>;
-  get_account_events(accountId: Array<number>): Promise<Array<[PoolEvent, Time]>>;
+  get_account_events(
+    accountId: Array<number>
+  ): Promise<Array<[PoolEvent, Time]>>;
 }

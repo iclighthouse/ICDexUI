@@ -565,6 +565,7 @@ import { connectIcx } from '@/ic/connectIcx';
 import EventBus from '@/utils/Event';
 import { WrappedFormUtils } from 'ant-design-vue/types/form/form';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
+import { getNfid } from '@/ic/NFIDAuth';
 
 const commonModule = namespace('common');
 const KeyEncoder = require('key-encoder').default;
@@ -671,7 +672,8 @@ export default class extends Vue {
     if (
       this.priList[this.getPrincipalId] !== 'Plug' &&
       this.priList[this.getPrincipalId] !== 'Infinity' &&
-      this.priList[this.getPrincipalId] !== 'AuthClient'
+      this.priList[this.getPrincipalId] !== 'AuthClient' &&
+      this.priList[this.getPrincipalId] !== 'NFID'
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
@@ -700,6 +702,8 @@ export default class extends Vue {
         return require('@/assets/img/dfinity.png');
       } else if (this.priList[principal].includes('MetaMask')) {
         return require('@/assets/img/MetaMask.png');
+      } else if (this.priList[principal].includes('NFID')) {
+        return require('@/assets/img/NFID.svg');
       } else {
         return require('@/assets/img/logo-i.png');
       }
@@ -745,20 +749,46 @@ export default class extends Vue {
     if (principal === this.getPrincipalId) {
       return;
     }
-    if (this.priList[principal] && this.priList[principal] === 'AuthClient') {
-      const authClientAPi = await AuthClientAPi.create();
-      const identity = authClientAPi.tryGetIdentity();
-      if (identity) {
-        await authClientAPi.logout();
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      if (this.priList[principal] && this.priList[principal] === 'AuthClient') {
+        const authClientAPi = await AuthClientAPi.create();
+        const identity = authClientAPi.tryGetIdentity();
+        if (identity) {
+          await authClientAPi.logout();
+        }
+      } else if (
+        this.priList[principal] &&
+        this.priList[principal] === 'NFID'
+      ) {
+        const nfid = await getNfid();
+        console.log(nfid);
+        if (nfid) {
+          const identity = nfid.getIdentity();
+          if (identity) {
+            await nfid.logout();
+          }
+        }
       }
+    } catch (e) {
+      console.log(e);
     }
     localStorage.setItem('principal', principal);
     this.setPrincipalId(principal);
     this.setIdentity(null);
+    loading.close();
     if (this.priList[principal]) {
       if (this.priList[principal] === 'AuthClient') {
         await this.$router.replace({
           path: '/sign/authClient',
+          query: { redirect: this.$route.fullPath }
+        });
+      } else if (this.priList[principal] === 'NFID') {
+        await this.$router.replace({
+          path: '/sign/NFID',
           query: { redirect: this.$route.fullPath }
         });
       } else if (this.priList[principal] === 'Plug') {
@@ -883,6 +913,16 @@ export default class extends Vue {
     if (this.priList[principal] === 'Infinity') {
       if ((window as any).ic && (window as any).ic.infinityWallet) {
         (window as any).ic.infinityWallet.disconnect();
+      }
+    }
+    if (this.priList[principal] === 'NFID') {
+      const nfid = await getNfid();
+      console.log(nfid);
+      if (nfid) {
+        const identity = nfid.getIdentity();
+        if (identity) {
+          await nfid.logout();
+        }
       }
     }
     localStorage.removeItem('principal');

@@ -227,7 +227,7 @@ export default ({ IDL }) => {
     token1: IDL.Nat,
     price: Price
   });
-  const AccountId__5 = IDL.Vec(IDL.Nat8);
+  const AccountId__4 = IDL.Vec(IDL.Nat8);
   const Timestamp__4 = IDL.Nat;
   const BlockHeight = IDL.Nat;
   const TrieList = IDL.Record({
@@ -237,26 +237,8 @@ export default ({ IDL }) => {
   });
   const Toid = IDL.Nat;
   const Ttid = IDL.Nat;
-  const Sa__2 = IDL.Vec(IDL.Nat8);
-  const AccountId__4 = IDL.Vec(IDL.Nat8);
   const Amount__3 = IDL.Nat;
-  const Quantity = IDL.Nat;
-  const Price__2 = IDL.Nat;
-  const OrderPrice = IDL.Record({
-    quantity: IDL.Variant({
-      Buy: IDL.Tuple(Quantity, Amount__3),
-      Sell: Quantity
-    }),
-    price: Price__2
-  });
-  const OrderType = IDL.Variant({
-    FAK: IDL.Null,
-    FOK: IDL.Null,
-    LMT: IDL.Null,
-    MKT: IDL.Null
-  });
-  const Data__1 = IDL.Vec(IDL.Nat8);
-  const Nonce__1 = IDL.Nat;
+  const Sa__2 = IDL.Vec(IDL.Nat8);
   const Subaccount = IDL.Vec(IDL.Nat8);
   const Account = IDL.Record({
     owner: IDL.Principal,
@@ -277,7 +259,7 @@ export default ({ IDL }) => {
     Running: IDL.Null,
     Deleted: IDL.Null
   });
-  const Price__3 = IDL.Nat;
+  const Price__2 = IDL.Nat;
   const Ppm = IDL.Nat;
   const Sa__3 = IDL.Vec(IDL.Nat8);
   const To = IDL.Text;
@@ -311,13 +293,6 @@ export default ({ IDL }) => {
   const CallType__1 = IDL.Variant({
     __block: IDL.Null,
     ICDex: IDL.Variant({
-      cancelAll: IDL.Tuple(
-        IDL.Variant({
-          self_sa: IDL.Opt(Sa__2),
-          management: IDL.Opt(AccountId__4)
-        }),
-        IDL.Opt(IDL.Variant({ Buy: IDL.Null, Sell: IDL.Null }))
-      ),
       withdraw: IDL.Tuple(
         IDL.Opt(Amount__3),
         IDL.Opt(Amount__3),
@@ -328,26 +303,6 @@ export default ({ IDL }) => {
         IDL.Variant({ token0: IDL.Null, token1: IDL.Null }),
         IDL.Nat,
         IDL.Opt(Sa__2)
-      ),
-      trade_b: IDL.Tuple(
-        OrderPrice,
-        OrderType,
-        IDL.Opt(IDL.Int),
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__1),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
-      ),
-      cancel: IDL.Tuple(IDL.Nat, IDL.Opt(Sa__2)),
-      cancelByTxid: IDL.Tuple(IDL.Vec(IDL.Nat8), IDL.Opt(Sa__2)),
-      tradeMKT_b: IDL.Tuple(
-        IDL.Principal,
-        Amount__3,
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Nonce__1),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__1),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
       )
     }),
     ICRC1: IDL.Variant({
@@ -375,9 +330,9 @@ export default ({ IDL }) => {
         IDL.Variant({
           GridOrder: IDL.Record({
             status: IDL.Opt(STStatus),
-            lowerLimit: IDL.Opt(Price__3),
-            upperLimit: IDL.Opt(Price__3),
-            spread: IDL.Opt(IDL.Variant({ Geom: Ppm, Arith: Price__3 })),
+            lowerLimit: IDL.Opt(Price__2),
+            upperLimit: IDL.Opt(Price__2),
+            spread: IDL.Opt(IDL.Variant({ Geom: Ppm, Arith: Price__2 })),
             amount: IDL.Opt(
               IDL.Variant({
                 Percent: IDL.Opt(Ppm),
@@ -392,9 +347,9 @@ export default ({ IDL }) => {
       sto_createProOrder: IDL.Tuple(
         IDL.Variant({
           GridOrder: IDL.Record({
-            lowerLimit: Price__3,
-            upperLimit: Price__3,
-            spread: IDL.Variant({ Geom: Ppm, Arith: Price__3 }),
+            lowerLimit: Price__2,
+            upperLimit: Price__2,
+            spread: IDL.Variant({ Geom: Ppm, Arith: Price__2 }),
             amount: IDL.Variant({
               Percent: IDL.Opt(Ppm),
               Token0: IDL.Nat,
@@ -492,13 +447,6 @@ export default ({ IDL }) => {
   const CallType = IDL.Variant({
     __block: IDL.Null,
     ICDex: IDL.Variant({
-      cancelAll: IDL.Tuple(
-        IDL.Variant({
-          self_sa: IDL.Opt(Sa__2),
-          management: IDL.Opt(AccountId__4)
-        }),
-        IDL.Opt(IDL.Variant({ Buy: IDL.Null, Sell: IDL.Null }))
-      ),
       withdraw: IDL.Tuple(
         IDL.Opt(Amount__3),
         IDL.Opt(Amount__3),
@@ -509,26 +457,6 @@ export default ({ IDL }) => {
         IDL.Variant({ token0: IDL.Null, token1: IDL.Null }),
         IDL.Nat,
         IDL.Opt(Sa__2)
-      ),
-      trade_b: IDL.Tuple(
-        OrderPrice,
-        OrderType,
-        IDL.Opt(IDL.Int),
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__1),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
-      ),
-      cancel: IDL.Tuple(IDL.Nat, IDL.Opt(Sa__2)),
-      cancelByTxid: IDL.Tuple(IDL.Vec(IDL.Nat8), IDL.Opt(Sa__2)),
-      tradeMKT_b: IDL.Tuple(
-        IDL.Principal,
-        Amount__3,
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(Nonce__1),
-        IDL.Opt(Sa__2),
-        IDL.Opt(Data__1),
-        IDL.Opt(IDL.Record({ broker: IDL.Principal, rate: IDL.Float64 }))
       )
     }),
     ICRC1: IDL.Variant({
@@ -556,9 +484,9 @@ export default ({ IDL }) => {
         IDL.Variant({
           GridOrder: IDL.Record({
             status: IDL.Opt(STStatus),
-            lowerLimit: IDL.Opt(Price__3),
-            upperLimit: IDL.Opt(Price__3),
-            spread: IDL.Opt(IDL.Variant({ Geom: Ppm, Arith: Price__3 })),
+            lowerLimit: IDL.Opt(Price__2),
+            upperLimit: IDL.Opt(Price__2),
+            spread: IDL.Opt(IDL.Variant({ Geom: Ppm, Arith: Price__2 })),
             amount: IDL.Opt(
               IDL.Variant({
                 Percent: IDL.Opt(Ppm),
@@ -573,9 +501,9 @@ export default ({ IDL }) => {
       sto_createProOrder: IDL.Tuple(
         IDL.Variant({
           GridOrder: IDL.Record({
-            lowerLimit: Price__3,
-            upperLimit: Price__3,
-            spread: IDL.Variant({ Geom: Ppm, Arith: Price__3 }),
+            lowerLimit: Price__2,
+            upperLimit: Price__2,
+            spread: IDL.Variant({ Geom: Ppm, Arith: Price__2 }),
             amount: IDL.Variant({
               Percent: IDL.Opt(Ppm),
               Token0: IDL.Nat,
@@ -724,43 +652,6 @@ export default ({ IDL }) => {
     Doing: IDL.Null,
     Unknown: IDL.Null
   });
-  const TradingStatus = IDL.Variant({
-    Todo: IDL.Null,
-    Closed: IDL.Null,
-    Cancelled: IDL.Null,
-    Pending: IDL.Null
-  });
-  const Txid__1 = IDL.Vec(IDL.Nat8);
-  const BalanceChange = IDL.Variant({
-    DebitRecord: IDL.Nat,
-    CreditRecord: IDL.Nat,
-    NoChange: IDL.Null
-  });
-  const OrderFilled = IDL.Record({
-    time: Time__2,
-    token0Value: BalanceChange,
-    counterparty: Txid__1,
-    token1Value: BalanceChange
-  });
-  const TradingResult = IDL.Variant({
-    ok: IDL.Record({
-      status: TradingStatus,
-      txid: Txid__1,
-      filled: IDL.Vec(OrderFilled)
-    }),
-    err: IDL.Record({
-      code: IDL.Variant({
-        NonceError: IDL.Null,
-        InvalidAmount: IDL.Null,
-        UndefinedError: IDL.Null,
-        UnacceptableVolatility: IDL.Null,
-        TransactionBlocking: IDL.Null,
-        InsufficientBalance: IDL.Null,
-        TransferException: IDL.Null
-      }),
-      message: IDL.Text
-    })
-  });
   const Duration = IDL.Nat64;
   const TransferError = IDL.Variant({
     GenericError: IDL.Record({
@@ -851,14 +742,9 @@ export default ({ IDL }) => {
   const Receipt = IDL.Variant({
     __block: IDL.Null,
     ICDex: IDL.Variant({
-      cancelAll: IDL.Null,
       withdraw: IDL.Tuple(IDL.Nat, IDL.Nat),
       depositFallback: IDL.Tuple(IDL.Nat, IDL.Nat),
-      deposit: IDL.Null,
-      trade_b: TradingResult,
-      cancel: IDL.Null,
-      cancelByTxid: IDL.Null,
-      tradeMKT_b: TradingResult
+      deposit: IDL.Null
     }),
     ICRC1: IDL.Variant({
       icrc1_balance_of: IDL.Nat,
@@ -1008,7 +894,7 @@ export default ({ IDL }) => {
       ['query']
     ),
     get_account_events: IDL.Func(
-      [AccountId__5],
+      [AccountId__4],
       [IDL.Vec(IDL.Tuple(Event, Timestamp__4))],
       ['query']
     ),
@@ -1181,6 +1067,7 @@ export default ({ IDL }) => {
         IDL.Record({
           latestUnitNetValue: UnitNetValue,
           apy7d: IDL.Record({
+            apy: IDL.Opt(IDL.Float64),
             token0: IDL.Float64,
             token1: IDL.Float64
           }),
@@ -1188,6 +1075,7 @@ export default ({ IDL }) => {
           poolBalance: PoolBalance,
           poolLocalBalance: PoolBalance,
           apy24h: IDL.Record({
+            apy: IDL.Opt(IDL.Float64),
             token0: IDL.Float64,
             token1: IDL.Float64
           }),

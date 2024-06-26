@@ -22983,7 +22983,7 @@ export default class extends Vue {
         display: none;
       }*/
       &.de-swap-list-item-pair-trade {
-        height: 180px;
+        height: 206px;
         overflow-y: scroll;
         transform: translateZ(0);
         -webkit-overflow-scrolling: touch;

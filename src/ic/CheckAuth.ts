@@ -54,18 +54,23 @@ export const checkAuth = (
         JSON.parse(localStorage.getItem('whitelist')) || {};
       const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
       console.log((window as any).ic);
-      if ((window as any).ic && !(window as any).ic.plug.agent || (canisterId && !whitelist.includes(canisterId))) {
+      if (
+        ((window as any).ic && !(window as any).ic.plug.agent) ||
+        (canisterId && !whitelist.includes(canisterId))
+      ) {
         refreshingPlugOrInfinity(resolve);
       } else {
         if ((window as any).ic && (window as any).ic.plug.agent) {
-          (window as any).ic.plug.agent.getPrincipal().then((currentPrincipal) => {
-            if (currentPrincipal.toString() !== principal) {
-              // router.go(0);
-              resolve(false);
-            } else {
-              resolve(true);
-            }
-          });
+          (window as any).ic.plug.agent
+            .getPrincipal()
+            .then((currentPrincipal) => {
+              if (currentPrincipal.toString() !== principal) {
+                // router.go(0);
+                resolve(false);
+              } else {
+                resolve(true);
+              }
+            });
         } else {
           resolve(true);
         }
@@ -80,13 +85,15 @@ export const checkAuth = (
           refreshingPlugOrInfinity(resolve);
         } else {
           if (connected) {
-            (window as any).ic.infinityWallet.getPrincipal().then((currentPrincipal) => {
-              if (currentPrincipal.toString() !== principal) {
-                router.go(0);
-              } else {
-                resolve(true);
-              }
-            });
+            (window as any).ic.infinityWallet
+              .getPrincipal()
+              .then((currentPrincipal) => {
+                if (currentPrincipal.toString() !== principal) {
+                  router.go(0);
+                } else {
+                  resolve(true);
+                }
+              });
           } else {
             resolve(true);
           }

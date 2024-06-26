@@ -40,6 +40,14 @@
           </div>
           <div
             class="verify-internet"
+            v-show="loginType === 'NFID'"
+            @click="authNFIDClient"
+          >
+            <img src="@/assets/img/NFID.svg" alt="" />Re-verify your Internet
+            identity
+          </div>
+          <div
+            class="verify-internet"
             v-show="loginType === 'plug'"
             @click="authPlugClient"
           >
@@ -89,7 +97,8 @@
               loginType !== 'authClient' &&
               loginType !== 'plug' &&
               loginType !== 'Infinity' &&
-              loginType !== 'MetaMask'
+              loginType !== 'MetaMask' &&
+              loginType !== 'NFID'
             "
             placeholder="input password"
             v-model="password"
@@ -100,7 +109,8 @@
               loginType !== 'authClient' &&
               loginType !== 'plug' &&
               loginType !== 'Infinity' &&
-              loginType !== 'MetaMask'
+              loginType !== 'MetaMask' &&
+              loginType !== 'NFID'
             "
             class="primary large-primary form-button w100"
             @click="onSubmit"
@@ -172,6 +182,7 @@ import { ConnectMetaMaskMixin } from '@/mixins';
 import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
+import { getNfid, nfidEmbedLogin } from '@/ic/NFIDAuth';
 
 const commonModule = namespace('common');
 const ethers = require('ethers');
@@ -204,6 +215,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         return 'plug';
       } else if (this.priList[this.selectedAccount] === 'Infinity') {
         return 'Infinity';
+      } else if (this.priList[this.selectedAccount] === 'NFID') {
+        return 'NFID';
       } else if (
         this.priList[this.selectedAccount] &&
         this.priList[this.selectedAccount].includes('MetaMask')
@@ -230,6 +243,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         return require('@/assets/img/infinity.png');
       } else if (this.priList[principal] === 'AuthClient') {
         return require('@/assets/img/dfinity.png');
+      } else if (this.priList[principal] === 'NFID') {
+        return require('@/assets/img/NFID.svg');
       } else if (this.priList[principal].includes('MetaMask')) {
         return require('@/assets/img/MetaMask.png');
       } else {
@@ -314,6 +329,33 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   private signInstead(): void {
     this.$router.replace('/login');
   }
+  private async authNFIDClient(): Promise<void> {
+    this.spinning = true;
+    const nfid = await getNfid();
+    const identity = await nfidEmbedLogin(nfid);
+    console.log(identity);
+    if (identity) {
+      const principal = identity.getPrincipal();
+      if (principal && principal.toString() !== this.selectedAccount) {
+        this.localAccount = this.selectedAccount;
+        this.accountType = 'NFID';
+        this.plugAccount = principal.toString();
+        (this.$refs as any).switchPlugAccount.plugVisible = true;
+      } else {
+        this.setCheckAuth(false);
+        if (this.$route.query.redirect) {
+          this.$router.push(this.$route.query.redirect as any).catch(() => {
+            return;
+          });
+        } else {
+          this.$router.push('/ICDex').catch(() => {
+            return;
+          });
+        }
+      }
+    }
+    this.spinning = false;
+  }
   private async authClient(): Promise<void> {
     this.spinning = true;
     const authClientAPi = await AuthClientAPi.create();
@@ -386,7 +428,9 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       const isConnect = await connectInfinity.connect(whitelist);
       if (isConnect) {
         await createInfinityWhiteActor();
-        const principalId = await (window as any).ic.infinityWallet.getPrincipal();
+        const principalId = await (
+          window as any
+        ).ic.infinityWallet.getPrincipal();
         if (principalId && principalId.toString() !== this.selectedAccount) {
           this.localAccount = this.selectedAccount;
           this.plugAccount = principalId.toString();

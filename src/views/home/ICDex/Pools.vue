@@ -739,50 +739,13 @@
                 />
               </div>
               <div class="pool-apy">
-                <span>APY (Estimated):</span>
-              </div>
-              <div class="pool-apy base-font-title">
-                <span class="pool-apy-item">
+                <span>APY (Estimated): </span>
+                <span class="base-font-title">
                   <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
+                    v-if="item[3] && item[3].apy24h.apy && item[3].apy7d.apy"
                   >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token1 | filterBuyFee }}(24-Hour APY)
-                    </span>
-                  </span>
-                  <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
-                  >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token1 | filterBuyFee }}(7-Day
-                      APY)
-                    </span>
+                    {{ item[3].apy24h.apy[0] | filterBuyFee }} (24H APY),
+                    {{ item[3].apy7d.apy[0] | filterBuyFee }} (7D APY)
                   </span>
                   <span v-else>-</span>
                 </span>
@@ -1109,50 +1072,13 @@
                 </span>
               </div>
               <div class="pool-apy">
-                <span>APY (Estimated):</span>
-              </div>
-              <div class="pool-apy base-font-title">
-                <span class="pool-apy-item">
+                <span>APY (Estimated): </span>
+                <span class="base-font-title">
                   <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
+                    v-if="item[3] && item[3].apy24h.apy && item[3].apy7d.apy"
                   >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token1 | filterBuyFee }}(24-Hour APY)
-                    </span>
-                  </span>
-                  <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
-                  >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token1 | filterBuyFee }}(7-Day
-                      APY)
-                    </span>
+                    {{ item[3].apy24h.apy[0] | filterBuyFee }} (24H APY),
+                    {{ item[3].apy7d.apy[0] | filterBuyFee }} (7D APY)
                   </span>
                   <span v-else>-</span>
                 </span>
@@ -1468,50 +1394,13 @@
                 </span>
               </div>
               <div class="pool-apy">
-                <span>APY (Estimated):</span>
-              </div>
-              <div class="pool-apy base-font-title">
-                <span class="pool-apy-item">
+                <span>APY (Estimated): </span>
+                <span class="base-font-title">
                   <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
+                    v-if="item[3] && item[3].apy24h.apy && item[3].apy7d.apy"
                   >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token1 | filterBuyFee }}(24-Hour APY)
-                    </span>
-                  </span>
-                  <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
-                  >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token1 | filterBuyFee }}(7-Day
-                      APY)
-                    </span>
+                    {{ item[3].apy24h.apy[0] | filterBuyFee }} (24H APY),
+                    {{ item[3].apy7d.apy[0] | filterBuyFee }} (7D APY)
                   </span>
                   <span v-else>-</span>
                 </span>
@@ -4693,8 +4582,6 @@ export default class extends Vue {
     bottom: 16px;
   }
   .pool-apy {
-    display: flex;
-    justify-content: flex-start;
     margin-top: 5px;
     .pool-apy-item {
       display: flex;

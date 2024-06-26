@@ -231,44 +231,9 @@
         <div class="pool-apy">
           <span>APY (Estimated):&nbsp;&nbsp;</span>
           <span class="pool-apy-item base-font-title">
-            <span
-              v-if="
-                pool[2] &&
-                pool[1] &&
-                tokens[pool[1].pairInfo.token0[0].toString()] &&
-                tokens[pool[1].pairInfo.token1[0].toString()]
-              "
-            >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token0[0].toString()].symbol
-                }}-based {{ pool[2].apy24h.token0 | filterAPY }},</span
-              >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token1[0].toString()].symbol
-                }}-based {{ pool[2].apy24h.token1 | filterAPY }}(24-Hour
-                APY)</span
-              >
-            </span>
-            <span
-              v-if="
-                pool[2] &&
-                pool[1] &&
-                tokens[pool[1].pairInfo.token0[0].toString()] &&
-                tokens[pool[1].pairInfo.token1[0].toString()]
-              "
-            >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token0[0].toString()].symbol
-                }}-based {{ pool[2].apy7d.token0 | filterAPY }},</span
-              >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token1[0].toString()].symbol
-                }}-based {{ pool[2].apy7d.token1 | filterAPY }}(7-Day APY)</span
-              >
+            <span v-if="pool[2] && pool[2].apy24h.apy && pool[2].apy7d.apy">
+              {{ pool[2].apy24h.apy[0] | filterAPY }} (24H APY),
+              {{ pool[2].apy7d.apy[0] | filterAPY }} (7D APY)
             </span>
             <span v-if="!pool[2] && !pool[1] && isBusy" class="loading-spinner">
             </span>

@@ -34,6 +34,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import AuthClientAPi from '@/ic/AuthClientApi';
 import { namespace } from 'vuex-class';
+import { getNfid } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 
 @Component({
@@ -67,6 +68,16 @@ export default class extends Vue {
     if (priList[principal] === 'Infinity') {
       if ((window as any).ic && (window as any).ic.infinityWallet) {
         (window as any).ic.infinityWallet.disconnect();
+      }
+    }
+    if (priList[principal] === 'NFID') {
+      const nfid = await getNfid();
+      console.log(nfid);
+      if (nfid) {
+        const identity = nfid.getIdentity();
+        if (identity) {
+          await nfid.logout();
+        }
       }
     }
     localStorage.removeItem('principal');

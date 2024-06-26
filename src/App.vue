@@ -5,7 +5,7 @@
       <a-modal
         class="verify-identity-modal"
         width="650px"
-        :zIndex="2000"
+        :zIndex="1400"
         centered
         v-model="showCheckAuthModal"
         :footer="null"
@@ -20,7 +20,10 @@
             <img src="@/assets/img/logo.png" alt="" />
             <!--<p v-if="type !== 'authClient'">Welcome back</p>-->
           </div>
-          <p v-if="type !== 'AuthClient'" class="account-list-title">
+          <p
+            v-if="type !== 'AuthClient' && type !== 'NFID'"
+            class="account-list-title"
+          >
             Re-verify your identity
           </p>
           <a-input
@@ -30,20 +33,27 @@
           />
           <div
             class="verify-internet verify-internet-main"
-            v-if="type === 'AuthClient'"
+            v-if="type === 'AuthClient' || type === 'NFID'"
             @click="authClient"
           >
-            <img src="@/assets/img/dfinity.png" alt="" />Re-verify your Internet
-            identity
+            <img
+              v-show="type === 'AuthClient'"
+              src="@/assets/img/dfinity.png"
+              alt=""
+            /><img
+              v-show="type === 'NFID'"
+              src="@/assets/img/NFID.svg"
+              alt=""
+            />Re-verify your identity
           </div>
           <a-input-password
-            v-if="type !== 'AuthClient'"
+            v-if="type !== 'AuthClient' && type !== 'NFID'"
             placeholder="input password"
             v-model="password"
           />
           <button
             type="button"
-            v-if="type !== 'AuthClient'"
+            v-if="type !== 'AuthClient' && type !== 'NFID'"
             class="primary large-primary form-button w100"
             @click="onSubmit"
           >
@@ -185,9 +195,9 @@ import { ConnectMetaMaskMixin } from '@/mixins';
 import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
-import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { Principal } from '@dfinity/principal';
+import { getNfid, nfidEmbedLogin } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
 
@@ -231,6 +241,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
   async mounted(): Promise<void> {
     // todo new site
+    getNfid();
     const hostname = window.location.hostname;
     this.hostname = window.location.hostname;
     console.log(window.parent.origin);
@@ -355,6 +366,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         (window as any).ic.infinityWallet.disconnect();
       }
     }
+    if (priList[principal] === 'NFID') {
+      const nfid = await getNfid();
+      const NFIDIdentity = await nfidEmbedLogin(nfid);
+      console.log(NFIDIdentity);
+      if (NFIDIdentity) {
+        await nfid.logout();
+      }
+    }
     localStorage.removeItem('principal');
     this.setPrincipalId(null);
     this.setIdentity(null);
@@ -376,6 +395,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
       if (priList[this.getPrincipalId] === 'AuthClient') {
         this.type = 'AuthClient';
+      } else if (priList[this.getPrincipalId] === 'NFID') {
+        this.type = 'NFID';
       } else if (
         priList[this.getPrincipalId] &&
         priList[this.getPrincipalId].includes('MetaMask')
@@ -491,8 +512,19 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    const authClientAPi = await AuthClientAPi.create();
-    await authClientAPi.login();
+    if (this.type === 'AuthClient') {
+      const authClientAPi = await AuthClientAPi.create();
+      await authClientAPi.login();
+    } else if (this.type === 'NFID') {
+      const nfid = await getNfid();
+      console.log(nfid);
+      const nfidLogin = await nfidEmbedLogin(nfid);
+      console.log(nfidLogin);
+      if (!nfidLogin) {
+        loading.close();
+        return;
+      }
+    }
     this.setCheckAuth(false);
     loading.close();
   }

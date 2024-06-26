@@ -991,6 +991,8 @@ export default class extends Mixins(BalanceMixin) {
         this.loginType = 'Infinity';
       } else if (priList[principal] === 'AuthClient') {
         this.loginType = 'Internet Identity';
+      }  else if (priList[principal] === 'NFID') {
+        this.loginType = 'NFID';
       } else if (priList[principal].includes('MetaMask')) {
         this.loginType = 'MetaMask';
         this.ethAccount = priList[principal].split('MetaMask-')[1];

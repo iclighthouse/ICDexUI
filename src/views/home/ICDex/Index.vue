@@ -18109,6 +18109,13 @@ export default class extends Vue {
         this.$message.error(`Total cannot be less than ${min}`);
         return;
       }
+      const fee = new BigNumber(getFee(this.tokens[token0Id]).toString(10))
+        .div(10 ** this.tokens[token0Id].decimals)
+        .times(2);
+      if (new BigNumber(fee).gte(this.sellAmount)) {
+        this.$message.error(`Quantity must be more than ${fee}`);
+        return;
+      }
       const amount = BigInt(
         new BigNumber(this.sellAmount)
           .times(10 ** this.tokens[token0Id].decimals)
@@ -18935,6 +18942,20 @@ export default class extends Vue {
         .times(2);
       if (new BigNumber(this.buyTotal).lt(min)) {
         this.$message.error(`Total cannot be less than ${min}`);
+        return;
+      }
+      const fee = new BigNumber(
+        getFee(
+          this.tokens[this.currentPair[1][0].token0[0].toString()]
+        ).toString(10)
+      )
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .times(2);
+      if (new BigNumber(fee).gte(this.buyAmount)) {
+        this.$message.error(`Quantity must be more than ${fee}`);
         return;
       }
       const token0Info =

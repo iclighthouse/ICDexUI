@@ -7170,11 +7170,11 @@ export default class extends Mixins(BalanceMixin) {
     (this.$refs as any).ethDissolveFormCK.validate(async (valid: any) => {
       if (valid) {
         // todo
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         if (
           this.icNetworkTokens.icTokenInfo.type &&
           this.icNetworkTokens.icTokenInfo.type === 'dfinityERC20'
@@ -7380,11 +7380,11 @@ export default class extends Mixins(BalanceMixin) {
   private async transferCkETH(): Promise<void> {
     (this.$refs as any).ethForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const amount = BigInt(
             new BigNumber(this.ethDissolveForm.retrieveAmount)
@@ -7427,11 +7427,11 @@ export default class extends Mixins(BalanceMixin) {
   private async transferCkBTC(): Promise<void> {
     (this.$refs as any).form.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const amount = BigInt(
             new BigNumber(this.dissolveForm.amount).times(10 ** 8).toString(10)
@@ -7519,11 +7519,11 @@ export default class extends Mixins(BalanceMixin) {
   private async dissolveCkETH(): Promise<void> {
     (this.$refs as any).ethRetrieveForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           let ERC20TokenId = [];
           if (
@@ -7573,11 +7573,11 @@ export default class extends Mixins(BalanceMixin) {
   private async dissolve(): Promise<void> {
     (this.$refs as any).retrieveForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const res = await this.ckBTCMinterService.retrieveBtc(this.BTCType, {
             address: this.retrieveForm.address.trim(),

@@ -300,11 +300,11 @@ export class PairsMixin extends Vue {
   }
   public async fallback(): Promise<void> {
     const currentICSwapService = new ICSwapService();
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       setTimeout(async () => {
         if (this.swapId === CYCLES_FINANCE_CANISTER_ID) {
@@ -331,11 +331,11 @@ export class PairsMixin extends Vue {
   }
   public async withdrawBalance(): Promise<void> {
     const currentICSwapService = new ICSwapService();
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await currentICSwapService.withdraw(this.swapId, [this.autoWithdraw]);
       this.$message.success('Withdraw Success');

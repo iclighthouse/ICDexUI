@@ -1119,11 +1119,11 @@ export default class extends Vue {
       .toString(10);
   }
   private async toBind(pair: Principal): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     const principalAndAccountId = toPrincipalAndAccountId(
       this.bindMakerForm.account
     );
@@ -1181,11 +1181,11 @@ export default class extends Vue {
       console.log(valid);
       if (valid) {
         console.log(this.pairsMaker[this.createMakerPoolForm.pair][1]);
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         const token1Id =
           this.pairsMaker[
             this.createMakerPoolForm.pair
@@ -1362,11 +1362,11 @@ export default class extends Vue {
       allowance: BigInt(1),
       spender: Principal.fromText(spender)
     };
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
 
     if (isPlug()) {
       const approve = {

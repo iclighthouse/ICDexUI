@@ -1195,11 +1195,11 @@ export default class extends Vue {
     this.removeVisible = true;
   }
   private async removeToken(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await addToken(
         this.currentToken.canisterId,
@@ -1760,11 +1760,11 @@ export default class extends Vue {
       .toString(10);
   }
   private async removeApprove(text: Allowance): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const principal = localStorage.getItem('principal');
       const nonceRes = await this.DRC20TokenService.txnQuery(

@@ -1632,12 +1632,12 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async createWalletFromLocal(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       text: 'Error creating wallet, trying to retry for you.',
       background: 'rgba(0, 0, 0, 0.6)'
     });
+    await checkAuth();
     const step1 = this.getPrincipalId + '-cw0';
     const step2 = this.getPrincipalId + '-cw1';
     try {
@@ -1796,11 +1796,11 @@ export default class extends Mixins(BalanceMixin) {
   private async transferNFT(): Promise<void> {
     this.$refs.transferNFTForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           let to: User;
           let notify: boolean;

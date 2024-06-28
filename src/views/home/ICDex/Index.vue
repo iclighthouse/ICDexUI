@@ -16194,11 +16194,11 @@ export default class extends Vue {
       this.$message.error('This pair is under maintenance, try again later.');
       return;
     }
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     this.cancelId = order.txid;
     console.log(order.txid, isPro);
     this.currentICDexService

@@ -966,11 +966,11 @@ export default class extends Mixins(BalanceMixin) {
     this.stakeMaturityValue = 0;
   }
   private async stakeMaturity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     const neuronId = this.neuronList[this.neuronIndex].id[0].id;
     try {
       await this.governanceService.stakeMaturity(

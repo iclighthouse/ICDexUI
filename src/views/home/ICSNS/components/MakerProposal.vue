@@ -286,11 +286,11 @@ export default class extends Vue {
     }
     console.log(actionInput);
     console.log(this.summary);
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const snsGovernanceService = new SNSGovernanceService();
       const proposal: Proposal = {

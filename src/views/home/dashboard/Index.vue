@@ -564,6 +564,7 @@ import {
 import { PoolInfo } from '@/ic/makerPool/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
+import store from '@/store';
 
 const ICLighthouseRoot = 'hjcnr-bqaaa-aaaaq-aacka-cai';
 

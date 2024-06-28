@@ -177,11 +177,11 @@ export default class extends Vue {
   private sendCycles(): void {
     this.$refs.sendCyclesForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           if (this.type === 'sendCyclesToken') {
             const args = IDL.encode(

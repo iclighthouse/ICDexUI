@@ -737,11 +737,11 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
       console.log(this.form);
       console.log(valid);
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const formTime: moment.Moment = this.form.time;
           const time = new BigNumber(formTime.valueOf())

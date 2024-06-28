@@ -402,11 +402,11 @@ export default class extends Vue {
     this.getNFTAllowance();
   }
   private async claim(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.tradingMiningService.tmClaim();
       console.log(res);
@@ -422,11 +422,11 @@ export default class extends Vue {
   private async tmRegister(): Promise<void> {
     const principal = localStorage.getItem('principal');
     if (principal) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       try {
         const nftId = localStorage.getItem('approveNft');
         const res = await this.tradingMiningService.tmRegister(
@@ -522,11 +522,11 @@ export default class extends Vue {
   }
   private async register1(): Promise<void> {
     if (this.getPrincipalId) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       try {
         const res = await this.tradingMiningService.tmRegister2();
         console.log(res);
@@ -668,11 +668,11 @@ export default class extends Vue {
   }
   private async onClaim(): Promise<void> {
     this.claimVisible = true;
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await this.getStatus(true);
     } catch (e) {

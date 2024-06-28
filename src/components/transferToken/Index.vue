@@ -377,11 +377,11 @@ export default class extends Vue {
     (this.$refs.transferForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             let amount = BigInt(
               new BigNumber(10)

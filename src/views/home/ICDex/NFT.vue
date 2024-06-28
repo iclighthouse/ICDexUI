@@ -647,11 +647,11 @@ export default class extends Vue {
       allowance: BigInt(1),
       spender: Principal.fromText(spender)
     };
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.NftService.approve(approveRequest);
       if (res) {
@@ -740,11 +740,11 @@ export default class extends Vue {
   private async transferNFT(): Promise<void> {
     (this.$refs.transferNFTForm as any).validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           let to: User;
           let notify: boolean;

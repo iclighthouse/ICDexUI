@@ -152,11 +152,11 @@ export default class extends Vue {
   public async topUp(): Promise<void> {
     this.$refs.topUpForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const toSubAccount = convert.principalToSubAccount(
             Principal.fromText(this.topUpForm.to)

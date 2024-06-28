@@ -601,11 +601,11 @@ export default class extends Vue {
     }
   }
   private async onVote(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const MAX_COCURRENCY = 40;
       let promiseValue = [];

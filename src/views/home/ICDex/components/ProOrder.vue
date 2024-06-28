@@ -2732,11 +2732,11 @@ export default class extends Vue {
     (this.$refs.VWAPForm as any).validate(async (valid: any) => {
       console.log(this.VWAPForm);
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         const canSubmit = await this.stoFee();
         if (!canSubmit) {
           loading.close();
@@ -2892,11 +2892,11 @@ export default class extends Vue {
     (this.$refs.TWAPForm as any).validate(async (valid: any) => {
       console.log(this.TWAPForm);
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         const canSubmit = await this.stoFee();
         if (!canSubmit) {
           loading.close();
@@ -3036,11 +3036,11 @@ export default class extends Vue {
         if (!flag) {
           return;
         }
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         const canSubmit = await this.stoFee();
         if (!canSubmit) {
           loading.close();
@@ -3218,11 +3218,12 @@ export default class extends Vue {
     return false;
   }
   private async onSubmit(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+
+    await checkAuth();
     const canSubmit = await this.stoFee();
     if (!canSubmit) {
       loading.close();

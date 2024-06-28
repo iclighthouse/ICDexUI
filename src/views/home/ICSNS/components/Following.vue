@@ -478,11 +478,11 @@ export default class extends Vue {
     this.setFollowees(followees, 'delete');
   }
   private async deleteAllFollowee(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       console.log(this.SNSNeurons.listNervousSystemFunctions);
       const followeesValue: Array<bigint> = [];
@@ -559,11 +559,11 @@ export default class extends Vue {
             this.$message.error('You are already following this neuron.');
             return;
           }
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             const snsGovernanceService = new SNSGovernanceService();
             const res = await snsGovernanceService.getNeuron(
@@ -605,11 +605,11 @@ export default class extends Vue {
     followeesType?: string
   ): Promise<void> {
     const snsGovernanceService = new SNSGovernanceService();
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await snsGovernanceService.setFollowees(
         this.SNSNeurons.SNSNeuronOfGovernanceId,

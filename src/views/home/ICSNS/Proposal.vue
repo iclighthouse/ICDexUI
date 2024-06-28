@@ -645,7 +645,7 @@ export default class extends Vue {
       });
     }
   }
-  private async registerVote(neuronId: string): Promise<void> {
+  private async registerVote(neuronId: string): Promise<string> {
     try {
       const snsGovernanceService = new SNSGovernanceService();
       const res = await snsGovernanceService.vote(
@@ -660,11 +660,13 @@ export default class extends Vue {
         if (type === 'Error') {
           const err = Object.values(res.command[0])[0] as GovernanceError;
           console.error(err.error_message);
+          return `NeuronId: ${neuronId}, ${err.error_message}`;
           // this.$message.error(err.error_message);
         } else {
           //
         }
       } else {
+        return 'Vote Error';
         // this.$message.error('Vote Error');
       }
     } catch (e) {
@@ -672,32 +674,45 @@ export default class extends Vue {
     }
   }
   private async onVote(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const MAX_COCURRENCY = 40;
       let promiseValue = [];
+      let res = [];
       for (let i = 0; i < this.checked.length; i++) {
         promiseValue.push(this.registerVote(this.checked[i]));
         if (promiseValue.length === MAX_COCURRENCY) {
           console.log(i);
-          await Promise.all(promiseValue);
+          res.push(await Promise.all(promiseValue));
           promiseValue = [];
         }
         if (i === this.checked.length - 1 && promiseValue.length) {
           console.log(i);
-          await Promise.all(promiseValue);
+          res.push(await Promise.all(promiseValue));
         }
       }
       console.log(this.checked);
+      console.log(res);
       this.voteVisible = false;
       await this.getProposal(this.governanceId);
       this.SNSNeurons = this.filterNeuron(this.allSNSNeurons);
       this.canVoteNeurons = this.filterCanVoteNeuron(this.allSNSNeurons);
-      this.$message.success('Vote Success');
+      if (res && res.length) {
+        const flag = res[0].some((item) => {
+          return !!item;
+        });
+        if (flag) {
+          this.$message.error(res[0][0]);
+        } else {
+          this.$message.success('Vote Success');
+        }
+      } else {
+        this.$message.success('Vote Success');
+      }
     } catch (e) {
       console.log(e);
       this.$message.error('Vote Error');

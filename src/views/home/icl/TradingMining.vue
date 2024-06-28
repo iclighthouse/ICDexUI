@@ -753,11 +753,11 @@ export default class extends Vue {
   }
 
   private async onClaim(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.tradingMiningService.tmClaim();
       console.log(res);
@@ -772,11 +772,11 @@ export default class extends Vue {
   }
 
   private async onWithdraw(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await this.tradingMiningService.tmNFTWithdraw();
       this.$message.success('Withdraw success');
@@ -795,11 +795,11 @@ export default class extends Vue {
 
   private async tmRegister(): Promise<void> {
     if (this.getPrincipalId) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       try {
         const nftId = localStorage.getItem('approveNft');
         const res = await this.tradingMiningService.tmRegister(
@@ -823,11 +823,11 @@ export default class extends Vue {
   }
   private async register1(): Promise<void> {
     if (this.getPrincipalId) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       try {
         const res = await this.tradingMiningService.tmRegister2();
         console.log(res);

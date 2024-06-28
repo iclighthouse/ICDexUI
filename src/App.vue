@@ -1,11 +1,11 @@
 <template>
   <div id="app">
     <router-view class="app-main" />
-    <div v-if="$route.meta.requireAuth && getPrincipalId">
+    <div v-if="getPrincipalId">
       <a-modal
         class="verify-identity-modal"
         width="650px"
-        :zIndex="1400"
+        :zIndex="1600"
         centered
         v-model="showCheckAuthModal"
         :footer="null"
@@ -388,11 +388,12 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
   }
   private async init(checkAuth: boolean): Promise<void> {
+    console.log(this.getPrincipalId);
+    const principal = localStorage.getItem('principal');
+    const priList = JSON.parse(localStorage.getItem('priList')) || {};
     if ((window as any).icx) {
       console.log('116:' + this.getPrincipalId);
     } else {
-      // this.principal = localStorage.getItem('principal');
-      const priList = JSON.parse(localStorage.getItem('priList')) || {};
       if (priList[this.getPrincipalId] === 'AuthClient') {
         this.type = 'AuthClient';
       } else if (priList[this.getPrincipalId] === 'NFID') {
@@ -428,44 +429,41 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         }
       } else if (priList[this.getPrincipalId] === 'Plug') {
         this.type = 'Plug';
-        if (this.$route.meta.requireAuth) {
-          const principal = localStorage.getItem('principal');
-          const localWhitelist =
-            JSON.parse(localStorage.getItem('whitelist')) || {};
-          const whitelist: string[] =
-            localWhitelist[principal] || plugWhitelist;
-          const connectPlug = new ConnectPlug();
-          if (
-            (window as any).ic &&
-            !(window as any).ic.plug.agent &&
-            checkAuth &&
-            !this.isInit
-          ) {
-            this.isInit = true;
-            const plugIc = (window as any).ic?.plug;
-            const plugPrincipalId = await plugIc.getPrincipal();
-            console.log(principal);
-            console.log(plugPrincipalId);
-            if (plugPrincipalId && principal !== plugPrincipalId.toString()) {
-              // eslint-disable-next-line @typescript-eslint/no-this-alias
-              const _that = this;
-              Vue.prototype.$info({
-                content: `Please check if you are logged into Plug with account ${principal}.`,
-                class: 'connect-plug',
-                icon: 'connect-plug',
-                centered: true,
-                okText: 'Confirm',
-                async onOk() {
-                  await connectPlug.connect(whitelist, false);
-                  await createPlugWhiteActor();
-                  _that.setCheckAuth(false);
-                }
-              });
-            } else {
-              await connectPlug.connect(whitelist, false);
-              await createPlugWhiteActor();
-              this.setCheckAuth(false);
-            }
+        const localWhitelist =
+          JSON.parse(localStorage.getItem('whitelist')) || {};
+        const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
+        console.log('123');
+        const connectPlug = new ConnectPlug();
+        if (
+          (window as any).ic &&
+          !(window as any).ic.plug.agent &&
+          checkAuth &&
+          !this.isInit
+        ) {
+          this.isInit = true;
+          const plugIc = (window as any).ic?.plug;
+          const plugPrincipalId = await plugIc.getPrincipal();
+          console.log(principal);
+          console.log(plugPrincipalId);
+          if (plugPrincipalId && principal !== plugPrincipalId.toString()) {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const _that = this;
+            Vue.prototype.$info({
+              content: `Please check if you are logged into Plug with account ${principal}.`,
+              class: 'connect-plug',
+              icon: 'connect-plug',
+              centered: true,
+              okText: 'Confirm',
+              async onOk() {
+                await connectPlug.connect(whitelist);
+                await createPlugWhiteActor();
+                _that.setCheckAuth(false);
+              }
+            });
+          } else {
+            await connectPlug.connect(whitelist);
+            await createPlugWhiteActor();
+            this.setCheckAuth(false);
           }
         }
       } else if (priList[this.getPrincipalId] === 'Infinity') {

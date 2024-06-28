@@ -1064,11 +1064,11 @@ export default class extends Vue {
   private Claim(): void {
     (this.$refs.claimForm as any).validate(async (valid: any) => {
       if (valid && this.available) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         let subaccount = [];
         if (this.claimForm.subaccount) {
           subaccount = [hexToBytes(this.claimForm.subaccount)];

@@ -540,6 +540,10 @@ export default class extends Vue {
       }
       canisterIds = [...new Set(canisterIds)];
       await checkAuth();
+      const loading = this.$loading({
+        lock: true,
+        background: 'rgba(0, 0, 0, 0.5)'
+      });
       const flag = needConnectPlug(canisterIds);
       const principal = localStorage.getItem('principal');
       const priList = JSON.parse(localStorage.getItem('priList')) || {};

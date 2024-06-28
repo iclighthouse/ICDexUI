@@ -352,11 +352,11 @@ export default class extends Vue {
         );
       }
     });
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await Promise.all(promiseValue);
       this.$message.success('Remove Neuron Permission Success');
@@ -398,11 +398,11 @@ export default class extends Vue {
     principalId: string,
     permissionId: number
   ): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const snsGovernanceService = new SNSGovernanceService();
       const res = await snsGovernanceService.removeNeuronPermissions(
@@ -451,11 +451,11 @@ export default class extends Vue {
               );
               return;
             }
-            await checkAuth();
             const loading = this.$loading({
               lock: true,
               background: 'rgba(0, 0, 0, 0.5)'
             });
+            await checkAuth();
             try {
               const snsGovernanceService = new SNSGovernanceService();
               const res = await snsGovernanceService.addNeuronPermissions(
@@ -502,11 +502,11 @@ export default class extends Vue {
                 }
               }
             );
-            await checkAuth();
             const loading = this.$loading({
               lock: true,
               background: 'rgba(0, 0, 0, 0.5)'
             });
+            await checkAuth();
             try {
               await Promise.all(promiseValue);
               this.$message.success('Add Neuron Permissions Success');

@@ -162,11 +162,11 @@ export default class extends Vue {
     (this.$refs.form as any).validateField('amount');
   }
   private async executeTransfer(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const principal = localStorage.getItem('principal');
       const nonceRes = await this.DRC20TokenService.txnQuery(

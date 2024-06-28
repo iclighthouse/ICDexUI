@@ -359,11 +359,11 @@ export default class extends Vue {
   }
   private async depositFallback(subAccountId = 0): Promise<void> {
     if (!this.modeDisabled) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       const currentICDexService = new ICDexService();
       const res = await currentICDexService.depositFallback(
         this.currentPair[0].toString(),
@@ -438,11 +438,11 @@ export default class extends Vue {
     });
   }
   private async fallback(nonce: number): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const currentICDexService = new ICDexService();
       const res = await currentICDexService.fallback(

@@ -102,11 +102,11 @@ export default class extends Vue {
           this.$message.error('Self approval is not allowed.');
           return;
         }
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         const amount = BigInt(
           new BigNumber(this.approveForm.amount.toString())
             .times(10 ** Number(this.tokenInfo.decimals))

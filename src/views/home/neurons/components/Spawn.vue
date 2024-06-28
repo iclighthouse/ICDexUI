@@ -62,11 +62,11 @@ export default class extends Vue {
     (this.$refs.form as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             const response = await this.governanceService.spawn(this.neuronId);
             this.$emit('spawnSuccess', response.created_neuron_id[0].id);

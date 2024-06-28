@@ -1390,11 +1390,11 @@ export default class extends Vue {
     (this.$refs.splitForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             const amount = BigInt(
               new BigNumber(this.splitForm.amount)
@@ -1922,11 +1922,11 @@ export default class extends Vue {
     (this.$refs.stakeNeuronForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             const amount = BigInt(
               new BigNumber(this.stakeNeuronForm.amount)
@@ -2094,11 +2094,11 @@ export default class extends Vue {
     this.splitVisible = true;
   }
   private async stakeMaturity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const neuronInfo = this.SNSNeuronsList[this.currentNeuronInfoIndex];
       const snsGovernanceService = new SNSGovernanceService();
@@ -2139,11 +2139,11 @@ export default class extends Vue {
     }
   }
   private async onChangeAutoStakeMaturity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const neuronInfo = this.SNSNeuronsList[this.currentNeuronInfoIndex];
       const snsGovernanceService = new SNSGovernanceService();

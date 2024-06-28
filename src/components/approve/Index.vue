@@ -144,11 +144,11 @@ export default class extends Vue {
             .times(10 ** Number(this.decimals))
             .toString(10)
         );
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           if (this.approveMode === 'drc20') {
             const principal = localStorage.getItem('principal');

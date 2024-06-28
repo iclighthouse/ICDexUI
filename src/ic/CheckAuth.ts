@@ -3,6 +3,7 @@ import store from '@/store';
 import { Identity } from '@dfinity/agent';
 import { plugWhitelist } from '@/ic/utils';
 import router from '@/router';
+import Vue from 'vue';
 
 export interface CommonState {
   common: {
@@ -103,8 +104,12 @@ export const checkAuth = (
       if (!principal) {
         resolve(true);
       } else {
+        const identity = store.getters['common/getIdentity'];
         const t = store.getters['common/getExpireSessionTimeout'];
-        if (t < new Date().getTime() && router.app.$route.meta.requireAuth) {
+        if (
+          (t < new Date().getTime() && router.app.$route.meta.requireAuth) ||
+          !identity
+        ) {
           refreshing(resolve);
         } else {
           if (renew) {

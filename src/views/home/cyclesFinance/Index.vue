@@ -2300,11 +2300,11 @@ export default class extends Mixins(BalanceMixin) {
     return flag;
   }
   private async submitRemoveLiquidity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     const flag = await this.checkCycles(this.formCyclesWalletPrincipal);
     if (!flag) {
       loading.close();
@@ -2552,11 +2552,11 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async addLiquidity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const flag = await this.checkCycles(this.cyclesCanister.trim());
       if (!flag) {
@@ -2707,11 +2707,11 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async cyclesToIcp(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const nonce = await this.getCount(
         Principal.fromText(this.cyclesCanister.trim())
@@ -2825,11 +2825,11 @@ export default class extends Mixins(BalanceMixin) {
     this.$message.success('Cycles to icp is pending');
   }
   private async icpToCycles(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       this.isLoading = true;
       const flag = await this.checkCycles(this.cyclesCanister.trim());

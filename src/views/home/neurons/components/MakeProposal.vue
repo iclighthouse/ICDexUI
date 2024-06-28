@@ -191,11 +191,11 @@ export default class extends Vue {
     const actionInput = this.initBlobParams(parse);
     console.log(actionInput);
     console.log(this.summary);
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const proposal: Proposal = {
         title: [this.title],

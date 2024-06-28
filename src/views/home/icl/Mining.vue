@@ -688,11 +688,11 @@ export default class extends Vue {
   private async submitMint(): Promise<void> {
     this.$refs.mintForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const args = IDL.encode(
             [IDL.Principal],

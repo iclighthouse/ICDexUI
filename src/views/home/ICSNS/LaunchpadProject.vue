@@ -1968,11 +1968,11 @@ export default class extends Mixins(BalanceMixin) {
     (this.$refs.transferForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           const swapCanisterAccount = principalToAccountIdentifier(
             Principal.fromText(this.currentToken.swapId),
             principalToSubAccount(Principal.fromText(this.getPrincipalId))
@@ -2090,11 +2090,11 @@ export default class extends Mixins(BalanceMixin) {
     this.getRefundIcp();
   }
   private async onRefundIcp(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const snsSwapService = new SNSSwapService();
       console.log(this.currentToken.swapId);

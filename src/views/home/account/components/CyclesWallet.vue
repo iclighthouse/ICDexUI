@@ -542,11 +542,11 @@ export default class extends Vue {
   private async walletCall(): Promise<void> {
     this.$refs.walletCallForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           // const walletCallRequest: WalletCallRequest = {};
           // const res = await this.walletService.walletCall(
@@ -597,11 +597,11 @@ export default class extends Vue {
     });
   }
   private async removeController(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.walletService.removeControllers(
         this.wallet.walletId.toString(),
@@ -621,11 +621,11 @@ export default class extends Vue {
     }
   }
   private async addController(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await this.walletService.addControllers(
         this.wallet.walletId.toString(),
@@ -660,11 +660,11 @@ export default class extends Vue {
     this.removeVisible = true;
   }
   private async removeWallet(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const flag = await this.ICLighthouseService.manageWallet(
         this.wallet.walletId,
@@ -746,11 +746,11 @@ export default class extends Vue {
     await this.getEvents();
   }
   private async setDefault(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const flag = await this.ICLighthouseService.manageWallet(
         this.wallet.walletId,
@@ -818,11 +818,11 @@ export default class extends Vue {
   private async setWalletName(): Promise<void> {
     this.$refs.form.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           await this.walletService.setWalletName(
             this.wallet.walletId.toString(),

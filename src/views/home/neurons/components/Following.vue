@@ -472,11 +472,11 @@ export default class extends Vue {
     this.setFollowees(followees, 'delete');
   }
   private async deleteAllFollowee(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     loading.close();
   }
   private async removeFollowees(functionId: bigint): Promise<void> {
@@ -525,11 +525,11 @@ export default class extends Vue {
     followees: Array<NeuronId>,
     followeesType?: string
   ): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     const res = await this.governanceService.setFollow(
       this.neuron.id[0].id,
       BigInt(this.functionId),

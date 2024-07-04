@@ -12,7 +12,7 @@ const neuronRouter: RouteConfig[] = [
     children: [
       {
         path: '/nns/neuron',
-        name: 'neuron',
+        name: 'ICP-neuron',
         component: () => import('@/views/home/neurons/MyNeurons.vue'),
         meta: {
           title: 'neuron',
@@ -21,7 +21,7 @@ const neuronRouter: RouteConfig[] = [
       },
       {
         path: '/nns/proposals',
-        name: 'proposals',
+        name: 'ICP-proposals',
         component: () => import('@/views/home/neurons/Proposals.vue'),
         meta: {
           title: 'Proposals',
@@ -34,7 +34,7 @@ const neuronRouter: RouteConfig[] = [
       },
       {
         path: '/nns/proposals/:proposalId',
-        name: 'proposals',
+        name: 'ICP-proposals',
         component: () => import('@/views/home/neurons/Proposal.vue'),
         meta: {
           title: 'Proposals',

@@ -172,7 +172,7 @@ export class SNSSwapService {
       const res = await service.get_init({});
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

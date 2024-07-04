@@ -40,7 +40,7 @@ export default class ConnectInfinity {
           console.warn(
             'Unable to fetch root key. Check to ensure that your local replica is running'
           );
-          console.error(err);
+          console.log(err);
         });
       }
       store.commit('common/SET_IS_OPEN', true);

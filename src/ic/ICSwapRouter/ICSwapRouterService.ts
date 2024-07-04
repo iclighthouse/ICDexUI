@@ -101,7 +101,7 @@ export class ICSwapRouterService {
       const res = await this.service.getCompetitions(dexName, page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -110,7 +110,7 @@ export class ICSwapRouterService {
     try {
       return await this.service.getDexCompetitionRound();
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -122,7 +122,7 @@ export class ICSwapRouterService {
       const res = await this.service.getDexCompetition(round);
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -135,7 +135,7 @@ export class ICSwapRouterService {
       const res = await this.service.getDexCompetitionTrader(round, address);
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -145,7 +145,7 @@ export class ICSwapRouterService {
     try {
       return await this.service.registerDexCompetition(subAccount);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

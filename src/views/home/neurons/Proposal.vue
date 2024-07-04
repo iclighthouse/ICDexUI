@@ -589,7 +589,7 @@ export default class extends Vue {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
           const err = Object.values(res.command[0])[0] as GovernanceError;
-          console.error(err.error_message);
+          console.log(err.error_message);
         } else {
           //
         }

@@ -727,7 +727,8 @@ export default class extends Vue {
     this.timer = window.setInterval(() => {
       setTimeout(async () => {
         if (!this.getCheckAuth) {
-          this.getWalletBalance();
+          if (this.$route.name === 'Account') {
+          this.getWalletBalance();}
         }
       }, 0);
     }, 30 * 1000);
@@ -794,7 +795,7 @@ export default class extends Vue {
       try {
         state = await readState(this.wallet.walletId.toString());
       } catch (err) {
-        console.error(err);
+        console.log(err);
       }
       if (!state || (state && !state.moduleHash)) {
         const flag = await this.ICLighthouseService.manageWallet(

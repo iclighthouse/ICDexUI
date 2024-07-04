@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div class="home-header" style="margin-top: 14px">
-      <div class="home-header-left">
-        <span class="home-header-title">NNS</span>
-      </div>
-      <account-info> </account-info>
-    </div>
     <div>
       <ul class="icsns-menu" v-if="!$route.meta.hideMenu">
         <li
@@ -44,12 +38,12 @@ export default class extends Vue {
       {
         path: '/nns/neuron',
         value: 'Neurons',
-        name: 'neuron'
+        name: 'ICP-neuron'
       },
       {
         path: '/nns/proposals',
         value: 'Proposals',
-        name: 'proposals'
+        name: 'ICP-proposals'
       }
     ];
     this.current = ['/nns/neuron'];

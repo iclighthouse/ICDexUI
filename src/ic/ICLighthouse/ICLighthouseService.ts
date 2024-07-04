@@ -127,7 +127,7 @@ export class ICLighthouseService {
     try {
       return await this.service.getFavorites(Principal.fromText(principalId));
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return [];
     }
   };
@@ -136,7 +136,7 @@ export class ICLighthouseService {
     try {
       return await this.service.addFavorites(pairId);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -145,7 +145,7 @@ export class ICLighthouseService {
     try {
       return await this.service.removeFavorites(pairId);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -156,7 +156,7 @@ export class ICLighthouseService {
     try {
       return await this.service.updateFavoritesListOrder(pairList);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -167,7 +167,7 @@ export class ICLighthouseService {
     try {
       return await this.service.getAccountName(account);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -176,7 +176,7 @@ export class ICLighthouseService {
     try {
       return await this.service.updateAccountlName(name);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

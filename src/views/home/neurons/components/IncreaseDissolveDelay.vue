@@ -407,7 +407,7 @@ export default class extends Vue {
       this.$message.success('Increase Dissolve Delay Success');
       this.$emit('increaseDissolveDelaySuccess');
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
   }

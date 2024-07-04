@@ -386,7 +386,7 @@ export default class extends Vue {
       );
       console.log(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private onAddPermission(item: neuronSystemPermissionsType): void {
@@ -423,7 +423,7 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.error('Remove Neuron Permission Error');
     }
     loading.close();
@@ -483,7 +483,7 @@ export default class extends Vue {
                 }
               }
             } catch (e) {
-              console.error(e);
+              console.log(e);
               this.$message.error('Add Neuron Permission Error');
             }
             loading.close();
@@ -513,7 +513,7 @@ export default class extends Vue {
               this.addPermissionVisible = false;
               this.$emit('permissionsNeuronSuccess', this.SNSIndex, this.index);
             } catch (e) {
-              console.error(e);
+              console.log(e);
               this.$message.error('Add Neuron Permissions Error');
             }
             loading.close();
@@ -544,7 +544,7 @@ export default class extends Vue {
       //   }
       // }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private afterClose(): void {

@@ -41,7 +41,7 @@ export class ICDexRouterService {
       console.log(res);
       return true;
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -66,7 +66,7 @@ export class ICDexRouterService {
       console.log(res);
       return true;
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -75,7 +75,7 @@ export class ICDexRouterService {
     try {
       return await this.service.NFTBalance(address);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -97,7 +97,7 @@ export class ICDexRouterService {
       }
       return await this.service.NFTWithdraw(tokenIdentifier, subAccount);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -109,7 +109,7 @@ export class ICDexRouterService {
       const res = await this.service.NFTBindingMakers(tokenIdentifier);
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -135,7 +135,7 @@ export class ICDexRouterService {
       console.log(res);
       return true;
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

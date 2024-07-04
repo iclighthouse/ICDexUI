@@ -55,7 +55,7 @@ export const nfidEmbedLogin = async (nfid: NFID): Promise<Identity> => {
     );
     return delegationIdentity;
   } catch (e) {
-    console.error(e);
+    console.log(e);
     // Vue.prototype.$message.error('NFID login error.');
   }
 };

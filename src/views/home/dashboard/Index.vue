@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <span class="home-header-title">Dashboard</span>
-      </div>
-      <account-info> </account-info>
-    </div>
     <div class="dashboard-main container-width base-font-title">
       <div class="dashboard-sns-main">
         <div class="dashboard-sns-item">

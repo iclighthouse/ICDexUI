@@ -345,7 +345,7 @@ export class ckETHMinterService {
       const res = await service.get_mode2_pending_deposit_txn(txHash);
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -354,7 +354,7 @@ export class ckETHMinterService {
     try {
       return service.update_claims();
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

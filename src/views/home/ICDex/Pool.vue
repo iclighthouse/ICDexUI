@@ -1,35 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex') ||
-              (menu.value === 'Pools' && $route.name === 'Pool')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-      </ul>
-      <div class="flex-center margin-left-auto">
-        <launch :tokens="tokens" ref="launch"></launch>
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
     <div class="pool-info container-width">
       <div class="proposal-main-title">
         <a-icon class="back-arrow" type="arrow-left" @click="back" />
@@ -1722,7 +1692,7 @@ export default class extends Vue {
         this.nfts = [];
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private async getRole(pair: string, pool: string): Promise<void> {
@@ -2665,7 +2635,7 @@ export default class extends Vue {
       }
       this.getDepositAccountBalance();
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.error(e);
     }
     loading.close();

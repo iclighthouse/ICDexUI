@@ -1617,7 +1617,7 @@ export default class extends Mixins(BalanceMixin) {
         });
         this.$message.success('Success');
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Error');
       }
       loading.close();

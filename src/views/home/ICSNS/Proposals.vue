@@ -9,8 +9,8 @@
             @change="SNSTokensChange"
           >
             <a-select-option v-for="(item, index) in SNSTokens" :key="index">
-              <span v-if="item && item.name">
-                {{ item.name }}
+              <span v-if="item && item.name && item.name[0]">
+                {{ item.name[0] }}
               </span>
             </a-select-option>
           </a-select>
@@ -35,18 +35,18 @@
               proposalStatusFilter.length
             }}/{{ proposalStatus.length }})
           </button>
+          <div v-if="getPrincipalId" class="can-still">
+            <a-checkbox v-model="showStill"> Actionable Proposals </a-checkbox>
+          </div>
           <span class="load-icon">
             <a-icon
-              @click="initProposals"
+              @click="reloadProposals"
               class="pointer"
               v-show="!showLoading"
               type="reload"
             />
             <a-icon v-show="showLoading" type="loading" class="reload-icon" />
           </span>
-          <!--<div class="can-still">
-						<a-checkbox> Show only proposals you can still vote for </a-checkbox>
-					</div>-->
           <button
             v-show="getPrincipalId"
             type="button"
@@ -58,7 +58,100 @@
         </div>
       </div>
     </div>
+    <div v-show="showStill" class="mt20">
+      <div class="container-width">
+        <div class="proposals-list-main">
+          <div
+            class="proposals-list-item"
+            v-for="(item, index) in proposalsOpening"
+            :key="index"
+            @click="jumpProposal(item)"
+          >
+            <div
+              class="proposals-list-item-header"
+              style="align-items: center; margin-bottom: 10px"
+            >
+              <span class="base-font-title"
+                >ID: {{ item.id[0].id.toString(10) }}</span
+              >
+              <span
+                class="proposals-list-item-header-status margin-left-auto"
+                :class="getStatus(item)"
+              >
+                {{ getStatus(item) }}
+              </span>
+            </div>
+            <div>
+              <span class="proposals-list-item-title">
+                <span class="base-color-w">
+                  {{ item.proposal[0].title }}
+                </span>
+                <!--{{ item.proposal[0].action | filterAction }}-->
+              </span>
+            </div>
+            <!--<div class="proposals-list-item-type base-font-title">
+							<span>Type</span>
+							<span class="margin-left-auto">{{
+								item.proposal[0].action | filterAction
+							}}</span>
+						</div>-->
+            <div class="proposals-list-item-summary">
+              <vue-markdown
+                :source="item.proposal[0].summary"
+                :linkify="false"
+              ></vue-markdown>
+            </div>
+            <div class="proposals-list-item-footer">
+              <span
+                v-if="
+                  SNSTokens &&
+                  SNSTokens[currentIndex] &&
+                  SNSTokens[currentIndex].types &&
+                  SNSTokens[currentIndex].types[item.action.toString(10)]
+                "
+              >
+                {{
+                  SNSTokens[currentIndex].types[item.action.toString(10)]
+                    .name === 'Deegister Dapp Canisters'
+                    ? 'Deregister Dapp Canisters'
+                    : SNSTokens[currentIndex].types[item.action.toString(10)]
+                        .name
+                }}
+              </span>
+              <span class="margin-left-auto pc-show" style="flex-shrink: 0">
+                {{
+                  item.proposal_creation_timestamp_seconds
+                    | formatDateFromSecondUTCD
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="proposals-list-main"
+          v-show="proposalOpeningLoading && !proposalsOpening.length"
+        >
+          <div class="proposals-list-item">
+            <a-skeleton
+              :loading="proposalOpeningLoading && !proposalsOpening.length"
+              active
+            />
+          </div>
+        </div>
+        <div
+          class="base-font-title mt20"
+          v-show="
+            SNSTokens[currentIndex] &&
+            !proposalOpeningLoading &&
+            !proposalsOpening.length
+          "
+        >
+          No proposals found for the filters.
+        </div>
+      </div>
+    </div>
     <div
+      v-show="!showStill"
       v-infinite-scroll="handleInfiniteOnLoad"
       :infinite-scroll-disabled="busy"
       :infinite-scroll-distance="10"
@@ -286,10 +379,12 @@ export default class extends Vue {
   private currentIndex = 0;
   private deployedSnses: Array<DeployedSns> = [];
   private proposals: Array<ProposalData> = [];
+  private proposalsOpening: Array<ProposalData> = [];
   private busy = true;
   private loading = false;
   private loadMore = true;
   private proposalLoading = false;
+  private proposalOpeningLoading = false;
   private topics = [];
   private checkTopics = [];
   private topicsVisible = false;
@@ -322,6 +417,7 @@ export default class extends Vue {
   private checkStatus = [];
   private checkAllStatus = false;
   private showLoading = false;
+  private showStill = false;
   activated(): void {
     if (!this.$route.meta.isBack) {
       this.$nextTick(() => {
@@ -353,6 +449,7 @@ export default class extends Vue {
         this.initProposals();
       }
     } else {
+      this.getOpenProposals(null);
       this.$nextTick(() => {
         (this.$refs.infiniteScroll as any).scrollTop =
           this.$route.meta.scrollTop;
@@ -360,7 +457,9 @@ export default class extends Vue {
     }
   }
   mounted(): void {
-    this.mountedInit();
+    if (this.$route.meta.details === 'proposals') {
+      this.mountedInit();
+    }
   }
   private makerProposalSuccess(): void {
     this.initProposals();
@@ -436,10 +535,15 @@ export default class extends Vue {
       this.getListProposals();
     }
   }
+  private reloadProposals(): void {
+    this.initProposals();
+  }
   private initProposals(): void {
     this.busy = true;
     this.loadMore = true;
     this.getListProposals('init');
+    this.getOpenProposals(null);
+    console.log(this.proposalsOpening);
   }
   private SNSTokensChange(): void {
     console.log(this.currentIndex);
@@ -457,6 +561,59 @@ export default class extends Vue {
     this.proposalStatusFilter = this.proposalStatusIds;
     this.topics = this.SNSTokens[this.currentIndex].allTopics;
     this.getListProposals('init');
+    this.getOpenProposals(null);
+    console.log(this.proposalsOpening);
+  }
+  private async getOpenProposals(lastProposals: ProposalData): Promise<void> {
+    if (!this.getPrincipalId) {
+      this.proposalsOpening = [];
+      return;
+    }
+    if (!lastProposals) {
+      this.proposalsOpening = [];
+      this.proposalOpeningLoading = true;
+    }
+    const snsGovernanceService = new SNSGovernanceService();
+    let beforeProposal = [];
+    if (lastProposals) {
+      beforeProposal = lastProposals.id;
+    }
+    // accepts votes:1
+    const openRequest: ListProposals = {
+      before_proposal: beforeProposal,
+      limit: BigInt(10),
+      exclude_type: [],
+      include_status: [],
+      include_reward_status: [1]
+    };
+    snsGovernanceService
+      .listProposals(
+        this.SNSTokens[this.currentIndex].governanceId,
+        openRequest,
+        true
+      )
+      .then((res) => {
+        console.log(res);
+        if (res && res.proposals && res.proposals.length) {
+          const accepts = res.proposals.filter((item) => {
+            return item.ballots.some((ballot) => {
+              return !ballot[1].vote;
+            });
+          });
+          this.proposalsOpening = this.proposalsOpening.concat(accepts);
+          console.log(this.proposalsOpening);
+          if (res.proposals.length === 10) {
+            this.getOpenProposals(res.proposals[res.proposals.length - 1]);
+          } else {
+            this.proposalOpeningLoading = false;
+          }
+        } else {
+          this.proposalOpeningLoading = false;
+        }
+      })
+      .catch(() => {
+        this.proposalOpeningLoading = false;
+      });
   }
   private async getListProposals(type?: string): Promise<void> {
     console.log(this.busy);
@@ -600,7 +757,7 @@ export default class extends Vue {
         this.initConnected(this.deployedSnses, loading);
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -609,6 +766,11 @@ export default class extends Vue {
     loading
   ): Promise<void> {
     console.log(listDeployedSnses);
+    const localReject: Array<string> =
+      JSON.parse(localStorage.getItem('rejectSNSTokens')) || [];
+    listDeployedSnses = listDeployedSnses.filter((item) => {
+      return !localReject.includes(item.ledger_canister_id[0].toString());
+    });
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
     const MAX_COCURRENCY = 40;
     let snsTokensAll = [];
@@ -638,20 +800,53 @@ export default class extends Vue {
       this.SNSTokens.splice(index, res.length, ...res);
       index += res.length;
     }
+    console.log(this.SNSTokens);
     this.SNSTokens = this.SNSTokens.filter((SNSToken: proposalsNeurons) => {
-      return (
+      if (
         (SNSToken.lifecycle &&
           SNSToken.lifecycle.length &&
-          Number(SNSToken.lifecycle[0]) !== 4) ||
+          Number(SNSToken.lifecycle[0]) == 4) ||
         (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
-      );
+      ) {
+        if (!localReject.includes(SNSToken.tokenId)) {
+          localReject.push(SNSToken.tokenId);
+        }
+      }
+      if (
+        SNSToken.lifecycle &&
+        SNSToken.lifecycle.length &&
+        Number(SNSToken.lifecycle[0]) !== 4
+      ) {
+        const sns =
+          JSON.parse(localStorage.getItem(`${SNSToken.tokenId}-SNS`)) || {};
+        localStorage.setItem(
+          `${SNSToken.tokenId}-SNS`,
+          JSON.stringify(
+            Object.assign({}, sns, {
+              url: SNSToken.url,
+              logo: SNSToken.logo,
+              name: SNSToken.name,
+              description: SNSToken.description,
+              lifecycle: SNSToken.lifecycle,
+              nervousSystemParameters: SNSToken.nervousSystemParameters,
+              listNervousSystemFunctionsResponse:
+                SNSToken.listNervousSystemFunctionsResponse
+            }),
+            (key, value) =>
+              typeof value === 'bigint' ? value.toString(10) : value
+          )
+        );
+        return true;
+      }
     });
+    localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     this.setCurrentIndex();
     console.log(this.currentIndex);
     loading.close();
     this.topics = this.SNSTokens[this.currentIndex].allTopics;
     this.getListProposals();
-    console.log(this.SNSTokens);
+    this.getOpenProposals(null);
+    console.log(this.proposalsOpening);
   }
   private setCurrentIndex(): void {
     let tokenId = this.$route.query.id as string;
@@ -679,12 +874,18 @@ export default class extends Vue {
     const governanceCanisterId = deployedSns.governance_canister_id[0];
     const swapCanisterId = deployedSns.swap_canister_id[0];
     promiseAll.push(
-      this.getSNSTokenGovernanceInfo(governanceCanisterId.toString()),
-      this.getNervousSystemParameters(governanceCanisterId.toString()),
+      this.getSNSTokenGovernanceInfo(
+        governanceCanisterId.toString(),
+        ledgerCanisterId.toString()
+      ),
+      this.getNervousSystemParameters(
+        governanceCanisterId.toString(),
+        ledgerCanisterId.toString()
+      ),
       this.getDecimals(ledgerCanisterId.toString()),
       this.getListNervousSystemFunctions(governanceCanisterId.toString()),
       this.getName(ledgerCanisterId.toString()),
-      this.getLifecycle(swapCanisterId.toString())
+      this.getLifecycle(swapCanisterId.toString(), ledgerCanisterId.toString())
     );
     const res = await Promise.all(promiseAll);
     let allTopics = [];
@@ -700,12 +901,10 @@ export default class extends Vue {
         }
       });
     }
-    console.log(types);
     return {
       tokenId: ledgerCanisterId.toString(),
       governanceId: governanceCanisterId.toString(),
       ...res[0],
-      name: res[4],
       types: types,
       allTopics: allTopics, // allTypes
       listTypes: listTypes,
@@ -715,14 +914,29 @@ export default class extends Vue {
     };
   }
   private async getSNSTokenGovernanceInfo(
+    governance: string,
     tokenId: string
   ): Promise<GetMetadataResponse> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.name && info.name instanceof Array && info.name[0]) {
+      return {
+        url: info.url,
+        logo: info.logo,
+        name: info.name,
+        description: info.description
+      };
+    }
     const snsGovernanceService = new SNSGovernanceService();
-    return await snsGovernanceService.getMetadata(tokenId);
+    return await snsGovernanceService.getMetadata(governance);
   }
   private async getNervousSystemParameters(
-    governanceId: string
+    governanceId: string,
+    tokenId: string
   ): Promise<NervousSystemParameters> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.nervousSystemParameters) {
+      return info.nervousSystemParameters;
+    }
     const snsGovernanceService = new SNSGovernanceService();
     try {
       return await snsGovernanceService.getNervousSystemParameters(
@@ -748,7 +962,14 @@ export default class extends Vue {
     const DRC20Token = new DRC20TokenService();
     return await DRC20Token.icrcName(ledgerCanisterId);
   }
-  private async getLifecycle(swapCanisterId: string): Promise<Array<bigint>> {
+  private async getLifecycle(
+    swapCanisterId: string,
+    tokenId: string
+  ): Promise<Array<bigint>> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.lifecycle) {
+      return info.lifecycle;
+    }
     const snsSwapService = new SNSSwapService();
     const res = await snsSwapService.getLifecycle(swapCanisterId);
     return res.lifecycle;
@@ -885,7 +1106,7 @@ export default class extends Vue {
   display: flex;
   align-items: center;
   height: 36px;
-  margin-left: 20px;
+  margin: 10px 5px 0 5px;
   ::v-deep .ant-checkbox-wrapper {
     color: #adb3c4;
   }

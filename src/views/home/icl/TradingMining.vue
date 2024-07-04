@@ -737,7 +737,7 @@ export default class extends Vue {
             .toString(10);
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
     }
     return volume;
@@ -765,7 +765,7 @@ export default class extends Vue {
       this.getTmNFTBalance();
       this.getStatus();
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.success('Claim error');
     }
     loading.close();
@@ -787,7 +787,7 @@ export default class extends Vue {
         this.getTokensExt();
       }, 10 * 1000);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.success('Withdraw error');
     }
     loading.close();
@@ -815,7 +815,7 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();
@@ -838,7 +838,7 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();

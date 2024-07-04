@@ -1175,7 +1175,9 @@ export default class extends Vue {
           this.tokens.length &&
           this.getPrincipalId
         ) {
-          this.init();
+          if (this.$route.name === 'Account') {
+            this.init();
+          }
         }
       }, 0);
     }, 30 * 1000);

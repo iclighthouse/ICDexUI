@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div class="home-header" style="margin-top: 14px">
-      <div class="home-header-left">
-        <span class="home-header-title">Airdrop</span>
-      </div>
-      <account-info> </account-info>
-    </div>
     <div class="container-width">
       <div class="airdrops-main">
         <div class="airdrops-main-title">Airdrop Event 24-02</div>

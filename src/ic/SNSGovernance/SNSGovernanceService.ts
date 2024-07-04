@@ -42,7 +42,7 @@ export class SNSGovernanceService {
       const res = await service.get_metadata({});
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -55,7 +55,7 @@ export class SNSGovernanceService {
       const res = await service.list_neurons(request);
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -68,7 +68,7 @@ export class SNSGovernanceService {
       const res = await service.get_neuron({ neuron_id: request });
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -80,7 +80,7 @@ export class SNSGovernanceService {
       const res = await service.get_nervous_system_parameters(null);
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -275,7 +275,7 @@ export class SNSGovernanceService {
       const res = await service.list_nervous_system_functions();
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -412,9 +412,10 @@ export class SNSGovernanceService {
   };
   public listProposals = async (
     canisterId: string,
-    request: ListProposals
+    request: ListProposals,
+    byCaller = false
   ): Promise<ListProposalsResponse> => {
-    const service = await this.check(canisterId, true, false);
+    const service = await this.check(canisterId, true, byCaller);
     const res = await service.list_proposals(request);
     return SerializableIC(res);
   };

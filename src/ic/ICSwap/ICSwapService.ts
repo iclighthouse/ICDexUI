@@ -36,7 +36,7 @@ export class ICSwapService {
       const res = await service.drc205_dexInfo();
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

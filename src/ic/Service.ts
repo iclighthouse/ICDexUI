@@ -19,7 +19,7 @@ export const buildService = <T>(
       console.warn(
         'Unable to fetch root key. Check to ensure that your local replica is running'
       );
-      console.error(err);
+      console.log(err);
     });
   }
   if (canisterId === IC_MANAGEMENT_CANISTER_ID) {

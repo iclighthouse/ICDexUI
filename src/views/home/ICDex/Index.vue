@@ -1,58 +1,5 @@
 <template>
   <div class="icdex-main" :class="{ 'icdex-main-modal': showTrade }">
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-        <!--<li
-          v-if="
-            hostname &&
-            hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
-            hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
-          "
-        >
-          <a
-            :href="
-              hostHref.replace(
-                hostname,
-                'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
-              )
-            "
-            target="_blank"
-            rel="nofollow noreferrer noopener"
-            >OldVersion</a
-          >
-        </li>-->
-      </ul>
-      <div class="flex-center margin-left-auto">
-        <launch
-          :tokens="tokens"
-          ref="launch"
-          @launchSuccess="launchSuccess"
-          @changeLaunch="changeLaunch"
-        ></launch>
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
     <div
       class="de-swap-main"
       :class="{
@@ -14363,6 +14310,12 @@ export default class extends Vue {
       await initIcx();
       this.pushUser();
     }
+    EventBus.$on('changeLaunch', () => {
+      this.getDexPairs('icdex');
+    });
+    EventBus.$on('launchSuccess', () => {
+      this.getDexPairs('icdex');
+    });
     if (this.$route.params.token0 && this.$route.params.token1) {
       document.title = `${this.$route.params.token0}/${this.$route.params.token1} - ICDex (Orderbook Dex)`;
     }
@@ -14378,8 +14331,6 @@ export default class extends Vue {
     const width = document.documentElement.clientWidth;
     this.isH5 = width <= 768;
     try {
-      this.getSysConfig();
-      this.getDebugPairs();
       this.getDexPairs('icdex').then(() => {
         // const tour = localStorage.getItem('confirmOldTrade');
         // if (!tour) {
@@ -14388,6 +14339,8 @@ export default class extends Vue {
         //   });
         // }
       });
+      this.getSysConfig();
+      this.getDebugPairs();
       this.getIcpPrice();
       this.initFallbackInfo();
       // this.principal = principal;
@@ -14398,7 +14351,7 @@ export default class extends Vue {
         this.getNTFs();
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     // this.steps = [
     //   {
@@ -15007,7 +14960,7 @@ export default class extends Vue {
     try {
       dispose('kInterval-chart');
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private changeKIntervalList(kInterval): void {
@@ -15073,7 +15026,9 @@ export default class extends Vue {
     window.clearInterval(this.timerQuotes);
     this.timerQuotes = null;
     this.timerQuotes = setTimeout(async () => {
-      await this.getQuotes(swapId);
+      if (this.$route.name === 'ICDex') {
+        await this.getQuotes(swapId);
+      }
     }, 5 * 1000);
   }
   private splitData(rawData: Array<KBar>): KLData[] {
@@ -15372,7 +15327,9 @@ export default class extends Vue {
       this.currentTradeMenuPro = 'pending';
       this.getPendingListPro();
       this.proTimer = window.setInterval(() => {
-        this.getPendingListPro(false);
+        if (this.$route.name === 'ICDex') {
+          this.getPendingListPro(false);
+        }
       }, 10 * 1000);
       this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
       const address = principalToAccountIdentifier(
@@ -15393,15 +15350,19 @@ export default class extends Vue {
     this.clearIntervalPro();
     if (value === 'orders') {
       this.proTimer = window.setInterval(() => {
-        this.getProOrders(
-          this.currentPair[0].toString(),
-          this.getPrincipalId,
-          false
-        );
+        if (this.$route.name === 'ICDex') {
+          this.getProOrders(
+            this.currentPair[0].toString(),
+            this.getPrincipalId,
+            false
+          );
+        }
       }, 10 * 1000);
     } else if (value === 'pending') {
       this.proTimer = window.setInterval(() => {
-        this.getPendingListPro(false);
+        if (this.$route.name === 'ICDex') {
+          this.getPendingListPro(false);
+        }
       }, 10 * 1000);
     } else if (value === 'history') {
       const address = principalToAccountIdentifier(
@@ -15409,7 +15370,14 @@ export default class extends Vue {
         new Uint8Array(fromSubAccountId(ProSubaccountId))
       );
       this.proTimer = window.setInterval(() => {
-        this.getTradeList(this.currentPair[0].toString(), address, true, false);
+        if (this.$route.name === 'ICDex') {
+          this.getTradeList(
+            this.currentPair[0].toString(),
+            address,
+            true,
+            false
+          );
+        }
       }, 10 * 1000);
     }
   }
@@ -17130,7 +17098,7 @@ export default class extends Vue {
           }
         } catch (e) {
           this.showPrepareOrder = false;
-          console.error(e);
+          console.log(e);
           this.preparedLoading = false;
         }
       }
@@ -17731,7 +17699,7 @@ export default class extends Vue {
           );
         })
         .catch((e) => {
-          console.error(e);
+          console.log(e);
           this.initPending(currentPair, prepare, address);
           this.$message.error(toHttpRejectError(e));
           // this.$message.error('Order fail');
@@ -19750,6 +19718,7 @@ export default class extends Vue {
       { type: 'Second', value: this.allPairs.Markets.Second },
       { type: 'Third', value: this.allPairs.Markets.Third }
     ];
+    const a = new Date().getTime();
     for (let i = 0; i < pairs.length; i++) {
       for (let j = 0; j < pairs[i].value.length; j++) {
         promiseAllValue.push(
@@ -19774,6 +19743,7 @@ export default class extends Vue {
         }
       }
     }
+    console.log(new Date().getTime() - a);
     const allPairs = []
       .concat(this.allPairs.Markets.Main)
       .concat(this.allPairs.Markets.Second)
@@ -19929,7 +19899,7 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private getIntervalPrice(time = 10): void {
@@ -19947,32 +19917,38 @@ export default class extends Vue {
       this.timer = window.setInterval(async () => {
         if (!this.getCheckAuth) {
           setTimeout(async () => {
-            this.initIntervalPrice();
+            if (this.$route.name === 'ICDex') {
+              this.initIntervalPrice();
+            }
           }, 0);
         }
       }, time * 1000);
       this.timerOrderBook = window.setInterval(() => {
         if (!this.getCheckAuth) {
           setTimeout(() => {
-            this.getLiquidity(
-              this.currentPair[0].toString(),
-              this.currentPairIndex,
-              this.currentTradeMarketSort
-            );
-            this.getLevel100(this.currentPair[0].toString());
-            this.latestFilled(this.currentPair[0].toString());
+            if (this.$route.name === 'ICDex') {
+              this.getLiquidity(
+                this.currentPair[0].toString(),
+                this.currentPairIndex,
+                this.currentTradeMarketSort
+              );
+              this.getLevel100(this.currentPair[0].toString());
+              this.latestFilled(this.currentPair[0].toString());
+            }
           }, 0);
         }
       }, 1.5 * 1000);
       this.timerAccount = window.setInterval(async () => {
         if (!this.getCheckAuth) {
           setTimeout(async () => {
-            this.InitTxAccount(this.currentPair[0].toString());
+            if (this.$route.name === 'ICDex') {
+              this.InitTxAccount(this.currentPair[0].toString());
+            }
           }, 0);
         }
       }, 15 * 1000);
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private async getAllowance(currentPair: DePairs): Promise<void> {
@@ -20140,7 +20116,6 @@ export default class extends Vue {
                 }
               }
               _that.addToken(res);
-              _that.initDex();
             }
           });
         }
@@ -20180,7 +20155,6 @@ export default class extends Vue {
                 }
               }
               _that.addToken(res);
-              _that.initDex();
             }
           });
         }
@@ -20217,7 +20191,6 @@ export default class extends Vue {
           }
         }
         this.addToken(res);
-        this.initDex();
       }
     }
   }
@@ -20444,7 +20417,7 @@ export default class extends Vue {
           }
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
       if (!this.isToSetReferrer) {
         this.toSetReferrer();
@@ -20453,7 +20426,7 @@ export default class extends Vue {
       this.stoConfig = null;
       this.getStoConfig();
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private initPrice(): void {
@@ -21117,22 +21090,24 @@ export default class extends Vue {
           );
         }, 20);
       }
-      this.initPairsPrice();
+      this.initDex();
+      this.initPairsPrice().then(() => {
+        this.getTokens();
+      });
       this.getRole(this.currentPair);
+      this.getAllowance(this.currentPair);
       this.setReferral();
       this.getMakerRebate();
-      this.getAllowance(this.currentPair);
       this.initAccount();
       this.getStoConfig();
       this.$nextTick(() => {
         try {
           dispose('kInterval-chart');
         } catch (e) {
-          console.error(e);
+          console.log(e);
         }
         this.resetChart();
       });
-      this.getTokens();
       console.log(this.prePairs);
       console.log(this.pairs);
       console.log(this.tradePairs);
@@ -21259,7 +21234,6 @@ export default class extends Vue {
       this.getPairInfo(this.currentPair);
       this.getUserLiquidity(this.currentPair[0].toString());
     }
-    this.latestFilled(this.currentPair[0].toString());
     this.getIntervalPrice();
     try {
       if (this.getPrincipalId) {
@@ -21271,7 +21245,7 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     if (!this.isToSetReferrer) {
       this.toSetReferrer();
@@ -21617,26 +21591,31 @@ export default class extends Vue {
   private filterLevel100(): void {
     if (this.level100[1] && this.currentSize) {
       // const tokenUnitDecimals = this.level100[0].toString().length - 1;
-      const token1Decimals =
-        this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
-      const token0Decimals =
-        this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
-      this.tickAsk = this.mergeQuantity(
-        this.level100[1].ask,
-        token1Decimals,
-        token0Decimals,
-        this.level100[0].toString(),
-        -this.currentSize.symbol,
-        'ask'
-      );
-      this.tickBid = this.mergeQuantity(
-        this.level100[1].bid,
-        token1Decimals,
-        token0Decimals,
-        this.level100[0].toString(),
-        -this.currentSize.symbol,
-        'bid'
-      );
+      if (
+        this.tokens[this.currentPair[1][0].token1[0].toString()] &&
+        this.tokens[this.currentPair[1][0].token0[0].toString()]
+      ) {
+        const token1Decimals =
+          this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
+        const token0Decimals =
+          this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
+        this.tickAsk = this.mergeQuantity(
+          this.level100[1].ask,
+          token1Decimals,
+          token0Decimals,
+          this.level100[0].toString(),
+          -this.currentSize.symbol,
+          'ask'
+        );
+        this.tickBid = this.mergeQuantity(
+          this.level100[1].bid,
+          token1Decimals,
+          token0Decimals,
+          this.level100[0].toString(),
+          -this.currentSize.symbol,
+          'bid'
+        );
+      }
     }
   }
   private mergeQuantity(

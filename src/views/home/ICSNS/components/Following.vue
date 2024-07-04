@@ -593,7 +593,7 @@ export default class extends Vue {
               }
             }
           } catch (e) {
-            console.error(e);
+            console.log(e);
           }
           loading.close();
         }
@@ -640,7 +640,7 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
   }

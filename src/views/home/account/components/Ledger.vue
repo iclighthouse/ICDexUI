@@ -5591,10 +5591,11 @@ export default class extends Mixins(BalanceMixin) {
         this.getCkTokens().then(() => {
           this.getActive();
           this.activeTimer && clearTimeout(this.activeTimer);
-          this.activeTimer = window.setInterval(
-            () => this.getActive(),
-            60 * 1000
-          );
+          window.setInterval(() => {
+            if (this.$route.name === 'Account') {
+              this.getActive();
+            }
+          }, 60 * 1000);
         });
         if (this.minterInfo.depositMethod === 1) {
           this.depositMethod = 1;
@@ -6857,7 +6858,7 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     return retrievePending;
   }
@@ -6920,7 +6921,7 @@ export default class extends Mixins(BalanceMixin) {
         });
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     return mintPending;
   }
@@ -6975,7 +6976,7 @@ export default class extends Mixins(BalanceMixin) {
       }
       return hasClaimPending;
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   }
@@ -7111,7 +7112,9 @@ export default class extends Mixins(BalanceMixin) {
     this.getBalanceInit();
     this.btcTimer = window.setInterval(() => {
       setTimeout(async () => {
-        this.getBalanceInit();
+        if (this.$route.name === 'Account') {
+          this.getBalanceInit();
+        }
       }, 0);
     }, 10000);
   }
@@ -7671,7 +7674,9 @@ export default class extends Mixins(BalanceMixin) {
     this.updateRetrieveETHStatusTimer = window.setInterval(() => {
       window.setTimeout(() => {
         if (!this.getCheckAuth) {
-          this.getRetrieveETHList(false);
+          if (this.$route.name === 'Account') {
+            this.getRetrieveETHList(false);
+          }
           // this.updateRetrieveETHStatus();
         }
       }, 0);
@@ -7730,7 +7735,7 @@ export default class extends Mixins(BalanceMixin) {
       }
       return balance;
     } catch (e) {
-      console.error(e);
+      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthTokenBalance(
           std,
@@ -7767,7 +7772,7 @@ export default class extends Mixins(BalanceMixin) {
         method: 'eth_getTransactionReceipt'
       });
     } catch (e) {
-      console.error(e);
+      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthTransactionReceipt(
           txHash,
@@ -7802,7 +7807,7 @@ export default class extends Mixins(BalanceMixin) {
         method: 'eth_getTransactionByHash'
       });
     } catch (e) {
-      console.error(e);
+      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthTransactionByHash(
           txHash,
@@ -7838,7 +7843,7 @@ export default class extends Mixins(BalanceMixin) {
         method: 'eth_getBlockByNumber'
       });
     } catch (e) {
-      console.error(e);
+      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getBlockByNumber(block, ETHHttpsNum, ++retry, ETHHttpsKeys);
       }
@@ -7866,7 +7871,7 @@ export default class extends Mixins(BalanceMixin) {
         method: 'eth_blockNumber'
       });
     } catch (e) {
-      console.error(e);
+      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthBlock(ETHHttpsNum, ++retry, ETHHttpsKeys);
       }
@@ -7883,7 +7888,7 @@ export default class extends Mixins(BalanceMixin) {
         }
         console.log(this.blockCountETH);
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
       const std = Object.keys(this.icNetworkTokens.icTokenInfo.std)[0];
       let token;
@@ -8162,16 +8167,18 @@ export default class extends Mixins(BalanceMixin) {
       );
       this.balanceTimer = window.setInterval(() => {
         setTimeout(async () => {
-          if (!this.getCheckAuth) {
-            this.dissolveBalanceETH = await getDepositing(
-              { icrc1: null },
-              tokenId,
-              this.ckETHWithdrawalAccount
-            );
-            this.refreshCkETHBalance(false);
-            this.canRetrieveETH = new BigNumber(this.dissolveBalanceETH).gte(
-              retrieve_eth_min_amount.toString(10)
-            );
+          if (this.$route.name === 'Account') {
+            if (!this.getCheckAuth) {
+              this.dissolveBalanceETH = await getDepositing(
+                { icrc1: null },
+                tokenId,
+                this.ckETHWithdrawalAccount
+              );
+              this.refreshCkETHBalance(false);
+              this.canRetrieveETH = new BigNumber(this.dissolveBalanceETH).gte(
+                retrieve_eth_min_amount.toString(10)
+              );
+            }
           }
         });
       }, 3000);
@@ -8196,7 +8203,9 @@ export default class extends Mixins(BalanceMixin) {
     this.updateRetrieveBtcStatusTimer = window.setInterval(() => {
       window.setTimeout(() => {
         if (!this.getCheckAuth) {
-          this.updateRetrieveBtcStatus();
+          if (this.$route.name === 'Account') {
+            this.updateRetrieveBtcStatus();
+          }
         }
       }, 0);
     }, 30 * 1000);
@@ -8207,7 +8216,9 @@ export default class extends Mixins(BalanceMixin) {
       this.updateRetrieveBtcSubmittedStatusTimer = window.setInterval(() => {
         window.setTimeout(() => {
           if (!this.getCheckAuth) {
-            this.updateIcBtcConfirmed();
+            if (this.$route.name === 'Account') {
+              this.updateIcBtcConfirmed();
+            }
           }
         }, 0);
       }, 100 * 1000);
@@ -8489,7 +8500,9 @@ export default class extends Mixins(BalanceMixin) {
     this.btcTxTimer = window.setInterval(() => {
       setTimeout(() => {
         if (!this.getCheckAuth) {
-          this.getBTCTxs();
+          if (this.$route.name === 'Account') {
+            this.getBTCTxs();
+          }
         }
       });
     }, 100 * 1000);
@@ -8631,8 +8644,13 @@ export default class extends Mixins(BalanceMixin) {
       this.ckETHTimer = null;
     }
     this.ckETHTimer = window.setInterval(() => {
-      this.getCKETHBalance(icNetworkTokens);
-      this.getCkETHRetrieveStatus(icNetworkTokens.id, icNetworkTokens.tokenId);
+      if (this.$route.name === 'Account') {
+        this.getCKETHBalance(icNetworkTokens);
+        this.getCkETHRetrieveStatus(
+          icNetworkTokens.id,
+          icNetworkTokens.tokenId
+        );
+      }
     }, 30 * 1000);
   }
   private showForgeCKETH(): void {
@@ -8708,18 +8726,20 @@ export default class extends Mixins(BalanceMixin) {
       this.ckETHTimer = null;
     }
     this.ckETHTimer = window.setInterval(() => {
-      this.getCkETHMintBlockNum(icNetworkTokens.id, icNetworkTokens.tokenId);
-      let minterId = CK_ETH_MINTER_CANISTER_ID;
-      if (
-        icNetworkTokens.networkId === '3' ||
-        icNetworkTokens.networkToIcId === '3'
-      ) {
-        minterId = CK_ETH_MINTER_CANISTER_ID_TEST;
+      if (this.$route.name === 'Account') {
+        this.getCkETHMintBlockNum(icNetworkTokens.id, icNetworkTokens.tokenId);
+        let minterId = CK_ETH_MINTER_CANISTER_ID;
+        if (
+          icNetworkTokens.networkId === '3' ||
+          icNetworkTokens.networkToIcId === '3'
+        ) {
+          minterId = CK_ETH_MINTER_CANISTER_ID_TEST;
+        }
+        this.getLastScrapedBlockNumber(minterId).then((res) => {
+          this.lastScrapedBlockNumber = res;
+        });
+        this.getCKETHBalance(icNetworkTokens);
       }
-      this.getLastScrapedBlockNumber(minterId).then((res) => {
-        this.lastScrapedBlockNumber = res;
-      });
-      this.getCKETHBalance(icNetworkTokens);
     }, 30 * 1000);
   }
   private async getCkETHMintBlockNum(
@@ -8792,9 +8812,11 @@ export default class extends Mixins(BalanceMixin) {
       this.updateDepositETHStatusTimer = window.setInterval(() => {
         window.setTimeout(() => {
           if (!this.getCheckAuth) {
-            // this.updateDepositETHStatus();
-            this.getETHDepositBalance();
-            this.getMintDepositing();
+            if (this.$route.name === 'Account') {
+              // this.updateDepositETHStatus();
+              this.getETHDepositBalance();
+              this.getMintDepositing();
+            }
           }
         }, 0);
       }, 30 * 1000);
@@ -9423,7 +9445,7 @@ export default class extends Mixins(BalanceMixin) {
         }
         console.log(this.blockCountETH);
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
       if (
         receipt &&
@@ -10118,15 +10140,17 @@ export default class extends Mixins(BalanceMixin) {
       this.balanceTimer = window.setInterval(() => {
         setTimeout(async () => {
           if (!this.getCheckAuth) {
-            this.dissolveBalance = await getDepositing(
-              { icrc1: null },
-              tokenId,
-              this.withdrawalAccount
-            );
-            this.refreshCkBTCBalance(this.BTCType, false);
-            this.canRetrieve = new BigNumber(this.dissolveBalance).gte(
-              retrieve_btc_min_amount
-            );
+            if (this.$route.name === 'Account') {
+              this.dissolveBalance = await getDepositing(
+                { icrc1: null },
+                tokenId,
+                this.withdrawalAccount
+              );
+              this.refreshCkBTCBalance(this.BTCType, false);
+              this.canRetrieve = new BigNumber(this.dissolveBalance).gte(
+                retrieve_btc_min_amount
+              );
+            }
           }
         });
       }, 3000);
@@ -10283,7 +10307,7 @@ export default class extends Mixins(BalanceMixin) {
           );
           this.$emit('addTokenSuccess');
         } catch (e) {
-          console.error(e);
+          console.log(e);
         }
       }
     }
@@ -11009,7 +11033,7 @@ export default class extends Mixins(BalanceMixin) {
               this.onGetMintCKETHPending();
             }
           } catch (e) {
-            console.error(e);
+            console.log(e);
             if (e.code !== 4001) {
               this.$message.error(e.message);
             }
@@ -11112,7 +11136,7 @@ export default class extends Mixins(BalanceMixin) {
               );
             }
           } catch (e) {
-            console.error(e);
+            console.log(e);
             if (e.code !== 4001) {
               this.$message.error(e.message);
             }
@@ -11275,7 +11299,9 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.checkTxReceipt(hash);
     this.txReceiptTimer = window.setInterval(async () => {
-      this.checkTxReceipt(hash);
+      if (this.$route.name === 'Account') {
+        this.checkTxReceipt(hash);
+      }
     }, 60 * 1000);
   }
   private async checkTxReceipt(hash: string): Promise<void> {
@@ -11573,7 +11599,7 @@ export default class extends Mixins(BalanceMixin) {
         console.log(signature);
         await this.claim(txHash, signature);
       } catch (e) {
-        console.error(e);
+        console.log(e);
         if (e.code !== 4001) {
           this.$message.error(e.message);
         }

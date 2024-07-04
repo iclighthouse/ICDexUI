@@ -1,25 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/cyclesfinance-1.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          v-for="(menu, index) in exchangeMenu"
-          :key="index"
-          :class="{ active: exchangeType === menu }"
-          @click="change(menu)"
-        >
-          {{ menu }}
-        </li>
-      </ul>
-      <account-info :menu-list="menuList"></account-info>
-    </div>
     <div class="cycles-finance-main container-width">
       <div class="exchange-fee-item">
         <dl>
@@ -1404,6 +1384,7 @@ import {
   currentPageConnectInfinity,
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
+import EventBus from '@/utils/Event';
 const commonModule = namespace('common');
 
 @Component({
@@ -2068,6 +2049,9 @@ export default class extends Mixins(BalanceMixin) {
     this.liquidity = await this.getLiquidity();
     console.log(this.liquidity, this.userLiquidity);
     this.getIntervalLiquidity();
+    EventBus.$on('change', (type: ExchangeType) => {
+      this.change(type);
+    });
   }
   private connectWallet(): void {
     this.$router.push({

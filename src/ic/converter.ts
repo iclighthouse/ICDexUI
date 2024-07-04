@@ -389,7 +389,7 @@ const toPrincipalAndAccountId = (
       };
     }
   } catch (e) {
-    console.error(e);
+    console.log(e);
     return {
       principal: null,
       subaccount: null,

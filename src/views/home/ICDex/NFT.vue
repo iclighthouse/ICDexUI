@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <span class="home-header-title">NFT</span>
-      </div>
-      <account-info> </account-info>
-    </div>
     <div>
       <div class="nft-main container-width">
         <div class="w100" style="margin: 30px 0 20px; font-size: 16px">
@@ -521,7 +515,7 @@ export default class extends Vue {
         this.tokensExt = [];
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     this.nftSpinning = false;
   }
@@ -662,7 +656,7 @@ export default class extends Vue {
       }
     } catch (e) {
       this.$message.error('Approve error');
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -704,7 +698,7 @@ export default class extends Vue {
       }
     } catch (e) {
       this.$message.error('Approve error');
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -814,7 +808,7 @@ export default class extends Vue {
           }
         } catch (e) {
           loading.close();
-          console.error(e);
+          console.log(e);
         }
       }
     });

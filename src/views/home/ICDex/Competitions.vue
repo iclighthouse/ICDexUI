@@ -1,48 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-      </ul>
-      <div class="flex-center margin-left-auto">
-				<launch :tokens="tokens" ref="launch"></launch>
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
-    <!--<ul class="token-list-menu">
-      <li
-        :class="{ active: currentMenu === 'combined' }"
-        @click="changeMenu('combined')"
-      >
-        Combined Competitions
-      </li>
-      <li
-        :class="{ active: currentMenu === 'trade' }"
-        @click="changeMenu('trade')"
-      >
-        Trading Competitions
-      </li>
-    </ul>-->
     <div
       v-show="currentMenu === 'combined'"
       class="container-width container-common-style competitions-main"
@@ -825,33 +782,6 @@ export default class extends Vue {
   };
   private busy = true;
   private loadMore = true;
-  private menuList: Menu[] = [
-    {
-      value: 'Trade',
-      path: '/ICDex'
-    },
-    {
-      value: 'Pools',
-      path: '/ICDex/pools'
-    },
-    {
-      value: 'Mining',
-      path: '/Mining'
-    },
-    {
-      value: 'Info',
-      path: '/ICDex/info'
-    },
-    {
-      value: 'Competitions',
-      path: '/ICDex/competitions'
-    }
-    // ,
-    // {
-    //   value: 'Mining',
-    //   path: '/icl/tradingMining'
-    // }
-  ];
   private currentMenu = 'combined';
   private dexCompetitionResponse: DexCompetitionResponse = null;
   private traderData: Array<TraderData> = null;

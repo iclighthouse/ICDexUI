@@ -414,7 +414,7 @@ export default class extends Vue {
       this.init();
       this.claimVisible = false;
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.success('Claim error');
     }
     loading.close();
@@ -443,7 +443,7 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();
@@ -537,7 +537,7 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();
@@ -567,7 +567,7 @@ export default class extends Vue {
             .toString(10);
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
     }
     return volume;
@@ -676,7 +676,7 @@ export default class extends Vue {
     try {
       await this.getStatus(true);
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
   }

@@ -1,11 +1,10 @@
 <template>
   <div>
-    <div class="home-header" style="margin-top: 14px">
+    <!--<div class="home-header" style="margin-top: 14px">
       <div class="home-header-left">
         <span class="home-header-title">SNS</span>
       </div>
-      <account-info> </account-info>
-    </div>
+    </div>-->
     <div>
       <ul v-if="!$route.meta.hideMenu" class="icsns-menu">
         <li

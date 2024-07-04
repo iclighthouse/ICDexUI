@@ -309,7 +309,7 @@ export class ICDexService {
         dexInfo: SerializableIC(res)
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -580,7 +580,7 @@ export class ICDexService {
         openingTime: res.openingTime
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -606,7 +606,7 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -622,7 +622,7 @@ export class ICDexService {
         accountSetting: SerializableIC(res)
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -640,7 +640,7 @@ export class ICDexService {
       }
       return await service.accountConfig(mode, keeping, subAccount);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -669,7 +669,7 @@ export class ICDexService {
       }
       return await service.depositFallback(subAccount);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -698,7 +698,7 @@ export class ICDexService {
         dexRole: SerializableIC(res)
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -748,7 +748,7 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -861,7 +861,7 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

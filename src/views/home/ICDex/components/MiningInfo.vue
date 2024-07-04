@@ -237,6 +237,8 @@ import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFidu
 
 const commonModule = namespace('common');
 
+let flagInit = false;
+
 @Component({
   name: 'Mining',
   components: {
@@ -314,18 +316,21 @@ export default class extends Vue {
     return flag;
   }
   async created(): Promise<void> {
-    this.MiningService = new MiningService();
-    this.ICDexRouterService = new ICDexRouterService();
-    this.NftService = new NftService();
-    this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
-    this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    if (this.getPrincipalId) {
-      await this.NFTBalance();
-      await this.getTokensExt();
+    if (!flagInit) {
+      flagInit = true;
+      this.MiningService = new MiningService();
+      this.ICDexRouterService = new ICDexRouterService();
+      this.NftService = new NftService();
+      this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
+      this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
+      if (this.getPrincipalId) {
+        await this.NFTBalance();
+        await this.getTokensExt();
+      }
+      this.getRound();
+      this.getAccelerationRate();
+      this.getAccountData();
     }
-    this.getRound();
-    this.getAccelerationRate();
-    this.getAccountData();
   }
   private async getPairs(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.getPairs(

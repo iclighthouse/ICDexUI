@@ -1,259 +1,126 @@
 <template>
-  <div class="account-info">
-    <slot></slot>
-    <div class="current-account" v-if="getPrincipalId">
-      <span class="flex-center" v-show="!accountName[getPrincipalId]">
-        <img :src="accountImg" alt="account" />
-        <copy-account
-          :front="8"
-          :account="getPrincipalId"
-          copy-text="Principal ID"
-        ></copy-account>
-      </span>
-      <span class="flex-center" v-show="accountName[getPrincipalId]">
-        <img :src="accountImg" alt="account" />
-        <span>{{ accountName[getPrincipalId] }}</span>
-        <span class="flex-center" style="margin-left: 5px; font-size: 12px">
-          (<copy-account
-            :front="4"
-            :account="getPrincipalId"
-            copy-text="Principal ID"
-          ></copy-account
-          >)
-        </span>
-      </span>
-      <a-icon
-        @click="setName"
-        type="edit"
-        style="margin-left: 5px"
-        class="pointer"
-      />
-      <router-link
-        v-show="!$route.fullPath.toLocaleLowerCase().startsWith('/wallet')"
-        to="/wallet"
-      >
-        <img src="@/assets/img/wallet.svg" class="wallet-icon" alt="" />
-      </router-link>
-    </div>
-    <a-dropdown placement="bottomRight" v-if="getPrincipalId && !isIcx">
-      <div class="user-menu">
-        <a-icon class="user-icon" type="user" />
-        <img class="current-account-min" :src="accountImg" alt="account" />
+  <div>
+    <div class="home-header home-header-main">
+      <div class="home-header-main-menu">
+        <img
+          class="home-header-main-menu-left"
+          src="@/assets/img/logo-i.png"
+          alt=""
+        />
+        <!--<a-icon class="home-header-main-menu-left" type="double-left" />-->
+        <div class="home-header-main-menu-span">
+          <!--<a-icon type="double-right" />-->
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-      <a-menu
-        slot="overlay"
-        class="user-setting base-bg-box user-setting-account"
-      >
-        <a-menu-item class="user-setting-item" v-if="getPrincipalId">
-          <div class="user-setting-item-setting flex-center">
-            <span style="margin-right: 5px">AccountId: </span>
-            <copy-account
-              :account="getCurrentAccount()"
-              placement="left"
-              :is-copy="false"
-              copy-text="Account ID"
-              class="user-setting-item-setting-copy"
-            ></copy-account>
-          </div>
-        </a-menu-item>
-        <a-menu-item
-          v-if="activeKey"
-          class="user-setting-item"
-          @click="showTab"
+      <div class="home-header-left">
+        <img class="home-header-logo" src="@/assets/img/logo.png" alt="logo" />
+        <!--<img
+					class="home-header-logo"
+					src="@/assets/img/icdex-2.png"
+					alt="logo"
+				/>-->
+      </div>
+      <ul>
+        <a-dropdown
+          :getPopupContainer="() => $refs.homeHeaderMain"
+          placement="bottomCenter"
         >
-          <div class="user-setting-item-setting">
-            <a-icon
-              v-if="getIdentity && getIdentity.toJSON()[1].length <= 64"
-              class="account-setting"
-              type="setting"
-            />
-            <span>Setting</span>
-          </div>
-        </a-menu-item>
-        <a-menu-item class="user-setting-item" @click="logout">
-          <div class="user-setting-item-setting">
-            <a-icon type="logout" /><span>Logout</span>
-          </div>
-        </a-menu-item>
-        <a-menu-item
-          v-for="(principal, index) in principalList"
-          :key="index"
-          @click="changeAccount(principal)"
-        >
-          <div
-            class="user-principal user-setting-item-setting"
-            v-if="principal !== getPrincipalId"
+          <li
+            ref="homeHeaderMain"
+            :class="{
+              active:
+                $route.fullPath.toLocaleLowerCase().startsWith('/wallet') ||
+                $route.fullPath.toLocaleLowerCase().startsWith('/nns') ||
+                $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
+            }"
           >
-            <span class="flex-center" v-show="!accountName[principal]">
-              <img :src="getAccountImg(principal)" alt="" />
-              <copy-account
-                :account="principal"
-                placement="left"
-                :is-copy="false"
-                copy-text="Principal ID"
-                class="user-setting-item-setting-copy"
-              ></copy-account>
-            </span>
-            <span class="flex-center" v-show="accountName[principal]">
-              <img :src="getAccountImg(getPrincipalId)" alt="" />
-              <span>{{ accountName[principal] }}</span>
-              <span class="flex-center" style="margin-left: 3px">
-                (<copy-account
-                  :front="4"
-                  placement="left"
-                  :is-copy="false"
-                  :account="principal"
-                  copy-text="Principal ID"
-                ></copy-account
-                >)
-              </span>
-            </span>
-            <img class="source-img" :src="getSourceImg(principal)" alt="" />
-          </div>
-          <a-tooltip
-            class="user-principal check-account"
-            v-else
-            placement="left"
-          >
-            <template slot="title">
-              <span>{{ getPrincipalId }}</span>
-            </template>
-            <div class="user-setting-item-setting">
-              <span class="flex-center" v-show="!accountName[principal]">
-                <img :src="getAccountImg(principal)" alt="" /><span>{{
-                  getPrincipalId | ellipsisAccount
-                }}</span>
-              </span>
-              <span class="flex-center" v-show="accountName[principal]">
-                <img :src="getAccountImg(getPrincipalId)" alt="" />
-                <span>{{ accountName[principal] }}</span>
-                <span class="flex-center" style="margin-left: 3px">
-                  (<copy-account
-                    :front="4"
-                    :account="principal"
-                    copy-text="Principal ID"
-                  ></copy-account
-                  >)
-                </span>
-              </span>
-              <a-icon
-                @click="setName"
-                style="margin-left: 5px"
-                class="pointer"
-                type="setting"
-              />
-              <a-icon class="check-account-icon" type="check-circle" />
-              <img class="source-img" :src="getSourceImg(principal)" alt="" />
-            </div>
-          </a-tooltip>
-        </a-menu-item>
-      </a-menu>
-    </a-dropdown>
-    <router-link to="/wallet">
-      <img
-        v-if="
-          getPrincipalId &&
-          !isIcx &&
-          !$route.fullPath.toLocaleLowerCase().startsWith('/wallet')
-        "
-        src="@/assets/img/wallet.svg"
-        class="h5-menu wallet-icon"
-        alt=""
-      />
-    </router-link>
-    <div v-if="isIcx && getPrincipalId" class="current-account-h5 h5-show">
-      <img :src="accountImg" alt="account" />
-      <copy-account
-        :account="getPrincipalId"
-        :show-copy="false"
-        copy-text="Principal ID"
-      ></copy-account>
-    </div>
-    <a-dropdown
-      v-if="getPrincipalId && !menuList.length"
-      placement="bottomRight"
-    >
-      <a-icon class="base-font-normal h5-menu" type="menu" />
-      <a-menu slot="overlay" class="user-setting base-bg-box medium-menu">
-        <a-menu-item
-          class="user-setting-item"
-          @click="changeMenu('wallet', '/wallet')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/wallet')
-          }"
-        >
-          <router-link to="/wallet">
-            <span>Wallet</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
-          @click="changeMenu('nns', '/nns')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/nns')
-          }"
-        >
-          <router-link to="/nns">
-            <span>NNS</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
-          @click="changeMenu('ICSNS', '/ICSNS')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
-          }"
-        >
-          <router-link to="/ICSNS">
-            <span>SNS</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
+            <span>ICLight</span>
+            <a-icon type="caret-down" />
+          </li>
+          <a-menu slot="overlay" class="base-bg-box home-header-menu">
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('wallet', '/wallet')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/wallet')
+                }"
+                class="home-header-item-info"
+              >
+                Wallet
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('nns', '/nns')"
+                :class="{
+                  active: $route.fullPath.toLocaleLowerCase().startsWith('/nns')
+                }"
+                class="home-header-item-info"
+              >
+                NNS
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('ICSNS', '/ICSNS')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/icsns')
+                }"
+                class="home-header-item-info"
+              >
+                SNS
+              </div>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+        <li
           @click="changeMenu('icRouter', '/icRouter')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/icrouter')
           }"
         >
-          <router-link to="/icRouter">
-            <span>icRouter</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
+          <span>icRouter</span>
+        </li>
+        <!--<li
+					@click="changeMenu('ICSNS', '/ICSNS')"
+					:class="{
+						active: $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
+					}"
+				>
+					<span>ICSNS</span>
+				</li>-->
+        <li
           @click="changeMenu('ICDex', '/ICDex')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
           }"
         >
-          <router-link to="/ICDex">
-            <span>ICDex</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
+          <span>ICDex</span>
+        </li>
+        <li
           @click="changeMenu('NFT', '/NFT')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
           }"
         >
-          <router-link to="/nft">
-            <span>NFT</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
+          <span>NFT</span>
+        </li>
+        <li
           @click="changeMenu('Airdrop', '/Airdrop')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
           }"
         >
-          <router-link to="/nft">
-            <span>Airdrop</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
+          <span>Airdrop</span>
+        </li>
+        <li
           @click="changeMenu('CyclesFinance', '/CyclesFinance')"
           :class="{
             active: $route.fullPath
@@ -261,297 +128,1335 @@
               .startsWith('/cyclesfinance')
           }"
         >
-          <router-link to="/CyclesFinance">
-            <span>CyclesFinance</span>
-          </router-link>
-        </a-menu-item>
-        <!--<a-menu-item
-          class="user-setting-item"
-          @click="changeMenu('dapps', '/dapps')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/dapps')
-          }"
-        >
-          <router-link to="/dapps">
-            <span>DApps</span>
-          </router-link>
-        </a-menu-item>-->
-        <!--<a-menu-item
-          class="user-setting-item"
-          @click="changeMenu('ICDex', '/ICDex')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
-          }"
-        >
-          <router-link to="/ICDex">
-            <span>Trade</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
-          @click="changeMenu('market', '/market/icdex')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
-          }"
-        >
-          <router-link to="/market">
-            <span>Market</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          class="user-setting-item"
-          @click="changeMenu('/icl', '/icl/tradingMining')"
-          :class="{
-            active: $route.fullPath
-              .toLocaleLowerCase()
-              .startsWith('/icl/tradingmining')
-          }"
-        >
-          <router-link to="/icl/tradingMining">
-            <span>Mining</span>
-          </router-link>
-        </a-menu-item>-->
-        <a-menu-item
-          class="user-setting-item"
+          <span>CyclesFinance</span>
+        </li>
+        <!--<li
+					@click="changeMenu('dapps', '/dapps')"
+					:class="{
+						active:
+							$route.fullPath.toLocaleLowerCase().startsWith('/dapps') ||
+							$route.fullPath.toLocaleLowerCase().startsWith('/icl') ||
+							$route.fullPath
+								.toLocaleLowerCase()
+								.startsWith('/cyclesfinance') ||
+							$route.fullPath.toLocaleLowerCase().startsWith('/icswap')
+					}"
+				>
+					<span>DApps</span>
+				</li>-->
+        <!--<li
+					@click="changeMenu('ICDex', '/ICDex')"
+					:class="{
+						active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
+					}"
+				>
+					<span>Trade</span>
+				</li>
+				<li
+					@click="changeMenu('Info', '/icdex/Info')"
+					:class="{
+						active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
+					}"
+				>
+					<span>Market</span>
+				</li>-->
+        <!--<li
+					@click="changeMenu('/icl', '/icl/tradingMining')"
+					:class="{
+						active: $route.fullPath
+							.toLocaleLowerCase()
+							.startsWith('/icl/tradingmining')
+					}"
+				>
+					<span>Mining</span>
+				</li>-->
+        <li
           @click="changeMenu('Dashboard', '/Dashboard')"
           :class="{
             active: $route.fullPath.toLocaleLowerCase().startsWith('/dashboard')
           }"
         >
-          <router-link to="/Dashboard">
-            <span>Dashboard</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item class="user-setting-item">
+          <span>Dashboard</span>
+        </li>
+        <li>
           <a
             href="https://ic.house"
             target="_blank"
             rel="nofollow noreferrer noopener"
             >ICHouse</a
           >
-        </a-menu-item>
-        <!--<a-menu-item
-          v-if="
-            hostname &&
-            hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
-            hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
-          "
-          class="user-setting-item"
-        >
-          <a
-            :href="
-              hostHref.replace(
-                hostname,
-                'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
-              )
-            "
-            target="_blank"
-            rel="nofollow noreferrer noopener"
-            >OldVersion</a
+        </li>
+        <!--<li
+					v-if="
+						hostname &&
+						hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
+						hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
+					"
+					style="padding: 0 20px; font-size: 12px"
+				>
+					<a
+						:href="
+							hostHref.replace(
+								hostname,
+								'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
+							)
+						"
+						target="_blank"
+						rel="nofollow noreferrer noopener"
+						>OldVersion</a
+					>
+				</li>-->
+      </ul>
+      <div class="account-info">
+        <slot></slot>
+        <div class="current-account" v-if="getPrincipalId">
+          <span class="flex-center" v-show="!accountName[getPrincipalId]">
+            <img :src="accountImg" alt="account" />
+            <copy-account
+              :front="8"
+              :account="getPrincipalId"
+              copy-text="Principal ID"
+            ></copy-account>
+          </span>
+          <span class="flex-center" v-show="accountName[getPrincipalId]">
+            <img :src="accountImg" alt="account" />
+            <span>{{ accountName[getPrincipalId] }}</span>
+            <span class="flex-center" style="margin-left: 5px; font-size: 12px">
+              (<copy-account
+                :front="4"
+                :account="getPrincipalId"
+                copy-text="Principal ID"
+              ></copy-account
+              >)
+            </span>
+          </span>
+          <a-icon
+            @click="setName"
+            type="edit"
+            style="margin-left: 5px"
+            class="pointer"
+          />
+          <router-link
+            v-show="!$route.fullPath.toLocaleLowerCase().startsWith('/wallet')"
+            to="/wallet"
           >
-        </a-menu-item>-->
-      </a-menu>
-    </a-dropdown>
-    <a-dropdown
-      v-if="getPrincipalId && menuList.length && !isIcx"
-      placement="bottomRight"
-    >
-      <a-icon class="base-font-normal h5-menu" type="menu" />
-      <a-menu slot="overlay" class="user-setting base-bg-box medium-menu">
-        <a-menu-item
-          v-for="(menu, index) in menuList"
-          :key="index"
-          class="user-setting-item"
-          :class="{
-            active:
-              $route.path.toLocaleLowerCase() === menu.path.toLocaleLowerCase()
-          }"
-        >
-          <router-link :to="menu.path">
-            <span>{{ menu.value }}</span>
+            <img src="@/assets/img/wallet.svg" class="wallet-icon" alt="" />
           </router-link>
-        </a-menu-item>
-        <a-menu-item
-          v-if="
-            hostname &&
-            hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
-            hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
-          "
-          class="user-setting-item"
-        >
-          <a
-            :href="
-              hostHref.replace(
-                hostname,
-                'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
-              )
-            "
-            target="_blank"
-            rel="nofollow noreferrer noopener"
+        </div>
+        <a-dropdown placement="bottomRight" v-if="getPrincipalId && !isIcx">
+          <div class="user-menu">
+            <a-icon class="user-icon" type="user" />
+            <img class="current-account-min" :src="accountImg" alt="account" />
+          </div>
+          <a-menu
+            slot="overlay"
+            class="user-setting base-bg-box user-setting-account"
           >
-            <span>OldVersion</span>
-          </a>
-        </a-menu-item>
-      </a-menu>
-    </a-dropdown>
-    <button
-      v-if="!getPrincipalId"
-      @click="connectWallet"
-      type="button"
-      class="margin-left-auto default"
-    >
-      Connect Wallet
-    </button>
-    <a-modal
-      v-model="visible"
-      centered
-      title="Setting"
-      width="550px"
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-    >
-      <div class="setting-content">
-        <ul>
-          <li :class="{ active: activeKey === 1 }" @click="changeTab(1)">
-            Seed phrase
-          </li>
-          <li :class="{ active: activeKey === 2 }" @click="changeTab(2)">
-            PEM private key
+            <a-menu-item class="user-setting-item" v-if="getPrincipalId">
+              <div class="user-setting-item-setting flex-center">
+                <span style="margin-right: 5px">AccountId: </span>
+                <copy-account
+                  :account="getCurrentAccount()"
+                  placement="left"
+                  :is-copy="false"
+                  copy-text="Account ID"
+                  class="user-setting-item-setting-copy"
+                ></copy-account>
+              </div>
+            </a-menu-item>
+            <a-menu-item
+              v-if="activeKey"
+              class="user-setting-item"
+              @click="showTab"
+            >
+              <div class="user-setting-item-setting">
+                <a-icon
+                  v-if="getIdentity && getIdentity.toJSON()[1].length <= 64"
+                  class="account-setting"
+                  type="setting"
+                />
+                <span>Setting</span>
+              </div>
+            </a-menu-item>
+            <a-menu-item class="user-setting-item" @click="logout">
+              <div class="user-setting-item-setting">
+                <a-icon type="logout" /><span>Logout</span>
+              </div>
+            </a-menu-item>
+            <a-menu-item
+              v-for="(principal, index) in principalList"
+              :key="index"
+              @click="changeAccount(principal)"
+            >
+              <div
+                class="user-principal user-setting-item-setting"
+                v-if="principal !== getPrincipalId"
+              >
+                <span class="flex-center" v-show="!accountName[principal]">
+                  <img :src="getAccountImg(principal)" alt="" />
+                  <copy-account
+                    :account="principal"
+                    placement="left"
+                    :is-copy="false"
+                    copy-text="Principal ID"
+                    class="user-setting-item-setting-copy"
+                  ></copy-account>
+                </span>
+                <span class="flex-center" v-show="accountName[principal]">
+                  <img :src="getAccountImg(getPrincipalId)" alt="" />
+                  <span>{{ accountName[principal] }}</span>
+                  <span class="flex-center" style="margin-left: 3px">
+                    (<copy-account
+                      :front="4"
+                      placement="left"
+                      :is-copy="false"
+                      :account="principal"
+                      copy-text="Principal ID"
+                    ></copy-account
+                    >)
+                  </span>
+                </span>
+                <img class="source-img" :src="getSourceImg(principal)" alt="" />
+              </div>
+              <a-tooltip
+                class="user-principal check-account"
+                v-else
+                placement="left"
+              >
+                <template slot="title">
+                  <span>{{ getPrincipalId }}</span>
+                </template>
+                <div class="user-setting-item-setting">
+                  <span class="flex-center" v-show="!accountName[principal]">
+                    <img :src="getAccountImg(principal)" alt="" /><span>{{
+                      getPrincipalId | ellipsisAccount
+                    }}</span>
+                  </span>
+                  <span class="flex-center" v-show="accountName[principal]">
+                    <img :src="getAccountImg(getPrincipalId)" alt="" />
+                    <span>{{ accountName[principal] }}</span>
+                    <span class="flex-center" style="margin-left: 3px">
+                      (<copy-account
+                        :front="4"
+                        :account="principal"
+                        copy-text="Principal ID"
+                      ></copy-account
+                      >)
+                    </span>
+                  </span>
+                  <a-icon
+                    @click="setName"
+                    style="margin-left: 5px"
+                    class="pointer"
+                    type="setting"
+                  />
+                  <a-icon class="check-account-icon" type="check-circle" />
+                  <img
+                    class="source-img"
+                    :src="getSourceImg(principal)"
+                    alt=""
+                  />
+                </div>
+              </a-tooltip>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+        <router-link to="/wallet">
+          <img
+            v-if="
+              getPrincipalId &&
+              !isIcx &&
+              !$route.fullPath.toLocaleLowerCase().startsWith('/wallet')
+            "
+            src="@/assets/img/wallet.svg"
+            class="h5-menu wallet-icon"
+            alt=""
+          />
+        </router-link>
+        <div v-if="isIcx && getPrincipalId" class="current-account-h5 h5-show">
+          <img :src="accountImg" alt="account" />
+          <copy-account
+            :account="getPrincipalId"
+            :show-copy="false"
+            copy-text="Principal ID"
+          ></copy-account>
+        </div>
+        <a-dropdown
+          v-if="getPrincipalId && !menuList.length"
+          placement="bottomRight"
+        >
+          <a-icon class="base-font-normal h5-menu" type="menu" />
+          <a-menu slot="overlay" class="user-setting base-bg-box medium-menu">
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('wallet', '/wallet')"
+              :class="{
+                active: $route.fullPath
+                  .toLocaleLowerCase()
+                  .startsWith('/wallet')
+              }"
+            >
+              <router-link to="/wallet">
+                <span>Wallet</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('nns', '/nns')"
+              :class="{
+                active: $route.fullPath.toLocaleLowerCase().startsWith('/nns')
+              }"
+            >
+              <router-link to="/nns">
+                <span>NNS</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('ICSNS', '/ICSNS')"
+              :class="{
+                active: $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
+              }"
+            >
+              <router-link to="/ICSNS">
+                <span>SNS</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('icRouter', '/icRouter')"
+              :class="{
+                active: $route.fullPath
+                  .toLocaleLowerCase()
+                  .startsWith('/icrouter')
+              }"
+            >
+              <router-link to="/icRouter">
+                <span>icRouter</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('ICDex', '/ICDex')"
+              :class="{
+                active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
+              }"
+            >
+              <router-link to="/ICDex">
+                <span>ICDex</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('NFT', '/NFT')"
+              :class="{
+                active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
+              }"
+            >
+              <router-link to="/nft">
+                <span>NFT</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('Airdrop', '/Airdrop')"
+              :class="{
+                active: $route.fullPath
+                  .toLocaleLowerCase()
+                  .startsWith('/airdrop')
+              }"
+            >
+              <router-link to="/nft">
+                <span>Airdrop</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('CyclesFinance', '/CyclesFinance')"
+              :class="{
+                active: $route.fullPath
+                  .toLocaleLowerCase()
+                  .startsWith('/cyclesfinance')
+              }"
+            >
+              <router-link to="/CyclesFinance">
+                <span>CyclesFinance</span>
+              </router-link>
+            </a-menu-item>
+            <!--<a-menu-item
+							class="user-setting-item"
+							@click="changeMenu('dapps', '/dapps')"
+							:class="{
+								active: $route.fullPath.toLocaleLowerCase().startsWith('/dapps')
+							}"
+						>
+							<router-link to="/dapps">
+								<span>DApps</span>
+							</router-link>
+						</a-menu-item>-->
+            <!--<a-menu-item
+							class="user-setting-item"
+							@click="changeMenu('ICDex', '/ICDex')"
+							:class="{
+								active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
+							}"
+						>
+							<router-link to="/ICDex">
+								<span>Trade</span>
+							</router-link>
+						</a-menu-item>
+						<a-menu-item
+							class="user-setting-item"
+							@click="changeMenu('market', '/market/icdex')"
+							:class="{
+								active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
+							}"
+						>
+							<router-link to="/market">
+								<span>Market</span>
+							</router-link>
+						</a-menu-item>
+						<a-menu-item
+							class="user-setting-item"
+							@click="changeMenu('/icl', '/icl/tradingMining')"
+							:class="{
+								active: $route.fullPath
+									.toLocaleLowerCase()
+									.startsWith('/icl/tradingmining')
+							}"
+						>
+							<router-link to="/icl/tradingMining">
+								<span>Mining</span>
+							</router-link>
+						</a-menu-item>-->
+            <a-menu-item
+              class="user-setting-item"
+              @click="changeMenu('Dashboard', '/Dashboard')"
+              :class="{
+                active: $route.fullPath
+                  .toLocaleLowerCase()
+                  .startsWith('/dashboard')
+              }"
+            >
+              <router-link to="/Dashboard">
+                <span>Dashboard</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item class="user-setting-item">
+              <a
+                href="https://ic.house"
+                target="_blank"
+                rel="nofollow noreferrer noopener"
+                >ICHouse</a
+              >
+            </a-menu-item>
+            <!--<a-menu-item
+							v-if="
+								hostname &&
+								hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
+								hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
+							"
+							class="user-setting-item"
+						>
+							<a
+								:href="
+									hostHref.replace(
+										hostname,
+										'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
+									)
+								"
+								target="_blank"
+								rel="nofollow noreferrer noopener"
+								>OldVersion</a
+							>
+						</a-menu-item>-->
+          </a-menu>
+        </a-dropdown>
+        <a-dropdown
+          v-if="getPrincipalId && menuList.length && !isIcx"
+          placement="bottomRight"
+        >
+          <a-icon class="base-font-normal h5-menu" type="menu" />
+          <a-menu slot="overlay" class="user-setting base-bg-box medium-menu">
+            <a-menu-item
+              v-for="(menu, index) in menuList"
+              :key="index"
+              class="user-setting-item"
+              :class="{
+                active:
+                  $route.path.toLocaleLowerCase() ===
+                  menu.path.toLocaleLowerCase()
+              }"
+            >
+              <router-link :to="menu.path">
+                <span>{{ menu.value }}</span>
+              </router-link>
+            </a-menu-item>
+            <a-menu-item
+              v-if="
+                hostname &&
+                hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
+                hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
+              "
+              class="user-setting-item"
+            >
+              <a
+                :href="
+                  hostHref.replace(
+                    hostname,
+                    'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
+                  )
+                "
+                target="_blank"
+                rel="nofollow noreferrer noopener"
+              >
+                <span>OldVersion</span>
+              </a>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+        <button
+          v-if="!getPrincipalId"
+          @click="connectWallet"
+          type="button"
+          class="margin-left-auto default"
+        >
+          Connect Wallet
+        </button>
+        <a-modal
+          v-model="visible"
+          centered
+          title="Setting"
+          width="550px"
+          :footer="null"
+          :keyboard="false"
+          :maskClosable="false"
+        >
+          <div class="setting-content">
+            <ul>
+              <li :class="{ active: activeKey === 1 }" @click="changeTab(1)">
+                Seed phrase
+              </li>
+              <li :class="{ active: activeKey === 2 }" @click="changeTab(2)">
+                PEM private key
+              </li>
+            </ul>
+            <div v-show="activeKey === 1" class="tab-tip">
+              <div v-if="phraseStep === 0">
+                <p>
+                  Note: Leaking the seed phrase will lose control of the
+                  account, please make sure the screen display is secure.
+                </p>
+                <button
+                  type="button"
+                  class="default w100 mt20"
+                  @click="phraseStep = 1"
+                >
+                  I confirm to show seed phrase
+                </button>
+              </div>
+              <a-form-model v-if="phraseStep === 1">
+                <a-form-model-item label="Enter Password">
+                  <a-input-password
+                    placeholder="input password"
+                    v-model="password"
+                  />
+                </a-form-model-item>
+                <button
+                  type="button"
+                  class="default w100 mt20"
+                  @click="decryptPhrase"
+                >
+                  Confirm
+                </button>
+              </a-form-model>
+              <div v-if="phraseStep === 2">
+                <div class="recovery-phrase">
+                  Secret Recovery Phrase
+                  <span
+                    class="copy-phrase"
+                    v-clipboard:copy="this.mnemonicList.join(' ')"
+                    v-clipboard:success="onCopy"
+                  >
+                    <a-icon type="copy" /> Copy
+                  </span>
+                </div>
+                <span
+                  class="mnemonic-item"
+                  v-for="(item, index) in mnemonicList"
+                  :key="index"
+                >
+                  {{ item
+                  }}{{ index === mnemonicList.length - 1 ? '' : '&nbsp;' }}
+                </span>
+                <button
+                  type="button"
+                  class="default w100 mt20"
+                  @click="initPhraseStep"
+                >
+                  I have copied
+                </button>
+              </div>
+            </div>
+            <div v-show="activeKey === 2" class="tab-tip">
+              <div v-if="pemStep === 0">
+                <p>
+                  Note: Leaking the PEM private key file will lose control of
+                  the account, please make sure is secure.
+                </p>
+                <button
+                  type="button"
+                  class="default w100 mt20"
+                  @click="pemStep = 1"
+                >
+                  I confirm to download private key
+                </button>
+              </div>
+              <a-form-model v-if="pemStep === 1">
+                <a-form-model-item label="Enter Password">
+                  <a-input-password
+                    placeholder="input password"
+                    v-model="password"
+                  />
+                </a-form-model-item>
+                <button
+                  type="button"
+                  class="default w100 mt20"
+                  @click="downloadPem"
+                >
+                  Download pem file
+                </button>
+              </a-form-model>
+              <!--<div>
+									<p>Run the following command</p>
+									<div>
+										In order to use your account in DFX, run the following
+										command, using the .pem file download as route.
+									</div>
+									<button class="default w100 mt20" @click="downloadPem">
+										Download pem file
+									</button>
+								</div>-->
+            </div>
+          </div>
+        </a-modal>
+        <a-modal
+          v-model="nameVisible"
+          centered
+          :title="nameVisibleTitle"
+          width="550px"
+          :footer="null"
+          :keyboard="false"
+          :maskClosable="false"
+          :after-close="close"
+        >
+          <a-form-model :model="nameForm" ref="nameForm" :rules="nameRules">
+            <a-form-model-item label="Name" prop="name">
+              <a-input
+                v-model="nameForm.name"
+                autocomplete="off"
+                placeholder="Name"
+              />
+            </a-form-model-item>
+            <a-form-model-item>
+              <button
+                @click="onSubmitName"
+                type="button"
+                class="primary large-primary w100 mt20"
+              >
+                Submit
+              </button>
+            </a-form-model-item>
+          </a-form-model>
+        </a-modal>
+      </div>
+    </div>
+    <div class="home-header">
+      <div class="home-header-left">
+        <span v-show="$route.name.includes('ICSNS')" class="home-header-title"
+          >SNS</span
+        >
+        <span v-show="$route.name.includes('Account')" class="home-header-title"
+          >Wallet</span
+        >
+        <span v-show="$route.name.includes('Airdrop')" class="home-header-title"
+          >Airdrop</span
+        >
+        <span v-show="$route.name.includes('NFT')" class="home-header-title"
+          >NFT</span
+        >
+        <span v-show="$route.name.includes('ICP-')" class="home-header-title"
+          >NNS</span
+        >
+        <span
+          v-show="$route.name.includes('Dashboard')"
+          class="home-header-title"
+          >Dashboard</span
+        >
+        <ul v-show="$route.meta.title === 'ICL'">
+          <li
+            :class="{ active: $route.path === item.path }"
+            v-for="(item, index) in menuList"
+            :key="index"
+          >
+            <router-link :to="item.path">{{ item.value }}</router-link>
           </li>
         </ul>
-        <div v-show="activeKey === 1" class="tab-tip">
-          <div v-if="phraseStep === 0">
-            <p>
-              Note: Leaking the seed phrase will lose control of the account,
-              please make sure the screen display is secure.
-            </p>
-            <button
-              type="button"
-              class="default w100 mt20"
-              @click="phraseStep = 1"
-            >
-              I confirm to show seed phrase
-            </button>
-          </div>
-          <a-form-model v-if="phraseStep === 1">
-            <a-form-model-item label="Enter Password">
-              <a-input-password
-                placeholder="input password"
-                v-model="password"
-              />
-            </a-form-model-item>
-            <button
-              type="button"
-              class="default w100 mt20"
-              @click="decryptPhrase"
-            >
-              Confirm
-            </button>
-          </a-form-model>
-          <div v-if="phraseStep === 2">
-            <div class="recovery-phrase">
-              Secret Recovery Phrase
-              <span
-                class="copy-phrase"
-                v-clipboard:copy="this.mnemonicList.join(' ')"
-                v-clipboard:success="onCopy"
-              >
-                <a-icon type="copy" /> Copy
-              </span>
-            </div>
-            <span
-              class="mnemonic-item"
-              v-for="(item, index) in mnemonicList"
-              :key="index"
-            >
-              {{ item }}{{ index === mnemonicList.length - 1 ? '' : '&nbsp;' }}
+        <img
+          v-show="
+            $route.name.includes('Competitions') ||
+            $route.name.includes('ICDex') ||
+            $route.name.includes('ICDexInfo') ||
+            $route.name.includes('ICDexMining') ||
+            $route.name.includes('ICDexPool')
+          "
+          class="home-header-logo"
+          src="@/assets/img/icdex-2.png"
+          alt="logo"
+        />
+        <img
+          v-show="$route.name.includes('CyclesFinance')"
+          class="home-header-logo"
+          src="@/assets/img/cyclesfinance-1.png"
+          alt="logo"
+        />
+      </div>
+      <ul v-show="$route.name.includes('CyclesFinance')">
+        <li
+          v-for="(menu, index) in exchangeMenu"
+          :key="index"
+          :class="{ active: exchangeType === menu }"
+          @click="change(menu)"
+        >
+          {{ menu }}
+        </li>
+      </ul>
+      <ul
+        v-show="
+          $route.name.includes('Competitions') ||
+          $route.name.includes('ICDex') ||
+          $route.name.includes('ICDexInfo') ||
+          $route.name.includes('ICDexMining') ||
+          $route.name.includes('ICDexPool')
+        "
+      >
+        <li
+          :class="{
+            active:
+              $route.fullPath.toLocaleLowerCase() ===
+                menu.path.toLocaleLowerCase() ||
+              (menu.value === 'Trade' && $route.name === 'ICDex') ||
+              (menu.value === 'Pools' && $route.name.startsWith('ICDexPool'))
+          }"
+          v-for="(menu, index) in menuList"
+          :key="index"
+        >
+          <router-link :to="menu.path">{{ menu.value }}</router-link>
+        </li>
+      </ul>
+      <div class="flex-center margin-left-auto">
+        <launch
+          v-show="
+            $route.name.includes('Competitions') ||
+            $route.name.includes('ICDex') ||
+            $route.name.includes('ICDexInfo') ||
+            $route.name.includes('ICDexMining') ||
+            $route.name.includes('ICDexPool')
+          "
+          :tokens="tokens"
+          ref="launch"
+          @launchSuccess="launchSuccess"
+          @changeLaunch="changeLaunch"
+        ></launch>
+        <div class="account-info home-header-right-info">
+          <div class="current-account" v-if="getPrincipalId">
+            <span class="flex-center" v-show="!accountName[getPrincipalId]">
+              <img :src="accountImg" alt="account" />
+              <copy-account
+                :front="8"
+                :account="getPrincipalId"
+                copy-text="Principal ID"
+              ></copy-account>
             </span>
-            <button
-              type="button"
-              class="default w100 mt20"
-              @click="initPhraseStep"
+            <span class="flex-center" v-show="accountName[getPrincipalId]">
+              <img :src="accountImg" alt="account" />
+              <span>{{ accountName[getPrincipalId] }}</span>
+              <span
+                class="flex-center"
+                style="margin-left: 5px; font-size: 12px"
+              >
+                (<copy-account
+                  :front="4"
+                  :account="getPrincipalId"
+                  copy-text="Principal ID"
+                ></copy-account
+                >)
+              </span>
+            </span>
+            <a-icon
+              @click="setName"
+              type="edit"
+              style="margin-left: 5px"
+              class="pointer"
+            />
+            <router-link
+              v-show="
+                !$route.fullPath.toLocaleLowerCase().startsWith('/wallet')
+              "
+              to="/wallet"
             >
-              I have copied
-            </button>
+              <img src="@/assets/img/wallet.svg" class="wallet-icon" alt="" />
+            </router-link>
           </div>
-        </div>
-        <div v-show="activeKey === 2" class="tab-tip">
-          <div v-if="pemStep === 0">
-            <p>
-              Note: Leaking the PEM private key file will lose control of the
-              account, please make sure is secure.
-            </p>
-            <button
-              type="button"
-              class="default w100 mt20"
-              @click="pemStep = 1"
-            >
-              I confirm to download private key
-            </button>
-          </div>
-          <a-form-model v-if="pemStep === 1">
-            <a-form-model-item label="Enter Password">
-              <a-input-password
-                placeholder="input password"
-                v-model="password"
+          <a-dropdown placement="bottomRight" v-if="getPrincipalId && !isIcx">
+            <div class="user-menu">
+              <a-icon class="user-icon" type="user" />
+              <img
+                class="current-account-min"
+                :src="accountImg"
+                alt="account"
               />
-            </a-form-model-item>
-            <button
-              type="button"
-              class="default w100 mt20"
-              @click="downloadPem"
+            </div>
+            <a-menu
+              slot="overlay"
+              class="user-setting base-bg-box user-setting-account"
             >
-              Download pem file
-            </button>
-          </a-form-model>
-          <!--<div>
-							<p>Run the following command</p>
-							<div>
-								In order to use your account in DFX, run the following
-								command, using the .pem file download as route.
-							</div>
-							<button class="default w100 mt20" @click="downloadPem">
-								Download pem file
-							</button>
-						</div>-->
+              <a-menu-item class="user-setting-item" v-if="getPrincipalId">
+                <div class="user-setting-item-setting flex-center">
+                  <span style="margin-right: 5px">AccountId: </span>
+                  <copy-account
+                    :account="getCurrentAccount()"
+                    placement="left"
+                    :is-copy="false"
+                    copy-text="Account ID"
+                    class="user-setting-item-setting-copy"
+                  ></copy-account>
+                </div>
+              </a-menu-item>
+              <a-menu-item
+                v-if="activeKey"
+                class="user-setting-item"
+                @click="showTab"
+              >
+                <div class="user-setting-item-setting">
+                  <a-icon
+                    v-if="getIdentity && getIdentity.toJSON()[1].length <= 64"
+                    class="account-setting"
+                    type="setting"
+                  />
+                  <span>Setting</span>
+                </div>
+              </a-menu-item>
+              <a-menu-item class="user-setting-item" @click="logout">
+                <div class="user-setting-item-setting">
+                  <a-icon type="logout" /><span>Logout</span>
+                </div>
+              </a-menu-item>
+              <a-menu-item
+                v-for="(principal, index) in principalList"
+                :key="index"
+                @click="changeAccount(principal)"
+              >
+                <div
+                  class="user-principal user-setting-item-setting"
+                  v-if="principal !== getPrincipalId"
+                >
+                  <span class="flex-center" v-show="!accountName[principal]">
+                    <img :src="getAccountImg(principal)" alt="" />
+                    <copy-account
+                      :account="principal"
+                      placement="left"
+                      :is-copy="false"
+                      copy-text="Principal ID"
+                      class="user-setting-item-setting-copy"
+                    ></copy-account>
+                  </span>
+                  <span class="flex-center" v-show="accountName[principal]">
+                    <img :src="getAccountImg(getPrincipalId)" alt="" />
+                    <span>{{ accountName[principal] }}</span>
+                    <span class="flex-center" style="margin-left: 3px">
+                      (<copy-account
+                        :front="4"
+                        placement="left"
+                        :is-copy="false"
+                        :account="principal"
+                        copy-text="Principal ID"
+                      ></copy-account
+                      >)
+                    </span>
+                  </span>
+                  <img
+                    class="source-img"
+                    :src="getSourceImg(principal)"
+                    alt=""
+                  />
+                </div>
+                <a-tooltip
+                  class="user-principal check-account"
+                  v-else
+                  placement="left"
+                >
+                  <template slot="title">
+                    <span>{{ getPrincipalId }}</span>
+                  </template>
+                  <div class="user-setting-item-setting">
+                    <span class="flex-center" v-show="!accountName[principal]">
+                      <img :src="getAccountImg(principal)" alt="" /><span>{{
+                        getPrincipalId | ellipsisAccount
+                      }}</span>
+                    </span>
+                    <span class="flex-center" v-show="accountName[principal]">
+                      <img :src="getAccountImg(getPrincipalId)" alt="" />
+                      <span>{{ accountName[principal] }}</span>
+                      <span class="flex-center" style="margin-left: 3px">
+                        (<copy-account
+                          :front="4"
+                          :account="principal"
+                          copy-text="Principal ID"
+                        ></copy-account
+                        >)
+                      </span>
+                    </span>
+                    <a-icon
+                      @click="setName"
+                      style="margin-left: 5px"
+                      class="pointer"
+                      type="setting"
+                    />
+                    <a-icon class="check-account-icon" type="check-circle" />
+                    <img
+                      class="source-img"
+                      :src="getSourceImg(principal)"
+                      alt=""
+                    />
+                  </div>
+                </a-tooltip>
+              </a-menu-item>
+            </a-menu>
+          </a-dropdown>
+          <router-link to="/wallet">
+            <img
+              v-if="
+                getPrincipalId &&
+                !isIcx &&
+                !$route.fullPath.toLocaleLowerCase().startsWith('/wallet')
+              "
+              src="@/assets/img/wallet.svg"
+              class="h5-menu wallet-icon"
+              alt=""
+            />
+          </router-link>
+          <div
+            v-if="isIcx && getPrincipalId"
+            class="current-account-h5 h5-show"
+          >
+            <img :src="accountImg" alt="account" />
+            <copy-account
+              :account="getPrincipalId"
+              :show-copy="false"
+              copy-text="Principal ID"
+            ></copy-account>
+          </div>
+          <a-dropdown
+            v-if="getPrincipalId && !menuList.length"
+            placement="bottomRight"
+          >
+            <a-icon class="base-font-normal h5-menu" type="menu" />
+            <a-menu slot="overlay" class="user-setting base-bg-box medium-menu">
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('wallet', '/wallet')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/wallet')
+                }"
+              >
+                <router-link to="/wallet">
+                  <span>Wallet</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('nns', '/nns')"
+                :class="{
+                  active: $route.fullPath.toLocaleLowerCase().startsWith('/nns')
+                }"
+              >
+                <router-link to="/nns">
+                  <span>NNS</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('ICSNS', '/ICSNS')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/icsns')
+                }"
+              >
+                <router-link to="/ICSNS">
+                  <span>SNS</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('icRouter', '/icRouter')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/icrouter')
+                }"
+              >
+                <router-link to="/icRouter">
+                  <span>icRouter</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('ICDex', '/ICDex')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/icdex')
+                }"
+              >
+                <router-link to="/ICDex">
+                  <span>ICDex</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('NFT', '/NFT')"
+                :class="{
+                  active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
+                }"
+              >
+                <router-link to="/nft">
+                  <span>NFT</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('Airdrop', '/Airdrop')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/airdrop')
+                }"
+              >
+                <router-link to="/nft">
+                  <span>Airdrop</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('CyclesFinance', '/CyclesFinance')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/cyclesfinance')
+                }"
+              >
+                <router-link to="/CyclesFinance">
+                  <span>CyclesFinance</span>
+                </router-link>
+              </a-menu-item>
+              <!--<a-menu-item
+								class="user-setting-item"
+								@click="changeMenu('dapps', '/dapps')"
+								:class="{
+									active: $route.fullPath.toLocaleLowerCase().startsWith('/dapps')
+								}"
+							>
+								<router-link to="/dapps">
+									<span>DApps</span>
+								</router-link>
+							</a-menu-item>-->
+              <!--<a-menu-item
+								class="user-setting-item"
+								@click="changeMenu('ICDex', '/ICDex')"
+								:class="{
+									active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
+								}"
+							>
+								<router-link to="/ICDex">
+									<span>Trade</span>
+								</router-link>
+							</a-menu-item>
+							<a-menu-item
+								class="user-setting-item"
+								@click="changeMenu('market', '/market/icdex')"
+								:class="{
+									active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
+								}"
+							>
+								<router-link to="/market">
+									<span>Market</span>
+								</router-link>
+							</a-menu-item>
+							<a-menu-item
+								class="user-setting-item"
+								@click="changeMenu('/icl', '/icl/tradingMining')"
+								:class="{
+									active: $route.fullPath
+										.toLocaleLowerCase()
+										.startsWith('/icl/tradingmining')
+								}"
+							>
+								<router-link to="/icl/tradingMining">
+									<span>Mining</span>
+								</router-link>
+							</a-menu-item>-->
+              <a-menu-item
+                class="user-setting-item"
+                @click="changeMenu('Dashboard', '/Dashboard')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/dashboard')
+                }"
+              >
+                <router-link to="/Dashboard">
+                  <span>Dashboard</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item class="user-setting-item">
+                <a
+                  href="https://ic.house"
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                  >ICHouse</a
+                >
+              </a-menu-item>
+              <!--<a-menu-item
+								v-if="
+									hostname &&
+									hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
+									hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
+								"
+								class="user-setting-item"
+							>
+								<a
+									:href="
+										hostHref.replace(
+											hostname,
+											'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
+										)
+									"
+									target="_blank"
+									rel="nofollow noreferrer noopener"
+									>OldVersion</a
+								>
+							</a-menu-item>-->
+            </a-menu>
+          </a-dropdown>
+          <a-dropdown
+            v-if="getPrincipalId && menuList.length && !isIcx"
+            placement="bottomRight"
+          >
+            <a-icon class="base-font-normal h5-menu" type="menu" />
+            <a-menu slot="overlay" class="user-setting base-bg-box medium-menu">
+              <a-menu-item
+                v-for="(menu, index) in menuList"
+                :key="index"
+                class="user-setting-item"
+                :class="{
+                  active:
+                    $route.path.toLocaleLowerCase() ===
+                    menu.path.toLocaleLowerCase()
+                }"
+              >
+                <router-link :to="menu.path">
+                  <span>{{ menu.value }}</span>
+                </router-link>
+              </a-menu-item>
+              <a-menu-item
+                v-if="
+                  hostname &&
+                  hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
+                  hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
+                "
+                class="user-setting-item"
+              >
+                <a
+                  :href="
+                    hostHref.replace(
+                      hostname,
+                      'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
+                    )
+                  "
+                  target="_blank"
+                  rel="nofollow noreferrer noopener"
+                >
+                  <span>OldVersion</span>
+                </a>
+              </a-menu-item>
+            </a-menu>
+          </a-dropdown>
+          <button
+            v-if="!getPrincipalId"
+            @click="connectWallet"
+            type="button"
+            class="margin-left-auto default"
+          >
+            Connect Wallet
+          </button>
+          <a-modal
+            v-model="visible"
+            centered
+            title="Setting"
+            width="550px"
+            :footer="null"
+            :keyboard="false"
+            :maskClosable="false"
+          >
+            <div class="setting-content">
+              <ul>
+                <li :class="{ active: activeKey === 1 }" @click="changeTab(1)">
+                  Seed phrase
+                </li>
+                <li :class="{ active: activeKey === 2 }" @click="changeTab(2)">
+                  PEM private key
+                </li>
+              </ul>
+              <div v-show="activeKey === 1" class="tab-tip">
+                <div v-if="phraseStep === 0">
+                  <p>
+                    Note: Leaking the seed phrase will lose control of the
+                    account, please make sure the screen display is secure.
+                  </p>
+                  <button
+                    type="button"
+                    class="default w100 mt20"
+                    @click="phraseStep = 1"
+                  >
+                    I confirm to show seed phrase
+                  </button>
+                </div>
+                <a-form-model v-if="phraseStep === 1">
+                  <a-form-model-item label="Enter Password">
+                    <a-input-password
+                      placeholder="input password"
+                      v-model="password"
+                    />
+                  </a-form-model-item>
+                  <button
+                    type="button"
+                    class="default w100 mt20"
+                    @click="decryptPhrase"
+                  >
+                    Confirm
+                  </button>
+                </a-form-model>
+                <div v-if="phraseStep === 2">
+                  <div class="recovery-phrase">
+                    Secret Recovery Phrase
+                    <span
+                      class="copy-phrase"
+                      v-clipboard:copy="this.mnemonicList.join(' ')"
+                      v-clipboard:success="onCopy"
+                    >
+                      <a-icon type="copy" /> Copy
+                    </span>
+                  </div>
+                  <span
+                    class="mnemonic-item"
+                    v-for="(item, index) in mnemonicList"
+                    :key="index"
+                  >
+                    {{ item
+                    }}{{ index === mnemonicList.length - 1 ? '' : '&nbsp;' }}
+                  </span>
+                  <button
+                    type="button"
+                    class="default w100 mt20"
+                    @click="initPhraseStep"
+                  >
+                    I have copied
+                  </button>
+                </div>
+              </div>
+              <div v-show="activeKey === 2" class="tab-tip">
+                <div v-if="pemStep === 0">
+                  <p>
+                    Note: Leaking the PEM private key file will lose control of
+                    the account, please make sure is secure.
+                  </p>
+                  <button
+                    type="button"
+                    class="default w100 mt20"
+                    @click="pemStep = 1"
+                  >
+                    I confirm to download private key
+                  </button>
+                </div>
+                <a-form-model v-if="pemStep === 1">
+                  <a-form-model-item label="Enter Password">
+                    <a-input-password
+                      placeholder="input password"
+                      v-model="password"
+                    />
+                  </a-form-model-item>
+                  <button
+                    type="button"
+                    class="default w100 mt20"
+                    @click="downloadPem"
+                  >
+                    Download pem file
+                  </button>
+                </a-form-model>
+                <!--<div>
+										<p>Run the following command</p>
+										<div>
+											In order to use your account in DFX, run the following
+											command, using the .pem file download as route.
+										</div>
+										<button class="default w100 mt20" @click="downloadPem">
+											Download pem file
+										</button>
+									</div>-->
+              </div>
+            </div>
+          </a-modal>
+          <a-modal
+            v-model="nameVisible"
+            centered
+            :title="nameVisibleTitle"
+            width="550px"
+            :footer="null"
+            :keyboard="false"
+            :maskClosable="false"
+            :after-close="close"
+          >
+            <a-form-model :model="nameForm" ref="nameForm" :rules="nameRules">
+              <a-form-model-item label="Name" prop="name">
+                <a-input
+                  v-model="nameForm.name"
+                  autocomplete="off"
+                  placeholder="Name"
+                />
+              </a-form-model-item>
+              <a-form-model-item>
+                <button
+                  @click="onSubmitName"
+                  type="button"
+                  class="primary large-primary w100 mt20"
+                >
+                  Submit
+                </button>
+              </a-form-model-item>
+            </a-form-model>
+          </a-modal>
         </div>
       </div>
-    </a-modal>
-    <a-modal
-      v-model="nameVisible"
-      centered
-      :title="nameVisibleTitle"
-      width="550px"
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-      :after-close="close"
-    >
-      <a-form-model :model="nameForm" ref="nameForm" :rules="nameRules">
-        <a-form-model-item label="Name" prop="name">
-          <a-input
-            v-model="nameForm.name"
-            autocomplete="off"
-            placeholder="Name"
-          />
-        </a-form-model-item>
-        <a-form-model-item>
-          <button
-            @click="onSubmitName"
-            type="button"
-            class="primary large-primary w100 mt20"
-          >
-            Submit
-          </button>
-        </a-form-model-item>
-      </a-form-model>
-    </a-modal>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue, Watch } from 'vue-property-decorator';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
@@ -566,17 +1471,24 @@ import EventBus from '@/utils/Event';
 import { WrappedFormUtils } from 'ant-design-vue/types/form/form';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { getNfid } from '@/ic/NFIDAuth';
+import Launch from '@/views/home/ICDex/components/Launch.vue';
+import { TokenInfo } from '@/ic/common/icType';
+import {
+  ExchangeEnum,
+  ExchangeType,
+  LiquidityType
+} from '@/views/home/cyclesFinance/model';
 
 const commonModule = namespace('common');
 const KeyEncoder = require('key-encoder').default;
 
 @Component({
   name: 'AccountInfo',
-  components: {}
+  components: {
+    Launch
+  }
 })
 export default class extends Vue {
-  @Prop({ type: Array, default: () => [] })
-  private menuList!: Menu[];
   @commonModule.Mutation('SET_SHOW_CHECK_AUTH') setCheckAuth?: any;
   @commonModule.Mutation('SET_IDENTITY') setIdentity?: any;
   @commonModule.Mutation('SET_PRINCIPAL_ID') setPrincipalId?: any;
@@ -586,6 +1498,7 @@ export default class extends Vue {
     | Ed25519KeyIdentity;
   @commonModule.Getter('getAccountName') getAccountName?: string;
   @commonModule.Mutation('SET_ACCOUNT_NAME') setAccountName?: any;
+  private menuList: Array<Menu> = [];
   private principalList: Array<string> = [];
   private priList = {};
   private isIcx = false;
@@ -615,6 +1528,13 @@ export default class extends Vue {
   };
   private ICLighthouseService: ICLighthouseService;
   private accountName: { [key: string]: string } = {};
+  private tokens: { [key: string]: TokenInfo } = {};
+  private exchangeMenu = ExchangeEnum;
+  private exchangeType: ExchangeType = ExchangeEnum.Swap;
+  @Watch('$route')
+  private onRouteChange() {
+    this.setMenuList();
+  }
   get accountImg(): string {
     if (this.getPrincipalId) {
       return this.getAccountImg(this.getPrincipalId);
@@ -627,11 +1547,82 @@ export default class extends Vue {
     this.isIcx = !!(window as any).icx;
   }
   created(): void {
+    console.log('AccountInfo');
+    this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
+    this.setMenuList();
     this.ICLighthouseService = new ICLighthouseService();
     this.getAccountInfo();
     if (this.getPrincipalId) {
       this.getCAccountName(this.getPrincipalId);
       this.accountName = JSON.parse(localStorage.getItem('accountName')) || {};
+    }
+  }
+  private setMenuList(): void {
+    console.log(this.$route);
+    this.menuList = [];
+    if (
+      this.$route.meta &&
+      this.$route.meta.title &&
+      this.$route.meta.title === 'ICL'
+    ) {
+      this.menuList = [
+        {
+          path: '/icl/about',
+          value: 'About'
+        },
+        {
+          path: '/icl/mining',
+          value: 'Mining'
+        },
+        {
+          path: '/icl/quests',
+          value: 'Quests'
+        },
+        {
+          path: '/icl/tradingMining',
+          value: 'Trading Mining'
+        }
+      ];
+    } else if (
+      (this.$route.name && this.$route.name.includes('Competitions')) ||
+      this.$route.name.includes('ICDex') ||
+      this.$route.name.includes('ICDexInfo') ||
+      this.$route.name.includes('ICDexMining') ||
+      this.$route.name.includes('ICDexPool')
+    ) {
+      this.menuList = [
+        {
+          value: 'Trade',
+          path: '/ICDex'
+        },
+        {
+          value: 'Pools',
+          path: '/ICDex/pools'
+        },
+        {
+          value: 'Mining',
+          path: '/Mining'
+        },
+        {
+          value: 'Info',
+          path: '/ICDex/info'
+        },
+        {
+          value: 'Competitions',
+          path: '/ICDex/competitions'
+        }
+      ];
+    } else if (this.$route.name.includes('CyclesFinance')) {
+      this.menuList = [
+        {
+          path: '/cyclesFinance/swap',
+          value: 'Swap'
+        },
+        {
+          path: '/cyclesFinance/Liquidity',
+          value: 'Liquidity'
+        }
+      ];
     }
   }
   private async connectWallet(): Promise<void> {
@@ -669,6 +1660,7 @@ export default class extends Vue {
     this.principalList.forEach((principal) => {
       this.getCAccountName(principal);
     });
+    console.log(this.principalList);
     if (
       this.priList[this.getPrincipalId] !== 'Plug' &&
       this.priList[this.getPrincipalId] !== 'Infinity' &&
@@ -953,6 +1945,22 @@ export default class extends Vue {
       }
     });
   }
+  private async change(type: ExchangeType): Promise<void> {
+    this.exchangeType = type;
+    EventBus.$emit('change', type);
+  }
+  private changeLaunch(pair: string): void {
+    this.$router.push(`/ICDex/${pair}`).then(() => {
+      EventBus.$emit('changeLaunch');
+    });
+  }
+  private launchSuccess(token0: string, token1: string): void {
+    if (this.$route.name.includes('ICDex')) {
+      this.$router.push(`/ICDex/${token0}/${token1}`).then(() => {
+        EventBus.$emit('launchSuccess');
+      });
+    }
+  }
   private close(): void {
     (this.$refs.nameForm as Vue & WrappedFormUtils).resetFields();
   }
@@ -1097,6 +2105,43 @@ export default class extends Vue {
 .user-menu {
   margin-left: 0;
 }
+.home-header {
+  top: 14px;
+  .home-header-right-info {
+    min-width: 280px;
+  }
+}
+.home-header-menu {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0 !important;
+}
+.home-header-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: #fff;
+  height: 50px;
+  border-bottom: 1px solid #383e4e;
+  cursor: pointer;
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #51b7c3;
+  }
+  &:last-child {
+    border-bottom: none;
+  }
+  .home-header-item-info {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    padding: 8px 15px;
+    margin: 0;
+    &.active {
+      color: #51b7c3;
+    }
+  }
+}
 @media screen and (max-width: 768px) {
   .wallet-icon {
     margin: 0 20px 0 10px !important;
@@ -1104,6 +2149,9 @@ export default class extends Vue {
   .home-header {
     ul {
       display: none;
+    }
+    .home-header-right-info {
+      width: auto;
     }
     .current-account {
       display: none;
@@ -1246,5 +2294,74 @@ export default class extends Vue {
   margin-right: 0 !important;
   object-fit: contain;
   filter: grayscale(100%);
+}
+.home-header-main {
+  background: #2b3845;
+  top: -50px;
+  z-index: 1000;
+  box-shadow: 0 0 1px 1px rgba(52, 69, 94, 0.4);
+  transition: all 0.5s ease-out;
+  border: none;
+  .home-header-logo {
+    height: 36px;
+  }
+  .home-header-main-menu-left {
+    position: absolute;
+    left: 15px;
+    bottom: -9px;
+    width: 18px;
+    display: inline-block;
+  }
+  .home-header-main-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 14px;
+    .home-header-main-menu-span {
+      position: absolute;
+      left: 50%;
+      bottom: 5px;
+      margin-left: -10px;
+      display: flex;
+      align-items: center;
+    }
+    span {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      margin-right: 3px;
+      border-radius: 3px;
+      background: #51b7c3;
+    }
+  }
+  &:hover {
+    top: 0;
+    background: #1b242e;
+    border: none;
+    box-shadow: none;
+    height: 77px;
+    .home-header-logo {
+      height: 36px;
+    }
+    .home-header-main-menu {
+      visibility: hidden;
+    }
+  }
+  .up-img {
+    display: block;
+    position: absolute;
+    right: 20px;
+    top: 64px;
+    height: 22px;
+    transform: rotate(180deg);
+  }
+  .up-logo-img {
+    display: block;
+    position: absolute;
+    right: 45px;
+    top: 67px;
+    height: 16px;
+  }
 }
 </style>

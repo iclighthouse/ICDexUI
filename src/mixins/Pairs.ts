@@ -326,7 +326,7 @@ export class PairsMixin extends Vue {
       }, 3 * 1000);
     } catch (e) {
       loading.close();
-      console.error(e);
+      console.log(e);
     }
   }
   public async withdrawBalance(): Promise<void> {
@@ -340,7 +340,7 @@ export class PairsMixin extends Vue {
       await currentICSwapService.withdraw(this.swapId, [this.autoWithdraw]);
       this.$message.success('Withdraw Success');
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
     this.getTokenBalance(
@@ -843,7 +843,7 @@ export class PairsMixin extends Vue {
       }
       this.depositing[this.depositAccountId][tokenId] = balance;
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     this.refreshDepositBalanceLoading[tokenId] = false;
     this.$forceUpdate();

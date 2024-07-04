@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div class="home-header" style="margin-top: 14px">
-      <div class="home-header-left">
-        <span class="home-header-title">Wallet</span>
-      </div>
-      <account-info> </account-info>
-    </div>
     <div class="wallet-main container-width">
       <div v-if="getPrincipalId">
         <ul class="icsns-menu">
@@ -1589,7 +1583,7 @@ export default class extends Mixins(BalanceMixin) {
         this.tokensExt = [];
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     this.nftSpinning = false;
   }
@@ -1867,7 +1861,7 @@ export default class extends Mixins(BalanceMixin) {
           }
         } catch (e) {
           loading.close();
-          console.error(e);
+          console.log(e);
         }
       }
     });
@@ -2325,7 +2319,7 @@ export default class extends Mixins(BalanceMixin) {
           );
         }
       } catch (error) {
-        console.error(error);
+        console.log(error);
       }
     }
   }

@@ -111,7 +111,7 @@ export default class extends Vue {
         this.initEcharts();
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     this.chartSpinning = false;
   }

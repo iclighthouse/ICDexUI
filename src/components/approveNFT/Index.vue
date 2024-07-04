@@ -209,7 +209,7 @@ export default class extends Vue {
         }
       } catch (e) {
         this.$message.error('Approve error');
-        console.error(e);
+        console.log(e);
       }
       loading.close();
     }

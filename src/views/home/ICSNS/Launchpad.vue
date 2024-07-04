@@ -572,7 +572,9 @@ export default class extends Vue {
     // this.init();
   }
   private init(): void {
-    this.listDeployedSnses();
+    if (this.$route.meta.details === 'launchpad') {
+      this.listDeployedSnses();
+    }
   }
   private filterState(token: SNSToken): string {
     if (token.lifecycle && token.lifecycle.length) {
@@ -672,7 +674,7 @@ export default class extends Vue {
         this.initConnected(this.deployedSnses);
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -682,10 +684,16 @@ export default class extends Vue {
     console.log(listDeployedSnses);
     this.loading = true;
     const SNSProposals = await this.getSNSProposals();
+    const localReject: Array<string> =
+      JSON.parse(localStorage.getItem('rejectSNSTokens')) || [];
+    listDeployedSnses = listDeployedSnses.filter((item) => {
+      return !localReject.includes(item.ledger_canister_id[0].toString());
+    });
     this.SNSTokens = new Array(listDeployedSnses.length).fill(null);
     const MAX_COCURRENCY = 40;
     let promiseAll = [];
     let snsTokens = [];
+    const a = new Date().getTime();
     for (let i = 0; i < listDeployedSnses.length; i++) {
       promiseAll.push(this.getSNSTokenInfo(listDeployedSnses[i]));
       if (promiseAll.length === MAX_COCURRENCY) {
@@ -783,7 +791,9 @@ export default class extends Vue {
         }
       }
     });
+    console.log(new Date().getTime() - a);
     this.SNSTokens = snsTokens;
+    console.log(snsTokens);
     this.filterTokens();
     this.getCountdown();
   }
@@ -832,7 +842,7 @@ export default class extends Vue {
   private async onFinish(token: SNSToken): Promise<void> {
     try {
       this.$set(token, 'deadlineLoading', true);
-      const lifecycle = await this.getLifecycle(token.swapId);
+      const lifecycle = await this.getLifecycle(token.swapId, token.tokenId);
       console.log(lifecycle);
       this.$set(token, 'lifecycle', lifecycle);
       if (Number(lifecycle[0]) === 5) {
@@ -854,7 +864,7 @@ export default class extends Vue {
       return;
     }
     try {
-      const lifecycle = await this.getLifecycle(res.swapId);
+      const lifecycle = await this.getLifecycle(res.swapId, res.tokenId);
       console.log(lifecycle);
       this.$set(res, 'lifecycle', lifecycle);
       if (Number(lifecycle[0]) === 1) {
@@ -894,6 +904,8 @@ export default class extends Vue {
     this.SNSTokensOpen = [];
     this.SNSTokensPending = [];
     this.SNSTokensCommitted = [];
+    const localReject: Array<string> =
+      JSON.parse(localStorage.getItem('rejectSNSTokens')) || [];
     this.SNSTokens.forEach((token) => {
       if (token.lifecycle && token.lifecycle.length) {
         if (
@@ -911,8 +923,28 @@ export default class extends Vue {
         ) {
           this.SNSTokensCommitted.push(token);
         }
+        if (Number(token.lifecycle[0]) !== 4) {
+          const sns =
+            JSON.parse(localStorage.getItem(`${token.tokenId}-SNS`)) || {};
+          localStorage.setItem(
+            `${token.tokenId}-SNS`,
+            JSON.stringify(Object.assign({}, sns, token), (key, value) =>
+              typeof value === 'bigint' ? value.toString(10) : value
+            )
+          );
+        }
+        if (Number(token.lifecycle[0]) === 4) {
+          if (!localReject.includes(token.tokenId)) {
+            localReject.push(token.tokenId);
+          }
+        }
+      } else {
+        if (!localReject.includes(token.tokenId)) {
+          localReject.push(token.tokenId);
+        }
       }
     });
+    localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     this.loading = false;
   }
   private async getSNSTokenInfo(deployedSns: DeployedSns): Promise<SNSToken> {
@@ -921,18 +953,20 @@ export default class extends Vue {
     const governanceCanisterId = deployedSns.governance_canister_id[0];
     const swapCanisterId = deployedSns.swap_canister_id[0];
     promiseAll.push(
-      this.getSNSTokenGovernanceInfo(governanceCanisterId.toString()),
+      this.getSNSTokenGovernanceInfo(
+        governanceCanisterId.toString(),
+        ledgerCanisterId.toString()
+      ),
       this.getCurrentTokenInfo(ledgerCanisterId),
-      this.getLifecycle(swapCanisterId.toString()),
-      this.getParams(swapCanisterId.toString()),
-      this.getDerivedState(swapCanisterId.toString()),
-      this.listCommunityFundParticipants(swapCanisterId.toString())
+      this.getLifecycle(swapCanisterId.toString(), ledgerCanisterId.toString()),
+      this.getParams(swapCanisterId.toString(), ledgerCanisterId.toString()),
+      this.getDerivedState(swapCanisterId.toString())
+      // this.listCommunityFundParticipants(swapCanisterId.toString())
     );
     const res = await Promise.all(promiseAll);
     let params = res[3];
     let proposalId = null;
     let deadline = null;
-    console.log(res[2][0]);
     if (res[2] && res[2][0] && Number(res[2][0]) === 5) {
       try {
         const res = await this.getSNSTokenSwapState(swapCanisterId.toString());
@@ -956,17 +990,16 @@ export default class extends Vue {
         console.log(e);
       }
     }
-    console.log(params);
-    let communityFund = '0';
-    if (res[5]) {
-      res[5].forEach((participant) => {
-        participant.cf_neurons.forEach((neuron) => {
-          communityFund = new BigNumber(neuron.amount_icp_e8s.toString(10))
-            .plus(communityFund)
-            .toString(10);
-        });
-      });
-    }
+    // let communityFund = '0';
+    // if (res[5]) {
+    //   res[5].forEach((participant) => {
+    //     participant.cf_neurons.forEach((neuron) => {
+    //       communityFund = new BigNumber(neuron.amount_icp_e8s.toString(10))
+    //         .plus(communityFund)
+    //         .toString(10);
+    //     });
+    //   });
+    // }
     const buyersTotal = new BigNumber(res[4].toString(10)).toString(10);
     return {
       tokenId: ledgerCanisterId.toString(),
@@ -987,9 +1020,16 @@ export default class extends Vue {
     const res = await snsSwapService.listCommunityFundParticipants(tokenId);
     return res.cf_participants;
   }
-  private async getParams(tokenId: string): Promise<Array<Params>> {
+  private async getParams(
+    swap: string,
+    tokenId: string
+  ): Promise<Array<Params>> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.params && info.params.length) {
+      return info.params;
+    }
     const snsSwapService = new SNSSwapService();
-    const res = await snsSwapService.getSaleParameters(tokenId);
+    const res = await snsSwapService.getSaleParameters(swap);
     if (
       res &&
       res.params &&
@@ -1003,12 +1043,23 @@ export default class extends Vue {
     console.log(res);
     return res.params;
   }
-  private async getLifecycle(tokenId: string): Promise<Array<bigint>> {
+  private async getLifecycle(
+    swap: string,
+    tokenId: string
+  ): Promise<Array<bigint>> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.lifecycle) {
+      return info.lifecycle;
+    }
     const snsSwapService = new SNSSwapService();
-    const res = await snsSwapService.getLifecycle(tokenId);
+    const res = await snsSwapService.getLifecycle(swap);
     return res.lifecycle;
   }
   private async getDerivedState(tokenId: string): Promise<bigint> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.buyersTotal && BigInt(info.buyersTotal)) {
+      return BigInt(info.buyersTotal);
+    }
     const snsSwapService = new SNSSwapService();
     const res = await snsSwapService.getDerivedState(tokenId);
     if (
@@ -1027,10 +1078,20 @@ export default class extends Vue {
     }
   }
   private async getSNSTokenGovernanceInfo(
+    governance: string,
     tokenId: string
   ): Promise<GetMetadataResponse> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.name && info.name instanceof Array && info.name[0]) {
+      return {
+        url: info.url,
+        logo: info.logo,
+        name: info.name,
+        description: info.description
+      };
+    }
     const snsGovernanceService = new SNSGovernanceService();
-    return await snsGovernanceService.getMetadata(tokenId);
+    return await snsGovernanceService.getMetadata(governance);
   }
   private async getSNSProposals(): Promise<Array<ProposalInfo>> {
     try {

@@ -49,7 +49,7 @@ export const initIcx = async (): Promise<void> => {
       }
       store.commit('common/SET_ICX', thisIcx);
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   console.log('initIcxend');
@@ -128,7 +128,7 @@ const connect = async (newWhitelist?: Array<string>): Promise<boolean> => {
       return false;
     }
   } catch (e) {
-    console.error(e);
+    console.log(e);
     return false;
   }
 };

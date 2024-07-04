@@ -470,7 +470,7 @@ export default class extends Vue {
       loading.close();
     } catch (e) {
       loading.close();
-      console.error(e);
+      console.log(e);
       // this.$message.error(e);
       this.$message.error(toHttpRejectError(e));
     }

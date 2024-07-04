@@ -1130,7 +1130,7 @@ export default class extends Mixins(BalanceMixin) {
         this.initConnected(listDeployedSnses, loading);
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -1259,10 +1259,10 @@ export default class extends Mixins(BalanceMixin) {
     const promiseAll = [];
     const governanceCanisterId = this.governanceId;
     promiseAll.push(
-      this.getSNSTokenGovernanceInfo(governanceCanisterId.toString()),
+      this.getSNSTokenGovernanceInfo(governanceCanisterId.toString(), tokenId),
       this.getCurrentTokenInfo(tokenId),
-      this.getLifecycle(swapId),
-      this.getParams(swapId),
+      this.getLifecycle(swapId, tokenId),
+      this.getParams(swapId, tokenId),
       this.listCommunityFundParticipants(swapId),
       this.getInit(swapId)
     );
@@ -1337,10 +1337,17 @@ export default class extends Mixins(BalanceMixin) {
         });
     });
   }
-  private async getParams(tokenId: string): Promise<Array<Params>> {
+  private async getParams(
+    swap: string,
+    tokenId: string
+  ): Promise<Array<Params>> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.params && info.params.length) {
+      return info.params;
+    }
     const snsSwapService = new SNSSwapService();
     console.time('getParams');
-    const res = await snsSwapService.getSaleParameters(tokenId);
+    const res = await snsSwapService.getSaleParameters(swap);
     console.log(res);
     console.time('getParams');
     if (
@@ -1353,10 +1360,17 @@ export default class extends Mixins(BalanceMixin) {
     }
     return res.params;
   }
-  private async getLifecycle(tokenId: string): Promise<Array<bigint>> {
+  private async getLifecycle(
+    swap: string,
+    tokenId: string
+  ): Promise<Array<bigint>> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.lifecycle) {
+      return info.lifecycle;
+    }
     const snsSwapService = new SNSSwapService();
     console.time('getLifecycle');
-    const res = await snsSwapService.getLifecycle(tokenId);
+    const res = await snsSwapService.getLifecycle(swap);
     console.timeEnd('getLifecycle');
     return res.lifecycle;
   }
@@ -1715,10 +1729,20 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async getSNSTokenGovernanceInfo(
+    governance: string,
     tokenId: string
   ): Promise<GetMetadataResponse> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.name && info.name instanceof Array && info.name[0] ) {
+      return {
+        url: info.url,
+        logo: info.logo,
+        name: info.name,
+        description: info.description
+      };
+    }
     const snsGovernanceService = new SNSGovernanceService();
-    return await snsGovernanceService.getMetadata(tokenId);
+    return await snsGovernanceService.getMetadata(governance);
   }
   private initSide(): void {
     this.title = this.currentToken.name[0];
@@ -1859,7 +1883,10 @@ export default class extends Mixins(BalanceMixin) {
       if (Number(this.currentToken.lifecycle[0]) !== 1) {
         return;
       }
-      const lifecycle = await this.getLifecycle(this.currentToken.swapId);
+      const lifecycle = await this.getLifecycle(
+        this.currentToken.swapId,
+        this.currentToken.tokenId
+      );
       // this.currentToken.lifecycle = lifecycle;
       console.log(lifecycle);
       this.$set(this.currentToken, 'lifecycle', lifecycle);
@@ -1875,7 +1902,10 @@ export default class extends Mixins(BalanceMixin) {
   private async onFinish(): Promise<void> {
     this.pendingLoading = true;
     try {
-      const lifecycle = await this.getLifecycle(this.currentToken.swapId);
+      const lifecycle = await this.getLifecycle(
+        this.currentToken.swapId,
+        this.currentToken.tokenId
+      );
       // this.currentToken.lifecycle = lifecycle;
       console.log(lifecycle);
       this.$set(this.currentToken, 'lifecycle', lifecycle);
@@ -1994,7 +2024,7 @@ export default class extends Mixins(BalanceMixin) {
             }
             this.getRefundIcp();
             loading.close();
-            console.error(e);
+            console.log(e);
           }
           this.swapVisible = false;
         }
@@ -2118,7 +2148,7 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.error('Refund error');
     }
     loading.close();

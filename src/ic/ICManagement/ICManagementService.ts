@@ -62,7 +62,7 @@ export class ICManagementService {
     try {
       return await this.service.update_settings(request);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

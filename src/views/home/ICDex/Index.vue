@@ -15603,7 +15603,12 @@ export default class extends Vue {
       .minus(60 * 60 * 1000)
       .times(1000000)
       .lte(order.time.toString(10));
-    if (less1H && !order.filled.length && !this.dexRole.vipMaker) {
+    if (
+      less1H &&
+      !order.filled.length &&
+      this.dexRole &&
+      !this.dexRole.vipMaker
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       const side = this.filterSide(order.orderPrice);
@@ -20037,14 +20042,25 @@ export default class extends Vue {
   private async getTokens(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.getTokens(['icdex']);
     let canisterIds: Array<string> = [];
+    this.tradePairs.Hot.forEach((pair) => {
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
+    });
     this.tradePairs.Main.forEach((pair) => {
-      canisterIds.push(pair[0].toString());
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
     });
     this.tradePairs.Second.forEach((pair) => {
-      canisterIds.push(pair[0].toString());
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
     });
     this.tradePairs.Third.forEach((pair) => {
-      canisterIds.push(pair[0].toString());
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
     });
     // this.tradePairs.ICP.forEach((pair) => {
     //   canisterIds.push(pair[0].toString());

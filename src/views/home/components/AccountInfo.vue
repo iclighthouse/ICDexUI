@@ -1899,7 +1899,7 @@ export default class extends Vue {
     const principal = localStorage.getItem('principal');
     if (this.priList[principal] === 'Plug') {
       if ((window as any).ic && (window as any).ic.plug) {
-        (window as any).ic.plug.disconnect();
+        await (window as any).ic.plug.disconnect();
       }
     }
     if (this.priList[principal] === 'Infinity') {

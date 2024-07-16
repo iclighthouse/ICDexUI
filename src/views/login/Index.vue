@@ -298,7 +298,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           (window as any).ic.plug &&
           (window as any).ic.plug.agent
         ) {
-          (window as any).ic.plug.disconnect();
+          await (window as any).ic.plug.disconnect();
         }
         const isConnect = await connectPlug.connect(whitelist);
         if (isConnect) {

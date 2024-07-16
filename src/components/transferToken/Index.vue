@@ -136,6 +136,7 @@ import store from '@/store';
 import { isInfinity } from '@/ic/isInfinity';
 import { validateAccount } from '@/ic/utils';
 import { DePairs } from '@/views/home/ICDex/model';
+import { getFee } from '@/ic/getTokenFee';
 
 const OGYTokenId = 'jwcfb-hyaaa-aaaaj-aac4q-cai';
 const ProSubaccountId = 1;
@@ -314,7 +315,13 @@ export default class extends Vue {
   }
   private async getGas(): Promise<void> {
     let fee;
-    if (this.currentToken.standard === TokenStandard.DRC20) {
+    const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
+    if (
+      tokens[this.currentToken.canisterId.toString()] &&
+      tokens[this.currentToken.canisterId.toString()].fee
+    ) {
+      fee = getFee(tokens[this.currentToken.canisterId.toString()]);
+    } else if (this.currentToken.standard === TokenStandard.DRC20) {
       try {
         this.gas = await this.DRC20TokenService.gas(
           this.currentToken.canisterId.toString()

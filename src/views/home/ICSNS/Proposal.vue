@@ -318,8 +318,8 @@
                 A critical proposal is immediately adopted or rejected if,
                 before the voting period ends, more than {{ votingAbsolute }} of
                 the total voting power votes Yes, or at least
-                {{ votingLeast }} votes No, respectively (indicated by
-                <a-icon type="caret-down" />).
+                {{ Math.floor(100 - parseFloat(votingAbsolute)) }}% votes No,
+                respectively (indicated by <a-icon type="caret-down" />).
               </span>
             </div>
             <div>

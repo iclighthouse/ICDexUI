@@ -3,7 +3,6 @@ import store from '@/store';
 import { Identity } from '@dfinity/agent';
 import { plugWhitelist } from '@/ic/utils';
 import router from '@/router';
-import Vue from 'vue';
 
 export interface CommonState {
   common: {
@@ -54,9 +53,11 @@ export const checkAuth = (
       const localWhitelist =
         JSON.parse(localStorage.getItem('whitelist')) || {};
       const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
-      console.log((window as any).ic);
+      console.log((window as any).ic.plug.agent);
       if (
-        ((window as any).ic && !(window as any).ic.plug.agent) ||
+        ((window as any).ic &&
+          (!(window as any).ic.plug.agent ||
+            !(window as any).ic.plug.principalId)) ||
         (canisterId && !whitelist.includes(canisterId))
       ) {
         refreshingPlugOrInfinity(resolve);
@@ -65,6 +66,7 @@ export const checkAuth = (
           (window as any).ic.plug.agent
             .getPrincipal()
             .then((currentPrincipal) => {
+              console.log(currentPrincipal);
               if (currentPrincipal.toString() !== principal) {
                 // router.go(0);
                 resolve(false);

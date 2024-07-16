@@ -121,7 +121,11 @@ export const currentPageConnectPlug = async (
 };
 export const needConnectPlug = (canisterIds: Array<string>): boolean => {
   const whitelist = getWhitelist();
-  if (!isPlug() || !(window as any).ic || ((window as any).ic && !(window as any).ic.plug)) {
+  if (
+    !isPlug() ||
+    !(window as any).ic ||
+    ((window as any).ic && !(window as any).ic.plug)
+  ) {
     return false;
   }
   return (

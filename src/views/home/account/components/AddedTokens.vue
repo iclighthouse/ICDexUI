@@ -1156,9 +1156,6 @@ export default class extends Vue {
           this.getICRCBalance(token, 1),
           this.getIcrcMetadata(token)
         );
-        // if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
-        //   this.getSNSLogo(token);
-        // }
       }
     });
     await Promise.all(promiseValue);
@@ -1180,7 +1177,7 @@ export default class extends Vue {
           }
         }
       }, 0);
-    }, 30 * 1000);
+    }, 60 * 1000);
   }
   private executeTransferSuccess(): void {
     this.lockTransactionsModal = false;
@@ -1595,9 +1592,13 @@ export default class extends Vue {
     if (token.logo) {
       return;
     }
-    // if (token.canisterId.toString() === IC_SNS_TOKEN_CANISTER_ID) {
-    //   return;
-    // }
+    const info =
+      JSON.parse(localStorage.getItem(`${token.canisterId.toString()}-SNS`)) ||
+      {};
+    if (info && info.logo && info.logo instanceof Array && info.logo[0]) {
+      this.$set(token, 'logo', info.logo[0]);
+      return;
+    }
     let logo = await getTokenLogo(token.canisterId, {
       icrc1: null
     });

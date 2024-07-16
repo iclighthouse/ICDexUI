@@ -432,11 +432,11 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         const localWhitelist =
           JSON.parse(localStorage.getItem('whitelist')) || {};
         const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
-        console.log('123');
         const connectPlug = new ConnectPlug();
         if (
           (window as any).ic &&
-          !(window as any).ic.plug.agent &&
+          (!(window as any).ic.plug.agent ||
+            !(window as any).ic.plug.principalId) &&
           checkAuth &&
           !this.isInit
         ) {
@@ -526,11 +526,15 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.setCheckAuth(false);
     loading.close();
   }
-  private onSubmit(): void {
-    const loading = this.$loading({
-      lock: true,
-      background: 'rgba(0, 0, 0, 0.5)'
-    });
+  private async onSubmit(): Promise<void> {
+    let loading;
+    const isLoading = !!document.querySelector('.el-loading-mask');
+    if (!isLoading) {
+      loading = this.$loading({
+        lock: true,
+        background: 'rgba(0, 0, 0, 0.5)'
+      });
+    }
     setTimeout(async () => {
       try {
         let identity;
@@ -575,9 +579,13 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         localStorage.setItem('identity', localStorage.getItem('principal'));
         // sessionStorage.setItem('identity', JSON.stringify(identity));
         this.setCheckAuth(false);
-        loading.close();
+        if (!isLoading) {
+          loading.close();
+        }
       } catch (e) {
-        loading.close();
+        if (!isLoading) {
+          loading.close();
+        }
         console.log(e);
         this.$message.config({ top: '40%' });
         this.$message.error("Password doesn't match");

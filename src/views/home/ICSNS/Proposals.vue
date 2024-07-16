@@ -805,7 +805,7 @@ export default class extends Vue {
       if (
         (SNSToken.lifecycle &&
           SNSToken.lifecycle.length &&
-          Number(SNSToken.lifecycle[0]) == 4) ||
+          Number(SNSToken.lifecycle[0]) === 4) ||
         (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
       ) {
         if (!localReject.includes(SNSToken.tokenId)) {
@@ -967,7 +967,8 @@ export default class extends Vue {
     tokenId: string
   ): Promise<Array<bigint>> {
     const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
-    if (info && info.lifecycle) {
+    const completed = [3, 4];
+    if (info && info.lifecycle && completed.includes(Number(info.lifecycle))) {
       return info.lifecycle;
     }
     const snsSwapService = new SNSSwapService();

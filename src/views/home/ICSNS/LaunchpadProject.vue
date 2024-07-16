@@ -1365,7 +1365,8 @@ export default class extends Mixins(BalanceMixin) {
     tokenId: string
   ): Promise<Array<bigint>> {
     const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
-    if (info && info.lifecycle) {
+    const completed = [3, 4];
+    if (info && info.lifecycle && completed.includes(Number(info.lifecycle))) {
       return info.lifecycle;
     }
     const snsSwapService = new SNSSwapService();
@@ -1383,7 +1384,9 @@ export default class extends Mixins(BalanceMixin) {
         before_proposal: [],
         limit: BigInt(100),
         // todo only Proposals related to SNS and Community Fund.
-        exclude_topic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+        exclude_topic: [
+          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18
+        ],
         // only open
         include_status: [1],
         include_all_manage_neuron_proposals: []
@@ -1733,7 +1736,7 @@ export default class extends Mixins(BalanceMixin) {
     tokenId: string
   ): Promise<GetMetadataResponse> {
     const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
-    if (info && info.name && info.name instanceof Array && info.name[0] ) {
+    if (info && info.name && info.name instanceof Array && info.name[0]) {
       return {
         url: info.url,
         logo: info.logo,

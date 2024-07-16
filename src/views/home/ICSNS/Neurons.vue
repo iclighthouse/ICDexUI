@@ -2530,6 +2530,7 @@ export default class extends Vue {
         }
       }
     );
+    console.log(this.SNSNeuronsList);
     localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     let tokenId = this.$route.query.id as string;
     if (tokenId) {
@@ -2619,7 +2620,8 @@ export default class extends Vue {
     const swapId = deployedSns.swap_canister_id[0].toString();
     const tokenId = deployedSns.ledger_canister_id[0].toString();
     const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
-    if (info && info.lifecycle) {
+    const completed = [3, 4];
+    if (info && info.lifecycle && completed.includes(Number(info.lifecycle))) {
       this.$set(this.SNSNeuronsList[index], 'lifecycle', info.lifecycle);
     } else {
       const snsSwapService = new SNSSwapService();

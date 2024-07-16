@@ -564,6 +564,7 @@ export default class extends Vue {
             background: 'rgba(0, 0, 0, 0.5)'
           });
           await checkAuth();
+          console.log(loading);
           try {
             const snsGovernanceService = new SNSGovernanceService();
             const res = await snsGovernanceService.getNeuron(
@@ -576,6 +577,7 @@ export default class extends Vue {
                 }
               ]
             );
+            loading.close();
             if (res.result) {
               const type = Object.keys(res.result[0])[0];
               if (type === 'Neuron') {
@@ -593,9 +595,9 @@ export default class extends Vue {
               }
             }
           } catch (e) {
+            loading.close();
             console.log(e);
           }
-          loading.close();
         }
       }
     );
@@ -609,6 +611,7 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    console.log(loading);
     await checkAuth();
     try {
       const res = await snsGovernanceService.setFollowees(

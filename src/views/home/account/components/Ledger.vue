@@ -1,4 +1,3 @@
-import { BTCTypeEnum } from '@/views/home/account/model';
 <template>
   <div>
     <div class="ic-balance-main">
@@ -1650,6 +1649,7 @@ import { BTCTypeEnum } from '@/views/home/account/model';
       @transferTokenSuccess="transferTokenSuccess"
     ></transfer-token>
     <top-up
+      v-if="type === 'ic'"
       ref="topUp"
       :balance="balance"
       :walletId="walletId"
@@ -5152,6 +5152,7 @@ let ETHUpdateTime = null;
 let ETHDepositTime = null;
 const ethVersion = '0.1';
 let timer: number;
+let num = 0;
 const ckETHSep = 'apia6-jaaaa-aaaar-qabma-cai';
 
 @Component({
@@ -5559,6 +5560,7 @@ export default class extends Mixins(BalanceMixin) {
     return null;
   }
   beforeDestroy(): void {
+    num = 0;
     this.clearTime();
     window.clearInterval(this.btcTimer);
     this.btcTimer = null;
@@ -5585,7 +5587,9 @@ export default class extends Mixins(BalanceMixin) {
     this.ckETHMinterService = new ckETHMinterService();
     this.ckETHMinterDfiService = new ckETHMinterDfiService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    if (this.type === 'cross') {
+    if (num === 0) {
+      console.log(this.type);
+      ++num;
       this.getMinterInfo().then(() => {
         this.networkTokenDisabled = true;
         this.getCkTokens().then(() => {

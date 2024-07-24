@@ -145,6 +145,20 @@
                   class="reload-icon"
                 />
               </span>
+              <!--<button
+                class="pc-show primary"
+                v-show="currentWalletMenu === 'wallet'"
+                type="button"
+                style="
+                  width: 90px;
+                  margin-right: 10px;
+                  margin-left: auto;
+                  background: rgba(81, 183, 195, 0.7) !important;
+                "
+                @click="showFaucet"
+              >
+                Faucet
+              </button>-->
               <button
                 style="margin-left: auto"
                 type="button"
@@ -711,6 +725,24 @@
         @transferTokenSuccess="transferTokenSuccess"
         @changeDepositToken="changeDepositToken"
       ></transfer-token>
+      <a-modal
+        v-model="faucetModal"
+        width="485px"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
+      >
+        <div class="base-font-title" style="margin-top: 40px">
+          Get free faucet funds for testing the ITest/DTest trading pair.
+        </div>
+        <div class="mt20">
+          <button type="button" class="primary margin-left-auto">
+            Mint test tokens
+          </button>
+        </div>
+      </a-modal>
     </div>
   </div>
 </template>
@@ -932,6 +964,7 @@ export default class extends Mixins(BalanceMixin) {
       path: '/icRouter'
     }
   ];
+  private faucetModal = false;
   @Watch('$route')
   private onRouteChange() {
     if (this.$route.fullPath.toLocaleLowerCase().includes('icrouter')) {
@@ -985,7 +1018,7 @@ export default class extends Mixins(BalanceMixin) {
         this.loginType = 'Infinity';
       } else if (priList[principal] === 'AuthClient') {
         this.loginType = 'Internet Identity';
-      }  else if (priList[principal] === 'NFID') {
+      } else if (priList[principal] === 'NFID') {
         this.loginType = 'NFID';
       } else if (priList[principal].includes('MetaMask')) {
         this.loginType = 'MetaMask';
@@ -995,7 +1028,6 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
     if (principal) {
-      await this.getPairs();
       this.init();
     }
   }
@@ -1350,10 +1382,17 @@ export default class extends Mixins(BalanceMixin) {
   }
   private showTraderAccounts(): void {
     this.pairListPage = 1;
-    this.getTokenBalance();
+    this.spinning = true;
+    this.getPairs().then(() => {
+      this.getTokenBalance();
+    });
     this.traderAccountsModal = true;
   }
   private async getPairs(): Promise<void> {
+    console.log('getPairs');
+    if (this.pairList.length) {
+      return;
+    }
     const res = await this.ICSwapRouterService.getPairs(['icdex']);
     if (res && res.data) {
       const pairList = (res.data as Array<TrieListData1>).sort(
@@ -1420,7 +1459,6 @@ export default class extends Mixins(BalanceMixin) {
           }
         }
       });
-      this.getTokenBalance();
     } else {
       this.pairList = [];
     }
@@ -1685,6 +1723,9 @@ export default class extends Mixins(BalanceMixin) {
       this.$message.error(toHttpError(e).message);
       loading.close();
     }
+  }
+  private showFaucet(): void {
+    this.faucetModal = true;
   }
   private onAddToken(): void {
     this.$refs.addedTokens.visible = true;

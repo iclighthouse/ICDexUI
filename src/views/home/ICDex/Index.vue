@@ -13046,7 +13046,6 @@ import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { AstroXUserService } from '@/ic/MEAccount/Service';
 import { Principal } from '@dfinity/principal';
 import BigNumber from 'bignumber.js';
-import { ICSwapRouterService } from '@/ic/ICSwapRouter/ICSwapRouterService';
 import { DexNameType, PairTokenStdMenu } from '@/views/home/ICSwap/model';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import {
@@ -13112,7 +13111,6 @@ import {
   principalToAccountIdentifier,
   toHexString
 } from '@/ic/converter';
-import { LedgerService } from '@/ic/ledger/ledgerService';
 import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
@@ -13178,6 +13176,7 @@ let ICRC2Token = [
   OCToken
 ];
 let timer = null;
+let hotSort = 0;
 
 @Component({
   name: 'Index',
@@ -13512,11 +13511,9 @@ export default class extends Vue {
   private step = 0;
   private icpUnit = 4;
   private unit: bigint = null;
-  private iCSwapRouterService: ICSwapRouterService;
   private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   private currentICDexService: ICDexService;
   private astroXUserService: AstroXUserService;
-  private ledgerService: LedgerService | undefined;
   private ICDexRouterService: ICDexRouterService = null;
   private ICLighthouseService: ICLighthouseService = null;
   private NftService: NftService = null;
@@ -14319,8 +14316,6 @@ export default class extends Vue {
       document.title = `${this.$route.params.token0}/${this.$route.params.token1} - ICDex (Orderbook Dex)`;
     }
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    this.ledgerService = new LedgerService();
-    this.iCSwapRouterService = new ICSwapRouterService();
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.currentICDexService = new ICDexService();
     this.ICDexRouterService = new ICDexRouterService();
@@ -16184,7 +16179,7 @@ export default class extends Vue {
           toHexString(new Uint8Array(this.cancelId)) ===
           toHexString(new Uint8Array(order.txid))
         ) {
-          this.getIntervalPrice(6);
+          this.getAccountInitIntervalPrice(6);
           this.cancelId = null;
           loading.close();
           if (isPro) {
@@ -16599,11 +16594,11 @@ export default class extends Vue {
       }
       if (this.isTodo) {
         if (this.time !== 6) {
-          this.getIntervalPrice(6);
+          this.getAccountInitIntervalPrice(6);
         }
       } else {
         if (this.time !== 10) {
-          this.getIntervalPrice();
+          this.getAccountInitIntervalPrice();
         }
       }
       this.TTRun();
@@ -17438,7 +17433,7 @@ export default class extends Vue {
       this.executionQueue(currentPair, address);
       this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
-      this.getIntervalPrice(6);
+      this.getAccountInitIntervalPrice(6);
     } catch (e) {
       console.log(e);
       this.initPending(currentPair, prepare, address);
@@ -17732,7 +17727,7 @@ export default class extends Vue {
       }, 3000);
       this.executionQueue(currentPair, address);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
-      this.getIntervalPrice(6);
+      this.getAccountInitIntervalPrice(6);
     } catch (e) {
       console.log(e);
       this.initPending(currentPair, prepare, address);
@@ -18546,7 +18541,8 @@ export default class extends Vue {
   }
   private async getKeepingBalance(pair: DePairs): Promise<KeepingBalance> {
     const res = await this.currentICDexService.accountBalance(
-      pair[0].toString()
+      pair[0].toString(),
+      0
     );
     if (res && res.pairId === this.currentPair[0].toString()) {
       return res.keepingBalance;
@@ -19716,7 +19712,7 @@ export default class extends Vue {
   }
   private async initPairsPrice(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 40;
+    const MAX_CONCURRENCY = 20;
     const pairs = [
       { type: 'Main', value: this.allPairs.Markets.Main },
       { type: 'Second', value: this.allPairs.Markets.Second },
@@ -19779,10 +19775,10 @@ export default class extends Vue {
   }
   private sortHot(): void {
     this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
-      if (b[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+      if (b[1][0].token1[1].toLocaleLowerCase().includes('test') || !b[2]) {
         return -1;
       }
-      if (a[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+      if (a[1][0].token1[1].toLocaleLowerCase().includes('test') || !a[2]) {
         return 1;
       }
       const basePrice = this.getBasePrice(a[1][0].token1[1]);
@@ -19822,7 +19818,7 @@ export default class extends Vue {
   }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 200;
+    const MAX_CONCURRENCY = 20;
     let pairs = this.tradePairs[this.currentTradeMarketSort];
     if (this.pairSearch) {
       pairs = this.pairs;
@@ -19833,58 +19829,60 @@ export default class extends Vue {
         this.getLiquidity(pairs[i][0].toString(), i, currentTradeMarketSort)
       );
       if (promiseAllValue.length === MAX_CONCURRENCY) {
+        console.log(i);
         await Promise.all(promiseAllValue);
+        if (this.currentTradeMarketSort === 'Hot') {
+          this.sortHot();
+        }
         promiseAllValue = [];
       }
       if (i === pairs.length - 1 && promiseAllValue.length) {
+        console.log(i);
         await Promise.all(promiseAllValue);
+        if (this.currentTradeMarketSort === 'Hot') {
+          this.sortHot();
+        }
         promiseAllValue = [];
       }
     }
-    if (this.currentTradeMarketSort === 'Hot') {
-      const prePair = this.currentPair;
-      this.sortHot();
-      if (
-        this.currentPair[3] === 'Hot' &&
-        this.tradePairs.Hot[this.currentPairIndex] &&
-        prePair[1][0].canisterId.toString() !==
-          this.tradePairs.Hot[this.currentPairIndex][1][0].canisterId.toString()
-      ) {
-        this.tradePairs.Hot.some((pair, index) => {
-          if (
-            pair[1][0].canisterId.toString() ===
-            prePair[1][0].canisterId.toString()
-          ) {
-            if (
-              this.currentPair[3] === 'Hot' &&
-              this.currentTradeMarketSort === 'Hot'
-            ) {
-              console.log(index);
-              this.currentPairIndex = index;
-            }
-            return true;
-          }
-        });
-      }
-    }
+    // if (this.currentTradeMarketSort === 'Hot') {
+    //   const prePair = this.currentPair;
+    //   // this.sortHot();
+    //   if (
+    //     this.currentPair[3] === 'Hot' &&
+    //     this.tradePairs.Hot[this.currentPairIndex] &&
+    //     prePair[1][0].canisterId.toString() !==
+    //       this.tradePairs.Hot[this.currentPairIndex][1][0].canisterId.toString()
+    //   ) {
+    //     this.tradePairs.Hot.some((pair, index) => {
+    //       if (
+    //         pair[1][0].canisterId.toString() ===
+    //         prePair[1][0].canisterId.toString()
+    //       ) {
+    //         if (
+    //           this.currentPair[3] === 'Hot' &&
+    //           this.currentTradeMarketSort === 'Hot'
+    //         ) {
+    //           console.log(index);
+    //           this.currentPairIndex = index;
+    //         }
+    //         return true;
+    //       }
+    //     });
+    //   }
+    // }
   }
   private initIntervalPrice(): void {
     try {
+      if (this.$route.name !== 'ICDex') {
+        return;
+      }
       this.getIcpPrice();
-      this.getAllLiquidity();
       if (this.getPrincipalId) {
         this.getUserLiquidity(this.currentPair[0].toString());
-        if (this.getPrincipalId) {
-          this.getPending(this.currentPair[0].toString());
-          this.getTradeList(
-            this.currentPair[0].toString(),
-            this.getPrincipalId
-          );
-          this.getStopOrders(
-            this.currentPair[0].toString(),
-            this.getPrincipalId
-          );
-        }
+        this.getPending(this.currentPair[0].toString());
+        this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId);
+        this.getStopOrders(this.currentPair[0].toString(), this.getPrincipalId);
         if (
           !this.isTodo &&
           this.time !== 6 &&
@@ -19906,27 +19904,41 @@ export default class extends Vue {
       console.log(e);
     }
   }
-  private getIntervalPrice(time = 10): void {
+  private getAccountInitIntervalPrice(time = 10): void {
+    console.log(time);
+    this.time = time;
+    // this.initIntervalPrice();
+    window.clearInterval(this.timer);
+    this.timer = null;
+    this.timer = window.setInterval(async () => {
+      if (!this.getCheckAuth) {
+        setTimeout(async () => {
+          if (this.$route.name === 'ICDex') {
+            console.log(time);
+            this.initIntervalPrice();
+          }
+        }, 0);
+      }
+    }, time * 1000);
+  }
+  private async getIntervalPrice(): Promise<void> {
     try {
-      this.time = time;
-      this.initIntervalPrice();
-      this.getLevel100(this.currentPair[0].toString());
-      this.latestFilled(this.currentPair[0].toString());
-      window.clearInterval(this.timer);
-      this.timer = null;
+      await this.getLiquidity(
+        this.currentPair[0].toString(),
+        this.currentPairIndex,
+        this.currentTradeMarketSort
+      );
+      await Promise.all([
+        this.getLevel100(this.currentPair[0].toString()),
+        this.latestFilled(this.currentPair[0].toString()),
+        this.initIntervalPrice(),
+        this.getAllLiquidity()
+      ]);
+      this.getAccountInitIntervalPrice();
       window.clearInterval(this.timerOrderBook);
       this.timerOrderBook = null;
       window.clearInterval(this.timerAccount);
       this.timerAccount = null;
-      this.timer = window.setInterval(async () => {
-        if (!this.getCheckAuth) {
-          setTimeout(async () => {
-            if (this.$route.name === 'ICDex') {
-              this.initIntervalPrice();
-            }
-          }, 0);
-        }
-      }, time * 1000);
       this.timerOrderBook = window.setInterval(() => {
         if (!this.getCheckAuth) {
           setTimeout(() => {
@@ -19947,10 +19959,11 @@ export default class extends Vue {
           setTimeout(async () => {
             if (this.$route.name === 'ICDex') {
               this.InitTxAccount(this.currentPair[0].toString());
+              this.getAllLiquidity();
             }
           }, 0);
         }
-      }, 15 * 1000);
+      }, 60 * 1000);
     } catch (e) {
       console.log(e);
     }
@@ -20249,7 +20262,12 @@ export default class extends Vue {
       { Star: this.tradePairs.Star, Search: [] },
       this.allPairs.Markets
     );
-    this.sortHot();
+    const now = new Date().getTime();
+    if (now - hotSort > 5 * 60 * 1000) {
+      hotSort = now;
+      console.log(hotSort);
+      this.getAllLiquidity();
+    }
     const res = [];
     this.pairs = this.tradePairs[this.currentTradeMarketSort];
     console.log(this.tradePairs);
@@ -21105,24 +21123,34 @@ export default class extends Vue {
           );
         }, 20);
       }
-      this.initDex();
-      this.initPairsPrice().then(() => {
-        this.getTokens();
-      });
-      this.getRole(this.currentPair);
-      this.getAllowance(this.currentPair);
-      this.setReferral();
-      this.getMakerRebate();
-      this.initAccount();
-      this.getStoConfig();
-      this.$nextTick(() => {
+      this.$nextTick(async () => {
         try {
           dispose('kInterval-chart');
         } catch (e) {
           console.log(e);
         }
         this.resetChart();
+        if (this.$route.name !== 'ICDex') {
+          return;
+        }
+        await Promise.all([
+          this.initDex(),
+          this.getRole(this.currentPair),
+          this.setReferral(),
+          this.getMakerRebate(),
+          this.initAccount(),
+          this.getStoConfig()
+        ]);
+        this.initPairsPrice().then(() => {
+          this.getTokens();
+        });
       });
+      // this.getRole(this.currentPair);
+      // // this.getAllowance(this.currentPair);
+      // this.setReferral();
+      // this.getMakerRebate();
+      // this.initAccount();
+      // this.getStoConfig();
       console.log(this.prePairs);
       console.log(this.pairs);
       console.log(this.tradePairs);
@@ -21233,23 +21261,27 @@ export default class extends Vue {
   private async initDex(): Promise<void> {
     const token0Info = this.currentPair[1][0].token0;
     const token1Info = this.currentPair[1][0].token1;
-    this.getTokenBalance(token0Info);
-    this.getTokenBalance(token1Info);
-    this.getTokenBalanceSto(token0Info);
-    this.getTokenBalanceSto(token1Info);
-    this.getLevel100(this.currentPair[0].toString(), 'init').then(() => {
-      this.getQuotes(this.currentPair[0].toString(), true);
-      this.initPrice();
-    });
-    this.getConfig();
+    await Promise.all([
+      // this.getTokenBalance(token0Info),
+      // this.getTokenBalance(token1Info),
+      // this.getTokenBalanceSto(token0Info),
+      // this.getTokenBalanceSto(token1Info),
+      this.getLevel100(this.currentPair[0].toString(), 'init')
+    ]);
+    this.initPrice();
+    await Promise.all([
+      this.getQuotes(this.currentPair[0].toString(), true),
+      this.getConfig()
+    ]);
     if (this.getPrincipalId) {
-      this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId);
-      this.getPending(this.currentPair[0].toString(), true);
-      this.getTotalPending();
-      this.getPairInfo(this.currentPair);
-      this.getUserLiquidity(this.currentPair[0].toString());
+      await Promise.all([
+        // this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId),
+        // this.getPending(this.currentPair[0].toString(), true),
+        this.getTotalPending(),
+        this.getPairInfo(this.currentPair)
+        // this.getUserLiquidity(this.currentPair[0].toString())
+      ]);
     }
-    this.getIntervalPrice();
     try {
       if (this.getPrincipalId) {
         const currentPairId = this.currentPair[0].toString();
@@ -21262,6 +21294,7 @@ export default class extends Vue {
     } catch (e) {
       console.log(e);
     }
+    await this.getIntervalPrice();
     if (!this.isToSetReferrer) {
       this.toSetReferrer();
     }
@@ -21275,6 +21308,9 @@ export default class extends Vue {
       tokensId.push(item.canisterId.toString());
     });
     for (let i = 0; i < res.length; i++) {
+      if (this.$route.name !== 'ICDex') {
+        return;
+      }
       const tokenId = res[i][0].toString();
       if (tokenId !== LEDGER_CANISTER_ID && !tokensId.includes(tokenId)) {
         console.log(tokenId);
@@ -21420,6 +21456,9 @@ export default class extends Vue {
     currentTradeMarketSort: string,
     pairs?: Array<DePairs>
   ): Promise<void> {
+    if (this.$route.name !== 'ICDex') {
+      return;
+    }
     // const liquidity = await currentICDexService.liquidity(swapId);
     try {
       const res = await this.currentICDexService.stats(swapId);

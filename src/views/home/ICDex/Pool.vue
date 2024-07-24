@@ -1806,6 +1806,7 @@ export default class extends Vue {
       }
       this.getPoolInfo(poolId);
     }
+    this.getEvents(this.$route.params.poolId);
     this.getPoolICLBalance(poolId);
     loading.close();
   }
@@ -1971,6 +1972,7 @@ export default class extends Vue {
         flag = true;
         this.getDepositAccountBalance();
         this.getPoolICLBalance(poolId);
+        this.getEvents(this.$route.params.poolId);
         loading.close();
       });
     window.setTimeout(() => {

@@ -1,6 +1,6 @@
 <template>
   <div class="base-bg">
-		<account-info> </account-info>
+    <account-info> </account-info>
     <div class="home-main">
       <keep-alive>
         <router-view v-if="$route.meta.keepAlive"></router-view>
@@ -33,7 +33,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.1.4
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.1.5
             </span>
           </span>
         </span>

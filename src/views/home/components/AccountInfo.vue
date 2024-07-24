@@ -1551,11 +1551,11 @@ export default class extends Vue {
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     this.setMenuList();
     this.ICLighthouseService = new ICLighthouseService();
-    this.getAccountInfo();
-    if (this.getPrincipalId) {
-      this.getCAccountName(this.getPrincipalId);
-      this.accountName = JSON.parse(localStorage.getItem('accountName')) || {};
-    }
+    this.priList = JSON.parse(localStorage.getItem('priList')) || {};
+    this.principalList = Object.keys(this.priList);
+    window.setTimeout(() => {
+      this.getAccountInfo();
+    }, 30 * 1000);
   }
   private setMenuList(): void {
     console.log(this.$route);
@@ -1655,8 +1655,6 @@ export default class extends Vue {
       this.activeKey = 0;
       return;
     }
-    this.priList = JSON.parse(localStorage.getItem('priList')) || {};
-    this.principalList = Object.keys(this.priList);
     this.principalList.forEach((principal) => {
       this.getCAccountName(principal);
     });

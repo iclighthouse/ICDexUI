@@ -63,6 +63,7 @@ import { namespace } from 'vuex-class';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Liquidity } from '@/ic/cyclesFinance/model';
 const commonModule = namespace('common');
+let num = 0;
 
 @Component({
   name: 'CreateWallet',
@@ -184,13 +185,19 @@ export default class extends Vue {
     }
     return name;
   }
+  beforeDestroy(): void {
+    num = 0;
+  }
   created(): void {
     this.cyclesMintingService = new CyclesMintingService();
     this.ICLighthouseService = new ICLighthouseService();
     this.walletService = new WalletService();
     this.ledgerService = new LedgerService();
     this.cyclesFinanceService = new CyclesFinanceService();
-    this.getConfig();
+    if (num === 0) {
+      ++num;
+      this.getConfig();
+    }
     // this.getIcpToCyclesConversionRate();
   }
   private init(): void {

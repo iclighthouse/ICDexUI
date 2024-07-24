@@ -140,10 +140,10 @@ export const FunctionsName = {
   2: 'Exchange Rate'
 };
 export const AllTopicsId = [
-  4, 14, 1, 3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 16, 1, 17, 18, 2
+  4, 14, 3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 16, 1, 17, 18, 2
 ];
 export const AllTopicsIdExcludeRate = [
-  4, 14, 1, 3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 16, 1, 17, 18
+  4, 14, 3, 5, 6, 7, 8, 9, 10, 12, 13, 15, 16, 17, 18
 ];
 export const TopicInfo = [
   {

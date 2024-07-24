@@ -1294,6 +1294,7 @@ export default class extends Vue {
     console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataLM, 0, res.data);
+      this.getAccelerationByAccount(res.data);
       if (!this.totalLM) {
         this.totalLM = Number(res.total);
       }
@@ -1307,7 +1308,6 @@ export default class extends Vue {
     console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataLM, 1, res.data);
-      this.getAccelerationByAccount(res.data);
     }
   }
   private async getRoundPointsForTM(): Promise<void> {
@@ -1351,11 +1351,13 @@ export default class extends Vue {
     accountId: Array<number>
   ): Promise<void> {
     const res = await this.MiningService.getAccelerationRate(accountId);
-    this.$set(
-      this.addressAcceleration,
-      toHexString(new Uint8Array(accountId)),
-      res
-    );
+    if (!this.addressAcceleration[toHexString(new Uint8Array(accountId))]) {
+      this.$set(
+        this.addressAcceleration,
+        toHexString(new Uint8Array(accountId)),
+        res
+      );
+    }
   }
   private async getRoundSettlementsForTM(): Promise<void> {
     const res = await this.MiningService.getRoundSettlementsForTM(

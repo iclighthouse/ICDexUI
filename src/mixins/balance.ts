@@ -8,6 +8,7 @@ import { namespace } from 'vuex-class';
 import { LEDGER_CANISTER_ID } from '@/ic/utils';
 
 const commonModule = namespace('common');
+let num = 0;
 
 @Component({})
 export class BalanceMixin extends Vue {
@@ -25,6 +26,7 @@ export class BalanceMixin extends Vue {
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
+    num = 0;
   }
   created(): void {
     const principal = localStorage.getItem('principal');
@@ -33,7 +35,15 @@ export class BalanceMixin extends Vue {
     this.ledgerService = new LedgerService();
     // this.account = principalToAccountIdentifier(Principal.fromText(principal));
     if (principal) {
-      this.getIcp();
+      if (this.$route.name === 'Account') {
+        console.log(num);
+        if (num === 0) {
+          ++num;
+          this.getIcp();
+        }
+      } else {
+        this.getIcp();
+      }
     }
   }
   get account(): string {

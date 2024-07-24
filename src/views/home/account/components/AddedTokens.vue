@@ -1030,9 +1030,20 @@ export default class extends Vue {
     this.ICTokensScanService = new ICTokensScanService();
     this.SNSWasmService = new SNSWasmService();
     this.localTokens = JSON.parse(localStorage.getItem('tokens')) || {};
+    console.log(this.$route);
     if (this.getPrincipalId) {
-      this.getTokens();
-      this.getTokenList();
+      if (this.$route.path.toLocaleLowerCase().includes('icrouter')) {
+        this.tokenSpinning = true;
+        window.setTimeout(() => {
+          if (this.$route.name === 'Account') {
+            this.getTokens();
+            this.getTokenList();
+          }
+        }, 15 * 1000);
+      } else {
+        this.getTokens();
+        this.getTokenList();
+      }
     }
   }
   private onSort(type: string): void {
@@ -1121,15 +1132,21 @@ export default class extends Vue {
     this.tokenList = tokenList.sort((a, b) => {
       return a.symbol.localeCompare(b.symbol);
     });
+    console.log('getTokenList');
   }
   private async init(): Promise<void> {
     if (!this.listDeployedSnses.length) {
       this.listDeployedSnses = await this.SNSWasmService.listDeployedSnses();
     }
-    const promiseValue = [];
-    this.tokens.forEach((token) => {
+    const MAX_COCURRENCY = 20;
+    let promiseAll = [];
+    for (let i = 0; i < this.tokens.length; i++) {
+      if (this.$route.name !== 'Account') {
+        return;
+      }
+      const token = this.tokens[i];
       if (token.standard === TokenStandard.DRC20) {
-        promiseValue.push(
+        promiseAll.push(
           this.getBalance(token),
           this.getBalance(token, 1),
           this.getMetadata(token),
@@ -1143,7 +1160,7 @@ export default class extends Vue {
           this.getApprovalsAllowance(token, 1)
         );
       } else if (token.standard === TokenStandard.DIP20) {
-        promiseValue.push(
+        promiseAll.push(
           this.getDip20Balance(token),
           this.getDip20Metadata(token)
         );
@@ -1151,14 +1168,21 @@ export default class extends Vue {
         token.standard === TokenStandard['ICRC-1'] ||
         token.standard === TokenStandard['ICRC-2']
       ) {
-        promiseValue.push(
+        promiseAll.push(
           this.getICRCBalance(token),
           this.getICRCBalance(token, 1),
           this.getIcrcMetadata(token)
         );
       }
-    });
-    await Promise.all(promiseValue);
+      console.log(promiseAll.length);
+      if (promiseAll.length >= MAX_COCURRENCY) {
+        await Promise.all(promiseAll);
+        promiseAll = [];
+      }
+      if (i === this.tokens.length - 1 && promiseAll.length) {
+        await Promise.all(promiseAll);
+      }
+    }
   }
   private getSNSLogo(token: AddTokenItem): void {
     this.$set(token, 'logo', require('@/assets/img/sns1.png'));

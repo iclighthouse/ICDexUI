@@ -614,5 +614,10 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   .account-select-option {
     overflow: auto;
   }
+  .reset {
+    span {
+      font-size: 12px;
+    }
+  }
 }
 </style>

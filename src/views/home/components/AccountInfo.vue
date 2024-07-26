@@ -2149,7 +2149,7 @@ export default class extends Vue {
       display: none;
     }
     .home-header-right-info {
-      width: auto;
+      min-width: auto;
     }
     .current-account {
       display: none;

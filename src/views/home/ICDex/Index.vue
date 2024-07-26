@@ -238,7 +238,11 @@
                 <span v-if="item.value === 'Old'">
                   {{ item.name }}
                 </span>
-                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
+                <span
+                  v-if="item.value === 'USDC' || item.value === 'USDT'"
+                  class="base-red"
+                  >TEST</span
+                >
               </li>
             </ul>
             <table>
@@ -374,7 +378,8 @@
                             <dt
                               :class="{
                                 'usdt-test-dt':
-                                  currentTradeMarketSort === 'USDC'
+                                  currentTradeMarketSort === 'USDC' ||
+                                  currentTradeMarketSort === 'USDT'
                               }"
                             >
                               <a-tooltip placement="right">
@@ -649,7 +654,8 @@
                               <dt
                                 :class="{
                                   'usdt-test-dt':
-                                    currentTradeMarketSort === 'USDC'
+                                    currentTradeMarketSort === 'USDC' ||
+                                    currentTradeMarketSort === 'USDT'
                                 }"
                               >
                                 <a-tooltip placement="right">
@@ -1544,7 +1550,9 @@
                     <th>
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDC'
+                          'usdt-test':
+                            currentTradeMarketSort === 'USDC' ||
+                            currentTradeMarketSort === 'USDT'
                         }"
                       >
                         Price<span
@@ -1560,7 +1568,9 @@
                     <th class="text-right">
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDC'
+                          'usdt-test':
+                            currentTradeMarketSort === 'USDC' ||
+                            currentTradeMarketSort === 'USDT'
                         }"
                       >
                         Quantity
@@ -1767,6 +1777,9 @@
                           .includes('usdc') ||
                         currentPair[1][0].token1[1]
                           .toLocaleLowerCase()
+                          .includes('usdt') ||
+                        currentPair[1][0].token1[1]
+                          .toLocaleLowerCase()
                           .includes('test')
                       "
                       :to="`/icRouter?type=mint&token=${currentPair[1][0].token1[0].toString()}`"
@@ -1799,6 +1812,9 @@
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
                         .includes('usdc') &&
+                      !currentPair[1][0].token1[1]
+                        .toLocaleLowerCase()
+                        .includes('usdt') &&
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
                         .includes('test')
@@ -2530,6 +2546,9 @@
                           .includes('usdc') ||
                         currentPair[1][0].token0[1]
                           .toLocaleLowerCase()
+                          .includes('usdt') ||
+                        currentPair[1][0].token0[1]
+                          .toLocaleLowerCase()
                           .includes('test')
                       "
                       :to="`/icRouter?type=mint&token=${currentPair[1][0].token0[0].toString()}`"
@@ -2563,6 +2582,9 @@
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
                         .includes('usdc') &&
+                      !currentPair[1][0].token0[1]
+                        .toLocaleLowerCase()
+                        .includes('usdt') &&
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
                         .includes('test')
@@ -3695,7 +3717,9 @@
                 <th>
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDC'
+                      'usdt-test':
+                        currentTradeMarketSort === 'USDC' ||
+                        currentTradeMarketSort === 'USDT'
                     }"
                     class="font-10"
                   >
@@ -3712,7 +3736,9 @@
                 <th class="text-right">
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDC'
+                      'usdt-test':
+                        currentTradeMarketSort === 'USDC' ||
+                        currentTradeMarketSort === 'USDT'
                     }"
                     class="font-10"
                   >
@@ -10757,7 +10783,11 @@
                 "
               >
                 {{ item.name }}
-                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
+                <span
+                  v-if="item.value === 'USDC' || item.value === 'USDT'"
+                  class="base-red"
+                  >TEST</span
+                >
               </span>
             </li>
           </ul>
@@ -13228,6 +13258,8 @@ let hotSort = 0;
           token1.toLocaleLowerCase().includes('test'))
       ) {
         price = currentMarketPrice['usdc'];
+      } else if (token1 && token1.toLocaleLowerCase().includes('usdt')) {
+        price = currentMarketPrice['usdt'];
       } else if (token1 && token1.toLocaleLowerCase().includes('btc')) {
         price = currentMarketPrice['btc'];
       } else if (token1 && token1.toLocaleLowerCase().includes('eth')) {
@@ -13559,7 +13591,8 @@ export default class extends Vue {
     }
   ];
   private currentMarketPrice: { [key: string]: string } = {
-    usdc: '1'
+    usdc: '1',
+    usdt: '1'
   };
   private orderTypeEnum = OrderTypeEnum;
   private orderType: OrderTypeMenu | 'Pro' | 'Stop-limit' = OrderTypeEnum.LMT;
@@ -13812,6 +13845,12 @@ export default class extends Vue {
       Third: [],
       Hot: []
     },
+    USDT: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
     USDC: {
       Main: [],
       Second: [],
@@ -13868,6 +13907,10 @@ export default class extends Vue {
     {
       name: 'ICP',
       value: 'ICP'
+    },
+    {
+      name: 'USDT',
+      value: 'USDT'
     },
     {
       name: 'USDC',
@@ -14364,12 +14407,17 @@ export default class extends Vue {
     };
   }
   private getBasePrice(tokenSymbol: string): string {
-    let price = this.currentMarketPrice['usdc'];
+    let price = this.currentMarketPrice['usdt'];
     if (
       tokenSymbol.toLocaleLowerCase().includes('icp') &&
       this.currentMarketPrice['icp']
     ) {
       price = this.currentMarketPrice['icp'];
+    } else if (
+      tokenSymbol.toLocaleLowerCase().includes('usdc') &&
+      this.currentMarketPrice['usdc']
+    ) {
+      price = this.currentMarketPrice['usdc'];
     } else if (
       tokenSymbol.toLocaleLowerCase().includes('btc') &&
       this.currentMarketPrice['btc']
@@ -20787,6 +20835,12 @@ export default class extends Vue {
           Third: [],
           Hot: []
         },
+        USDT: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
         USDC: {
           Main: [],
           Second: [],
@@ -20872,6 +20926,9 @@ export default class extends Vue {
           } else if (token1Symbol.includes('usdc')) {
             this.allPairs.USDC[pairStage].push(currentPair);
             this.allPairs.USDC.Hot.push(hotPair);
+          } else if (token1Symbol.includes('usdt')) {
+            this.allPairs.USDT[pairStage].push(currentPair);
+            this.allPairs.USDT.Hot.push(hotPair);
           } else {
             this.allPairs.OTHER[pairStage].push(currentPair);
             this.allPairs.OTHER.Hot.push(hotPair);

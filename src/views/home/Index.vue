@@ -33,7 +33,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.1.5
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.1.6
             </span>
           </span>
         </span>

@@ -21647,7 +21647,7 @@ export default class extends Vue {
     const res = await this.currentICDexService.level100(swapId);
     if (res.pairId === this.currentPair[0].toString()) {
       this.level100 = res.levelResponse;
-      if (this.unit !== this.level100[0]) {
+      if (this.unit !== this.level100[0] && this.tokens[this.currentPair[1][0].token0[0].toString()]) {
         this.unit = this.level100[0];
         console.log(this.unit);
         this.unitSize = new BigNumber(this.unit.toString(10))

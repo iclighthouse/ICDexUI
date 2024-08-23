@@ -204,6 +204,48 @@
           </div>
         </div>
       </div>
+      <!--<div class="dashboard-icdex-main mt20">
+        <div class="dashboard-icdex-item w100">
+          <div class="dashboard-sns-item-bold link pointer">
+            <div>Events</div>
+          </div>
+          <div class="ictc-main w100">
+            <div class="ictc-item">
+              <div class="link pointer">
+                ICDexRouter&nbsp;<span v-show="eventTotal">
+                  ({{ eventTotal }}/<span
+                    v-show="seriousEvents.length"
+                    :class="{ 'base-red': seriousEvents.length > 0 }"
+                    >{{ seriousEvents.length }}</span
+                  >)
+                </span>
+              </div>
+            </div>
+            <div class="ictc-item ictc-item-s">
+              <div class="link pointer">
+                icETHMinter&nbsp;<span v-show="eventIcETHTotal">
+                  ({{ eventIcETHTotal }}/<span
+                    v-show="icETHSeriousEvents.length"
+                    :class="{ 'base-red': icETHSeriousEvents.length > 0 }"
+                    >{{ icETHSeriousEvents.length }}</span
+                  >)
+                </span>
+              </div>
+            </div>
+            <div class="ictc-item ictc-item-s">
+              <div class="link pointer">
+                icBTCMinter&nbsp;<span v-show="eventTotal">
+                  ({{ eventTotal }}/<span
+                    v-show="seriousEvents.length"
+                    :class="{ 'base-red': seriousEvents.length > 0 }"
+                    >{{ seriousEvents.length }}</span
+                  >)
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>-->
       <a-modal
         v-model="SNSCanistersVisible"
         width="860px"
@@ -544,7 +586,7 @@ import {
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import { PairsData } from '@/ic/ICSwapRouter/model';
 import { Principal } from '@dfinity/principal';
-import { AccountId } from '@/ic/common/icType';
+import { AccountId, Time } from '@/ic/common/icType';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 import axios from 'axios';
 import { ICTCInfo } from '@/views/home/dashboard/model';
@@ -559,6 +601,9 @@ import { PoolInfo } from '@/ic/makerPool/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import store from '@/store';
+import { BlockHeight, ICDexEvent } from '@/ic/ICDexRouter/model';
+import { ckETHMinterService } from '@/ic/ckETHMinter/ckETHMinterService';
+import { icETHEvent } from '@/ic/ckETHMinter/model';
 
 const ICLighthouseRoot = 'hjcnr-bqaaa-aaaaq-aacka-cai';
 
@@ -577,6 +622,7 @@ export default class extends Vue {
   private ICDexRouterService: ICDexRouterService;
   private ICDexService: ICDexService;
   private makerPoolService: makerPoolService;
+  private ckETHMinterService: ckETHMinterService;
   private SNSList: Array<DeployedSns> = [];
   private SNSDapps: Array<SnsCanistersSummaryResponse> = [];
   private SNSDappsForDappAll: {
@@ -603,6 +649,14 @@ export default class extends Vue {
   private totalTVL = '';
   private totalVol = '';
   private Vol24 = '';
+  private pageEvent = 1;
+  private eventTotal = 0;
+  private pageIcETHEvent = 1;
+  private eventIcETHTotal = 0;
+  private icETHEvents: Array<[BlockHeight, [icETHEvent, Time]]> = [];
+  private icETHSeriousEvents: Array<[BlockHeight, [icETHEvent, Time]]> = [];
+  private events: Array<[BlockHeight, [ICDexEvent, Time]]> = [];
+  private seriousEvents: Array<[BlockHeight, [ICDexEvent, Time]]> = [];
   private ICTC: ICTCInfo = null;
   private pageICDexCanisters = 1;
   private ICDexCanistersVisible = false;
@@ -639,12 +693,77 @@ export default class extends Vue {
     this.ICDexRouterService = new ICDexRouterService();
     this.ICDexService = new ICDexService();
     this.makerPoolService = new makerPoolService();
+    this.ckETHMinterService = new ckETHMinterService();
     this.getSNSList();
     this.getPairs().then(() => {
       this.getPools([], 1);
     });
     this.getTVL();
     this.getVol();
+    // this.getEvents();
+    // this.getSeriousEvents();
+    // this.getIcETHEvents();
+    // this.getIcETHSeriousEvents();
+  }
+  private async getIcETHSeriousEvents(page = 1): Promise<void> {
+    const res = await this.ckETHMinterService.get_events(
+      [BigInt(page)],
+      [BigInt(100)]
+    );
+    if (res && res.data && res.data.length) {
+      res.data.forEach((item) => {
+        const type = Object.keys(item[1][0])[0];
+        if (type.toLocaleLowerCase().includes('suspend')) {
+          this.icETHSeriousEvents.push(item);
+        }
+      });
+      if (page < Number(res.totalPage)) {
+        this.getIcETHSeriousEvents(++page);
+      }
+    }
+    console.log(this.icETHSeriousEvents);
+  }
+  private async getIcETHEvents(): Promise<void> {
+    const res = await this.ckETHMinterService.get_events(
+      [BigInt(this.pageIcETHEvent)],
+      [BigInt(100)]
+    );
+    console.log(res);
+    if (res && res.data && res.data.length) {
+      this.icETHEvents = res.data;
+      if (!this.eventIcETHTotal) {
+        this.eventIcETHTotal = Number(res.total);
+      }
+    }
+  }
+  private async getSeriousEvents(page = 1): Promise<void> {
+    const res = await this.ICDexRouterService.get_events(
+      [BigInt(page)],
+      [BigInt(100)]
+    );
+    if (res && res.data && res.data.length) {
+      res.data.forEach((item) => {
+        const type = Object.keys(item[1][0])[0];
+        if (type.toLocaleLowerCase().includes('suspend')) {
+          this.seriousEvents.push(item);
+        }
+      });
+      if (page < Number(res.totalPage)) {
+        this.getSeriousEvents(++page);
+      }
+    }
+  }
+  private async getEvents(): Promise<void> {
+    const res = await this.ICDexRouterService.get_events(
+      [BigInt(this.pageEvent)],
+      [BigInt(100)]
+    );
+    if (res && res.data && res.data.length) {
+      this.events = res.data;
+      if (!this.eventTotal) {
+        this.eventTotal = Number(res.total);
+      }
+    }
   }
   private async getVol(): Promise<void> {
     let total = '0';

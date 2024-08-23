@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="pc-show" style="font-size: 14px">
     <span
       @click="showLaunch"
-      class="base-font-title pointer pc-show"
+      class="base-font-title pointer"
       style="font-size: 15px"
     >
       Token Listing

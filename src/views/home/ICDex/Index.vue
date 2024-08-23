@@ -911,20 +911,12 @@
         <div class="trade-main">
           <div class="k-interval-main">
             <div class="k-interval-main-header pc-show">
-              <span
-                class="k-interval-main-header-name"
-                v-if="
-                  currentPair &&
-                  tokens &&
-                  tokens[currentPair[1][0].token0[0].toString()] &&
-                  tokens[currentPair[1][0].token1[0].toString()]
-                "
-              >
+              <span class="k-interval-main-header-name" v-if="currentPair">
                 <a-tooltip placement="top">
                   <template slot="title"
-                    >{{
-                      tokens[currentPair[1][0].token0[0].toString()].name
-                    }}({{ currentPair[1][0].token0[0].toString() }})</template
+                    >{{ currentPair[1][0].token0[1] }}({{
+                      currentPair[1][0].token0[0].toString()
+                    }})</template
                   >
                   <span>
                     <a-icon
@@ -945,10 +937,8 @@
                         )
                       }"
                     />
-                    {{
-                      tokens[currentPair[1][0].token0[0].toString()].symbol
-                    }}/{{
-                      tokens[currentPair[1][0].token1[0].toString()].symbol
+                    {{ currentPair[1][0].token0[1] }}/{{
+                      currentPair[1][0].token1[1]
                     }}
                   </span></a-tooltip
                 >
@@ -2228,9 +2218,10 @@
                         (isIDOPaused ||
                           (!isIDOPaused && orderType !== 'FOK')) &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -2430,9 +2421,10 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -3006,9 +2998,10 @@
                         pairInfo.paused &&
                         (isPaused || (!isPaused && orderType !== 'LMT')) &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -3190,9 +3183,10 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11370,9 +11364,10 @@
                         (isIDOPaused ||
                           (!isIDOPaused && orderType !== 'FOK')) &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11464,9 +11459,10 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11911,9 +11907,10 @@
                         pairInfo.paused &&
                         (isPaused || (!isPaused && orderType !== 'LMT')) &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -12004,9 +12001,10 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         debugPairs &&
-                        debugPairs[currentPair[0].toString()] &&
-                        debugPairs[currentPair[0].toString()] !==
-                          getPrincipalId) ||
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -15159,7 +15157,13 @@ export default class extends Vue {
     }
   }
   private init24(data: KBar[]): void {
-    if (data && data.length) {
+    if (
+      this.tokens &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()] &&
+      this.tokens[this.currentPair[1][0].token1[0].toString()] &&
+      data &&
+      data.length
+    ) {
       const currentData = data[0];
       const token0Decimals =
         this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
@@ -16204,8 +16208,10 @@ export default class extends Vue {
       this.pairInfo &&
       this.pairInfo.paused &&
       this.debugPairs &&
-      this.debugPairs[this.currentPair[0].toString()] &&
-      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
     ) {
       this.$message.error('This pair is under maintenance, try again later.');
       return;
@@ -16859,8 +16865,10 @@ export default class extends Vue {
       this.pairInfo &&
       this.pairInfo.paused &&
       this.debugPairs &&
-      this.debugPairs[this.currentPair[0].toString()] &&
-      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -18014,8 +18022,10 @@ export default class extends Vue {
       this.pairInfo.paused &&
       (this.isPaused || (!this.isPaused && this.orderType !== 'LMT')) &&
       this.debugPairs &&
-      this.debugPairs[this.currentPair[0].toString()] &&
-      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -18800,8 +18810,10 @@ export default class extends Vue {
       this.pairInfo &&
       this.pairInfo.paused &&
       this.debugPairs &&
-      this.debugPairs[this.currentPair[0].toString()] &&
-      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -18874,8 +18886,10 @@ export default class extends Vue {
       (this.isIDOPaused ||
         (!this.isIDOPaused && this.orderType !== OrderTypeEnum.FOK)) &&
       this.debugPairs &&
-      this.debugPairs[this.currentPair[0].toString()] &&
-      this.debugPairs[this.currentPair[0].toString()] !== this.getPrincipalId
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -21647,7 +21661,11 @@ export default class extends Vue {
     const res = await this.currentICDexService.level100(swapId);
     if (res.pairId === this.currentPair[0].toString()) {
       this.level100 = res.levelResponse;
-      if (this.unit !== this.level100[0] && this.tokens[this.currentPair[1][0].token0[0].toString()]) {
+      if (
+        this.tokens &&
+        this.tokens[this.currentPair[1][0].token0[0].toString()] &&
+        this.unit !== this.level100[0]
+      ) {
         this.unit = this.level100[0];
         console.log(this.unit);
         this.unitSize = new BigNumber(this.unit.toString(10))

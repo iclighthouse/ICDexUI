@@ -293,6 +293,10 @@ button {
 .ant-popover-arrow {
   border-color: #13181d !important;
 }
+.ant-dropdown-menu,
+.ant-select-dropdown-menu {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 1);
+}
 .operation-dropdown {
   background: #141b23;
   box-shadow: 0 0 10px 0 rgba(82, 183, 195, 0.3);
@@ -1016,7 +1020,7 @@ input {
   ul {
     display: flex;
     align-items: center;
-    margin-left: 50px;
+    margin-left: 20px;
     li {
       position: relative;
       display: flex;
@@ -1026,6 +1030,15 @@ input {
       color: #b9bcc4;
       cursor: pointer;
       transition: all 0.3s;
+      &.home-header-item {
+        padding: 0;
+        a {
+          color: #fff;
+          &:hover {
+            color: #1996c4;
+          }
+        }
+      }
       .caret-up {
         display: none;
       }

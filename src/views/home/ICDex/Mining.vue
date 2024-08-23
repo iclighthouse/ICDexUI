@@ -1,10 +1,22 @@
 <template>
   <div>
     <div class="mining-main base-font-title">
+      <div class="mining-main-pair">
+        <a-select
+          @change="changeMining"
+          class="mining-main-pair-select"
+          v-model="currentMining"
+        >
+          <a-select-option v-for="item in miningList" :key="item.canisterId">
+            <span>
+              {{ item.symbol }}
+            </span>
+          </a-select-option>
+        </a-select>
+      </div>
       <div
         v-if="currentRound && currentRound.data && currentRound.data.length"
-        style="margin-top: 50px"
-        class="base-title-size text-center base-font-normal mining-title"
+        class="base-title-size text-center base-font-normal mining-title mt20"
       >
         <a-icon
           v-show="Number(currentRound.round) > 1"
@@ -13,7 +25,7 @@
           class="pointer"
           type="double-left"
         />
-        Round
+        {{ miningSymbol[currentMining] }} Mining Round
         {{ currentRound.round.toString(10) }}
         <a-icon
           v-show="Number(currentRound.round) < maxRound"
@@ -70,19 +82,19 @@
           <span class="round-info-icl">
             {{
               currentRound.data[0].config.supplyForTM
-                | bigintToFloat(iclDecimals, iclDecimals)
+                | bigintToFloat(decimals, decimals)
                 | formatNum
             }}
           </span>
-          ICL, Liquidity mining rewards
+          {{ miningSymbol[currentMining] }}, Liquidity mining rewards
           <span class="round-info-icl">
             {{
               currentRound.data[0].config.supplyForLM
-                | bigintToFloat(iclDecimals, iclDecimals)
+                | bigintToFloat(decimals, decimals)
                 | formatNum
             }}
           </span>
-          ICL.
+          {{ miningSymbol[currentMining] }}.
         </div>
         <div class="round-time text-center">
           <span v-if="accountData && getPrincipalId">
@@ -99,7 +111,7 @@
                     currentRound.data[0].config.supplyForTM
                   ) | formatNum
                 }}
-                ICL)
+                {{ miningSymbol[currentMining] }})
               </span>
               <span v-else>
                 ({{
@@ -126,7 +138,7 @@
                     currentRound.data[0].config.supplyForLM
                   ) | formatNum
                 }}
-                ICL) </span
+                {{ miningSymbol[currentMining] }}) </span
               ><span v-else>
                 ({{
                   getRewardsPercent(
@@ -379,10 +391,10 @@
                       >
                         {{
                           miningRoundDataTM[1][index][1]
-                            | bigintToFloat(2, iclDecimals)
+                            | bigintToFloat(2, decimals)
                             | formatNum
                         }}
-                        ICL
+                        {{ miningSymbol[currentMining] }}
                       </span>
                       <a-tooltip placement="top">
                         <template slot="title">
@@ -395,7 +407,7 @@
                                 currentRound.data[0].config.supplyForTM
                               ) | formatNum
                             }}
-                            ICL</span
+                            {{ miningSymbol[currentMining] }}</span
                           >
                         </template>
                         <span
@@ -507,10 +519,10 @@
                       >
                         {{
                           miningRoundDataLM[1][index][1]
-                            | bigintToFloat(2, iclDecimals)
+                            | bigintToFloat(2, decimals)
                             | formatNum
                         }}
-                        ICL
+                        {{ miningSymbol[currentMining] }}
                       </span>
                       <a-tooltip placement="top">
                         <template slot="title">
@@ -523,7 +535,7 @@
                                 currentRound.data[0].config.supplyForLM
                               ) | formatNum
                             }}
-                            ICL</span
+                            {{ miningSymbol[currentMining] }}</span
                           >
                         </template>
                         <span
@@ -618,10 +630,10 @@
                       >
                         {{
                           miningRoundDataAccount.settlement[0].tm
-                            | bigintToFloat(2, iclDecimals)
+                            | bigintToFloat(2, decimals)
                             | formatNum
                         }}
-                        ICL
+                        {{ miningSymbol[currentMining] }}
                       </span>
                       <a-tooltip placement="top">
                         <template slot="title">
@@ -634,7 +646,7 @@
                                 currentRound.data[0].config.supplyForTM
                               ) | formatNum
                             }}
-                            ICL</span
+                            {{ miningSymbol[currentMining] }}</span
                           >
                         </template>
                         <span
@@ -717,10 +729,10 @@
                       >
                         {{
                           miningRoundDataAccount.settlement[0].lm
-                            | bigintToFloat(2, iclDecimals)
+                            | bigintToFloat(2, decimals)
                             | formatNum
                         }}
-                        ICL
+                        {{ miningSymbol[currentMining] }}
                       </span>
                       <a-tooltip placement="top">
                         <template slot="title">
@@ -733,7 +745,7 @@
                                 currentRound.data[0].config.supplyForLM
                               ) | formatNum
                             }}
-                            ICL</span
+                            {{ miningSymbol[currentMining] }}</span
                           >
                         </template>
                         <span
@@ -802,8 +814,8 @@
         </a-form-model-item>
         <div v-show="showAvailable">
           Available:
-          {{ available | bigintToFloat(iclDecimals, iclDecimals) | formatNum }}
-          ICL
+          {{ available | bigintToFloat(decimals, decimals) | formatNum }}
+          {{ miningSymbol[currentMining] }}
         </div>
         <a-form-model-item>
           <button
@@ -855,6 +867,7 @@ import { TokensExt } from '@/ic/nft/model';
 import { NFT } from '@/ic/ICDexRouter/model';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 import { NftService } from '@/ic/nft/Service';
+import { getTokenInfo } from '@/ic/getTokenInfo';
 
 const commonModule = namespace('common');
 
@@ -910,7 +923,7 @@ export default class extends Vue {
       path: '/ICDex/competitions'
     }
   ];
-  private iclDecimals = 8;
+  private decimals = 8;
   private MiningService: MiningService = null;
   private ICDexRouterService: ICDexRouterService = null;
   private NftService: NftService = null;
@@ -949,6 +962,13 @@ export default class extends Vue {
   };
   private nfts: TokensExt = [];
   private nftBalance: Array<NFT> = [];
+  private miningList: Array<{
+    canisterId: string;
+    symbol: string;
+    decimals: number;
+  }> = [];
+  private currentMining = '';
+  private miningSymbol = {};
   private validateSubaccount = (
     rule: ValidationRule,
     value: string,
@@ -993,6 +1013,22 @@ export default class extends Vue {
     ]
   };
   async created(): Promise<void> {
+    this.miningList = [
+      {
+        canisterId: 'odhfn-cqaaa-aaaar-qaana-cai',
+        symbol: 'ICL',
+        decimals: 8
+      },
+      {
+        canisterId: 'orbsu-oaaaa-aaaar-qaaoa-cai',
+        symbol: 'CHAT',
+        decimals: 8
+      }
+    ];
+    this.miningList.forEach((item) => {
+      this.miningSymbol[item.canisterId] = item.symbol;
+    });
+    this.currentMining = 'odhfn-cqaaa-aaaar-qaana-cai';
     this.MiningService = new MiningService();
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.ICDexRouterService = new ICDexRouterService();
@@ -1001,6 +1037,17 @@ export default class extends Vue {
     this.NftService = new NftService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     console.log(this.$route.params);
+    this.init();
+    if (this.getPrincipalId) {
+      await this.NFTBalance();
+      await this.getTokensExt();
+    }
+  }
+  private async init(): Promise<void> {
+    this.currentRound = null;
+    this.accountData = null;
+    this.maxRound = 1;
+    this.accelerationRate = '';
     if (this.$route.params && this.$route.params.type) {
       if (this.$route.params.type.toLocaleLowerCase().includes('liquidity')) {
         this.type = 'Liquidity';
@@ -1010,15 +1057,25 @@ export default class extends Vue {
     } else {
       this.type = 'Trading';
     }
-    if (this.getPrincipalId) {
-      await this.NFTBalance();
-      await this.getTokensExt();
-    }
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
     this.getRound([]).finally(() => {
+      loading.close();
       this.onGetRound = true;
     });
     this.getAccelerationRate();
     this.getAccountData();
+  }
+  private changeMining(): void {
+    this.miningList.some((item) => {
+      if (item.canisterId === this.currentMining) {
+        this.decimals = item.decimals;
+        return true;
+      }
+    });
+    this.init();
   }
   private afterClose(): void {
     (this.$refs.claimForm as any).resetFields();
@@ -1043,7 +1100,7 @@ export default class extends Vue {
         if (this.claimForm.subaccount) {
           subaccount = [hexToBytes(this.claimForm.subaccount)];
         }
-        const res = await this.MiningService.claim({
+        const res = await this.MiningService.claim(this.currentMining, {
           owner: Principal.fromText(this.claimForm.owner),
           subaccount: subaccount
         });
@@ -1080,6 +1137,7 @@ export default class extends Vue {
         }
         this.account = accountId;
         this.miningRoundDataAccount = await this.MiningService.getAccountData(
+          this.currentMining,
           hexToBytes(accountId),
           [this.currentRound.round]
         );
@@ -1119,14 +1177,17 @@ export default class extends Vue {
         Principal.fromText(this.claimForm.owner)
       );
     }
-    const res = await this.MiningService.getBalance(hexToBytes(accountId));
+    const res = await this.MiningService.getBalance(
+      this.currentMining,
+      hexToBytes(accountId)
+    );
     this.available = res.available;
   }
   private getRewards(pointer: bigint, total: bigint, supply: bigint): string {
     return new BigNumber(pointer.toString(10))
       .times(supply.toString(10))
       .div(total.toString(10))
-      .div(10 ** this.iclDecimals)
+      .div(10 ** this.decimals)
       .decimalPlaces(2, 1)
       .toString(10);
   }
@@ -1140,7 +1201,10 @@ export default class extends Vue {
     );
   }
   private async getRound(round: Array<bigint> = []): Promise<void> {
-    this.currentRound = await this.MiningService.getRound(round);
+    this.currentRound = await this.MiningService.getRound(
+      this.currentMining,
+      round
+    );
     if (!round.length) {
       console.log(this.maxRound);
       this.maxRound = Number(this.currentRound.round);
@@ -1156,7 +1220,7 @@ export default class extends Vue {
         // 2024-02-02 00:00:00 UTC
         this.currentRound.data[0].config.startTime = BigInt(1706832000);
       } else {
-        const res = await this.MiningService.getRound([
+        const res = await this.MiningService.getRound(this.currentMining, [
           BigInt(Number(this.currentRound.round) - 1)
         ]);
         this.currentRound.data[0].config.startTime = BigInt(
@@ -1271,6 +1335,7 @@ export default class extends Vue {
   private async getAccelerationRate(): Promise<void> {
     if (this.getPrincipalId) {
       this.accelerationRate = await this.MiningService.getAccelerationRate(
+        this.currentMining,
         hexToBytes(
           principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
         )
@@ -1280,6 +1345,7 @@ export default class extends Vue {
   private async getAccountData(): Promise<void> {
     if (this.getPrincipalId) {
       this.accountData = await this.MiningService.getAccountData(
+        this.currentMining,
         hexToBytes(
           principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
         )
@@ -1288,6 +1354,7 @@ export default class extends Vue {
   }
   private async getRoundPointsForLM(): Promise<void> {
     const res = await this.MiningService.getRoundPointsForLM(
+      this.currentMining,
       this.currentRound.round,
       BigInt(this.pageLM)
     );
@@ -1302,6 +1369,7 @@ export default class extends Vue {
   }
   private async getRoundSettlementsForLM(): Promise<void> {
     const res = await this.MiningService.getRoundSettlementsForLM(
+      this.currentMining,
       this.currentRound.round,
       BigInt(this.pageLM)
     );
@@ -1313,6 +1381,7 @@ export default class extends Vue {
   private async getRoundPointsForTM(): Promise<void> {
     this.spinningTM = true;
     const res = await this.MiningService.getRoundPointsForTM(
+      this.currentMining,
       this.currentRound.round,
       BigInt(this.pageTM)
     );
@@ -1345,12 +1414,14 @@ export default class extends Vue {
         await Promise.all(promiseValue);
       }
     }
-    console.log(this.addressAcceleration);
   }
   private async getCurrentAccelerationRate(
     accountId: Array<number>
   ): Promise<void> {
-    const res = await this.MiningService.getAccelerationRate(accountId);
+    const res = await this.MiningService.getAccelerationRate(
+      this.currentMining,
+      accountId
+    );
     if (!this.addressAcceleration[toHexString(new Uint8Array(accountId))]) {
       this.$set(
         this.addressAcceleration,
@@ -1361,6 +1432,7 @@ export default class extends Vue {
   }
   private async getRoundSettlementsForTM(): Promise<void> {
     const res = await this.MiningService.getRoundSettlementsForTM(
+      this.currentMining,
       this.currentRound.round,
       BigInt(this.pageTM)
     );
@@ -1436,6 +1508,14 @@ export default class extends Vue {
 </script>
 
 <style scoped lang="scss">
+.mining-main-pair {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 50px;
+  .mining-main-pair-select {
+    min-width: 140px;
+  }
+}
 .mining-title {
   position: relative;
   .round-claim {

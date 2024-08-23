@@ -82,8 +82,7 @@ export const networkIds = {
   '-1': 'IC Network',
   '0': 'Bitcoin',
   '1': 'Ethereum Mainnet',
-  '2': 'Goerli'
-  // '3': 'Sepolia'
+  '2': 'Sepolia'
 };
 export const networkList = [
   {
@@ -103,15 +102,11 @@ export const networkList = [
   },
   {
     id: '2',
-    name: 'Goerli Testnet',
-    logo: require('@/assets/img/goerlieth.svg')
+    name: 'Sepolia Testnet',
+    logo: require('@/assets/img/seth.svg')
   }
-  // {
-  //   id: '3',
-  //   name: 'Sepolia Testnet',
-  //   logo: require('@/assets/img/seth.svg')
-  // }
 ];
+
 export interface ICNetworkTokensInterface {
   id: string;
   networkId: string;
@@ -175,12 +170,10 @@ export interface Active {
   retrieve2?: [TxIndex, TxStatus, Time]; // retrieve step2
   mintCKETH?: Array<ClaimActive>; // ckETH mint
   retrieveCKETH?: Array<RetrieveActive>; // ckETH retrieve
-  CKETHResponse?: Array<
-    | ClaimCKETHActiveResponse
+  CKETHResponse?: Array<| ClaimCKETHActiveResponse
     | RetrieveActiveResponse
     | MintCKBTCResponse
-    | RetrieveCKBTCResponse
-  >;
+    | RetrieveCKBTCResponse>;
 }
 export interface RetrieveActive {
   tokenId: string;
@@ -257,23 +250,21 @@ export interface MintCKBTCResponse {
       tokenamountcommitment: string;
     };
   }>;
-  vout: Array<
+  vout: Array<| {
+    scriptpubkey: string;
+    scriptpubkey_asm: string;
+    scriptpubkey_type: string;
+    scriptpubkey_address: string;
+    valuecommitment: string;
+    assetcommitment: string;
+  }
     | {
-        scriptpubkey: string;
-        scriptpubkey_asm: string;
-        scriptpubkey_type: string;
-        scriptpubkey_address: string;
-        valuecommitment: string;
-        assetcommitment: string;
-      }
-    | {
-        scriptpubkey: string;
-        scriptpubkey_asm: string;
-        scriptpubkey_type: string;
-        value: number;
-        asset: string;
-      }
-  >;
+    scriptpubkey: string;
+    scriptpubkey_asm: string;
+    scriptpubkey_type: string;
+    value: number;
+    asset: string;
+  }>;
   size: number;
   weight: number;
   fee: number;

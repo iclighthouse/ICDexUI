@@ -5,6 +5,7 @@ import Service, {
   DepositTxn,
   EthAddress,
   ETHUpdateRes,
+  icETHEvents,
   IcTokenInfo,
   MinterInfo,
   PendingDepositTxn,
@@ -214,7 +215,7 @@ export class ckETHMinterService {
     }
   };
   public getCkTokens = async (): Promise<Array<[EthAddress, IcTokenInfo]>> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     try {
       const res = await service.get_ck_tokens();
       return SerializableIC(res);
@@ -290,7 +291,7 @@ export class ckETHMinterService {
     }
   };
   public getMinterInfo = async (): Promise<MinterInfo> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     try {
       const res = await service.get_minter_info();
       return res as MinterInfo;
@@ -380,5 +381,13 @@ export class ckETHMinterService {
       console.log(e);
       return null;
     }
+  };
+  public get_events = async (
+    page: [bigint],
+    size: [bigint]
+  ): Promise<icETHEvents> => {
+    const service = await this.check(false, false);
+    const res = await service.get_events(page, size);
+    return SerializableIC(res);
   };
 }

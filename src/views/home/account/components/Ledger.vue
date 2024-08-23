@@ -1,20 +1,20 @@
 <template>
   <div>
     <div class="ic-balance-main">
-      <div v-if="type === 'ic'" class="ic-balance-item-container-icp">
-        <div v-show="walletMenu === 'wallet'" class="ic-balance-item">
+      <div class="ic-balance-item-container-icp" v-if="type === 'ic'">
+        <div class="ic-balance-item" v-show="walletMenu === 'wallet'">
           <p>
             ICP Balance
             <a-icon
               @click="refreshBalance"
-              v-show="!refreshBalanceLoading"
-              type="reload"
               class="reload-icon"
+              type="reload"
+              v-show="!refreshBalanceLoading"
             />
             <a-icon
-              v-show="refreshBalanceLoading"
-              type="loading"
               class="reload-icon"
+              type="loading"
+              v-show="refreshBalanceLoading"
             />
           </p>
           <div class="icp-balance-main">
@@ -22,23 +22,23 @@
               {{ balance | bigintToFloat(8, 0) | formatNum }}&nbsp;ICP
             </span>
             <div
-              style="padding-bottom: 20px; padding-top: 10px"
               class="operation ic-token-operation"
+              style="padding-bottom: 20px; padding-top: 10px"
             >
               <button
-                type="button"
-                class="primary primary-receive"
                 @click="showReceive"
+                class="primary primary-receive"
+                type="button"
               >
                 <span>Receive</span>
               </button>
-              <button type="button" @click="showTransfer">
+              <button @click="showTransfer" type="button">
                 <span>Transfer</span>
               </button>
-              <button type="button" @click="showApprove">
+              <button @click="showApprove" type="button">
                 <span>Approve</span>
               </button>
-              <button type="button" @click="showTopUp">
+              <button @click="showTopUp" type="button">
                 <span>Top-up</span>
               </button>
               <router-link
@@ -52,21 +52,21 @@
           </div>
         </div>
         <div
-          v-show="walletMenu === 'proWallet'"
           class="ic-balance-item ic-balance-item-pro"
+          v-show="walletMenu === 'proWallet'"
         >
           <p>
             ICP Balance
             <a-icon
               @click="refreshBalance"
-              v-show="!refreshBalanceLoading"
-              type="reload"
               class="reload-icon"
+              type="reload"
+              v-show="!refreshBalanceLoading"
             />
             <a-icon
-              v-show="refreshBalanceLoading"
-              type="loading"
               class="reload-icon"
+              type="loading"
+              v-show="refreshBalanceLoading"
             />
           </p>
           <div class="icp-balance-main">
@@ -74,13 +74,13 @@
               {{ balancePro | bigintToFloat(8, 0) | formatNum }}&nbsp;ICP
             </span>
             <div
-              style="padding-bottom: 20px; padding-top: 10px"
               class="operation ic-token-operation"
+              style="padding-bottom: 20px; padding-top: 10px"
             >
               <button
+                @click="swapWallet"
                 style="margin-right: 0 !important"
                 type="button"
-                @click="swapWallet"
               >
                 <span>Transfer</span>
               </button>
@@ -98,8 +98,8 @@
             >
           </p>
           <div
-            v-if="minterInfo && minterInfo.depositMethod"
             class="minting-method-info margin-left-auto"
+            v-if="minterInfo && minterInfo.depositMethod"
           >
             <span class="base-font-title">Minting:&nbsp;&nbsp;</span>
             <div class="minting-method-type">
@@ -108,24 +108,24 @@
                   Method 1 supports all wallets.
                 </template>
                 <span
-                  class="pc-show"
-                  @click="changeDepositMethod(1)"
                   :class="{
                     active: depositMethod === 1,
                     disabled:
                       minterInfo.depositMethod === 2 || changeMethodDisabled
                   }"
+                  @click="changeDepositMethod(1)"
+                  class="pc-show"
                   >Method 1</span
                 >
               </a-tooltip>
               <span
-                class="h5-show"
-                @click="changeDepositMethod(1)"
                 :class="{
                   active: depositMethod === 1,
                   disabled:
                     minterInfo.depositMethod === 2 || changeMethodDisabled
                 }"
+                @click="changeDepositMethod(1)"
+                class="h5-show"
                 >Method 1</span
               >
               <a-tooltip placement="top">
@@ -133,24 +133,24 @@
                   Method 2 is quicker and supports only MetaMask wallet.
                 </template>
                 <span
-                  class="pc-show"
-                  @click="changeDepositMethod(2)"
                   :class="{
                     active: depositMethod === 2,
                     disabled:
                       minterInfo.depositMethod === 1 || changeMethodDisabled
                   }"
+                  @click="changeDepositMethod(2)"
+                  class="pc-show"
                   >Method 2</span
                 >
               </a-tooltip>
               <span
-                class="h5-show"
-                @click="changeDepositMethod(2)"
                 :class="{
                   active: depositMethod === 2,
                   disabled:
                     minterInfo.depositMethod === 1 || changeMethodDisabled
                 }"
+                @click="changeDepositMethod(2)"
+                class="h5-show"
                 >Method 2</span
               >
             </div>
@@ -166,10 +166,10 @@
               <div class="cross-item">
                 <div class="ic-balance-item-launch-event-select">
                   <a-select
+                    :disabled="networkTokenDisabled"
+                    @change="changeNetworkIdMint"
                     class="select-erc20-token"
                     v-model="networkIdMint"
-                    @change="changeNetworkIdMint"
-                    :disabled="networkTokenDisabled"
                   >
                     <span
                       class="ic-router-token-placeholder"
@@ -179,16 +179,16 @@
                       Select a network
                     </span>
                     <a-select-option
-                      v-for="(network, index) in networkListFrom"
                       :key="index"
                       class="select-erc20-network-dropdown"
+                      v-for="(network, index) in networkListFrom"
                     >
                       <img
-                        class="ic-router-token-logo"
-                        v-if="network.logo"
                         :src="network.logo"
                         alt=""
-                      /><span v-else class="ic-router-token-symbol"></span>
+                        class="ic-router-token-logo"
+                        v-if="network.logo"
+                      /><span class="ic-router-token-symbol" v-else></span>
                       {{ network.name }}
                     </a-select-option>
                   </a-select>
@@ -199,12 +199,17 @@
                     v-if="typeof networkTokenIdMint === 'number'"
                   >
                     <img
-                      class="ic-router-token-logo"
-                      v-if="networkTokensFrom[networkTokenIdMint].logo"
                       :src="networkTokensFrom[networkTokenIdMint].logo"
                       alt=""
+                      class="ic-router-token-logo"
+                      v-if="networkTokensFrom[networkTokenIdMint].logo"
                     />
                     <img
+                      :src="
+                        tokens[networkTokensFrom[networkTokenIdMint].tokenId]
+                          .logo
+                      "
+                      alt=""
                       class="ic-router-token-logo"
                       v-if="
                         !networkTokensFrom[networkTokenIdMint].logo &&
@@ -215,14 +220,11 @@
                         tokens[networkTokensFrom[networkTokenIdMint].tokenId]
                           .logo
                       "
-                      :src="
-                        tokens[networkTokensFrom[networkTokenIdMint].tokenId]
-                          .logo
-                      "
-                      alt=""
                     />
                     <img
+                      alt=""
                       class="ic-router-token-logo"
+                      src="@/assets/img/empty-token.png"
                       v-if="
                         !networkTokensFrom[networkTokenIdMint].logo &&
                         (networkTokensFrom[networkTokenIdMint].networkId ===
@@ -232,10 +234,9 @@
                           networkTokensFrom[networkTokenIdMint].networkId ===
                             '3')
                       "
-                      src="@/assets/img/empty-token.png"
-                      alt=""
                     />
                     <span
+                      class="ic-router-token-symbol"
                       v-if="
                         networkTokensFrom[networkTokenIdMint].networkId ===
                           '-1' &&
@@ -249,7 +250,6 @@
                             .logo
                         )
                       "
-                      class="ic-router-token-symbol"
                     >
                       {{
                         networkTokensFrom[networkTokenIdMint].symbol
@@ -259,11 +259,11 @@
                     </span>
                   </div>
                   <a-select
-                    class="select-erc20-token select-erc20-token-event"
-                    v-model="networkTokenIdMint"
-                    @change="changeNetworkTokenIdMint"
                     :disabled="typeof networkIdMint !== 'number'"
+                    @change="changeNetworkTokenIdMint"
+                    class="select-erc20-token select-erc20-token-event"
                     option-label-prop="label"
+                    v-model="networkTokenIdMint"
                   >
                     <span
                       class="ic-router-token-placeholder"
@@ -273,22 +273,24 @@
                       Select a token
                     </span>
                     <a-select-option
-                      v-for="(token, index) in networkTokensFrom"
                       :key="index"
                       :label="`${token.symbol} (${
                         networkIds[token.networkId]
                       })`"
                       class="select-erc20-token-dropdown"
+                      v-for="(token, index) in networkTokensFrom"
                     >
                       <div class="ic-router-token-info">
                         <div class="ic-router-token-info-left">
                           <img
-                            class="ic-router-token-logo"
-                            v-if="token.logo"
                             :src="token.logo"
                             alt=""
+                            class="ic-router-token-logo"
+                            v-if="token.logo"
                           />
                           <img
+                            :src="tokens[token.tokenId].logo"
+                            alt=""
                             class="ic-router-token-logo"
                             v-if="
                               !token.logo &&
@@ -297,21 +299,20 @@
                               tokens[token.tokenId] &&
                               tokens[token.tokenId].logo
                             "
-                            :src="tokens[token.tokenId].logo"
-                            alt=""
                           />
                           <img
+                            alt=""
                             class="ic-router-token-logo"
+                            src="@/assets/img/empty-token.png"
                             v-if="
                               !token.logo &&
                               (token.networkId === '1' ||
                                 token.networkId === '2' ||
                                 token.networkId === '3')
                             "
-                            src="@/assets/img/empty-token.png"
-                            alt=""
                           />
                           <span
+                            class="ic-router-token-symbol"
                             v-if="
                               token.networkId === '-1' &&
                               !token.logo &&
@@ -321,7 +322,6 @@
                                 tokens[token.tokenId].logo
                               )
                             "
-                            class="ic-router-token-symbol"
                           >
                             {{ token.symbol.slice(0, 1).toLocaleUpperCase() }}
                           </span>
@@ -333,24 +333,24 @@
                             }})
                           </span>
                           <span
+                            class="ic-router-token-info-name"
                             v-if="
                               token.networkId === '-1' &&
                               tokens &&
                               tokens[token.tokenId] &&
                               tokens[token.tokenId].name
                             "
-                            class="ic-router-token-info-name"
                           >
                             {{ tokens[token.tokenId].name }}
                           </span>
                           <span
+                            class="ic-router-token-info-name"
                             v-if="
                               (token.networkId === '1' ||
                                 token.networkId === '2') &&
                               token.id !==
                                 '0x0000000000000000000000000000000000000000'
                             "
-                            class="ic-router-token-info-name"
                           >
                             {{ token.id | ellipsisAccount(20) }}
                           </span>
@@ -429,7 +429,7 @@
                         :href="
                           networkTokensFrom[networkTokenIdMint].networkId ===
                           '2'
-                            ? `https://goerli.etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}#code`
+                            ? `https://sepolia.etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}#code`
                             : `https://etherscan.io/token/${networkTokensFrom[networkTokenIdMint].id}#code`
                         "
                         rel="nofollow noreferrer noopener"
@@ -442,13 +442,13 @@
                       </a>
                     </div>
                     <div
+                      style="margin-top: 5px"
                       v-show="
                         ethereumIsConnected &&
                         ERC20EthereumBalance[
                           networkTokensFrom[networkTokenIdMint].tokenId
                         ]
                       "
-                      style="margin-top: 5px"
                     >
                       Balance:
                       <span>
@@ -464,8 +464,8 @@
               </div>
               <div
                 :class="{ pointer: !mintDisabled }"
-                class="cross-item-icon base-font-title pc-show"
                 @click="switchHub"
+                class="cross-item-icon base-font-title pc-show"
               >
                 <a-icon class="cross-item-icon-right" type="arrow-right" />
               </div>
@@ -479,10 +479,10 @@
               <div class="cross-item">
                 <div class="ic-balance-item-launch-event-select">
                   <a-select
+                    :disabled="typeof networkTokenIdMint !== 'number'"
+                    @change="changeNetworkIdMintTo"
                     class="select-erc20-token"
                     v-model="networkIdMintTo"
-                    @change="changeNetworkIdMintTo"
-                    :disabled="typeof networkTokenIdMint !== 'number'"
                   >
                     <span
                       class="ic-router-token-placeholder"
@@ -492,16 +492,16 @@
                       Select a network
                     </span>
                     <a-select-option
-                      v-for="(network, index) in networkListTo"
                       :key="index"
                       class="select-erc20-network-dropdown"
+                      v-for="(network, index) in networkListTo"
                     >
                       <img
-                        class="ic-router-token-logo"
-                        v-if="network.logo"
                         :src="network.logo"
                         alt=""
-                      /><span v-else class="ic-router-token-symbol"></span>
+                        class="ic-router-token-logo"
+                        v-if="network.logo"
+                      /><span class="ic-router-token-symbol" v-else></span>
                       {{ network.name }}
                     </a-select-option>
                   </a-select>
@@ -512,12 +512,17 @@
                     v-if="typeof networkTokenIdMintTo === 'number'"
                   >
                     <img
-                      class="ic-router-token-logo"
-                      v-if="networkTokensTo[networkTokenIdMintTo].logo"
                       :src="networkTokensTo[networkTokenIdMintTo].logo"
                       alt=""
+                      class="ic-router-token-logo"
+                      v-if="networkTokensTo[networkTokenIdMintTo].logo"
                     />
                     <img
+                      :src="
+                        tokens[networkTokensTo[networkTokenIdMintTo].tokenId]
+                          .logo
+                      "
+                      alt=""
                       class="ic-router-token-logo"
                       v-if="
                         !networkTokensTo[networkTokenIdMintTo].logo &&
@@ -528,14 +533,11 @@
                         tokens[networkTokensTo[networkTokenIdMintTo].tokenId]
                           .logo
                       "
-                      :src="
-                        tokens[networkTokensTo[networkTokenIdMintTo].tokenId]
-                          .logo
-                      "
-                      alt=""
                     />
                     <img
+                      alt=""
                       class="ic-router-token-logo"
+                      src="@/assets/img/empty-token.png"
                       v-if="
                         !networkTokensTo[networkTokenIdMintTo].logo &&
                         (networkTokensTo[networkTokenIdMintTo].networkId ===
@@ -545,10 +547,9 @@
                           networkTokensTo[networkTokenIdMintTo].networkId ===
                             '3')
                       "
-                      src="@/assets/img/empty-token.png"
-                      alt=""
                     />
                     <span
+                      class="ic-router-token-symbol"
                       v-if="
                         networkTokensTo[networkTokenIdMintTo].networkId ===
                           '-1' &&
@@ -562,7 +563,6 @@
                             .logo
                         )
                       "
-                      class="ic-router-token-symbol"
                     >
                       {{
                         networkTokensTo[networkTokenIdMintTo].symbol
@@ -572,11 +572,11 @@
                     </span>
                   </div>
                   <a-select
-                    class="select-erc20-token select-erc20-token-event"
-                    v-model="networkTokenIdMintTo"
-                    @change="changeNetworkTokenIdMintTo"
                     :disabled="typeof networkIdMintTo !== 'number'"
+                    @change="changeNetworkTokenIdMintTo"
+                    class="select-erc20-token select-erc20-token-event"
                     option-label-prop="label"
+                    v-model="networkTokenIdMintTo"
                   >
                     <span
                       class="ic-router-token-placeholder"
@@ -586,22 +586,24 @@
                       Select a token
                     </span>
                     <a-select-option
-                      v-for="(token, index) in networkTokensTo"
                       :key="index"
                       :label="`${token.symbol} (${
                         networkIds[token.networkId]
                       })`"
                       class="select-erc20-token-dropdown"
+                      v-for="(token, index) in networkTokensTo"
                     >
                       <div class="ic-router-token-info">
                         <div class="ic-router-token-info-left">
                           <img
-                            class="ic-router-token-logo"
-                            v-if="token.logo"
                             :src="token.logo"
                             alt=""
+                            class="ic-router-token-logo"
+                            v-if="token.logo"
                           />
                           <img
+                            :src="tokens[token.tokenId].logo"
+                            alt=""
                             class="ic-router-token-logo"
                             v-if="
                               !token.logo &&
@@ -610,21 +612,20 @@
                               tokens[token.tokenId] &&
                               tokens[token.tokenId].logo
                             "
-                            :src="tokens[token.tokenId].logo"
-                            alt=""
                           />
                           <img
+                            alt=""
                             class="ic-router-token-logo"
+                            src="@/assets/img/empty-token.png"
                             v-if="
                               !token.logo &&
                               (token.networkId === '1' ||
                                 token.networkId === '2' ||
                                 token.networkId === '3')
                             "
-                            src="@/assets/img/empty-token.png"
-                            alt=""
                           />
                           <span
+                            class="ic-router-token-symbol"
                             v-if="
                               token.networkId === '-1' &&
                               !token.logo &&
@@ -634,7 +635,6 @@
                                 tokens[token.tokenId].logo
                               )
                             "
-                            class="ic-router-token-symbol"
                           >
                             {{ token.symbol.slice(0, 1).toLocaleUpperCase() }}
                           </span>
@@ -646,24 +646,24 @@
                             }})
                           </span>
                           <span
+                            class="ic-router-token-info-name"
                             v-if="
                               token.networkId === '-1' &&
                               tokens &&
                               tokens[token.tokenId] &&
                               tokens[token.tokenId].name
                             "
-                            class="ic-router-token-info-name"
                           >
                             {{ tokens[token.tokenId].name }}
                           </span>
                           <span
+                            class="ic-router-token-info-name"
                             v-if="
                               (token.networkId === '1' ||
                                 token.networkId === '2') &&
                               token.id !==
                                 '0x0000000000000000000000000000000000000000'
                             "
-                            class="ic-router-token-info-name"
                           >
                             {{ token.id | ellipsisAccount(20) }}
                           </span>
@@ -743,7 +743,7 @@
                         :href="
                           networkTokensTo[networkTokenIdMintTo].networkId ===
                           '2'
-                            ? `https://goerli.etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}#code`
+                            ? `https://sepolia.etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}#code`
                             : `https://etherscan.io/token/${networkTokensTo[networkTokenIdMintTo].id}#code`
                         "
                         rel="nofollow noreferrer noopener"
@@ -756,13 +756,13 @@
                       </a>
                     </div>
                     <div
+                      style="margin-top: 5px"
                       v-show="
                         ethereumIsConnected &&
                         ERC20EthereumBalance[
                           networkTokensTo[networkTokenIdMintTo].tokenId
                         ]
                       "
-                      style="margin-top: 5px"
                     >
                       Balance:
                       <span>
@@ -779,10 +779,10 @@
             </div>
             <div class="cross-button">
               <button
-                @click="onContinue"
-                type="button"
-                class="primary"
                 :disabled="mintDisabled"
+                @click="onContinue"
+                class="primary"
+                type="button"
               >
                 Continue
               </button>
@@ -809,9 +809,9 @@
               <div>
                 <div v-if="activePending.claim && activePending.claim.length">
                   <div
+                    :key="index"
                     class="active-pending-item"
                     v-for="(item, index) in activePending.claim"
-                    :key="index"
                   >
                     <span v-if="ckTokenInfo[item.tokenId]">
                       {{ ckTokenInfo[item.tokenId].symbol }}
@@ -824,8 +824,8 @@
                       {{ item.txHash | ellipsisAccount }}
                     </span>
                     <button
-                      class="primary"
                       @click="toActive('claim', item.tokenId, item.txHash)"
+                      class="primary"
                     >
                       View
                     </button>
@@ -833,9 +833,9 @@
                 </div>
                 <div v-if="activePending.claim2 && activePending.claim2.length">
                   <div
+                    :key="index"
                     class="active-pending-item"
                     v-for="(item, index) in activePending.claim2"
-                    :key="index"
                   >
                     <span v-if="ckTokenInfo[item.tokenId]">
                       {{ ckTokenInfo[item.tokenId].symbol }}
@@ -848,8 +848,8 @@
                       {{ item.txHash | ellipsisAccount }}
                     </span>
                     <button
-                      class="primary"
                       @click="toActive('claim2', item.tokenId)"
+                      class="primary"
                     >
                       View
                     </button>
@@ -857,9 +857,9 @@
                 </div>
                 <div v-if="activePending.mint && activePending.mint.length">
                   <div
+                    :key="index"
                     class="active-pending-item"
                     v-for="(item, index) in activePending.mint"
-                    :key="index"
                   >
                     <span v-if="ckTokenInfo[item.tokenId]">
                       {{ ckTokenInfo[item.tokenId].symbol }}
@@ -876,8 +876,8 @@
                       }}
                     </span>
                     <button
-                      class="primary"
                       @click="toActive('mint', item.tokenId)"
+                      class="primary"
                     >
                       View
                     </button>
@@ -927,6 +927,7 @@
                       }}(IC Network)
                     </span>
                     <span
+                      class="margin-left-auto"
                       v-if="
                         ckTokenInfo[
                           ethersTokenIdToCkTokenId[
@@ -934,7 +935,6 @@
                           ]
                         ]
                       "
-                      class="margin-left-auto"
                     >
                       {{
                         activePending.deposit[2][0].amount
@@ -950,7 +950,6 @@
                       }}
                     </span>
                     <button
-                      class="primary"
                       @click="
                         toActive(
                           'deposit',
@@ -959,6 +958,7 @@
                           ]
                         )
                       "
+                      class="primary"
                     >
                       View
                     </button>
@@ -968,9 +968,9 @@
                   v-if="activePending.retrieve && activePending.retrieve.length"
                 >
                   <div
+                    :key="index"
                     class="active-pending-item"
                     v-for="(item, index) in activePending.retrieve"
-                    :key="index"
                   >
                     <span v-if="ckTokenInfo[item.tokenId]">
                       {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
@@ -987,8 +987,8 @@
                       }}
                     </span>
                     <button
-                      class="primary"
                       @click="toActive('retrieve', item.tokenId)"
+                      class="primary"
                     >
                       View
                     </button>
@@ -1036,6 +1036,7 @@
                       }}
                     </span>
                     <span
+                      class="margin-left-auto"
                       v-if="
                         ckTokenInfo[
                           ethersTokenIdToCkTokenId[
@@ -1043,7 +1044,6 @@
                           ]
                         ]
                       "
-                      class="margin-left-auto"
                     >
                       {{
                         activePending.retrieve2[1].amount
@@ -1059,7 +1059,6 @@
                       }}
                     </span>
                     <button
-                      class="primary"
                       @click="
                         toActive(
                           'retrieve',
@@ -1068,6 +1067,7 @@
                           ]
                         )
                       "
+                      class="primary"
                     >
                       View
                     </button>
@@ -1079,9 +1079,9 @@
                   "
                 >
                   <div
+                    :key="index"
                     class="active-pending-item"
                     v-for="(item, index) in activePending.mintCKETH"
-                    :key="index"
                   >
                     <span v-if="ckTokenInfo[item.tokenId]">
                       {{ ckTokenInfo[item.tokenId].symbol }}
@@ -1093,14 +1093,15 @@
                     <span class="margin-left-auto">
                       <a
                         :href="`${ckEthLink}/tx/${item.txHash}`"
+                        class="link"
                         rel="nofollow noreferrer noopener"
                         target="_blank"
-                        class="link"
                       >
                         {{ item.txHash | ellipsisAccount() }}
                       </a>
                     </span>
                     <span
+                      class="base-font-title"
                       style="
                         display: flex;
                         align-items: center;
@@ -1108,7 +1109,6 @@
                         margin: 0 10px 0 20px;
                         width: 100px;
                       "
-                      class="base-font-title"
                     >
                       <span v-show="!item.blockNumber"
                         >Pending<span class="loading-spinner"></span
@@ -1133,6 +1133,8 @@
                       </span>
                     </span>
                     <button
+                      @click="toActive('mintCKETH', item.tokenId)"
+                      class="primary"
                       v-show="
                         !(
                           lastScrapedBlockNumber &&
@@ -1140,8 +1142,6 @@
                           lastScrapedBlockNumber >= Number(item.blockNumber)
                         )
                       "
-                      class="primary"
-                      @click="toActive('mintCKETH', item.tokenId)"
                     >
                       View
                     </button>
@@ -1154,9 +1154,9 @@
                   "
                 >
                   <div
+                    :key="index"
                     class="active-pending-item"
                     v-for="(item, index) in activePending.retrieveCKETH"
-                    :key="index"
                   >
                     <span v-if="ckTokenInfo[item.tokenId]">
                       {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
@@ -1166,20 +1166,20 @@
                       {{ ckTokenInfo[item.tokenId].symbol }}
                     </span>
                     <span
-                      v-if="ckTokenInfo[item.tokenId]"
                       class="margin-left-auto"
+                      v-if="ckTokenInfo[item.tokenId]"
                     >
                       <a
+                        :href="`${ckEthLink}/tx/${
+                          Object.values(item.status)[0].transaction_hash
+                        }`"
+                        class="link"
+                        rel="nofollow noreferrer noopener"
+                        target="_blank"
                         v-if="
                           item.status &&
                           Object.keys(item.status)[0] === 'TxSent'
                         "
-                        :href="`${ckEthLink}/tx/${
-                          Object.values(item.status)[0].transaction_hash
-                        }`"
-                        rel="nofollow noreferrer noopener"
-                        target="_blank"
-                        class="link"
                       >
                         {{
                           item.amount
@@ -1191,6 +1191,12 @@
                         }}
                       </a>
                       <a
+                        :href="`${ckEthLink}/tx/${
+                          Object.values(item.status)[0].Success.transaction_hash
+                        }`"
+                        class="link"
+                        rel="nofollow noreferrer noopener"
+                        target="_blank"
                         v-if="
                           item.status &&
                           Object.keys(item.status)[0] === 'TxFinalized' &&
@@ -1198,12 +1204,6 @@
                           Object.values(item.status)[0].Success &&
                           Object.values(item.status)[0].Success.transaction_hash
                         "
-                        :href="`${ckEthLink}/tx/${
-                          Object.values(item.status)[0].Success.transaction_hash
-                        }`"
-                        rel="nofollow noreferrer noopener"
-                        target="_blank"
-                        class="link"
                       >
                         {{
                           item.amount
@@ -1233,6 +1233,7 @@
                       </span>
                     </span>
                     <span
+                      class="base-font-title"
                       style="
                         display: flex;
                         align-items: center;
@@ -1240,21 +1241,22 @@
                         margin: 0 10px 0 20px;
                         width: 100px;
                       "
-                      class="base-font-title"
                       v-if="item.status && Object.keys(item.status)[0]"
                     >
                       {{ Object.keys(item.status)[0]
                       }}<span
+                        class="loading-spinner"
                         v-show="
                           item.status &&
                           ['Pending', 'TxCreated', 'TxSent'].includes(
                             Object.keys(item.status)[0]
                           )
                         "
-                        class="loading-spinner"
                       ></span>
                     </span>
                     <button
+                      @click="toActive('retrieveCKETH', item.tokenId)"
+                      class="primary"
                       v-if="
                         !item.status ||
                         (item.status &&
@@ -1262,8 +1264,6 @@
                           Object.keys(item.status)[0] !== 'TxFinalized' &&
                           Object.keys(item.status)[0] !== 'NotFound')
                       "
-                      class="primary"
-                      @click="toActive('retrieveCKETH', item.tokenId)"
                     >
                       View
                     </button>
@@ -1276,12 +1276,12 @@
                   "
                 >
                   <div
+                    :key="index"
+                    style="color: #adb7c2"
                     v-for="(item, index) in activePending.CKETHResponse.slice(
                       (CKETHResponsePage - 1) * 10,
                       CKETHResponsePage * 10
                     )"
-                    :key="index"
-                    style="color: #adb7c2"
                   >
                     <div
                       class="active-pending-item"
@@ -1295,13 +1295,13 @@
                       <span> BTC </span>
                       <span class="margin-left-auto">
                         <a
-                          v-if="getRetrieveBtcTxidResponse(item.status)"
                           :href="`https://www.blockchain.com/btc/tx/${getRetrieveBtcTxidResponse(
                             item.status
                           )}`"
+                          class="link"
                           rel="nofollow noreferrer noopener"
                           target="_blank"
-                          class="link"
+                          v-if="getRetrieveBtcTxidResponse(item.status)"
                         >
                           {{
                             getRetrieveBtcTxidResponse(item.status)
@@ -1310,6 +1310,10 @@
                         </a>
                       </span>
                       <span
+                        :class="{
+                          'base-green':
+                            Object.keys(item.status)[0] === 'Confirmed'
+                        }"
                         style="
                           display: flex;
                           align-items: center;
@@ -1317,15 +1321,12 @@
                           margin: 0 10px 0 20px;
                           width: 100px;
                         "
-                        :class="{
-                          'base-green':
-                            Object.keys(item.status)[0] === 'Confirmed'
-                        }"
                       >
                         <span>
                           {{ item.status && Object.keys(item.status)[0] }}
                         </span>
                         <span
+                          class="loading-spinner"
                           v-show="
                             item.status &&
                             [
@@ -1335,10 +1336,11 @@
                               'Signing'
                             ].includes(Object.keys(item.status)[0])
                           "
-                          class="loading-spinner"
                         ></span>
                       </span>
                       <button
+                        @click="toActive('BTCRetrieve', null)"
+                        class="primary"
                         v-show="
                           !item.status ||
                           (item.status &&
@@ -1347,8 +1349,6 @@
                             Object.keys(item.status)[0] !== 'NotFound' &&
                             Object.keys(item.status)[0] !== 'AmountTooLow')
                         "
-                        class="primary"
-                        @click="toActive('BTCRetrieve', null)"
                       >
                         View
                       </button>
@@ -1364,13 +1364,13 @@
                       &nbsp;->&nbsp;
                       <span> ckBTC(IC Network) </span>
                       <div class="margin-left-auto">
-                        <div v-for="(out, index) in item.vout" :key="index">
+                        <div :key="index" v-for="(out, index) in item.vout">
                           <a
-                            v-show="out.scriptpubkey_address === BTCAddressCk"
-                            class="link"
                             :href="`https://www.blockchain.com/btc/tx/${item.txid}`"
+                            class="link"
                             rel="nofollow noreferrer noopener"
                             target="_blank"
+                            v-show="out.scriptpubkey_address === BTCAddressCk"
                             >{{
                               out.value | bigintToFloat(8, 8) | formatAmount(8)
                             }}
@@ -1378,6 +1378,11 @@
                         </div>
                       </div>
                       <span
+                        :class="{
+                          'base-green':
+                            item.status.block_height &&
+                            item.status.block_height <= updateCkBlockHeight
+                        }"
                         style="
                           display: flex;
                           align-items: center;
@@ -1389,11 +1394,6 @@
                           item.status.block_height &&
                           item.status.block_height <= updateCkBlockHeight
                         "
-                        :class="{
-                          'base-green':
-                            item.status.block_height &&
-                            item.status.block_height <= updateCkBlockHeight
-                        }"
                       >
                         {{ filterStatus(item.status.block_height) }}
                         <span
@@ -1406,6 +1406,8 @@
                         </span>
                       </span>
                       <button
+                        @click="toActive('mintCKBTC', null)"
+                        class="primary"
                         style="margin-left: 40px"
                         v-show="
                           !(
@@ -1413,8 +1415,6 @@
                             item.status.block_height <= updateCkBlockHeight
                           )
                         "
-                        class="primary"
-                        @click="toActive('mintCKBTC', null)"
                       >
                         View
                       </button>
@@ -1436,9 +1436,9 @@
                       <span class="margin-left-auto">
                         <a
                           :href="`${ckEthLink}/tx/${item.txHash}`"
+                          class="link"
                           rel="nofollow noreferrer noopener"
                           target="_blank"
-                          class="link"
                         >
                           {{
                             item.amount
@@ -1451,6 +1451,7 @@
                         </a>
                       </span>
                       <span
+                        class="base-font-title"
                         style="
                           display: flex;
                           align-items: center;
@@ -1458,18 +1459,17 @@
                           margin: 0 10px 0 20px;
                           width: 100px;
                         "
-                        class="base-font-title"
                       >
                         <span v-show="!item.blockNumber">
                           Pending<span class="loading-spinner"></span
                         ></span>
                         <span
+                          class="base-green"
                           v-show="
                             lastScrapedBlockNumber &&
                             item.blockNumber &&
                             lastScrapedBlockNumber >= Number(item.blockNumber)
                           "
-                          class="base-green"
                         >
                           Confirmed
                         </span>
@@ -1484,6 +1484,8 @@
                         </span>
                       </span>
                       <button
+                        @click="toActive('mintCKETH', item.tokenId)"
+                        class="primary"
                         v-show="
                           !(
                             lastScrapedBlockNumber &&
@@ -1491,8 +1493,6 @@
                             lastScrapedBlockNumber >= Number(item.blockNumber)
                           )
                         "
-                        class="primary"
-                        @click="toActive('mintCKETH', item.tokenId)"
                       >
                         View
                       </button>
@@ -1512,20 +1512,20 @@
                         {{ ckTokenInfo[item.tokenId].symbol }}
                       </span>
                       <span
-                        v-if="ckTokenInfo[item.tokenId]"
                         class="margin-left-auto"
+                        v-if="ckTokenInfo[item.tokenId]"
                       >
                         <a
+                          :href="`${ckEthLink}/tx/${
+                            Object.values(item.status)[0].transaction_hash
+                          }`"
+                          class="link"
+                          rel="nofollow noreferrer noopener"
+                          target="_blank"
                           v-if="
                             item.status &&
                             Object.keys(item.status)[0] === 'TxSent'
                           "
-                          :href="`${ckEthLink}/tx/${
-                            Object.values(item.status)[0].transaction_hash
-                          }`"
-                          rel="nofollow noreferrer noopener"
-                          target="_blank"
-                          class="link"
                         >
                           {{
                             item.amount
@@ -1537,6 +1537,13 @@
                           }}
                         </a>
                         <a
+                          :href="`${ckEthLink}/tx/${
+                            Object.values(item.status)[0].Success
+                              .transaction_hash
+                          }`"
+                          class="link"
+                          rel="nofollow noreferrer noopener"
+                          target="_blank"
                           v-if="
                             item.status &&
                             Object.keys(item.status)[0] === 'TxFinalized' &&
@@ -1545,13 +1552,6 @@
                             Object.values(item.status)[0].Success
                               .transaction_hash
                           "
-                          :href="`${ckEthLink}/tx/${
-                            Object.values(item.status)[0].Success
-                              .transaction_hash
-                          }`"
-                          rel="nofollow noreferrer noopener"
-                          target="_blank"
-                          class="link"
                         >
                           {{
                             item.amount
@@ -1581,6 +1581,10 @@
                         </span>
                       </span>
                       <span
+                        :class="{
+                          'base-green':
+                            Object.keys(item.status)[0] === 'TxFinalized'
+                        }"
                         style="
                           display: flex;
                           align-items: center;
@@ -1588,24 +1592,22 @@
                           margin: 0 10px 0 20px;
                           width: 100px;
                         "
-                        :class="{
-                          'base-green':
-                            Object.keys(item.status)[0] === 'TxFinalized'
-                        }"
                         v-if="item.status && Object.keys(item.status)[0]"
                       >
                         {{ Object.keys(item.status)[0]
                         }}<span
+                          class="loading-spinner"
                           v-show="
                             item.status &&
                             ['Pending', 'TxCreated', 'TxSent'].includes(
                               Object.keys(item.status)[0]
                             )
                           "
-                          class="loading-spinner"
                         ></span>
                       </span>
                       <button
+                        @click="toActive('retrieveCKETH', item.tokenId)"
+                        class="primary"
                         v-if="
                           !item.status ||
                           (item.status &&
@@ -1613,8 +1615,6 @@
                             Object.keys(item.status)[0] !== 'TxFinalized' &&
                             Object.keys(item.status)[0] !== 'NotFound')
                         "
-                        class="primary"
-                        @click="toActive('retrieveCKETH', item.tokenId)"
                       >
                         View
                       </button>
@@ -1622,13 +1622,13 @@
                   </div>
                   <div class="pagination-transaction-main">
                     <a-pagination
-                      v-if="activePending.CKETHResponse.length > 10"
-                      class="pagination-transaction"
-                      style="margin-right: 10px"
-                      :default-page-size="10"
                       :current="CKETHResponsePage"
+                      :default-page-size="10"
                       :total="activePending.CKETHResponse.length"
                       @change="pageChangeCKETHResponse"
+                      class="pagination-transaction"
+                      style="margin-right: 10px"
+                      v-if="activePending.CKETHResponse.length > 10"
                     />
                   </div>
                 </div>
@@ -1639,44 +1639,44 @@
       </div>
     </div>
     <transfer-icp
-      ref="transferIcp"
       :balance="balance"
       @transferSuccess="transferSuccess"
+      ref="transferIcp"
     ></transfer-icp>
     <transfer-token
-      ref="transferToken"
       :current-token="currentToken"
       @transferTokenSuccess="transferTokenSuccess"
+      ref="transferToken"
     ></transfer-token>
     <top-up
-      v-if="type === 'ic'"
-      ref="topUp"
       :balance="balance"
-      :walletId="walletId"
       :type="topUpType"
+      :walletId="walletId"
       @topUpSuccess="topUpSuccess"
+      ref="topUp"
+      v-if="type === 'ic'"
     ></top-up>
     <receive-modal ref="receiveModal"></receive-modal>
     <a-modal
-      v-model="retrieveModalCKETH"
-      centered
-      width="750px"
+      :after-close="afterRetrieveCloseCKETH"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
-      :after-close="afterRetrieveCloseCKETH"
+      centered
       class="transfer-modal forge-modal dissolve-modal forge-modal-eth"
+      v-model="retrieveModalCKETH"
+      width="750px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">{{ retrieveTitleETH }}</div>
       </div>
       <div
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         class="step-list"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
       >
         <span
-          @click="previousRetrieveStepCK()"
           :class="{ active: retrieveStep > 1 }"
+          @click="previousRetrieveStepCK()"
           class="step-previous pc-show"
         >
           <a-tooltip placement="top">
@@ -1685,16 +1685,16 @@
           </a-tooltip>
         </span>
         <div
+          :class="{ active: retrieveStep === 1 }"
           @click="changeRetrieveStepCK(1)"
           class="pointer"
-          :class="{ active: retrieveStep === 1 }"
         >
           <span class="step-list-num">1</span><span>Retrieve</span>
         </div>
         <div
+          :class="{ active: retrieveStep === 2 }"
           @click="changeRetrieveStepCK(2)"
           class="pointer step-list-center"
-          :class="{ active: retrieveStep === 2 }"
         >
           <span class="step-list-line"></span>
           <span class="step-list-center-t"
@@ -1702,8 +1702,8 @@
           >
         </div>
         <span
-          @click="nextRetrieveStepCK(2)"
           :class="{ active: retrieveStep < 2 }"
+          @click="nextRetrieveStepCK(2)"
           class="step-next pc-show"
           ><a-tooltip placement="top">
             <template slot="title">Next</template>
@@ -1711,14 +1711,14 @@
         ></span>
       </div>
       <div
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         class="forge-main"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
       >
         <div class="w100" v-show="retrieveStep === 1">
           <a-form-model
-            ref="ethDissolveFormCK"
             :model="ethDissolveFormCK"
             :rules="ethDissolveFormCKRules"
+            ref="ethDissolveFormCK"
           >
             <a-form-model-item
               :label="`Destination ${icNetworkTokens.icTokenInfo.symbol} (${
@@ -1727,12 +1727,12 @@
               prop="address"
             >
               <a-input
-                v-model="ethDissolveFormCK.address"
-                autocomplete="off"
-                type="text"
                 :placeholder="`${icNetworkTokens.icTokenInfo.symbol} (${
                   networkIds[otherNetworkTokens.networkId]
                 }) address`"
+                autocomplete="off"
+                type="text"
+                v-model="ethDissolveFormCK.address"
               />
             </a-form-model-item>
             <a-form-model-item :colon="false" prop="retrieveAmount">
@@ -1742,12 +1742,12 @@
                 >
               </template>
               <a-input
-                v-model="ethDissolveFormCK.retrieveAmount"
                 autocomplete="off"
-                type="text"
-                v-only-float="icNetworkTokens.icTokenInfo.decimals"
                 min="0"
                 placeholder="0.00"
+                type="text"
+                v-model="ethDissolveFormCK.retrieveAmount"
+                v-only-float="icNetworkTokens.icTokenInfo.decimals"
               />
             </a-form-model-item>
           </a-form-model>
@@ -1779,18 +1779,18 @@
                 }})&nbsp;
                 <a-icon
                   @click="refreshCkETHBalance(true, 'ICRC-1')"
-                  v-show="!refreshCkETHBalanceLoading"
-                  type="reload"
                   class="reload-icon"
+                  type="reload"
+                  v-show="!refreshCkETHBalanceLoading"
                 />
                 <a-icon
-                  v-show="refreshCkETHBalanceLoading"
-                  type="loading"
                   class="reload-icon"
+                  type="loading"
+                  v-show="refreshCkETHBalanceLoading"
                 />
                 <span
-                  class="transfer-balance-max pc-show"
                   @click="setMaxETHRetrieve('ck')"
+                  class="transfer-balance-max pc-show"
                 >
                   Max
                 </span>
@@ -1812,21 +1812,21 @@
               </div>
             </div>
             <router-link
+              :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
+              class="transfer-balance-right pc-show"
               v-show="
                 !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdc') &&
                 !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdt')
               "
-              class="transfer-balance-right pc-show"
-              :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
             >
               Trade
             </router-link>
           </div>
           <button
             :disabled="!canRetrieveCkerc20"
-            type="button"
-            class="primary retrieve-button w100 mt20"
             @click="retrieveCkETH"
+            class="primary retrieve-button w100 mt20"
+            type="button"
           >
             Retrieve
             <div v-if="!canRetrieveCkerc20">
@@ -1834,12 +1834,12 @@
             </div>
           </button>
           <div
+            style="margin-top: 5px"
             v-if="
               icNetworkTokens.icTokenInfo.type &&
               icNetworkTokens.icTokenInfo.type === 'dfinityERC20' &&
               !canRetrieveCkerc20
             "
-            style="margin-top: 5px"
           >
             <div
               class="flex-auto"
@@ -1894,8 +1894,8 @@
           </div>
         </div>
         <div
-          v-show="retrieveStep === 2"
           class="forge-right retrieve-btc-status"
+          v-show="retrieveStep === 2"
         >
           <div class="pc-show">
             <table>
@@ -1910,18 +1910,18 @@
               </thead>
               <tbody>
                 <tr
+                  :key="index"
                   v-for="(item, index) in ckETHRetrieve.slice(
                     (ckETHMintPage - 1) * 5,
                     ckETHMintPage * 5
                   )"
-                  :key="index"
                 >
                   <td>
                     <a
                       :href="`${ckEthLink}/address/${item.recipient}`"
+                      class="link"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
-                      class="link"
                     >
                       {{ item.recipient | ellipsisAccount() }}
                     </a>
@@ -1947,25 +1947,25 @@
                         {{ Object.keys(item.status)[0] }}
                       </span>
                       <span
+                        class="loading-spinner"
                         v-show="
                           item.status &&
                           ['Pending', 'TxCreated', 'TxSent'].includes(
                             Object.keys(item.status)[0]
                           )
                         "
-                        class="loading-spinner"
                       ></span>
                     </span>
                   </td>
                   <td>
                     <a
-                      v-if="getCKETHRetrieveTxid(item.status)"
                       :href="`${ckEthLink}/tx/${getCKETHRetrieveTxid(
                         item.status
                       )}`"
+                      class="link"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
-                      class="link"
+                      v-if="getCKETHRetrieveTxid(item.status)"
                     >
                       {{
                         getCKETHRetrieveTxid(item.status) | ellipsisAccount()
@@ -1981,24 +1981,24 @@
             </table>
           </div>
           <ul class="h5-show">
-            <li v-show="!ckETHRetrieve.length" style="justify-content: center">
+            <li style="justify-content: center" v-show="!ckETHRetrieve.length">
               No records
             </li>
             <li
+              :key="index"
               v-for="(item, index) in ckETHRetrieve.slice(
                 (ckETHMintPage - 1) * 5,
                 ckETHMintPage * 5
               )"
-              :key="index"
             >
               <div class="li-h5-item">
                 <span class="li-left">Recipient:</span>
                 <span class="margin-left-auto">
                   <a
                     :href="`${ckEthLink}/address/${item.recipient}`"
+                    class="link"
                     rel="nofollow noreferrer noopener"
                     target="_blank"
-                    class="link"
                   >
                     {{ item.recipient | ellipsisAccount() }}
                   </a>
@@ -2027,13 +2027,13 @@
                     {{ Object.keys(item.status)[0] }}
                   </span>
                   <span
+                    class="loading-spinner"
                     v-show="
                       item.status &&
                       ['Pending', 'TxCreated', 'TxSent'].includes(
                         Object.keys(item.status)[0]
                       )
                     "
-                    class="loading-spinner"
                   ></span>
                 </span>
               </div>
@@ -2041,13 +2041,13 @@
                 <span class="li-left">Txid:</span>
                 <span class="margin-left-auto">
                   <a
-                    v-if="getCKETHRetrieveTxid(item.status)"
                     :href="`${ckEthLink}/tx/${getCKETHRetrieveTxid(
                       item.status
                     )}`"
+                    class="link"
                     rel="nofollow noreferrer noopener"
                     target="_blank"
-                    class="link"
+                    v-if="getCKETHRetrieveTxid(item.status)"
                   >
                     {{ getCKETHRetrieveTxid(item.status) | ellipsisAccount() }}
                   </a>
@@ -2058,34 +2058,34 @@
           </ul>
           <div class="pagination-transaction-main">
             <a-pagination
-              v-if="ckETHRetrieve.length > 5"
-              class="pagination-transaction"
-              :default-page-size="5"
               :current="ckETHMintPage"
+              :default-page-size="5"
               :total="ckETHRetrieve.length"
               @change="pageChangeCKETHMint"
+              class="pagination-transaction"
+              v-if="ckETHRetrieve.length > 5"
             />
           </div>
         </div>
       </div>
     </a-modal>
     <a-modal
-      v-model="forgeModalCKETH"
-      width="680px"
-      centered
+      :after-close="afterForgeCloseCKETH"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="transfer-modal forge-modal forge-modal-eth"
-      :after-close="afterForgeCloseCKETH"
+      v-model="forgeModalCKETH"
+      width="680px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">{{ forgeTitleETH }}</div>
       </div>
       <div class="step-list">
         <span
-          @click="previousMintStepCK()"
           :class="{ active: mintStep > 1 }"
+          @click="previousMintStepCK()"
           class="step-previous pc-show"
         >
           <a-tooltip placement="top">
@@ -2094,16 +2094,16 @@
           </a-tooltip>
         </span>
         <div
+          :class="{ active: mintStep === 1 }"
           @click="changeMintStepCK(1)"
           class="pointer"
-          :class="{ active: mintStep === 1 }"
         >
           <span class="step-list-num">1</span><span>Send</span>
         </div>
         <div
+          :class="{ active: mintStep === 2 }"
           @click="changeMintStepCK(2)"
           class="pointer step-list-center"
-          :class="{ active: mintStep === 2 }"
         >
           <span class="step-list-line"></span>
           <span class="step-list-center-t">
@@ -2111,8 +2111,8 @@
           >
         </div>
         <span
-          @click="nextMintStepCK(2)"
           :class="{ active: mintStep < 2 }"
+          @click="nextMintStepCK(2)"
           class="step-next pc-show"
         >
           <a-tooltip placement="top">
@@ -2122,8 +2122,8 @@
         </span>
       </div>
       <div
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo && mintStep === 2"
         class="ckEth-mint-top"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo && mintStep === 2"
       >
         <div class="base-color-w">
           Balance:
@@ -2139,17 +2139,17 @@
           }})&nbsp;
           <a-icon
             @click="refreshCkETHBalance(true, 'ICRC-1')"
-            v-show="!refreshCkETHBalanceLoading"
-            type="reload"
             class="reload-icon"
+            type="reload"
+            v-show="!refreshCkETHBalanceLoading"
           />
           <a-icon
-            v-show="refreshCkETHBalanceLoading"
-            type="loading"
             class="reload-icon"
+            type="loading"
+            v-show="refreshCkETHBalanceLoading"
           />
         </div>
-        <div v-show="ckETHBlockNum" class="base-font-title">
+        <div class="base-font-title" v-show="ckETHBlockNum">
           Latest Block Number: {{ ckETHBlockNum }}
         </div>
         <div class="base-font-title" v-show="lastScrapedBlockNumber">
@@ -2157,15 +2157,15 @@
         </div>
       </div>
       <div
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         class="forge-main"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
       >
-        <div v-show="mintStep === 1" class="forge-left">
+        <div class="forge-left" v-show="mintStep === 1">
           <a-form-model
-            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
             :model="erc20Form"
-            ref="erc20Form"
             :rules="erc20FormRules"
+            ref="erc20Form"
+            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           >
             <a-form-model-item
               :label="`Transfer ${icNetworkTokens.icTokenInfo.symbol} (${
@@ -2174,28 +2174,28 @@
               prop="amount"
             >
               <a-input
-                v-model="erc20Form.amount"
-                autocomplete="off"
-                type="text"
-                v-only-float="Number(icNetworkTokens.icTokenInfo.decimals)"
-                placeholder="0.00"
                 :suffix="`${icNetworkTokens.icTokenInfo.symbol} (${
                   networkIds[otherNetworkTokens.networkId]
                 })`"
+                autocomplete="off"
+                placeholder="0.00"
+                type="text"
+                v-model="erc20Form.amount"
+                v-only-float="Number(icNetworkTokens.icTokenInfo.decimals)"
               />
             </a-form-model-item>
           </a-form-model>
           <div class="mint-button">
             <button
+              @click="transferFromMetaMaskCK"
               class="primary w100"
               type="button"
-              @click="transferFromMetaMaskCK"
             >
-              <img src="@/assets/img/MetaMask.png" alt="" /> Send with MetaMask
+              <img alt="" src="@/assets/img/MetaMask.png" /> Send with MetaMask
             </button>
           </div>
         </div>
-        <div v-show="mintStep === 2" class="forge-right retrieve-btc-status">
+        <div class="forge-right retrieve-btc-status" v-show="mintStep === 2">
           <div class="pc-show">
             <table>
               <thead>
@@ -2208,18 +2208,18 @@
               </thead>
               <tbody>
                 <tr
+                  :key="item.txHash"
                   v-for="item in ckETHMint.slice(
                     (ckETHMintPage - 1) * 5,
                     ckETHMintPage * 5
                   )"
-                  :key="item.txHash"
                 >
                   <td>
                     <a
                       :href="`${ckEthLink}/tx/${item.txHash}`"
+                      class="link"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
-                      class="link"
                     >
                       {{ item.txHash | ellipsisAccount() }}
                     </a>
@@ -2250,13 +2250,13 @@
                           v-if="lastScrapedBlockNumber >= Number(item.blockNum)"
                           >Confirmed</span
                         >
-                        <span v-else class="flex-center"
+                        <span class="flex-center" v-else
                           >Submitted <span class="loading-spinner"></span
                         ></span>
                       </span>
                       <span
-                        v-if="!item.txStatus && !item.blockNum"
                         class="flex-center"
+                        v-if="!item.txStatus && !item.blockNum"
                         >Pending <span class="loading-spinner"></span
                       ></span>
                     </span>
@@ -2269,24 +2269,24 @@
             </table>
           </div>
           <ul class="h5-show">
-            <li v-show="!ckETHMint.length" style="justify-content: center">
+            <li style="justify-content: center" v-show="!ckETHMint.length">
               No records
             </li>
             <li
+              :key="item.txHash"
               v-for="item in ckETHMint.slice(
                 (ckETHMintPage - 1) * 5,
                 ckETHMintPage * 5
               )"
-              :key="item.txHash"
             >
               <div class="li-h5-item">
                 <span class="li-left">TxHash:</span>
                 <span class="margin-left-auto">
                   <a
                     :href="`${ckEthLink}/tx/${item.txHash}`"
+                    class="link"
                     rel="nofollow noreferrer noopener"
                     target="_blank"
-                    class="link"
                   >
                     {{ item.txHash | ellipsisAccount() }}
                   </a>
@@ -2319,13 +2319,13 @@
                         v-if="lastScrapedBlockNumber >= Number(item.blockNum)"
                         >Confirmed</span
                       >
-                      <span v-else class="flex-center"
+                      <span class="flex-center" v-else
                         >Submitted <span class="loading-spinner"></span
                       ></span>
                     </span>
                     <span
-                      v-if="!item.txStatus && !item.blockNum"
                       class="flex-center"
+                      v-if="!item.txStatus && !item.blockNum"
                       >Pending <span class="loading-spinner"></span
                     ></span>
                   </span>
@@ -2335,37 +2335,37 @@
           </ul>
           <div class="pagination-transaction-main">
             <a-pagination
-              v-if="ckETHMint.length > 5"
-              class="pagination-transaction"
-              :default-page-size="5"
               :current="ckETHMintPage"
+              :default-page-size="5"
               :total="ckETHMint.length"
               @change="pageChangeCKETHMint"
+              class="pagination-transaction"
+              v-if="ckETHMint.length > 5"
             />
           </div>
         </div>
-        <div v-show="mintStep === 2" class="step-footer-confirmation">
+        <div class="step-footer-confirmation" v-show="mintStep === 2">
           Wait for 64-96 confirmations (~12.8-19.2 minutes) to finalize.
         </div>
       </div>
     </a-modal>
     <a-modal
-      v-model="forgeModalETH"
-      width="680px"
-      centered
+      :after-close="afterForgeCloseETH"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="transfer-modal forge-modal forge-modal-eth"
-      :after-close="afterForgeCloseETH"
+      v-model="forgeModalETH"
+      width="680px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">{{ forgeTitleETH }}</div>
       </div>
       <div class="step-list">
         <span
-          @click="previousMintStep()"
           :class="{ active: mintStep > 1 }"
+          @click="previousMintStep()"
           class="step-previous pc-show"
         >
           <a-tooltip placement="top">
@@ -2374,16 +2374,16 @@
           </a-tooltip>
         </span>
         <div
+          :class="{ active: mintStep === 1 }"
           @click="changeMintStep(1)"
           class="pointer"
-          :class="{ active: mintStep === 1 }"
         >
           <span class="step-list-num">1</span><span>Send</span>
         </div>
         <div
+          :class="{ active: mintStep === 2 }"
           @click="changeMintStep(2)"
           class="pointer step-list-center"
-          :class="{ active: mintStep === 2 }"
         >
           <span class="step-list-line"></span>
           <span class="step-list-center-t"
@@ -2392,15 +2392,15 @@
           <span class="step-list-line"></span>
         </div>
         <div
+          :class="{ active: mintStep === 3 }"
           @click="changeMintStep(3)"
           class="pointer"
-          :class="{ active: mintStep === 3 }"
         >
           <span class="step-list-num">3</span><span>Records</span>
         </div>
         <span
-          @click="nextMintStep(3)"
           :class="{ active: mintStep < 3 }"
+          @click="nextMintStep(3)"
           class="step-next pc-show"
         >
           <a-tooltip placement="top">
@@ -2410,15 +2410,15 @@
         </span>
       </div>
       <div
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         class="forge-main"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
       >
-        <div v-show="mintStep === 1" class="forge-left">
+        <div class="forge-left" v-show="mintStep === 1">
           <a-form-model
-            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
             :model="erc20Form"
-            ref="erc20Form"
             :rules="erc20FormRules"
+            ref="erc20Form"
+            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           >
             <a-form-model-item
               :label="`Transfer ${icNetworkTokens.icTokenInfo.symbol} (${
@@ -2427,48 +2427,48 @@
               prop="amount"
             >
               <a-input
-                v-model="erc20Form.amount"
-                autocomplete="off"
-                type="text"
-                v-only-float="Number(icNetworkTokens.icTokenInfo.decimals)"
-                placeholder="0.00"
                 :suffix="`${icNetworkTokens.icTokenInfo.symbol} (${
                   networkIds[otherNetworkTokens.networkId]
                 })`"
+                autocomplete="off"
+                placeholder="0.00"
+                type="text"
+                v-model="erc20Form.amount"
+                v-only-float="Number(icNetworkTokens.icTokenInfo.decimals)"
               />
             </a-form-model-item>
           </a-form-model>
           <div class="mint-button">
             <button
-              v-show="depositMethod === 2"
+              @click="transferFromMetaMask"
               class="primary w100"
               type="button"
-              @click="transferFromMetaMask"
+              v-show="depositMethod === 2"
             >
-              <img src="@/assets/img/MetaMask.png" alt="" /> Send with MetaMask
+              <img alt="" src="@/assets/img/MetaMask.png" /> Send with MetaMask
             </button>
             <button
-              v-show="depositMethod === 1"
-              type="button"
               @click="transferFromOther"
+              type="button"
+              v-show="depositMethod === 1"
             >
               Send with other wallets
             </button>
             <button
-              v-show="depositMethod === 1"
+              @click="transferFromMetaMask"
               class="primary"
               type="button"
-              @click="transferFromMetaMask"
+              v-show="depositMethod === 1"
             >
-              <img src="@/assets/img/MetaMask.png" alt="" /> Send with MetaMask
+              <img alt="" src="@/assets/img/MetaMask.png" /> Send with MetaMask
             </button>
           </div>
         </div>
-        <div v-show="mintStep === 2" class="forge-right">
+        <div class="forge-right" v-show="mintStep === 2">
           <div
-            v-show="depositMethod === 1"
-            style="margin-bottom: 20px"
             class="btc-txs"
+            style="margin-bottom: 20px"
+            v-show="depositMethod === 1"
           >
             <div class="btc-txs-header base-font-title btc-txs-header-h5">
               {{ icNetworkTokens.icTokenInfo.symbol }} ({{
@@ -2483,9 +2483,9 @@
                 >
               </span>
               <span
+                @click="forgeModalTransactions = true"
                 class="margin-left-auto pointer"
                 style="color: #1996c4; font-size: 12px"
-                @click="forgeModalTransactions = true"
               >
                 Transactions
               </span>
@@ -2504,21 +2504,21 @@
               }})
             </div>
             <button
-              v-if="minterInfo"
               :disabled="depositDisabled"
-              type="button"
+              @click="depositETH()"
               class="primary w100"
               style="height: 36px; margin-top: 30px"
-              @click="depositETH()"
+              type="button"
+              v-if="minterInfo"
             >
               Mint {{ icNetworkTokens.symbol }} ({{
                 networkIds[icNetworkTokens.networkId]
               }})
               <span
+                class="loading-spinner"
                 v-show="
                   depositDisabled && (pendingLoading || depositing.length)
                 "
-                class="loading-spinner"
               ></span>
             </button>
             <div class="ic-token-balance">
@@ -2537,28 +2537,28 @@
               }})&nbsp;
               <a-icon
                 @click="refreshCkETHBalance()"
-                v-show="!refreshCkETHBalanceLoading"
-                type="reload"
                 class="reload-icon"
+                type="reload"
+                v-show="!refreshCkETHBalanceLoading"
               />
               <a-icon
-                v-show="refreshCkETHBalanceLoading"
-                type="loading"
                 class="reload-icon"
+                type="loading"
+                v-show="refreshCkETHBalanceLoading"
               />
             </div>
           </div>
           <div
-            v-show="depositMethod === 2"
-            style="margin-bottom: 20px"
             class="btc-txs"
+            style="margin-bottom: 20px"
+            v-show="depositMethod === 2"
           >
             <div class="btc-txs-header base-font-title" style="font-size: 18px">
               Signature
               <span
+                @click="claimModalTransactions = true"
                 class="margin-left-auto pointer"
                 style="color: #1996c4; font-size: 14px"
-                @click="claimModalTransactions = true"
               >
                 History
               </span>
@@ -2574,27 +2574,27 @@
             </div>
             <a-form-model
               :model="signatureForm"
-              ref="signatureForm"
               :rules="signatureFormRules"
+              ref="signatureForm"
             >
               <a-form-model-item label="TxHash" prop="txHash">
                 <a-input
-                  v-model="signatureForm.txHash"
-                  autocomplete="off"
-                  type="text"
-                  placeholder="TxHash"
                   @change="txHashChange"
+                  autocomplete="off"
+                  placeholder="TxHash"
+                  type="text"
+                  v-model="signatureForm.txHash"
                 />
               </a-form-model-item>
             </a-form-model>
             <div
-              v-show="claimTxError"
               class="base-red"
               style="margin-top: -22px"
+              v-show="claimTxError"
             >
               {{ claimTxError }}
             </div>
-            <div v-if="minterInfo" style="margin-bottom: 20px">
+            <div style="margin-bottom: 20px" v-if="minterInfo">
               Estimated network fee:
               {{ filterEstimatedFeeMode2(icNetworkTokens.icTokenInfo) }}
               {{ icNetworkTokens.symbol }} ({{
@@ -2603,22 +2603,22 @@
             </div>
             <div class="mint-button">
               <button
-                v-show="depositMethod === 2"
+                :disabled="!(signatureForm.txHash && !claimTxError)"
                 class="primary w100"
                 style="height: 36px"
                 type="button"
-                :disabled="!(signatureForm.txHash && !claimTxError)"
                 v-debounce="onClaim"
+                v-show="depositMethod === 2"
               >
                 Claim &nbsp;<a-icon
+                  class="reload-icon"
+                  type="loading"
                   v-show="
                     claimTxError &&
                     !claimTxError.includes('Invalid transaction') &&
                     !claimTxError.includes('The amount is too low') &&
                     !claimTxError.includes('Invalid txHash')
                   "
-                  type="loading"
-                  class="reload-icon"
                 />
               </button>
             </div>
@@ -2638,19 +2638,19 @@
               }})&nbsp;
               <a-icon
                 @click="refreshCkETHBalance()"
-                v-show="!refreshCkETHBalanceLoading"
-                type="reload"
                 class="reload-icon"
+                type="reload"
+                v-show="!refreshCkETHBalanceLoading"
               />
               <a-icon
-                v-show="refreshCkETHBalanceLoading"
-                type="loading"
                 class="reload-icon"
+                type="loading"
+                v-show="refreshCkETHBalanceLoading"
               />
             </div>
           </div>
         </div>
-        <div v-show="mintStep === 3" class="forge-right retrieve-btc-status">
+        <div class="forge-right retrieve-btc-status" v-show="mintStep === 3">
           <ul class="retrieve-btc-status-ul-table">
             <!--<li>
               <div style="width: 15%">TxIndex</div>
@@ -2659,20 +2659,20 @@
               <div style="width: 25%">TxHash</div>
             </li>-->
             <li
+              :key="index"
+              class="retrieve-btc-status-ul-table-eth"
+              style="align-items: flex-start"
               v-for="(item, index) in mintEvent.slice(
                 (mintEventPage - 1) * mintEventPageSize,
                 mintEventPage * mintEventPageSize
               )"
-              :key="index"
-              style="align-items: flex-start"
-              class="retrieve-btc-status-ul-table-eth"
             >
               Mint&nbsp;&nbsp;
               <div
-                v-if="depositMethod === 1 && item[1] && item[1].depositResult"
                 class="retrieve-btc-status-flex"
+                v-if="depositMethod === 1 && item[1] && item[1].depositResult"
               >
-                <div v-if="item[1].depositResult.ok" class="eth-tx-hash">
+                <div class="eth-tx-hash" v-if="item[1].depositResult.ok">
                   <div
                     v-if="
                       item[1].depositResult.ok.txid &&
@@ -2680,11 +2680,11 @@
                     "
                   >
                     <a
-                      v-for="hash in item[1].depositResult.ok.txid"
-                      :key="hash"
                       :href="`${ethLink}/tx/${hash}`"
+                      :key="hash"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
+                      v-for="hash in item[1].depositResult.ok.txid"
                     >
                       {{ hash | ellipsisAccount() }}
                     </a>
@@ -2692,10 +2692,10 @@
                 </div>
               </div>
               <div
-                v-if="depositMethod === 2 && item[0].claimDepositResult"
                 class="retrieve-btc-status-flex"
+                v-if="depositMethod === 2 && item[0].claimDepositResult"
               >
-                <div v-if="item[0].claimDepositResult.ok" class="eth-tx-hash">
+                <div class="eth-tx-hash" v-if="item[0].claimDepositResult.ok">
                   <div v-if="item[0].claimDepositResult.ok.txHash">
                     <a
                       :href="`${ethLink}/tx/${item[0].claimDepositResult.ok.txHash}`"
@@ -2745,36 +2745,36 @@
             </li>
           </ul>
           <div
-            v-if="!mintEvent.length"
             class="no-retrieve-btc-status-ul"
             style="display: flex"
+            v-if="!mintEvent.length"
           >
             No Record
           </div>
           <div class="pagination-transaction-main mt20">
             <a-pagination
-              v-if="mintEvent.length > mintEventPageSize"
-              class="pagination-transaction"
-              :default-page-size="mintEventPageSize"
               :current="mintEventPage"
+              :default-page-size="mintEventPageSize"
               :total="mintEvent.length"
               @change="mintEventPageChange"
+              class="pagination-transaction"
+              v-if="mintEvent.length > mintEventPageSize"
             />
           </div>
         </div>
       </div>
       <div
+        class="forge-main mt20"
         v-show="
           mintStep === 2 &&
           depositMethod === 2 &&
           depositingInfo &&
           depositingInfo[0]
         "
-        class="forge-main mt20"
       >
         <div
-          v-if="depositingInfo && depositingInfo[0]"
           class="btc-txs retrieve-btc-status"
+          v-if="depositingInfo && depositingInfo[0]"
         >
           <ul>
             <li>
@@ -2799,12 +2799,12 @@
         </div>
       </div>
       <div
-        v-show="mintStep === 2 && depositMethod === 1 && depositing.length"
         class="forge-main mt20"
+        v-show="mintStep === 2 && depositMethod === 1 && depositing.length"
       >
         <div
-          v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           class="btc-txs retrieve-btc-status"
+          v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         >
           <div class="base-font-title">Pending</div>
           <ul class="retrieve-btc-status-ul-table pc-show">
@@ -2817,20 +2817,20 @@
                   <template slot="title">Includes gas & platform fees</template>
                   <a-icon
                     class="pointer"
+                    type="info-circle"
                     v-show="
                       Object.keys(icNetworkTokens.icTokenInfo.std)[0] ===
                       'ERC20'
                     "
-                    type="info-circle"
                   />
                 </a-tooltip>
               </div>
               <div class="cell" style="width: 80px">Status</div>
             </li>
             <li
-              v-for="(item, index) in depositing"
               :key="index"
               style="font-size: 12px"
+              v-for="(item, index) in depositing"
             >
               <div class="cell" style="width: 70px">
                 {{ item.txIndex }}
@@ -2839,11 +2839,11 @@
                 <div class="eth-tx-hash">
                   <div v-if="item.txHash && item.txHash.length">
                     <a
-                      v-for="hash in item.txHash"
-                      :key="hash"
                       :href="`${ethLink}/tx/${hash}`"
+                      :key="hash"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
+                      v-for="hash in item.txHash"
                     >
                       {{ hash | ellipsisAccount() }}
                     </a>
@@ -2875,6 +2875,7 @@
                   {{ Object.keys(item.status)[0] }}
                 </span>
                 <span
+                  class="loading-spinner"
                   v-show="
                     item.status &&
                     [
@@ -2885,23 +2886,22 @@
                       'Submitted'
                     ].includes(Object.keys(item.status)[0])
                   "
-                  class="loading-spinner"
                 ></span>
               </div>
             </li>
             <li
-              v-if="!depositing.length"
-              style="justify-content: center; margin-top: 10px; font-size: 14px"
               class="base-font-title"
+              style="justify-content: center; margin-top: 10px; font-size: 14px"
+              v-if="!depositing.length"
             >
               No data
             </li>
           </ul>
           <ul class="h5-show">
             <li
-              v-for="(item, index) in depositing"
               :key="index"
               style="font-size: 12px"
+              v-for="(item, index) in depositing"
             >
               <div class="li-h5-item">
                 <span class="li-left">TxIndex:</span>
@@ -2912,11 +2912,11 @@
                 <div class="eth-tx-hash margin-left-auto">
                   <div v-if="item.txHash && item.txHash.length">
                     <a
-                      v-for="hash in item.txHash"
-                      :key="hash"
                       :href="`${ethLink}/tx/${hash}`"
+                      :key="hash"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
+                      v-for="hash in item.txHash"
                     >
                       {{ hash | ellipsisAccount() }}
                     </a>
@@ -2953,6 +2953,7 @@
                   {{ Object.keys(item.status)[0] }}
                 </span>
                 <span
+                  class="loading-spinner"
                   v-show="
                     item.status &&
                     [
@@ -2963,14 +2964,13 @@
                       'Submitted'
                     ].includes(Object.keys(item.status)[0])
                   "
-                  class="loading-spinner"
                 ></span>
               </div>
             </li>
             <li
-              v-if="!depositing.length"
-              style="justify-content: center; margin-top: 10px; font-size: 14px"
               class="base-font-title"
+              style="justify-content: center; margin-top: 10px; font-size: 14px"
+              v-if="!depositing.length"
             >
               No data
             </li>
@@ -2978,13 +2978,13 @@
         </div>
       </div>
       <div
+        class="step-footer-confirmation"
         v-if="
           mintStep === 2 &&
           minterInfo &&
           icNetworkTokens &&
           icNetworkTokens.icTokenInfo
         "
-        class="step-footer-confirmation"
       >
         Wait for {{ minterInfo.minConfirmations }} confirmations, then submit to
         mint {{ icNetworkTokens.symbol }} ({{
@@ -2993,13 +2993,13 @@
       </div>
     </a-modal>
     <a-modal
-      v-model="forgeModalTransactions"
-      width="750px"
-      centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
+      v-model="forgeModalTransactions"
+      width="750px"
     >
       <div class="modal-title-info" slot="title">
         <div
@@ -3028,7 +3028,7 @@
           >
         </div>
         <div class="btc-txs">
-          <a-spin class="btc-txs-ul-spin" :spinning="showCkETHTransactions">
+          <a-spin :spinning="showCkETHTransactions" class="btc-txs-ul-spin">
             <ul
               class="btc-txs-ul h5-show"
               v-if="
@@ -3040,11 +3040,11 @@
               "
             >
               <li
+                :key="tx.hash"
                 v-for="tx in ckETHTransactions[icNetworkTokens.tokenId].slice(
                   (ckETHTransactionsPage - 1) * ckETHTransactionsPageSize,
                   ckETHTransactionsPage * ckETHTransactionsPageSize
                 )"
-                :key="tx.hash"
               >
                 <div>
                   <div class="btc-txs-info">
@@ -3082,8 +3082,8 @@
                   </div>
                   <div>
                     <a
-                      class="margin-left-auto"
                       :href="`${ethLink}/tx/${tx.hash}`"
+                      class="margin-left-auto"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
                     >
@@ -3125,12 +3125,12 @@
                     </span>
                     <a-icon
                       class="has-update"
+                      type="check-circle"
                       v-show="
                         tx.blockNumber &&
                         Number(tx.blockNumber) <=
                           updateCkETHBlockHeight[icNetworkTokens.tokenId]
                       "
-                      type="check-circle"
                     />
                   </span>
                 </div>
@@ -3147,11 +3147,11 @@
               "
             >
               <li
+                :key="tx.hash"
                 v-for="tx in ckETHTransactions[icNetworkTokens.tokenId].slice(
                   (ckETHTransactionsPage - 1) * ckETHTransactionsPageSize,
                   ckETHTransactionsPage * ckETHTransactionsPageSize
                 )"
-                :key="tx.hash"
               >
                 <div class="btc-txs-hash">
                   <div>{{ tx.timeStamp | filterTime }}</div>
@@ -3177,12 +3177,12 @@
                     </span>
                     <a-icon
                       class="has-update"
+                      type="check-circle"
                       v-show="
                         tx.blockNumber &&
                         Number(tx.blockNumber) <=
                           updateCkETHBlockHeight[icNetworkTokens.tokenId]
                       "
-                      type="check-circle"
                     />
                   </div>
                 </div>
@@ -3218,8 +3218,8 @@
                       {{ tx.to | ellipsisAccount() }}
                     </a>
                     <a
-                      class="margin-left-auto"
                       :href="`${ethLink}/tx/${tx.hash}`"
+                      class="margin-left-auto"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
                     >
@@ -3255,26 +3255,26 @@
           </a-spin>
           <div class="pagination-transaction-main">
             <a-pagination
-              v-if="ckETHTransactionTotal > ckETHTransactionsPageSize"
-              class="pagination-transaction"
-              :default-page-size="ckETHTransactionsPageSize"
               :current="ckETHTransactionsPage"
+              :default-page-size="ckETHTransactionsPageSize"
               :total="ckETHTransactionTotal"
               @change="pageChangeETH"
+              class="pagination-transaction"
+              v-if="ckETHTransactionTotal > ckETHTransactionsPageSize"
             />
           </div>
         </div>
       </div>
     </a-modal>
     <a-modal
-      v-model="forgeModal"
-      centered
-      width="750px"
+      :after-close="afterForgeClose"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="transfer-modal forge-modal"
-      :after-close="afterForgeClose"
+      v-model="forgeModal"
+      width="750px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">{{ forgeTitle }}</div>
@@ -3285,8 +3285,8 @@
       </div>
       <div class="step-list">
         <span
-          @click="previousMintStep()"
           :class="{ active: mintStep > 1 }"
+          @click="previousMintStep()"
           class="step-previous pc-show"
         >
           <a-tooltip placement="top">
@@ -3295,16 +3295,16 @@
           </a-tooltip>
         </span>
         <div
+          :class="{ active: mintStep === 1 }"
           @click="changeMintStep(1)"
           class="pointer"
-          :class="{ active: mintStep === 1 }"
         >
           <span class="step-list-num">1</span><span>Send</span>
         </div>
         <div
+          :class="{ active: mintStep === 2 }"
           @click="changeMintStep(2)"
           class="pointer step-list-center"
-          :class="{ active: mintStep === 2 }"
         >
           <span class="step-list-line"></span>
           <span class="step-list-center-t"
@@ -3312,8 +3312,8 @@
           >
         </div>
         <span
-          @click="nextMintStep(2)"
           :class="{ active: mintStep < 2 }"
+          @click="nextMintStep(2)"
           class="step-next pc-show"
           ><a-tooltip placement="top">
             <template slot="title">Next</template>
@@ -3321,7 +3321,7 @@
         ></span>
       </div>
       <div class="forge-main">
-        <div v-show="mintStep === 1" class="forge-left">
+        <div class="forge-left" v-show="mintStep === 1">
           <div class="btc-address-code">
             <span>BTC Deposit Address</span>
             <a-spin
@@ -3330,14 +3330,14 @@
               "
             >
               <img
-                v-show="BTCType === BTCTypeEnum.icBTC"
                 :src="icAccountCode"
                 alt=""
+                v-show="BTCType === BTCTypeEnum.icBTC"
               />
               <img
-                v-show="BTCType === BTCTypeEnum.ckBTC"
                 :src="accountCode"
                 alt=""
+                v-show="BTCType === BTCTypeEnum.ckBTC"
               />
             </a-spin>
             <div
@@ -3357,19 +3357,19 @@
                 v-clipboard:copy="
                   BTCType === BTCTypeEnum.icBTC ? BTCAddressIc : BTCAddressCk
                 "
-                v-clipboard:success="onCopySuccess"
                 v-clipboard:error="onError"
+                v-clipboard:success="onCopySuccess"
               />
             </div>
             <div
-              v-show="BTCType === BTCTypeEnum.icBTC && BTCAddressIc"
               class="btc-config mt20 base-font-normal"
+              v-show="BTCType === BTCTypeEnum.icBTC && BTCAddressIc"
             >
               Minimum amount 0.0002 BTC, maximum amount 0.05 BTC.
             </div>
             <div
-              v-show="BTCType === BTCTypeEnum.ckBTC && BTCAddressCk"
               class="btc-config mt20 base-font-normal"
+              v-show="BTCType === BTCTypeEnum.ckBTC && BTCAddressCk"
             >
               KYT Fee 0.00002 BTC.
               <!--Minimum amount 0.0001 BTC.-->
@@ -3377,22 +3377,22 @@
           </div>
           <!--<div class="step-footer">Step1: Send BTC to the address above.</div>-->
         </div>
-        <div v-show="mintStep === 2" class="forge-right w100">
-          <div style="margin-bottom: 20px" class="btc-txs">
+        <div class="forge-right w100" v-show="mintStep === 2">
+          <div class="btc-txs" style="margin-bottom: 20px">
             <div class="btc-txs-header base-font-title">
               <span
+                @click="forgeModalBTCTransactions = true"
                 class="margin-left-auto pointer"
                 style="color: #1996c4; font-size: 12px"
-                @click="forgeModalBTCTransactions = true"
               >
                 Transactions
               </span>
             </div>
             <button
-              type="button"
+              @click="forge(BTCType)"
               class="primary w100"
               style="height: 36px; margin-top: 30px"
-              @click="forge(BTCType)"
+              type="button"
             >
               Mint {{ BTCType }}
             </button>
@@ -3409,22 +3409,22 @@
               &nbsp;{{ BTCType }}&nbsp;
               <a-icon
                 @click="refreshCkBTCBalance(BTCType)"
+                class="reload-icon"
+                type="reload"
                 v-show="
                   BTCType === BTCTypeEnum.ckBTC
                     ? !refreshCkBTCBalanceLoading
                     : !refreshIcBTCBalanceLoading
                 "
-                type="reload"
-                class="reload-icon"
               />
               <a-icon
+                class="reload-icon"
+                type="loading"
                 v-show="
                   BTCType === BTCTypeEnum.ckBTC
                     ? refreshCkBTCBalanceLoading
                     : refreshIcBTCBalanceLoading
                 "
-                type="loading"
-                class="reload-icon"
               />
             </div>
             <div class="step-footer-confirmation">
@@ -3439,13 +3439,13 @@
       </div>
     </a-modal>
     <a-modal
-      v-model="forgeModalBTCTransactions"
-      width="750px"
-      centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
+      v-model="forgeModalBTCTransactions"
+      width="750px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">BTC Latest Transactions</div>
@@ -3453,17 +3453,17 @@
       <div class="forge-right">
         <div class="btc-txs">
           <a-spin
-            v-show="BTCType === BTCTypeEnum.icBTC"
-            class="btc-txs-ul-spin"
             :spinning="showBTCTransactions"
+            class="btc-txs-ul-spin"
+            v-show="BTCType === BTCTypeEnum.icBTC"
           >
             <ul class="btc-txs-ul" v-if="BTCTransactions.length">
               <li
+                :key="tx.txid"
                 v-for="tx in BTCTransactions.slice(
                   (BTCTransactionsPage - 1) * BTCTransactionsPageSize,
                   BTCTransactionsPage * BTCTransactionsPageSize
                 )"
-                :key="tx.txid"
               >
                 <div class="btc-txs-hash">
                   <div>{{ tx.status.block_time | filterTime }}</div>
@@ -3490,11 +3490,11 @@
                     </span>
                     <a-icon
                       class="has-update"
+                      type="check-circle"
                       v-show="
                         tx.status.block_height &&
                         tx.status.block_height <= updateBlockHeight
                       "
-                      type="check-circle"
                     />
                   </div>
                 </div>
@@ -3502,13 +3502,13 @@
                   <div class="btc-txs-info-left">
                     <div>
                       <div
-                        v-for="(account, index) in tx.vin"
                         :key="account.txid"
+                        v-for="(account, index) in tx.vin"
                       >
                         <div class="flex-auto">
                           <a
-                            class="flex1"
                             :href="`https://www.blockchain.com/btc/address/${account.prevout.scriptpubkey_address}`"
+                            class="flex1"
                             rel="nofollow noreferrer noopener"
                             target="_blank"
                           >
@@ -3518,7 +3518,7 @@
                             }}
                           </a>
                           <span class="tx-balance flex1">
-                            <a-icon v-show="index === 0" type="arrow-right"
+                            <a-icon type="arrow-right" v-show="index === 0"
                           /></span>
                         </div>
                       </div>
@@ -3526,18 +3526,11 @@
                   </div>
                   <div>
                     <div
+                      :key="index"
                       class="flex-auto flex-auto-h5"
                       v-for="(out, index) in tx.vout"
-                      :key="index"
                     >
                       <a
-                        v-show="
-                          (BTCType === BTCTypeEnum.icBTC &&
-                            out.scriptpubkey_address === BTCAddressIc) ||
-                          (BTCType === BTCTypeEnum.ckBTC &&
-                            out.scriptpubkey_address === BTCAddressCk)
-                        "
-                        class="flex1"
                         :class="{
                           'out-address-m':
                             (BTCType === BTCTypeEnum.icBTC &&
@@ -3546,8 +3539,15 @@
                               out.scriptpubkey_address === BTCAddressCk)
                         }"
                         :href="`https://www.blockchain.com/btc/address/${out.scriptpubkey_address}`"
+                        class="flex1"
                         rel="nofollow noreferrer noopener"
                         target="_blank"
+                        v-show="
+                          (BTCType === BTCTypeEnum.icBTC &&
+                            out.scriptpubkey_address === BTCAddressIc) ||
+                          (BTCType === BTCTypeEnum.ckBTC &&
+                            out.scriptpubkey_address === BTCAddressCk)
+                        "
                       >
                         {{ out.scriptpubkey_address | ellipsisAccount(6) }}
                       </a>
@@ -3562,16 +3562,16 @@
                         ......
                       </span>
                       <a
+                        :href="`https://www.blockchain.com/btc/tx/${tx.txid}`"
+                        class="tx-balance out-address-m"
+                        rel="nofollow noreferrer noopener"
+                        target="_blank"
                         v-show="
                           (BTCType === BTCTypeEnum.icBTC &&
                             out.scriptpubkey_address === BTCAddressIc) ||
                           (BTCType === BTCTypeEnum.ckBTC &&
                             out.scriptpubkey_address === BTCAddressCk)
                         "
-                        class="tx-balance out-address-m"
-                        :href="`https://www.blockchain.com/btc/tx/${tx.txid}`"
-                        rel="nofollow noreferrer noopener"
-                        target="_blank"
                         >{{
                           out.value | bigintToFloat(8, 8) | formatAmount(8)
                         }}
@@ -3590,17 +3590,17 @@
             </div>
           </a-spin>
           <a-spin
-            v-show="BTCType === BTCTypeEnum.ckBTC"
-            class="btc-txs-ul-spin"
             :spinning="showCkBTCTransactions"
+            class="btc-txs-ul-spin"
+            v-show="BTCType === BTCTypeEnum.ckBTC"
           >
             <ul class="btc-txs-ul" v-if="ckBTCTransactions.length">
               <li
+                :key="tx.txid"
                 v-for="tx in ckBTCTransactions.slice(
                   (ckBTCTransactionsPage - 1) * ckBTCTransactionsPageSize,
                   ckBTCTransactionsPage * ckBTCTransactionsPageSize
                 )"
-                :key="tx.txid"
               >
                 <div class="btc-txs-hash">
                   <div>{{ tx.status.block_time | filterTime }}</div>
@@ -3627,11 +3627,11 @@
                     </span>
                     <a-icon
                       class="has-update"
+                      type="check-circle"
                       v-show="
                         tx.status.block_height &&
                         tx.status.block_height <= updateCkBlockHeight
                       "
-                      type="check-circle"
                     />
                   </div>
                 </div>
@@ -3639,13 +3639,13 @@
                   <div class="btc-txs-info-left">
                     <div>
                       <div
-                        v-for="(account, index) in tx.vin"
                         :key="account.txid"
+                        v-for="(account, index) in tx.vin"
                       >
                         <div class="flex-auto">
                           <a
-                            class="flex1"
                             :href="`https://www.blockchain.com/btc/address/${account.prevout.scriptpubkey_address}`"
+                            class="flex1"
                             rel="nofollow noreferrer noopener"
                             target="_blank"
                           >
@@ -3655,7 +3655,7 @@
                             }}
                           </a>
                           <span class="tx-balance flex1">
-                            <a-icon v-show="index === 0" type="arrow-right"
+                            <a-icon type="arrow-right" v-show="index === 0"
                           /></span>
                         </div>
                       </div>
@@ -3663,18 +3663,11 @@
                   </div>
                   <div>
                     <div
+                      :key="index"
                       class="flex-auto flex-auto-h5"
                       v-for="(out, index) in tx.vout"
-                      :key="index"
                     >
                       <a
-                        v-show="
-                          (BTCType === BTCTypeEnum.icBTC &&
-                            out.scriptpubkey_address === BTCAddressIc) ||
-                          (BTCType === BTCTypeEnum.ckBTC &&
-                            out.scriptpubkey_address === BTCAddressCk)
-                        "
-                        class="flex1"
                         :class="{
                           'out-address-m':
                             (BTCType === BTCTypeEnum.icBTC &&
@@ -3683,8 +3676,15 @@
                               out.scriptpubkey_address === BTCAddressCk)
                         }"
                         :href="`https://www.blockchain.com/btc/address/${out.scriptpubkey_address}`"
+                        class="flex1"
                         rel="nofollow noreferrer noopener"
                         target="_blank"
+                        v-show="
+                          (BTCType === BTCTypeEnum.icBTC &&
+                            out.scriptpubkey_address === BTCAddressIc) ||
+                          (BTCType === BTCTypeEnum.ckBTC &&
+                            out.scriptpubkey_address === BTCAddressCk)
+                        "
                       >
                         {{ out.scriptpubkey_address | ellipsisAccount(6) }}
                       </a>
@@ -3699,16 +3699,16 @@
                         ......
                       </span>
                       <a
+                        :href="`https://www.blockchain.com/btc/tx/${tx.txid}`"
+                        class="tx-balance out-address-m"
+                        rel="nofollow noreferrer noopener"
+                        target="_blank"
                         v-show="
                           (BTCType === BTCTypeEnum.icBTC &&
                             out.scriptpubkey_address === BTCAddressIc) ||
                           (BTCType === BTCTypeEnum.ckBTC &&
                             out.scriptpubkey_address === BTCAddressCk)
                         "
-                        class="tx-balance out-address-m"
-                        :href="`https://www.blockchain.com/btc/tx/${tx.txid}`"
-                        rel="nofollow noreferrer noopener"
-                        target="_blank"
                         >{{
                           out.value | bigintToFloat(8, 8) | formatAmount(8)
                         }}
@@ -3728,26 +3728,26 @@
           </a-spin>
           <div class="pagination-transaction-main">
             <a-pagination
+              :current="BTCTransactionsPage"
+              :default-page-size="BTCTransactionsPageSize"
+              :total="BTCTransactionTotal"
+              @change="pageChange"
+              class="pagination-transaction"
               v-if="
                 BTCTransactionTotal > BTCTransactionsPageSize &&
                 BTCType === BTCTypeEnum.icBTC
               "
-              class="pagination-transaction"
-              :default-page-size="BTCTransactionsPageSize"
-              :current="BTCTransactionsPage"
-              :total="BTCTransactionTotal"
-              @change="pageChange"
             />
             <a-pagination
+              :current="ckBTCTransactionsPage"
+              :default-page-size="ckBTCTransactionsPageSize"
+              :total="ckBTCTransactionTotal"
+              @change="pageChange"
+              class="pagination-transaction"
               v-if="
                 ckBTCTransactionTotal > ckBTCTransactionsPageSize &&
                 BTCType === BTCTypeEnum.ckBTC
               "
-              class="pagination-transaction"
-              :default-page-size="ckBTCTransactionsPageSize"
-              :current="ckBTCTransactionsPage"
-              :total="ckBTCTransactionTotal"
-              @change="pageChange"
             />
           </div>
           <!--<div class="step-footer">
@@ -3771,14 +3771,14 @@
       </div>
     </a-modal>
     <a-modal
-      v-model="dissolveModal"
-      centered
-      width="750px"
+      :after-close="afterClose"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
-      :after-close="afterClose"
+      centered
       class="transfer-modal forge-modal dissolve-modal"
+      v-model="dissolveModal"
+      width="750px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">{{ dissolveTitle }}</div>
@@ -3789,8 +3789,8 @@
       </div>
       <div class="step-list">
         <span
-          @click="previousRetrieveStep()"
           :class="{ active: retrieveStep > 1 }"
+          @click="previousRetrieveStep()"
           class="step-previous pc-show"
         >
           <a-tooltip placement="top">
@@ -3799,16 +3799,16 @@
           </a-tooltip>
         </span>
         <div
+          :class="{ active: retrieveStep === 1 }"
           @click="retrieveStep = 1"
           class="pointer"
-          :class="{ active: retrieveStep === 1 }"
         >
           <span class="step-list-num">1</span><span>Transfer</span>
         </div>
         <div
+          :class="{ active: retrieveStep === 2 }"
           @click="retrieveStep = 2"
           class="pointer step-list-center"
-          :class="{ active: retrieveStep === 2 }"
         >
           <span class="step-list-line"></span>
           <span class="step-list-center-t"
@@ -3817,24 +3817,24 @@
           <span class="step-list-line"></span>
         </div>
         <div
+          :class="{ active: retrieveStep === 3 }"
           @click="retrieveStep = 3"
           class="pointer"
-          :class="{ active: retrieveStep === 3 }"
         >
           <span class="step-list-num">3</span><span>Records</span>
         </div>
         <span
-          @click="nextRetrieveStep(3)"
           :class="{ active: retrieveStep < 3 }"
+          @click="nextRetrieveStep(3)"
           class="step-next pc-show"
           ><a-tooltip placement="top">
             <template slot="title">Next</template>
             <a-icon type="double-right" /> </a-tooltip
         ></span>
       </div>
-      <a-spin class="dissolve-modal-spin" :spinning="!withdrawalAccount">
+      <a-spin :spinning="!withdrawalAccount" class="dissolve-modal-spin">
         <div class="forge-main">
-          <div v-show="retrieveStep === 1" class="forge-left">
+          <div class="forge-left" v-show="retrieveStep === 1">
             <div>
               <div>
                 <div class="base-font-title">
@@ -3842,9 +3842,9 @@
                 </div>
               </div>
               <a-form-model
-                ref="form"
                 :model="dissolveForm"
                 :rules="dissolveFormRules"
+                ref="form"
               >
                 <a-form-model-item :colon="false" prop="amount">
                   <template slot="label"
@@ -3853,12 +3853,12 @@
                     >
                   </template>
                   <a-input
-                    v-model="dissolveForm.amount"
                     autocomplete="off"
-                    type="text"
-                    v-only-float="8"
                     min="0"
                     placeholder="0.00"
+                    type="text"
+                    v-model="dissolveForm.amount"
+                    v-only-float="8"
                   />
                 </a-form-model-item>
               </a-form-model>
@@ -3881,26 +3881,26 @@
                     {{ BTCType }}&nbsp;
                     <a-icon
                       @click="refreshCkBTCBalance(BTCType)"
+                      class="reload-icon"
+                      type="reload"
                       v-show="
                         BTCType === BTCTypeEnum.ckBTC
                           ? !refreshCkBTCBalanceLoading
                           : !refreshIcBTCBalanceLoading
                       "
-                      type="reload"
-                      class="reload-icon"
                     />
                     <a-icon
+                      class="reload-icon"
+                      type="loading"
                       v-show="
                         BTCType === BTCTypeEnum.ckBTC
                           ? refreshCkBTCBalanceLoading
                           : refreshIcBTCBalanceLoading
                       "
-                      type="loading"
-                      class="reload-icon"
                     />
                     <span
-                      class="transfer-balance-max pc-show"
                       @click="setMaxRetrieve"
+                      class="transfer-balance-max pc-show"
                     >
                       Max
                     </span>
@@ -3917,16 +3917,16 @@
                   </div>
                 </div>
                 <router-link
-                  class="transfer-balance-right pc-show"
                   :to="`/ICDex/${BTCType}/ICP`"
+                  class="transfer-balance-right pc-show"
                 >
                   Trade
                 </router-link>
               </div>
               <button
                 @click="transferCkBTC"
-                type="button"
                 class="primary retrieve-button w100 mt20"
+                type="button"
               >
                 Transfer {{ BTCType }}
               </button>
@@ -3935,24 +3935,24 @@
           <div class="w100" v-show="retrieveStep === 2">
             <div>
               <!--<div class="base-font-title">Retrieve BTC:</div>-->
-              <div v-show="BTCType === BTCTypeEnum.icBTC" class="ic-btc-tip">
+              <div class="ic-btc-tip" v-show="BTCType === BTCTypeEnum.icBTC">
                 icBTC only supports P2PKH addresses (Legacy addresses, starting
                 with "1" prefix on the Bitcoin mainnet).
               </div>
               <a-form-model
-                ref="retrieveForm"
                 :model="retrieveForm"
                 :rules="retrieveFormRules"
+                ref="retrieveForm"
               >
                 <a-form-model-item
                   label="Destination BTC address"
                   prop="address"
                 >
                   <a-input
-                    v-model="retrieveForm.address"
                     autocomplete="off"
-                    type="text"
                     placeholder="BTC address"
+                    type="text"
+                    v-model="retrieveForm.address"
                   />
                 </a-form-model-item>
               </a-form-model>
@@ -3975,15 +3975,15 @@
               </div>
               <button
                 :disabled="!canRetrieve"
-                type="button"
-                class="primary retrieve-button w100 mt20"
                 @click="dissolve"
+                class="primary retrieve-button w100 mt20"
+                type="button"
               >
                 Retrieve {{ availableBalance | bigintToFloat(8, 8) }} BTC
               </button>
             </div>
           </div>
-          <div v-show="retrieveStep === 3" class="forge-right w100">
+          <div class="forge-right w100" v-show="retrieveStep === 3">
             <div class="base-font-title">
               Retrieved:(Finalizing BTC retrieval can take up to an hour.)
             </div>
@@ -4002,11 +4002,11 @@
                   <div class="margin-left-auto">Txid</div>
                 </li>
                 <li
+                  :key="index"
                   v-for="(status, index) in retrieveBtcStatus.slice(
                     (retrieveBtcStatusPage - 1) * retrieveBtcStatusPageSize,
                     retrieveBtcStatusPage * retrieveBtcStatusPageSize
                   )"
-                  :key="index"
                 >
                   <div class="retrieve-btc-status-block-index">
                     {{ status.blockIndex }}
@@ -4014,23 +4014,23 @@
                   <div class="retrieve-btc-status-flex">
                     {{ status.status && Object.keys(status.status)[0] }}
                     <span
+                      class="loading-spinner"
                       v-show="
                         status.status &&
                         ['Pending', 'Signing', 'Sending', 'Submitted'].includes(
                           Object.keys(status.status)[0]
                         )
                       "
-                      class="loading-spinner"
                     ></span>
                   </div>
                   <div class="margin-left-auto">
                     <a
-                      v-if="getRetrieveBtcTxid(status.status)"
                       :href="`https://www.blockchain.com/btc/tx/${getRetrieveBtcTxid(
                         status.status
                       )}`"
                       rel="nofollow noreferrer noopener"
                       target="_blank"
+                      v-if="getRetrieveBtcTxid(status.status)"
                     >
                       <span class="pc-show">{{
                         getRetrieveBtcTxid(status.status) | ellipsisAccount(8)
@@ -4051,12 +4051,12 @@
               </ul>
               <div class="pagination-transaction-main">
                 <a-pagination
-                  v-if="retrieveBtcStatus.length > retrieveBtcStatusPageSize"
-                  class="pagination-transaction"
-                  :default-page-size="retrieveBtcStatusPageSize"
                   :current="retrieveBtcStatusPage"
+                  :default-page-size="retrieveBtcStatusPageSize"
                   :total="retrieveBtcStatus.length"
                   @change="retrieveBtcStatusPageChange"
+                  class="pagination-transaction"
+                  v-if="retrieveBtcStatus.length > retrieveBtcStatusPageSize"
                 />
               </div>
             </div>
@@ -4065,14 +4065,14 @@
       </a-spin>
     </a-modal>
     <a-modal
-      v-model="dissolveModalETH"
-      centered
-      width="750px"
+      :after-close="afterForgeCloseETH"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
-      :after-close="afterForgeCloseETH"
+      centered
       class="transfer-modal forge-modal dissolve-modal"
+      v-model="dissolveModalETH"
+      width="750px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">{{ dissolveTitleETH }}</div>
@@ -4082,12 +4082,12 @@
         >-->
       </div>
       <div
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         class="step-list"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
       >
         <span
-          @click="previousRetrieveStep()"
           :class="{ active: retrieveStep > 1 }"
+          @click="previousRetrieveStep()"
           class="step-previous pc-show"
         >
           <a-tooltip placement="top">
@@ -4096,16 +4096,16 @@
           </a-tooltip>
         </span>
         <div
+          :class="{ active: retrieveStep === 1 }"
           @click="changeRetrieveStep(1)"
           class="pointer"
-          :class="{ active: retrieveStep === 1 }"
         >
           <span class="step-list-num">1</span><span>Transfer</span>
         </div>
         <div
+          :class="{ active: retrieveStep === 2 }"
           @click="changeRetrieveStep(2)"
           class="pointer step-list-center"
-          :class="{ active: retrieveStep === 2 }"
         >
           <span class="step-list-line"></span>
           <span class="step-list-center-t"
@@ -4114,25 +4114,25 @@
           <span class="step-list-line"></span>
         </div>
         <div
+          :class="{ active: retrieveStep === 3 }"
           @click="changeRetrieveStep(3)"
           class="pointer"
-          :class="{ active: retrieveStep === 3 }"
         >
           <span class="step-list-num">3</span><span>Records</span>
         </div>
         <span
-          @click="nextRetrieveStep(3)"
           :class="{ active: retrieveStep < 3 }"
+          @click="nextRetrieveStep(3)"
           class="step-next pc-show"
           ><a-tooltip placement="top">
             <template slot="title">Next</template>
             <a-icon type="double-right" /> </a-tooltip
         ></span>
       </div>
-      <a-spin class="dissolve-modal-spin" :spinning="!ckETHWithdrawalAccount">
+      <a-spin :spinning="!ckETHWithdrawalAccount" class="dissolve-modal-spin">
         <div
-          v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           class="forge-main"
+          v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         >
           <div class="w100" v-show="retrieveStep === 1">
             <div>
@@ -4148,9 +4148,9 @@
 							</div>-->
             </div>
             <a-form-model
-              ref="ethForm"
               :model="ethDissolveForm"
               :rules="ethDissolveFormRules"
+              ref="ethForm"
             >
               <a-form-model-item :colon="false" prop="retrieveAmount">
                 <template slot="label"
@@ -4159,12 +4159,12 @@
                   >
                 </template>
                 <a-input
-                  v-model="ethDissolveForm.retrieveAmount"
                   autocomplete="off"
-                  type="text"
-                  v-only-float="8"
                   min="0"
                   placeholder="0.00"
+                  type="text"
+                  v-model="ethDissolveForm.retrieveAmount"
+                  v-only-float="8"
                 />
               </a-form-model-item>
             </a-form-model>
@@ -4189,18 +4189,18 @@
                   }})&nbsp;
                   <a-icon
                     @click="refreshCkETHBalance()"
-                    v-show="!refreshCkETHBalanceLoading"
-                    type="reload"
                     class="reload-icon"
+                    type="reload"
+                    v-show="!refreshCkETHBalanceLoading"
                   />
                   <a-icon
-                    v-show="refreshCkETHBalanceLoading"
-                    type="loading"
                     class="reload-icon"
+                    type="loading"
+                    v-show="refreshCkETHBalanceLoading"
                   />
                   <span
-                    class="transfer-balance-max pc-show"
                     @click="setMaxETHRetrieve(null)"
+                    class="transfer-balance-max pc-show"
                   >
                     Max
                   </span>
@@ -4222,22 +4222,22 @@
                 </div>
               </div>
               <router-link
+                :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
+                class="transfer-balance-right pc-show"
                 v-show="
                   !icNetworkTokens.symbol
                     .toLocaleLowerCase()
                     .includes('usdc') &&
                   !icNetworkTokens.symbol.toLocaleLowerCase().includes('usdt')
                 "
-                class="transfer-balance-right pc-show"
-                :to="`/ICDex/${icNetworkTokens.symbol}/ICP`"
               >
                 Trade
               </router-link>
             </div>
             <button
               @click="transferCkETH"
-              type="button"
               class="primary retrieve-button w100"
+              type="button"
             >
               Transfer {{ icNetworkTokens.symbol }} ({{
                 networkIds[icNetworkTokens.networkId]
@@ -4247,9 +4247,9 @@
           <div class="w100" v-show="retrieveStep === 2">
             <div>
               <a-form-model
-                ref="ethRetrieveForm"
                 :model="ethRetrieveForm"
                 :rules="ethRetrieveFormRules"
+                ref="ethRetrieveForm"
               >
                 <a-form-model-item
                   :label="`Destination ${icNetworkTokens.icTokenInfo.symbol} (${
@@ -4258,12 +4258,12 @@
                   prop="address"
                 >
                   <a-input
-                    v-model="ethRetrieveForm.address"
-                    autocomplete="off"
-                    type="text"
                     :placeholder="`${icNetworkTokens.icTokenInfo.symbol} (${
                       networkIds[otherNetworkTokens.networkId]
                     }) address`"
+                    autocomplete="off"
+                    type="text"
+                    v-model="ethRetrieveForm.address"
                   />
                 </a-form-model-item>
               </a-form-model>
@@ -4300,10 +4300,10 @@
                 }})
               </div>
               <button
-                type="button"
-                class="primary retrieve-button w100 mt20"
                 :disabled="!canRetrieveETH"
                 @click="dissolveCkETH"
+                class="primary retrieve-button w100 mt20"
+                type="button"
               >
                 Retrieve
                 {{
@@ -4325,13 +4325,13 @@
                 <div style="width: 25%">TxHash</div>
               </li>-->
               <li
+                :key="index"
+                class="retrieve-btc-status-ul-table-eth"
+                style="align-items: flex-start"
                 v-for="(item, index) in retrieveEvent.slice(
                   (retrieveEventPage - 1) * retrieveEventPageSize,
                   retrieveEventPage * retrieveEventPageSize
                 )"
-                :key="index"
-                style="align-items: flex-start"
-                class="retrieve-btc-status-ul-table-eth"
               >
                 <!--<span style="width: 15%" v-if="item[1].withdraw">
                   {{ item[1].withdraw.txIndex }}
@@ -4371,13 +4371,13 @@
                   </span>
                 </span>
                 <span
-                  style="min-width: 30%"
                   class="
                     base-font-title
                     margin-left-auto
                     text-right
                     retrieve-margin-left-auto
                   "
+                  style="min-width: 30%"
                   v-if="
                     item[2] &&
                     item[2].withdrawResult &&
@@ -4394,42 +4394,42 @@
                   }})&nbsp;
                 </span>
                 <div
-                  v-if="item[2] && item[2].withdrawResult"
                   class="retrieve-btc-status-flex"
+                  v-if="item[2] && item[2].withdrawResult"
                 >
-                  <div v-if="item[2].withdrawResult.err" class="eth-tx-hash">
+                  <div class="eth-tx-hash" v-if="item[2].withdrawResult.err">
                     <span class="base-red">&nbsp;(Error)</span>
                   </div>
                 </div>
               </li>
             </ul>
             <div
-              v-if="!retrieveEvent.length"
               class="no-retrieve-btc-status-ul"
               style="display: flex"
+              v-if="!retrieveEvent.length"
             >
               No Record
             </div>
             <div class="pagination-transaction-main mt20">
               <a-pagination
-                v-if="retrieveEvent.length > retrieveEventPageSize"
-                class="pagination-transaction"
-                :default-page-size="retrieveEventPageSize"
                 :current="retrieveEventPage"
+                :default-page-size="retrieveEventPageSize"
                 :total="retrieveEvent.length"
                 @change="retrieveEventPageChange"
+                class="pagination-transaction"
+                v-if="retrieveEvent.length > retrieveEventPageSize"
               />
             </div>
           </div>
         </div>
         <div
-          v-show="retrieveStep === 2 && retrieveETHStatus.length"
           class="forge-main mt20"
+          v-show="retrieveStep === 2 && retrieveETHStatus.length"
         >
           <a-spin
-            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
-            class="btc-txs-ul-spin w100"
             :spinning="showRetrieveETHStatus"
+            class="btc-txs-ul-spin w100"
+            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           >
             <div class="btc-txs retrieve-btc-status">
               <div class="base-font-title">Pending</div>
@@ -4440,11 +4440,11 @@
                   <div class="margin-left-auto">Amount</div>
                 </li>
                 <li
+                  :key="index"
                   v-for="(status, index) in retrieveETHStatus.slice(
                     (retrieveETHStatusPage - 1) * retrieveETHStatusPageSize,
                     retrieveETHStatusPage * retrieveETHStatusPageSize
                   )"
-                  :key="index"
                 >
                   <div class="retrieve-btc-status-block-index">
                     {{ status[0] }}
@@ -4463,16 +4463,17 @@
                         v-if="status[1].txHash && status[1].txHash.length"
                       >
                         <a
-                          v-for="hash in status[1].txHash"
-                          :key="hash"
                           :href="`${ethLink}/tx/${hash}`"
+                          :key="hash"
                           rel="nofollow noreferrer noopener"
                           target="_blank"
+                          v-for="hash in status[1].txHash"
                         >
                           ({{ hash | ellipsisAccount() }})
                         </a>
                       </div>
                       <span
+                        class="loading-spinner"
                         v-show="
                           status[1].status &&
                           [
@@ -4483,7 +4484,6 @@
                             'Submitted'
                           ].includes(Object.keys(status[1].status)[0])
                         "
-                        class="loading-spinner"
                       ></span>
                     </div>
                   </div>
@@ -4512,12 +4512,12 @@
               </ul>
               <ul class="retrieve-btc-status-ul h5-show">
                 <li
+                  :key="index"
+                  style="font-size: 12px"
                   v-for="(status, index) in retrieveETHStatus.slice(
                     (retrieveETHStatusPage - 1) * retrieveETHStatusPageSize,
                     retrieveETHStatusPage * retrieveETHStatusPageSize
                   )"
-                  :key="index"
-                  style="font-size: 12px"
                 >
                   <div class="li-h5-item">
                     <span class="li-left">TxIndex:</span>
@@ -4534,6 +4534,7 @@
                         }}
                       </span>
                       <span
+                        class="loading-spinner"
                         v-show="
                           status[1].status &&
                           [
@@ -4544,7 +4545,6 @@
                             'Submitted'
                           ].includes(Object.keys(status[1].status)[0])
                         "
-                        class="loading-spinner"
                       ></span>
                     </span>
                   </div>
@@ -4570,12 +4570,12 @@
               </ul>
               <div class="pagination-transaction-main">
                 <a-pagination
-                  v-if="retrieveETHStatus.length > retrieveETHStatusPageSize"
-                  class="pagination-transaction"
-                  :default-page-size="retrieveETHStatusPageSize"
                   :current="retrieveETHStatusPage"
+                  :default-page-size="retrieveETHStatusPageSize"
                   :total="retrieveETHStatus.length"
                   @change="retrieveETHStatusPageChange"
+                  class="pagination-transaction"
+                  v-if="retrieveETHStatus.length > retrieveETHStatusPageSize"
                 />
               </div>
             </div>
@@ -4584,27 +4584,27 @@
       </a-spin>
     </a-modal>
     <a-modal
-      v-model="claimModalTransactions"
-      width="500px"
-      centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
+      v-model="claimModalTransactions"
+      width="500px"
     >
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">Claim history</div>
       </div>
       <div class="forge-right">
         <div class="btc-txs">
-          <ul v-show="depositInfo.length" class="btc-txs-ul">
+          <ul class="btc-txs-ul" v-show="depositInfo.length">
             <li
+              :key="index"
+              style="display: flex; padding: 10px 0"
               v-for="(item, index) in depositInfo.slice(
                 (depositInfoPage - 1) * depositInfoPageSize,
                 depositInfoPage * depositInfoPageSize
               )"
-              :key="index"
-              style="display: flex; padding: 10px 0"
             >
               Txid:&nbsp;&nbsp;
               <a
@@ -4619,7 +4619,9 @@
                   {{ item[0] | ellipsisAccount(10) }}
                 </span> </a
               ><span
+                @click="tryClaim(item[0])"
                 class="margin-left-auto pointer"
+                style="color: #51b7c3; font-size: 14px"
                 v-if="
                   !item[2] &&
                   !(
@@ -4629,62 +4631,60 @@
                   ) &&
                   signatureForm.txHash !== item[0]
                 "
-                style="color: #51b7c3; font-size: 14px"
-                @click="tryClaim(item[0])"
                 >Claim</span
               >
             </li>
           </ul>
           <div
             class="no-btc-txs-ul"
-            v-show="!depositInfo.length"
             style="display: flex"
+            v-show="!depositInfo.length"
           >
             No Record
           </div>
           <div class="pagination-transaction-main mt20">
             <a-pagination
-              v-if="depositInfo.length > depositInfoPageSize"
-              class="pagination-transaction"
-              :default-page-size="depositInfoPageSize"
               :current="depositInfoPage"
+              :default-page-size="depositInfoPageSize"
               :total="depositInfo.length"
               @change="pageChangeDepositInfo"
+              class="pagination-transaction"
+              v-if="depositInfo.length > depositInfoPageSize"
             />
           </div>
         </div>
       </div>
     </a-modal>
     <a-modal
-      v-model="metaMaskVisible"
-      centered
-      width="400px"
+      :closable="false"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
-      :closable="false"
+      centered
       class="delete-modal"
+      v-model="metaMaskVisible"
+      width="400px"
     >
       <p>MetaMask is not installed. Click "OK" to install MetaMask!</p>
       <div class="delete-button">
-        <button type="button" @click="metaMaskVisible = false">Cancel</button>
-        <button type="button" class="default" @click="installMetaMask">
+        <button @click="metaMaskVisible = false" type="button">Cancel</button>
+        <button @click="installMetaMask" class="default" type="button">
           OK
         </button>
       </div>
     </a-modal>
     <a-modal
-      v-model="showEthAddressCode"
-      centered
-      width="400px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="delete-modal"
+      v-model="showEthAddressCode"
+      width="400px"
     >
       <div
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
         class="btc-address-code"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
       >
         <p>
           {{ icNetworkTokens.icTokenInfo.symbol }} ({{
@@ -4702,28 +4702,28 @@
             class="pointer"
             type="copy"
             v-clipboard:copy="ETHAddressCk"
-            v-clipboard:success="onCopySuccess"
             v-clipboard:error="onError"
+            v-clipboard:success="onCopySuccess"
           />
         </div>
       </div>
     </a-modal>
     <a-modal
-      v-model="activePendingModal"
-      width="750px"
-      title="Activities"
-      centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
+      centered
       class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
+      title="Activities"
+      v-model="activePendingModal"
+      width="750px"
     >
       <div>
         <div v-if="activePending.claim && activePending.claim.length">
           <div
+            :key="index"
             class="active-pending-item"
             v-for="(item, index) in activePending.claim"
-            :key="index"
           >
             <span v-if="ckTokenInfo[item.tokenId]">
               {{ ckTokenInfo[item.tokenId].symbol }}
@@ -4736,8 +4736,8 @@
               {{ item.txHash | ellipsisAccount }}
             </span>
             <button
-              class="primary"
               @click="toActive('claim', item.tokenId, item.txHash)"
+              class="primary"
             >
               View
             </button>
@@ -4745,9 +4745,9 @@
         </div>
         <div v-if="activePending.claim2 && activePending.claim2.length">
           <div
+            :key="index"
             class="active-pending-item"
             v-for="(item, index) in activePending.claim2"
-            :key="index"
           >
             <span v-if="ckTokenInfo[item.tokenId]">
               {{ ckTokenInfo[item.tokenId].symbol }}
@@ -4759,16 +4759,16 @@
             <span class="margin-left-auto">
               {{ item.txHash | ellipsisAccount }}
             </span>
-            <button class="primary" @click="toActive('claim2', item.tokenId)">
+            <button @click="toActive('claim2', item.tokenId)" class="primary">
               View
             </button>
           </div>
         </div>
         <div v-if="activePending.mint && activePending.mint.length">
           <div
+            :key="index"
             class="active-pending-item"
             v-for="(item, index) in activePending.mint"
-            :key="index"
           >
             <span v-if="ckTokenInfo[item.tokenId]">
               {{ ckTokenInfo[item.tokenId].symbol }}
@@ -4784,7 +4784,7 @@
                   | formatAmount(8)
               }}
             </span>
-            <button class="primary" @click="toActive('mint', item.tokenId)">
+            <button @click="toActive('mint', item.tokenId)" class="primary">
               View
             </button>
           </div>
@@ -4825,12 +4825,12 @@
               }}(IC Network)
             </span>
             <span
+              class="margin-left-auto"
               v-if="
                 ckTokenInfo[
                   ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
                 ]
               "
-              class="margin-left-auto"
             >
               {{
                 activePending.deposit[2][0].amount
@@ -4846,13 +4846,13 @@
               }}
             </span>
             <button
-              class="primary"
               @click="
                 toActive(
                   'deposit',
                   ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
                 )
               "
+              class="primary"
             >
               View
             </button>
@@ -4860,9 +4860,9 @@
         </div>
         <div v-if="activePending.retrieve && activePending.retrieve.length">
           <div
+            :key="index"
             class="active-pending-item"
             v-for="(item, index) in activePending.retrieve"
-            :key="index"
           >
             <span v-if="ckTokenInfo[item.tokenId]">
               {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
@@ -4878,7 +4878,7 @@
                   | formatAmount(8)
               }}
             </span>
-            <button class="primary" @click="toActive('retrieve', item.tokenId)">
+            <button @click="toActive('retrieve', item.tokenId)" class="primary">
               View
             </button>
           </div>
@@ -4913,12 +4913,12 @@
               }}
             </span>
             <span
+              class="margin-left-auto"
               v-if="
                 ckTokenInfo[
                   ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
                 ]
               "
-              class="margin-left-auto"
             >
               {{
                 activePending.retrieve2[1].amount
@@ -4934,13 +4934,13 @@
               }}
             </span>
             <button
-              class="primary"
               @click="
                 toActive(
                   'retrieve',
                   ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
                 )
               "
+              class="primary"
             >
               View
             </button>
@@ -4948,9 +4948,9 @@
         </div>
         <div v-if="activePending.mintCKETH && activePending.mintCKETH.length">
           <div
+            :key="index"
             class="active-pending-item"
             v-for="(item, index) in activePending.mintCKETH"
-            :key="index"
           >
             <span v-if="ckTokenInfo[item.tokenId]">
               {{ ckTokenInfo[item.tokenId].symbol }}
@@ -4963,8 +4963,8 @@
               {{ item.txHash | ellipsisAccount }}
             </span>
             <button
-              class="primary"
               @click="toActive('mintCKETH', item.tokenId)"
+              class="primary"
             >
               View
             </button>
@@ -4976,9 +4976,9 @@
           "
         >
           <div
+            :key="index"
             class="active-pending-item"
             v-for="(item, index) in activePending.retrieveCKETH"
-            :key="index"
           >
             <span v-if="ckTokenInfo[item.tokenId]">
               {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
@@ -4987,7 +4987,7 @@
             <span v-if="ckTokenInfo[item.tokenId]">
               {{ ckTokenInfo[item.tokenId].symbol }}
             </span>
-            <span v-if="ckTokenInfo[item.tokenId]" class="margin-left-auto">
+            <span class="margin-left-auto" v-if="ckTokenInfo[item.tokenId]">
               {{
                 item.amount
                   | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
@@ -5026,16 +5026,16 @@
       </div>
     </a-modal>
     <approve-icrc2
-      ref="approveIcrc2"
       :balance="balance"
       @approveIcrc2Success="approveIcrc2Success"
+      ref="approveIcrc2"
     ></approve-icrc2>
     <pro-wallet-swap
+      :tokens="tokens"
       :tokens-balance="tokensBalanceMain"
       :tokens-balance-sto="tokensBalancePro"
-      :tokens="tokens"
-      ref="proWalletSwap"
       @proWalletSwapSuccess="proWalletSwapSuccess"
+      ref="proWalletSwap"
     ></pro-wallet-swap>
   </div>
 </template>
@@ -5185,6 +5185,7 @@ export default class extends Mixins(BalanceMixin) {
   public principal!: string;
   @Prop()
   public type!: string;
+  public walletId: PrincipalString = '';
   @Prop()
   private walletMenu!: string;
   private ckETHMinterDfiService: ckETHMinterDfiService;
@@ -5210,7 +5211,6 @@ export default class extends Mixins(BalanceMixin) {
   private updateRetrieveBtcStatusTimer = null;
   private updateRetrieveBtcSubmittedStatusTimer = null;
   private topUpType = '';
-  public walletId: PrincipalString = '';
   private refreshBalanceLoading = false;
   private refreshIcBTCBalanceLoading = false;
   private refreshCkBTCBalanceLoading = false;
@@ -5450,6 +5450,7 @@ export default class extends Mixins(BalanceMixin) {
     time: string;
     BTCBlock?: number;
   }> = [];
+
   get depositDisabled(): boolean {
     if (this.depositing && this.depositing.length) {
       return true;
@@ -5488,6 +5489,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return false;
   }
+
   get changeMethodDisabled(): boolean {
     if (!this.mintDisabled) {
       const networkIdFrom =
@@ -5506,6 +5508,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return true;
   }
+
   get mintDisabled(): boolean {
     return !(
       typeof this.networkIdMint === 'number' &&
@@ -5514,6 +5517,7 @@ export default class extends Mixins(BalanceMixin) {
       typeof this.networkTokenIdMintTo === 'number'
     );
   }
+
   get availableBalance(): string {
     if (this.dissolveBalance) {
       let fee = 0;
@@ -5526,6 +5530,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return '';
   }
+
   get icNetworkTokens(): ICNetworkTokensInterface {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -5559,6 +5564,7 @@ export default class extends Mixins(BalanceMixin) {
     this.otherNetworkTokens = null;
     return null;
   }
+
   beforeDestroy(): void {
     num = 0;
     this.clearTime();
@@ -5579,6 +5585,7 @@ export default class extends Mixins(BalanceMixin) {
     window.clearInterval(this.activeTimer);
     this.activeTimer = null;
   }
+
   created(): void {
     this.DRC20TokenService = new DRC20TokenService();
     this.ckBTCMinterService = new ckBTCMinterService();
@@ -5609,9 +5616,15 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
+  public async transferSuccess(): Promise<void> {
+    this.getBalance();
+  }
+
   private showTraderAccounts(): void {
     this.$emit('showTraderAccounts');
   }
+
   private changeDepositMethod(depositMethod: number): void {
     if (this.changeMethodDisabled) {
       return;
@@ -5632,15 +5645,18 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.depositMethod = depositMethod;
   }
+
   private swapWallet(): void {
     (this.$refs as any).proWalletSwap.tokenId = LEDGER_CANISTER_ID;
     (this.$refs as any).proWalletSwap.type = 'toWallet';
     (this.$refs as any).proWalletSwap.showSwap = true;
     (this.$refs as any).proWalletSwap.visible = true;
   }
+
   private proWalletSwapSuccess(): void {
     this.getBalance();
   }
+
   private accountToAddress(account: Icrc1Account): string {
     if (account.subaccount[0]) {
       return principalToAccountIdentifier(
@@ -5651,6 +5667,7 @@ export default class extends Mixins(BalanceMixin) {
       return principalToAccountIdentifier(account.owner);
     }
   }
+
   private async getAccountEvents(): Promise<void> {
     const res = await this.ckETHMinterService.getAccountEvents(
       hexToBytes(
@@ -5665,6 +5682,7 @@ export default class extends Mixins(BalanceMixin) {
       this.filterBurn(res);
     }
   }
+
   private filterMint(val: Array<[ckETHEvent, Time]>): void {
     let mintRes: Array<[ckETHEvent]> = [];
     let mintItem: [ckETHEvent];
@@ -5734,6 +5752,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(mintRes);
     }
   }
+
   private filterBurn(val: Array<[ckETHEvent, Time]>): void {
     let burnRes: Array<[ckETHEvent]> = [];
     let burnItem: [ckETHEvent];
@@ -5768,13 +5787,16 @@ export default class extends Mixins(BalanceMixin) {
     this.retrieveEvent = burnRes;
     console.log(burnRes);
   }
+
   private async getMinterInfo(): Promise<void> {
     this.minterInfo = await this.ckETHMinterService.getMinterInfo();
-    if (Number(this.minterInfo.chainId) === 5) {
-      this.ethLink = 'https://goerli.etherscan.io';
-      this.etherscanLink = 'https://api-goerli.etherscan.io';
+    // 11155111(0xaa36a7)
+    if (Number(this.minterInfo.chainId) === 11155111) {
+      this.ethLink = 'https://sepolia.etherscan.io';
+      this.etherscanLink = 'https://api-sepolia.etherscan.io';
     }
   }
+
   private async getCkTokensDfi(): Promise<void> {
     const res = await this.ckETHMinterDfiService.get_minter_info(
       CK_ETH_MINTER_CANISTER_ID_TEST
@@ -5926,6 +5948,7 @@ export default class extends Mixins(BalanceMixin) {
     );
     console.log(this.ckTokenInfo);
   }
+
   private async getCKERC20TokenInfo(
     info: CkErc20Token,
     minimum_withdrawal_amount: bigint
@@ -5987,6 +6010,7 @@ export default class extends Mixins(BalanceMixin) {
       symbol: symbol
     });
   }
+
   private async getCkTokens(): Promise<void> {
     let res = await this.ckETHMinterService.getCkTokens();
     console.log(res);
@@ -6020,7 +6044,7 @@ export default class extends Mixins(BalanceMixin) {
         }
         this.ethersTokenIdToCkTokenId[item[1].tokenId] =
           item[1].ckLedgerId.toString();
-        if (Number(this.minterInfo.chainId) === 5) {
+        if (Number(this.minterInfo.chainId) === 11155111) {
           this.networkTokens.unshift({
             id: item[0],
             networkId: '2',
@@ -6051,7 +6075,8 @@ export default class extends Mixins(BalanceMixin) {
         this.networkTokens.unshift({
           id: item[0],
           networkId: '-1',
-          networkToIcId: Number(this.minterInfo.chainId) === 5 ? '2' : '1',
+          networkToIcId:
+            Number(this.minterInfo.chainId) === 11155111 ? '2' : '1',
           symbol: ckSymbol,
           tokenId: item[1].ckLedgerId.toString(),
           icTokenInfo: item[1]
@@ -6062,15 +6087,13 @@ export default class extends Mixins(BalanceMixin) {
     this.networkTokens.sort((a, b) => {
       if (
         a.symbol.toLocaleLowerCase().includes('test') ||
-        a.symbol.toLocaleLowerCase().includes('sepolia') ||
-        a.symbol.toLocaleLowerCase().includes('goerli')
+        a.symbol.toLocaleLowerCase().includes('sepolia')
       ) {
         return 1;
       }
       if (
         b.symbol.toLocaleLowerCase().includes('test') ||
-        b.symbol.toLocaleLowerCase().includes('sepolia') ||
-        b.symbol.toLocaleLowerCase().includes('goerli')
+        b.symbol.toLocaleLowerCase().includes('sepolia')
       ) {
         return -1;
       }
@@ -6079,11 +6102,13 @@ export default class extends Mixins(BalanceMixin) {
     this.initICRouter();
     console.log(this.networkTokens);
   }
+
   private async getMinterAddress(): Promise<string> {
     return await this.ckETHMinterDfiService.smart_contract_address(
       CK_ETH_MINTER_CANISTER_ID
     );
   }
+
   private initICRouter(): void {
     const type = this.$route.query.type;
     const tokenId = this.$route.query.token;
@@ -6095,6 +6120,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private toActive(type: ActiveType, tokenId: string, txHash?: string): void {
     if (type === 'mintCKBTC') {
       this.networkIdMint = 1;
@@ -6185,7 +6211,7 @@ export default class extends Mixins(BalanceMixin) {
             return true;
           }
         });
-      } else if (Number(this.minterInfo.chainId) === 5) {
+      } else if (Number(this.minterInfo.chainId) === 11155111) {
         this.networkIdMint = 3;
       } else if (Number(this.minterInfo.chainId) === 1) {
         this.networkIdMint = 3;
@@ -6237,7 +6263,7 @@ export default class extends Mixins(BalanceMixin) {
       let network;
       if (type === 'retrieveCKETH') {
         this.networkIdMint = 0;
-      } else if (Number(this.minterInfo.chainId) === 5) {
+      } else if (Number(this.minterInfo.chainId) === 11155111) {
         this.networkIdMint = 0;
       } else {
         //
@@ -6271,6 +6297,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.activePendingModal = false;
   }
+
   private onGetClaimPending(): void {
     const hasClaimPending = this.getClaimPending();
     if (hasClaimPending && hasClaimPending.length) {
@@ -6280,6 +6307,7 @@ export default class extends Mixins(BalanceMixin) {
       this.$set(this.activePending, 'claim', null);
     }
   }
+
   private onGetClaim2Pending(): void {
     const hasClaim2Pending = this.getClaimPending(false);
     if (hasClaim2Pending && hasClaim2Pending.length) {
@@ -6289,6 +6317,7 @@ export default class extends Mixins(BalanceMixin) {
       this.$set(this.activePending, 'claim2', null);
     }
   }
+
   private onGetMintPending(): void {
     this.getMintPending().then((mintPending) => {
       if (mintPending && mintPending.length) {
@@ -6299,6 +6328,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private onGetDepositing(): void {
     this.ckETHMinterService.getDepositing({ all: null }).then((res) => {
       if (res && res[0] && res[0][2] && res[0][2].length) {
@@ -6309,6 +6339,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private onGetRetrievePending(): void {
     this.getRetrievePending().then((retrievePending) => {
       if (retrievePending && retrievePending.length) {
@@ -6319,6 +6350,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private onGetRetrieving(): void {
     this.ckETHMinterService.getRetrieving({ all: null }).then((res) => {
       if (res && res.length) {
@@ -6329,6 +6361,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async getActive(): Promise<void> {
     if (this.getPrincipalId) {
       console.log('getActive');
@@ -6355,6 +6388,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(this.activePending);
     }
   }
+
   private onGetMintCKBTCPending(): void {
     const principal = localStorage.getItem('principal');
     if (principal) {
@@ -6409,6 +6443,7 @@ export default class extends Mixins(BalanceMixin) {
           });
       });
   }
+
   private filterBTCTxRes(
     res: any,
     block: number,
@@ -6499,6 +6534,7 @@ export default class extends Mixins(BalanceMixin) {
       return txs;
     }
   }
+
   private onGetRetrieveCKBTCPending(): void {
     const currentInfo =
       JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
@@ -6537,6 +6573,7 @@ export default class extends Mixins(BalanceMixin) {
       this.updateRetrieveBtcStatusResponse(ckBTCRetrieve);
     }
   }
+
   private updateRetrieveBtcStatusResponse(
     response: Array<RetrieveCKBTCResponse>
   ): void {
@@ -6582,6 +6619,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private onGetRetrieveCKETHPending(): void {
     this.getRetrieveCKETHPending().then((res) => {
       console.log(res);
@@ -6621,6 +6659,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async getRetrieveCKETHPending(): Promise<{
     retrieve: Array<RetrieveActiveResponse>;
     pending: Array<RetrieveActive>;
@@ -6711,6 +6750,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return { retrieve: retrieve, pending: retrievePending };
   }
+
   private onGetMintCKETHPending(): void {
     this.getMintCKETHPending().then((res) => {
       console.log(res);
@@ -6750,6 +6790,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async getMintCKETHPending(): Promise<{
     mint: Array<ClaimCKETHActiveResponse>;
     mintPending: Array<ClaimCKETHActive>;
@@ -6843,6 +6884,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return { mint: mint, mintPending: mintPending };
   }
+
   private async getRetrievePending(): Promise<Array<RetrieveActive>> {
     let retrievePending: Array<RetrieveActive> = [];
     try {
@@ -6866,6 +6908,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return retrievePending;
   }
+
   private async getMintPending(): Promise<Array<MintActive>> {
     let mintPending: Array<MintActive> = [];
     try {
@@ -6929,6 +6972,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return mintPending;
   }
+
   private async getEthereumTokenBalance(
     ethersTokenId: string,
     tokenId: string,
@@ -6941,6 +6985,7 @@ export default class extends Mixins(BalanceMixin) {
     );
     return { balance: balance, tokenId: tokenId };
   }
+
   private getClaimPending(isStep1 = true): Array<ClaimActive> {
     try {
       const principal = localStorage.getItem('principal');
@@ -6984,6 +7029,7 @@ export default class extends Mixins(BalanceMixin) {
       return null;
     }
   }
+
   private filterRetrieveEstimatedFee(
     erc20TokenInfo: IcTokenInfo,
     minterInfo: MinterInfo
@@ -7010,6 +7056,7 @@ export default class extends Mixins(BalanceMixin) {
         .toString(10);
     }
   }
+
   private filterEstimatedFeeMode2(erc20TokenInfo: IcTokenInfo): string {
     if (!erc20TokenInfo.fee) {
       return '';
@@ -7029,6 +7076,7 @@ export default class extends Mixins(BalanceMixin) {
         .toString(10);
     }
   }
+
   private filterEstimatedFee(
     erc20TokenInfo: IcTokenInfo,
     ethTokenInfo: IcTokenInfo,
@@ -7057,6 +7105,7 @@ export default class extends Mixins(BalanceMixin) {
         .toString(10);
     }
   }
+
   private getBalanceInit(): void {
     if (!this.getCheckAuth) {
       if (this.BTCType === BTCTypeEnum.icBTC) {
@@ -7109,6 +7158,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private getCkBTCBalance(): void {
     window.clearInterval(this.btcTimer);
     this.btcTimer = null;
@@ -7122,6 +7172,7 @@ export default class extends Mixins(BalanceMixin) {
       }, 0);
     }, 10000);
   }
+
   private setMaxRetrieve(): void {
     let fee;
     let total;
@@ -7137,6 +7188,7 @@ export default class extends Mixins(BalanceMixin) {
       this.dissolveForm.amount = max.toString(10);
     }
   }
+
   private setMaxETHRetrieve(type: string): void {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -7173,6 +7225,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async retrieveCkETH(): Promise<void> {
     (this.$refs as any).ethDissolveFormCK.validate(async (valid: any) => {
       if (valid) {
@@ -7362,6 +7415,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async icrc2Approve(
     canisterId: string,
     amount: bigint,
@@ -7384,6 +7438,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return false;
   }
+
   private async transferCkETH(): Promise<void> {
     (this.$refs as any).ethForm.validate(async (valid: any) => {
       if (valid) {
@@ -7431,6 +7486,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async transferCkBTC(): Promise<void> {
     (this.$refs as any).form.validate(async (valid: any) => {
       if (valid) {
@@ -7478,6 +7534,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private ckETHRefreshRetrieving(): void {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     if (ERC20TokenId) {
@@ -7498,6 +7555,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private refreshRetrieving(): void {
     if (this.BTCType === BTCTypeEnum.icBTC) {
       getTokenBalance({ icrc1: null }, IC_BTC_CANISTER_ID).then((res) => {
@@ -7523,6 +7581,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private async dissolveCkETH(): Promise<void> {
     (this.$refs as any).ethRetrieveForm.validate(async (valid: any) => {
       if (valid) {
@@ -7577,6 +7636,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async dissolve(): Promise<void> {
     (this.$refs as any).retrieveForm.validate(async (valid: any) => {
       if (valid) {
@@ -7643,6 +7703,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private initETHWithdrawalAccount(): void {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -7668,6 +7729,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async initETHDissolve(): Promise<void> {
     this.ckETHWithdrawalAccount = null;
     this.initETHWithdrawalAccount();
@@ -7686,11 +7748,13 @@ export default class extends Mixins(BalanceMixin) {
       }, 0);
     }, 30 * 1000);
   }
+
   private async showDissolveETH(): Promise<void> {
     this.dissolveBalanceETH = '';
     this.canRetrieveETH = false;
     this.hasShowWarningETH('dissolve');
   }
+
   private async getEthTokenBalance(
     std: string,
     tokenId: string,
@@ -7752,6 +7816,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getEthTransactionReceipt(
     txHash: string,
     ETHHttpsNum?: number,
@@ -7787,6 +7852,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getEthTransactionByHash(
     txHash: string,
     ETHHttpsNum?: number,
@@ -7822,6 +7888,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getBlockByNumber(
     block: number,
     ETHHttpsNum?: number,
@@ -7853,6 +7920,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getEthBlock(
     ETHHttpsNum?: number,
     retry = 0,
@@ -7881,6 +7949,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getMintDepositing(): Promise<void> {
     this.getBalanceInit();
     if (this.depositMethod === 1) {
@@ -8070,7 +8139,7 @@ export default class extends Mixins(BalanceMixin) {
                 now - this.depositInfo[i][3] > 2 * 60 * 1000) ||
               !this.depositInfo[i][3]
             ) {
-              await this.ckETHMinterService.updateClaims();
+              // await this.ckETHMinterService.updateClaims();
               const now = new Date().getTime();
               this.depositInfo[i][3] = now;
               this.setDepositInfo(this.depositInfo);
@@ -8106,11 +8175,13 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getPendingDepositTxn(
     txHash: string
   ): Promise<Array<PendingDepositTxn>> {
     return await this.ckETHMinterService.getPendingDepositTxn(txHash);
   }
+
   private async getRetrieveETHList(isHand = true): Promise<void> {
     if (isHand) {
       this.showRetrieveETHStatus = true;
@@ -8134,6 +8205,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.showRetrieveETHStatus = false;
   }
+
   private async getETHWithdrawalAccount(version: string): Promise<void> {
     if (!this.ckETHWithdrawalAccount) {
       const principal = localStorage.getItem('principal');
@@ -8156,6 +8228,7 @@ export default class extends Mixins(BalanceMixin) {
     // todo cketh fee
     this.getETHDissolveBalance();
   }
+
   private async getETHDissolveBalance(): Promise<void> {
     if (this.ckETHWithdrawalAccount) {
       const tokenId = this.icNetworkTokens.tokenId;
@@ -8188,6 +8261,7 @@ export default class extends Mixins(BalanceMixin) {
       }, 3000);
     }
   }
+
   private async showDissolve(type: BTCTypeEnum): Promise<void> {
     this.BTCType = type;
     this.dissolveBalance = '';
@@ -8264,6 +8338,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.getWithdrawalAccount(version);
   }
+
   private async batchSend(blockIndex): Promise<void> {
     try {
       const res = await this.ckBTCMinterService.retrieveLog(this.BTCType, [
@@ -8276,6 +8351,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(e);
     }
   }
+
   private updateRetrieveETHStatus(): void {
     const principal = localStorage.getItem('principal');
     this.retrieveETHStatus.forEach(async (val, index) => {
@@ -8304,6 +8380,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private updateRetrieveBtcStatus(): void {
     const principal = localStorage.getItem('principal');
     if (principal) {
@@ -8351,6 +8428,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private async updateIcBtcConfirmed(): Promise<void> {
     let block = 0;
     const blockRes = await axios.get('https://blockchain.info/q/getblockcount');
@@ -8431,6 +8509,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     console.log(this.retrieveBtcStatus);
   }
+
   private getBTCTxs(): void {
     const time = new Date().getTime();
     if (this.BTCType === BTCTypeEnum.icBTC) {
@@ -8481,6 +8560,7 @@ export default class extends Mixins(BalanceMixin) {
       this.currentTxTimeCkETH[ERC20TokenId] = time;
     }
   }
+
   private async getTransactions(): Promise<void> {
     console.log('BTCType: ' + this.BTCType);
     if (this.BTCType === BTCTypeEnum.icBTC) {
@@ -8511,6 +8591,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }, 100 * 1000);
   }
+
   private ETHAddress(version: string): void {
     if (version) {
       const principal = localStorage.getItem('principal');
@@ -8531,6 +8612,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private BTCAddress(version: string, BTCType: BTCTypeEnum): void {
     if (version) {
       const principal = localStorage.getItem('principal');
@@ -8560,9 +8642,11 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private showForgeETH(): void {
     this.hasShowWarningETH('forge');
   }
+
   private showRetrieveCKETH(): void {
     console.log(this.icNetworkTokens);
     this.retrieveTitleETH = `Retrieve: ${this.icNetworkTokens.symbol} (${
@@ -8590,6 +8674,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.initCKETHRetrieve();
   }
+
   private initCKETHRetrieve(): void {
     if (this.getPrincipalId && this.icNetworkTokens) {
       const id = this.icNetworkTokens.id;
@@ -8603,6 +8688,7 @@ export default class extends Mixins(BalanceMixin) {
       this.getCKETHRetrieveInterval(this.icNetworkTokens);
     }
   }
+
   private async getCkETHRetrieveStatus(
     id: string,
     tokenId: string
@@ -8640,6 +8726,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private getCKETHRetrieveInterval(
     icNetworkTokens: ICNetworkTokensInterface
   ): void {
@@ -8657,6 +8744,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }, 30 * 1000);
   }
+
   private showForgeCKETH(): void {
     console.log(this.icNetworkTokens);
     this.forgeTitleETH = `Mint: ${this.icNetworkTokens.icTokenInfo.symbol} (${
@@ -8667,6 +8755,7 @@ export default class extends Mixins(BalanceMixin) {
     this.forgeModalCKETH = true;
     this.initCKETHMint();
   }
+
   private initCKETHMint(): void {
     if (this.getPrincipalId && this.icNetworkTokens) {
       const id = this.icNetworkTokens.id;
@@ -8690,6 +8779,7 @@ export default class extends Mixins(BalanceMixin) {
       this.getCKETHMinterInterval(this.icNetworkTokens);
     }
   }
+
   private async getCKETHBalance(
     icNetworkTokens: ICNetworkTokensInterface
   ): Promise<void> {
@@ -8722,6 +8812,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private getCKETHMinterInterval(
     icNetworkTokens: ICNetworkTokensInterface
   ): void {
@@ -8746,6 +8837,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }, 30 * 1000);
   }
+
   private async getCkETHMintBlockNum(
     id: string,
     tokenId: string
@@ -8801,6 +8893,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getLastScrapedBlockNumber(
     ckETHMinterId: string
   ): Promise<number> {
@@ -8809,10 +8902,13 @@ export default class extends Mixins(BalanceMixin) {
       return Number(res.last_observed_block_number[0]);
     }
   }
+
   private initETHDeposit(): void {
+    console.log(this.forgeModalETH);
     if (this.forgeModalETH) {
       this.getETHDepositBalance();
       this.getMintDepositing();
+      console.log('getMintDepositing');
       this.updateDepositETHStatusTimer = window.setInterval(() => {
         window.setTimeout(() => {
           if (!this.getCheckAuth) {
@@ -8826,6 +8922,7 @@ export default class extends Mixins(BalanceMixin) {
       }, 30 * 1000);
     }
   }
+
   private async getETHDepositBalance(): Promise<void> {
     if (this.ETHAddressCk) {
       let ckETHDepositBalance;
@@ -8843,6 +8940,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private hasShowWarningETH(type: string): void {
     const hasShowWarning = this.$cookies.get('icETHTip');
     if (hasShowWarning) {
@@ -8909,10 +9007,12 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private async showForge(type: BTCTypeEnum): Promise<void> {
     this.BTCType = type;
     this.hasShowWarning('forge');
   }
+
   private onContinue(): void {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -8965,7 +9065,7 @@ export default class extends Mixins(BalanceMixin) {
           this.showRetrieveCKETH();
         } else {
           let ethId = '1';
-          if (Number(this.minterInfo.chainId) === 5) {
+          if (Number(this.minterInfo.chainId) === 11155111) {
             ethId = '2';
           }
           this.getMinterInfo();
@@ -8993,6 +9093,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     console.log(this.icNetworkTokens);
   }
+
   private switchHub(): void {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -9050,6 +9151,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private changeNetworkIdMint(val: number): void {
     this.networkIdMintTo = [];
     this.networkTokenIdMint = [];
@@ -9058,6 +9160,7 @@ export default class extends Mixins(BalanceMixin) {
       return this.networkListFrom[val].id === item.networkId;
     });
   }
+
   private changeNetworkIdMintTo(val: number): void {
     this.networkTokenIdMintTo = [];
     this.networkTokensTo = this.networkTokens.filter((item) => {
@@ -9075,6 +9178,7 @@ export default class extends Mixins(BalanceMixin) {
     console.log(this.networkListTo[val]);
     console.log(this.networkTokensTo);
   }
+
   private changeNetworkTokenIdMint(val: number): void {
     this.networkIdMintTo = [];
     this.networkTokenIdMintTo = [];
@@ -9159,6 +9263,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private changeNetworkTokenIdMintTo(val: number): void {
     // this.changeNetworkTokenList();
     console.log('changeNetworkTokenIdMintTo');
@@ -9241,9 +9346,11 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private pageChangeDepositInfo(page: number): void {
     this.depositInfoPage = page;
   }
+
   private pageChange(page: number): void {
     if (this.BTCType === BTCTypeEnum.icBTC) {
       this.BTCTransactionsPage = page;
@@ -9251,27 +9358,35 @@ export default class extends Mixins(BalanceMixin) {
       this.ckBTCTransactionsPage = page;
     }
   }
+
   private pageChangeCKETHMint(page: number) {
     this.ckETHMintPage = page;
   }
+
   private pageChangeCKETHResponse(page: number) {
     this.CKETHResponsePage = page;
   }
+
   private mintEventPageChange(page: number): void {
     this.mintEventPage = page;
   }
+
   private retrieveEventPageChange(page: number): void {
     this.retrieveEventPage = page;
   }
+
   private pageChangeETH(page: number): void {
     this.ckETHTransactionsPage = page;
   }
+
   private retrieveBtcStatusPageChange(page: number): void {
     this.retrieveBtcStatusPage = page;
   }
+
   private retrieveETHStatusPageChange(page: number): void {
     this.retrieveETHStatusPage = page;
   }
+
   private setUpdateBlockHeight(BTCType: BTCTypeEnum): void {
     const principal = localStorage.getItem('principal');
     if (principal) {
@@ -9309,6 +9424,7 @@ export default class extends Mixins(BalanceMixin) {
       localStorage.setItem(principal, JSON.stringify(currentInfo));
     }
   }
+
   private setCkETHUpdateBlockHeight(): void {
     const principal = localStorage.getItem('principal');
     if (principal) {
@@ -9339,6 +9455,7 @@ export default class extends Mixins(BalanceMixin) {
       localStorage.setItem(principal, JSON.stringify(currentInfo));
     }
   }
+
   private async depositETH(isHand = true): Promise<void> {
     const now = new Date().getTime() / 1000;
     // todo 1 Minutes
@@ -9404,6 +9521,7 @@ export default class extends Mixins(BalanceMixin) {
     this.depositNotifyLoading = false;
     loading && loading.close();
   }
+
   private async onRetrieveETH(index: number): Promise<void> {
     const txHash = this.retrieveETHStatus[index][1].txHash;
     console.log(txHash);
@@ -9547,6 +9665,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async updateETHStatus(signedTx: Array<number>): Promise<void> {
     const num = Math.floor(Math.random() * ETHWebsocketProvider.length);
     if (signedTx) {
@@ -9558,22 +9677,24 @@ export default class extends Mixins(BalanceMixin) {
         });
     }
   }
+
   private async updateRetrievals(): Promise<void> {
-    const num = Math.floor(Math.random() * ETHWebsocketProvider.length);
-    const res = await this.ckETHMinterService.updateRetrievals();
-    if (res && res.length) {
-      res.forEach((item: [TxStatus, bigint]) => {
-        const web3 = new Web3(ETHWebsocketProvider[num]);
-        web3.eth
-          .sendSignedTransaction(
-            '0x' + toHexString(new Uint8Array(item[0].signedTx[0][0]))
-          )
-          .then((receipt) => {
-            console.log(receipt);
-          });
-      });
-    }
+    // const num = Math.floor(Math.random() * ETHWebsocketProvider.length);
+    // const res = await this.ckETHMinterService.updateRetrievals();
+    // if (res && res.length) {
+    //   res.forEach((item: [TxStatus, bigint]) => {
+    //     const web3 = new Web3(ETHWebsocketProvider[num]);
+    //     web3.eth
+    //       .sendSignedTransaction(
+    //         '0x' + toHexString(new Uint8Array(item[0].signedTx[0][0]))
+    //       )
+    //       .then((receipt) => {
+    //         console.log(receipt);
+    //       });
+    //   });
+    // }
   }
+
   private async updateETH(isHand = true): Promise<void> {
     let loading;
     const now = new Date().getTime() / 1000;
@@ -9619,6 +9740,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     loading && loading.close();
   }
+
   private async forge(BTCType: BTCTypeEnum, isHand = true): Promise<void> {
     let loading;
     if (isHand) {
@@ -9707,6 +9829,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     loading && loading.close();
   }
+
   private async putQuests(): Promise<void> {
     try {
       await this.questsService.putEvent(
@@ -9717,6 +9840,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(e);
     }
   }
+
   private async getETHTransactions(): Promise<void> {
     try {
       const ERC20TokenId = this.icNetworkTokens.tokenId;
@@ -9753,6 +9877,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.showCkETHTransactions = false;
   }
+
   private async getEThTxs(scanNum?: number, retry = 0): Promise<void> {
     try {
       if (!scanNum && scanNum !== 0) {
@@ -9815,6 +9940,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getBTCTransactions(BTCType: BTCTypeEnum): Promise<void> {
     try {
       const principal = localStorage.getItem('principal');
@@ -9853,6 +9979,7 @@ export default class extends Mixins(BalanceMixin) {
     this.showBTCTransactions = false;
     this.showCkBTCTransactions = false;
   }
+
   private filterETHTx(res: any, BTCAddress: string): void {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     if (res && res.data && res.data.result && res.data.result.length) {
@@ -9902,6 +10029,7 @@ export default class extends Mixins(BalanceMixin) {
       this.ckETHTransactionTotal = 0;
     }
   }
+
   private filterBTCTx(
     res: any,
     BTCType: BTCTypeEnum,
@@ -9997,6 +10125,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async getInfo(BTCType: BTCTypeEnum): Promise<string> {
     if (BTCType === BTCTypeEnum.icBTC) {
       const res = await this.ckBTCMinterService.info(BTCType);
@@ -10006,6 +10135,7 @@ export default class extends Mixins(BalanceMixin) {
       return '1.0';
     }
   }
+
   private async getETHAddress(version: string): Promise<void> {
     if (!this.ETHAddressCk) {
       this.ETHAddressCk = await this.ckETHMinterService.getEthAddress();
@@ -10024,6 +10154,7 @@ export default class extends Mixins(BalanceMixin) {
       this.ckETHAccountCode = res;
     });
   }
+
   private async getBTCAddress(
     version: string,
     BTCType: BTCTypeEnum
@@ -10077,6 +10208,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private async getWithdrawalAccount(version: string): Promise<void> {
     if (!this.withdrawalAccount) {
       this.withdrawalAccount =
@@ -10121,6 +10253,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.getDissolveBalance();
   }
+
   private async getDissolveBalance(): Promise<void> {
     if (this.withdrawalAccount) {
       let tokenId;
@@ -10160,6 +10293,7 @@ export default class extends Mixins(BalanceMixin) {
       }, 3000);
     }
   }
+
   private async getRetrieveBtcStatus(
     blockIndex: string
   ): Promise<RetrieveBtcStatus> {
@@ -10172,6 +10306,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(e);
     }
   }
+
   private initTransactions(): void {
     if (this.BTCType === BTCTypeEnum.icBTC) {
       this.showBTCTransactions = true;
@@ -10209,6 +10344,7 @@ export default class extends Mixins(BalanceMixin) {
       this.getTransactions();
     }
   }
+
   private hasShowWarning(type: string): void {
     const hasShowWarning = this.$cookies.get('ckBTCTip');
     if (hasShowWarning) {
@@ -10256,6 +10392,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private async refreshCkETHBalance(
     isRefresh = true,
     std = 'DRC20'
@@ -10277,6 +10414,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(e);
     }
   }
+
   private async toAddToken(std = 'DRC20'): Promise<void> {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     if (ERC20TokenId) {
@@ -10316,6 +10454,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async refreshCkBTCBalance(
     type: string,
     isRefresh = true
@@ -10351,6 +10490,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private showApprove(type: BTCTypeEnum): void {
     this.BTCType = type;
     this.getBalance();
@@ -10365,17 +10505,20 @@ export default class extends Mixins(BalanceMixin) {
     };
     this.$refs.approveIcrc2.init(approveTokenInfo);
   }
+
   private showTransfer(type: BTCTypeEnum): void {
     this.BTCType = type;
     this.getBalance();
     this.$refs.transferIcp.visibleTransfer = true;
   }
+
   private showReceive(showAccount = true, type: BTCTypeEnum): void {
     this.BTCType = type;
     this.$refs.receiveModal.init(showAccount);
     this.$refs.receiveModal.principal = this.principal;
     this.$refs.receiveModal.visibleReceive = true;
   }
+
   private async refreshBalance(): Promise<void> {
     if (!this.refreshBalanceLoading) {
       this.refreshBalanceLoading = true;
@@ -10387,6 +10530,7 @@ export default class extends Mixins(BalanceMixin) {
       this.refreshBalanceLoading = false;
     }
   }
+
   private showTopUp(walletId?: PrincipalString): void {
     if (walletId && typeof walletId === 'string') {
       this.topUpType = 'topUpWallet';
@@ -10398,13 +10542,16 @@ export default class extends Mixins(BalanceMixin) {
     this.getBalance();
     this.$refs.topUp.visibleTopUp = true;
   }
+
   private async topUpSuccess(): Promise<void> {
     this.getBalance();
     this.$emit('topUpSuccess');
   }
+
   private approveIcrc2Success(): void {
     this.getBalance();
   }
+
   private async transferTokenSuccess(): Promise<void> {
     try {
       this.getCkBTCBalance();
@@ -10412,9 +10559,7 @@ export default class extends Mixins(BalanceMixin) {
       console.log(e);
     }
   }
-  public async transferSuccess(): Promise<void> {
-    this.getBalance();
-  }
+
   private afterClose(): void {
     this.BTCType = null;
     (this.$refs as any).form && (this.$refs as any).form.resetFields();
@@ -10429,6 +10574,7 @@ export default class extends Mixins(BalanceMixin) {
     this.retrieveEvent = [];
     this.withdrawalAccount = null;
   }
+
   private afterForgeClose(): void {
     this.BTCType = null;
     window.clearInterval(this.btcTimer);
@@ -10437,6 +10583,7 @@ export default class extends Mixins(BalanceMixin) {
     this.mintStep = 1;
     this.mintEvent = [];
   }
+
   private afterRetrieveCloseCKETH(): void {
     this.retrieveStep = 1;
     this.ckETHMintPage = 1;
@@ -10445,6 +10592,7 @@ export default class extends Mixins(BalanceMixin) {
     window.clearInterval(this.ckETHTimer);
     this.ckETHTimer = null;
   }
+
   private afterForgeCloseCKETH(): void {
     this.mintStep = 1;
     this.ckETHMintPage = 1;
@@ -10453,6 +10601,7 @@ export default class extends Mixins(BalanceMixin) {
     window.clearInterval(this.ckETHTimer);
     this.ckETHTimer = null;
   }
+
   private afterForgeCloseETH(): void {
     try {
       this.mintStep = 1;
@@ -10486,12 +10635,14 @@ export default class extends Mixins(BalanceMixin) {
     this.depositInfo = [];
     this.depositing = [];
   }
+
   private clearTime(): void {
     window.clearInterval(this.balanceTimer);
     this.balanceTimer = null;
     window.clearInterval(this.btcTxTimer);
     this.btcTxTimer = null;
   }
+
   private validateIcBTCAddress(
     rule: ValidationRule,
     value: string,
@@ -10503,6 +10654,7 @@ export default class extends Mixins(BalanceMixin) {
       callback();
     }
   }
+
   private validateAmountCKETH(
     rule: ValidationRule,
     value: number,
@@ -10581,6 +10733,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private validateAmountETH(
     rule: ValidationRule,
     value: number,
@@ -10648,6 +10801,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private validateErc20Amount(
     rule: ValidationRule,
     value: number,
@@ -10682,6 +10836,7 @@ export default class extends Mixins(BalanceMixin) {
       callback();
     }
   }
+
   private validateAmount(
     rule: ValidationRule,
     value: number,
@@ -10725,6 +10880,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private getRetrieveBtcTxidResponse(val: RetrieveBtcStatus): string {
     if (val) {
       const status = Object.keys(val)[0];
@@ -10737,6 +10893,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     return null;
   }
+
   private getRetrieveBtcTxid(val: RetrieveBtcStatus): string {
     if (val) {
       const status = Object.keys(val)[0];
@@ -10751,10 +10908,12 @@ export default class extends Mixins(BalanceMixin) {
     }
     return null;
   }
+
   private isMetaMaskInstalled(): boolean {
     //Have to check the ethereum binding on the window object to see if it's installed
     return Boolean(ethereum && ethereum.isMetaMask);
   }
+
   private installMetaMask(): void {
     const forwarderOrigin = 'https://fwd.metamask.io';
     //We create a new MetaMask onboarding object to use in our app
@@ -10762,16 +10921,19 @@ export default class extends Mixins(BalanceMixin) {
     //This will start the onboarding proccess
     onboarding.startOnboarding();
   }
+
   private previousMintStepCK(): void {
     if (this.mintStep > 1) {
       this.changeMintStepCK(this.mintStep - 1);
     }
   }
+
   private nextMintStepCK(max: number): void {
     if (this.mintStep < max) {
       this.changeMintStepCK(this.mintStep + 1);
     }
   }
+
   private changeMintStepCK(step: number): void {
     this.mintStep = step;
     this.pendingLoading = false;
@@ -10779,42 +10941,50 @@ export default class extends Mixins(BalanceMixin) {
       (this.$refs as any).erc20Form.resetFields();
     }
   }
+
   private previousMintStep(): void {
     if (this.mintStep > 1) {
       this.changeMintStep(this.mintStep - 1);
     }
   }
+
   private nextMintStep(max: number): void {
     if (this.mintStep < max) {
       this.changeMintStep(this.mintStep + 1);
     }
   }
+
   private previousRetrieveStep(): void {
     if (this.retrieveStep > 1) {
       this.changeRetrieveStep(this.retrieveStep - 1);
     }
   }
+
   private nextRetrieveStep(max: number): void {
     if (this.retrieveStep < max) {
       this.changeRetrieveStep(this.retrieveStep + 1);
     }
   }
+
   private previousRetrieveStepCK(): void {
     if (this.retrieveStep > 1) {
       this.changeRetrieveStepCK(this.retrieveStep - 1);
     }
   }
+
   private nextRetrieveStepCK(max: number): void {
     if (this.retrieveStep < max) {
       this.changeRetrieveStepCK(this.retrieveStep + 1);
     }
   }
+
   private changeRetrieveStepCK(step: number): void {
     this.retrieveStep = step;
     if (step === 3) {
       this.retrieveEventPage = 1;
     }
   }
+
   private changeMintStep(step: number): void {
     this.mintStep = step;
     this.pendingLoading = false;
@@ -10832,6 +11002,7 @@ export default class extends Mixins(BalanceMixin) {
       this.getAccountEvents();
     }
   }
+
   private changeRetrieveStep(step: number): void {
     this.retrieveStep = step;
     if (step === 3) {
@@ -10839,6 +11010,7 @@ export default class extends Mixins(BalanceMixin) {
       this.getAccountEvents();
     }
   }
+
   private transferFromOther(): void {
     (this.$refs as any).erc20Form.validate(async (valid: any) => {
       if (valid) {
@@ -10847,6 +11019,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private transferFromMetaMaskCK(): void {
     (this.$refs as any).erc20Form.validate(async (valid: any) => {
       if (valid) {
@@ -11047,6 +11220,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async transferFromMetaMask(): Promise<void> {
     (this.$refs as any).erc20Form.validate(async (valid: any) => {
       if (valid) {
@@ -11068,8 +11242,8 @@ export default class extends Mixins(BalanceMixin) {
             }
             const chainId = await ethereum.request({ method: 'eth_chainId' });
             let ethChainId = '0x1';
-            if (Number(this.minterInfo.chainId) === 5) {
-              ethChainId = '0x5';
+            if (Number(this.minterInfo.chainId) === 11155111) {
+              ethChainId = '0xaa36a7';
             }
             if (chainId !== ethChainId) {
               await ethereum.request({
@@ -11150,6 +11324,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private updateMintPending(): void {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -11172,6 +11347,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private async setRetrievePending(): Promise<void> {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -11203,6 +11379,7 @@ export default class extends Mixins(BalanceMixin) {
       });
     }
   }
+
   private async removeRetrievePending(): Promise<void> {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -11224,6 +11401,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private setMintPending(): void {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -11251,6 +11429,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.onGetMintPending();
   }
+
   private setDepositInfo(
     depositInfo: Array<[string, boolean?, boolean?, number?]>
   ): void {
@@ -11265,6 +11444,7 @@ export default class extends Mixins(BalanceMixin) {
     ] = depositInfo;
     localStorage.setItem(principal, JSON.stringify(currentInfo));
   }
+
   private getDepositInfo(): Array<[string, boolean?, boolean?, number?]> {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     const principal = localStorage.getItem('principal');
@@ -11272,12 +11452,14 @@ export default class extends Mixins(BalanceMixin) {
     if (!currentInfo.depositInfo) {
       currentInfo.depositInfo = {};
     }
+    console.log('getDepositInfo');
     return (
       currentInfo.depositInfo[
         IC_ETH_MINTER_CANISTER_ID + ethVersion + ERC20TokenId
       ] || []
     );
   }
+
   private txHashChange(): void {
     console.log('txHashChange');
     const web3 = new Web3();
@@ -11296,6 +11478,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }
   }
+
   private getTxReceipt(hash: string): void {
     if (this.txReceiptTimer) {
       window.clearInterval(this.txReceiptTimer);
@@ -11308,6 +11491,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     }, 60 * 1000);
   }
+
   private async checkTxReceipt(hash: string): Promise<void> {
     const resReceipt = await this.getEthTransactionReceipt(hash);
     console.log(resReceipt);
@@ -11401,6 +11585,7 @@ export default class extends Mixins(BalanceMixin) {
     }
     this.claimTxError = '';
   }
+
   private onClaim(): void {
     (this.$refs as any).signatureForm.validate(async (valid: any) => {
       if (valid) {
@@ -11409,6 +11594,7 @@ export default class extends Mixins(BalanceMixin) {
       }
     });
   }
+
   private async tryClaim(txHash: string): Promise<void> {
     if (typeof txHash === 'string') {
       this.signatureForm.txHash = txHash;
@@ -11417,6 +11603,7 @@ export default class extends Mixins(BalanceMixin) {
       await this.signTypedData();
     }
   }
+
   private async claim(txHash: string, signature: string): Promise<void> {
     const res = await this.ckETHMinterService.claim(
       txHash,
@@ -11458,6 +11645,7 @@ export default class extends Mixins(BalanceMixin) {
       this.$message.error('Mint error');
     }
   }
+
   private async signTypedData(): Promise<void> {
     if (!this.isMetaMaskInstalled()) {
       this.metaMaskVisible = true;
@@ -11469,8 +11657,8 @@ export default class extends Mixins(BalanceMixin) {
       try {
         const chainId = await ethereum.request({ method: 'eth_chainId' });
         let ethChainId = '0x1';
-        if (Number(this.minterInfo.chainId) === 5) {
-          ethChainId = '0x5';
+        if (Number(this.minterInfo.chainId) === 11155111) {
+          ethChainId = '0xaa36a7';
         }
         if (chainId !== ethChainId) {
           await ethereum.request({
@@ -11612,21 +11800,26 @@ export default class extends Mixins(BalanceMixin) {
       loading.close();
     }
   }
+
   private filterStatus(val: number): string {
     if (val || val === 0) {
       return 'Confirmed';
     }
     return 'UnConfirmed';
   }
+
   private arrayToString(val: Array<number>): string {
     return toHexString(new Uint8Array(val));
   }
+
   private onCopySuccess(): void {
     this.$message.success(`Copied`);
   }
+
   private onError(): void {
     console.log('err');
   }
+
   private getCKETHRetrieveTxid(status: RetrieveEthStatus): string {
     const type = Object.keys(status)[0];
     if (type === 'TxSent') {
@@ -11642,11 +11835,12 @@ export default class extends Mixins(BalanceMixin) {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .active-pending-item {
   display: flex;
   align-items: center;
   padding: 10px 0;
+
   button {
     width: 80px;
     height: 28px;
@@ -11654,36 +11848,44 @@ export default class extends Mixins(BalanceMixin) {
     background: rgba(81, 183, 195, 0.7) !important;
   }
 }
+
 .chain-hub-token-info {
   margin-top: 10px;
 }
+
 .transaction-update-time {
   margin-bottom: 10px;
   font-size: 12px;
   text-align: right;
   color: #777d90;
 }
+
 .ic-token-balance {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   margin-top: 10px;
 }
+
 .cross-title {
   display: flex;
   align-items: center;
+
   p {
     font-size: 16px;
     color: #adb7c2;
     font-weight: bold;
+
     span {
       font-size: 14px;
       font-weight: normal;
     }
   }
+
   .minting-method-info {
     display: flex;
     align-items: center;
+
     .minting-method-type {
       display: flex;
       align-items: center;
@@ -11692,6 +11894,7 @@ export default class extends Mixins(BalanceMixin) {
       width: 180px;
       border-radius: 30px;
       background: #232730;
+
       span {
         display: flex;
         align-items: center;
@@ -11700,13 +11903,16 @@ export default class extends Mixins(BalanceMixin) {
         height: 30px;
         border-radius: 30px;
         cursor: pointer;
+
         &.h5-show {
           display: none;
         }
+
         &.active {
           background: #3899a4;
           color: #e7eaee;
         }
+
         &.disabled {
           cursor: not-allowed;
           background: #232730;
@@ -11717,82 +11923,101 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
 }
+
 .retrieving-fee {
   display: flex;
   align-items: flex-start;
+
   .transfer-balance-max {
     color: #1996c4;
     cursor: pointer;
     margin-left: 5px;
   }
+
   .transfer-balance-right {
     margin-left: auto;
     color: #1996c4;
     cursor: pointer;
   }
 }
+
 .ic-btc-tip {
   color: #727a87;
   font-size: 12px;
 }
+
 .ckbtc-button {
   display: flex;
   align-items: center;
   width: 100%;
   margin-top: 30px;
   margin-bottom: 20px;
+
   button {
     width: 400px;
     height: 40px;
   }
 }
+
 .retrieve-button {
   height: 36px;
 }
+
 .pagination-transaction-main {
   display: flex;
+
   .pagination-transaction {
     margin-top: 10px;
     margin-left: auto;
     overflow: hidden;
   }
 }
+
 .forge-modal {
   ::v-deep .ant-modal {
     padding-bottom: 70px;
   }
+
   ::v-deep .ant-modal-header {
     padding: 70px 70px 55px 90px;
   }
+
   ::v-deep .ant-modal-body {
     padding: 0 90px;
     min-height: 300px;
   }
+
   &.active-pending-modal {
     ::v-deep .ant-modal-header {
       padding: 70px 55px;
     }
+
     ::v-deep .ant-modal-body {
       min-height: auto;
       padding: 0 55px;
     }
   }
+
   ::v-deep .ant-spin-spinning {
     background: rgba(21, 22, 27, 0.1);
   }
+
   ::v-deep .ant-modal-title {
     text-align: left;
     font-size: 20px;
   }
+
   .Confirmed {
     color: rgba(33, 199, 125, 0.8);
   }
+
   /*.UnConfirmed {
     color: rgba(209, 54, 81, 0.8);
   }*/
   .modal-title-info {
     display: flex;
   }
+
   .title-tip {
     display: flex;
     align-items: center;
@@ -11800,41 +12025,51 @@ export default class extends Mixins(BalanceMixin) {
     line-height: 16px;
   }
 }
+
 .has-update {
   color: rgba(33, 199, 125, 1);
 }
+
 .flex-auto {
   display: flex;
+
   .flex1 {
     flex: 1;
   }
 }
+
 .retrieve-btc-status-ul-table {
   li {
     display: flex;
+
     &.retrieve-btc-status-ul-table-eth {
       font-size: 12px;
       padding: 10px 0;
       border-bottom: 1px solid #212b35 !important;
     }
+
     a {
       color: #2b8cb0;
     }
+
     .cell {
       width: 20%;
       display: flex;
       align-items: flex-start;
       word-break: break-word;
       word-wrap: break-word;
+
       &.cell-header {
         align-items: center;
       }
+
       &.grow1 {
         flex-grow: 1;
       }
     }
   }
 }
+
 .retrieve-btc-status {
   .retrieve-btc-status-ul {
     min-height: 100px;
@@ -11843,28 +12078,34 @@ export default class extends Mixins(BalanceMixin) {
     padding-right: 5px;
     overflow-y: auto;
     overflow-x: hidden;
+
     .retrieve-btc-status-block-index {
       width: 80px;
       margin-right: 10px;
     }
   }
+
   .no-retrieve-btc-status-ul {
     height: 150px;
     justify-content: center;
   }
+
   li {
     display: flex;
     align-items: center;
     padding: 5px 0;
     border-bottom: 1px solid #212b35;
+
     &:first-child {
       border-bottom: none;
     }
+
     &:last-child {
       border-bottom: none;
     }
   }
 }
+
 .btc-txs {
   .no-btc-txs-ul {
     display: flex;
@@ -11873,68 +12114,87 @@ export default class extends Mixins(BalanceMixin) {
     height: 275px;
     font-size: 14px;
   }
+
   .btc-txs-ul {
     min-height: 275px;
     max-height: calc(100vh - 400px);
     padding-right: 5px;
     overflow-y: auto;
     overflow-x: hidden;
+
     li {
       padding: 5px 0;
       border-bottom: 1px solid #212b35;
+
       &:first-child {
         margin-top: 0;
       }
     }
   }
+
   .btc-txs-hash {
     display: flex;
   }
+
   .btc-txs-info {
     display: flex;
+
     > div {
       flex: 1;
+
       &.btc-txs-info-left {
         flex: 0.7;
       }
     }
+
     .tx-balance {
       padding-left: 5px;
     }
   }
+
   a {
     color: #2b8cb0;
+
     &.out-address-m {
       opacity: 0.7;
     }
   }
 }
+
 .operation-disabled {
   opacity: 0.5;
 }
+
 .ic-balance-main {
   p {
     line-height: 20px;
   }
+
   .operation {
     height: auto;
     margin-top: 10px !important;
+
     .button-history {
       margin-right: 0;
+
       i {
         padding: 2px 0;
       }
     }
   }
+
   .ic-balance-item {
     margin-top: 10px;
+
     &.ic-balance-item-launch-event {
       display: flex;
+
       .ckBTC-launch-event {
         color: #2b8cb0;
       }
     }
   }
+
   .ic-balance-item-launch-event-select {
     position: relative;
     display: flex;
@@ -11942,60 +12202,74 @@ export default class extends Mixins(BalanceMixin) {
     height: 50px;
     margin-top: 30px;
     font-size: 16px;
+
     .ic-balance-item-launch-event-selected-icon {
       position: absolute;
       z-index: 100;
       left: 11px;
     }
+
     .select-erc20-token {
       height: 50px;
       min-width: 300px;
       margin-right: 10px;
+
       .ic-router-token-placeholder {
         display: flex;
         align-items: center;
       }
+
       &.select-erc20-token-event {
         ::v-deep .ant-select-selection-selected-value {
           margin-left: 38px;
         }
       }
+
       ::v-deep .ant-select-selection-selected-value {
         display: flex !important;
         align-items: center;
       }
+
       ::v-deep .ant-select-selection {
         border-radius: 25px;
       }
+
       ::v-deep .ant-select-selection--single {
         position: relative;
         height: 50px;
       }
+
       ::v-deep .ant-select-selection__rendered {
         line-height: 50px;
       }
     }
   }
+
   .operation {
     margin-top: 0;
     margin-left: auto;
     border: none;
   }
 }
+
 .ic-router-token-info {
   display: flex;
   align-items: center;
+
   .ic-router-token-info-right {
     display: flex;
     flex-direction: column;
+
     .ic-router-token-info-symbol {
       color: #adb7c2;
     }
+
     .ic-router-token-info-name {
       font-size: 12px;
     }
   }
 }
+
 .ic-router-token-symbol {
   display: inline-block;
   text-align: center;
@@ -12007,6 +12281,7 @@ export default class extends Mixins(BalanceMixin) {
   background: #a8aaaf;
   border-radius: 14px;
 }
+
 .ic-router-token-logo {
   width: 28px;
   height: 28px;
@@ -12014,61 +12289,75 @@ export default class extends Mixins(BalanceMixin) {
   object-fit: contain;
   margin-right: 10px;
 }
+
 .ic-balance-item-container {
   display: flex;
   align-items: flex-start;
   width: 100%;
   padding-bottom: 20px;
   border-bottom: 1px solid #383e4e;
+
   &.ic-balance-item-container-btc {
     padding-bottom: 25px;
   }
+
   .ic-balance-item-container-item {
     padding-top: 15px;
     width: 50%;
   }
+
   &.ic-balance-item-container-icp {
     padding: 10px 0 30px;
   }
+
   &:last-child {
     border-bottom: none;
   }
+
   button {
     &:disabled {
       background: rgba(81, 183, 195, 0.1) !important;
     }
   }
 }
+
 .ic-balance-item-other {
   display: flex;
   align-items: center;
   padding: 20px 0 10px;
+
   .ic-balance-item-other-item {
     min-width: 200px;
   }
 }
+
 .dissolve-modal {
   .forge-left-balance {
     flex-direction: column;
     align-items: flex-start;
   }
 }
+
 .btc-txs-header {
   display: flex;
   align-items: baseline;
   margin-bottom: 10px;
+
   button {
     margin-right: 0 !important;
+
     &:disabled {
       background: rgba(81, 183, 195, 0.1) !important;
     }
   }
+
   img {
     width: 15px;
     animation: loading-rotate 2s linear infinite;
     margin-left: 5px;
   }
 }
+
 button {
   width: 100px;
   height: 30px;
@@ -12077,45 +12366,58 @@ button {
   border: none;
   background: rgba(81, 183, 195, 0.1);
   transition: all 0.3s;
+
   &:hover,
   &.primary {
     background: #51b7c3;
+
     span {
       color: #fff;
     }
   }
+
   span {
     color: #b4bacd;
   }
 }
+
 .primary-receive {
   background: rgba(81, 183, 195, 0.7) !important;
   color: #adb7c2 !important;
 }
+
 .ic-balance-item-container-wrap {
   padding: 0;
+
   .balance {
     font-size: 26px;
     word-break: break-word;
   }
+
   button {
     width: 90px;
   }
+
   .operation {
     margin-top: 25px !important;
   }
+
   .ic-balance-item {
     margin: 0;
   }
+
   .ic-balance-item-container-item {
     margin-top: 20px;
     padding: 0;
+
     &:first-child {
       padding-right: 10px;
     }
+
     &:last-child {
       padding-left: 10px;
     }
+
     &.ic-balance-item-container-item-eth {
       p {
         line-height: 30px;
@@ -12123,24 +12425,30 @@ button {
     }
   }
 }
+
 .coming-soon {
   line-height: 26px;
 }
+
 .ic-balance-item-container-item-btc {
   border-right: 1px solid #212b35;
 }
+
 .forge-left-balance,
 .forge-right-balance {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+
   .balance {
     padding: 0 5px;
   }
 }
+
 .forge-left-balance {
   display: flex;
   align-items: center;
+
   > div {
     display: flex;
     align-items: center;
@@ -12148,6 +12456,7 @@ button {
     white-space: nowrap;
   }
 }
+
 .step-list {
   position: relative;
   display: flex;
@@ -12158,50 +12467,61 @@ button {
   padding: 10px;
   border-radius: 20px;
   font-size: 15px;
+
   .step-previous {
     position: absolute;
     left: -25px;
     font-size: 18px;
     color: #55575b;
+
     &.active {
       color: #c0c7cf;
       cursor: pointer;
     }
   }
+
   .step-next {
     position: absolute;
     right: -25px;
     font-size: 18px;
     color: #55575b;
+
     &.active {
       color: #c0c7cf;
       cursor: pointer;
     }
   }
+
   .step-list-center {
     flex: 1;
     padding: 0 15px;
+
     .step-list-center-t {
       display: flex;
       align-items: center;
       padding: 0 15px;
     }
+
     .step-list-line {
       flex: 1;
       height: 1px;
       background: #adb3c4;
     }
   }
+
   > .pointer {
     display: flex;
     align-items: center;
+
     &.active {
       color: #fff;
+
       .step-list-num {
         border-color: #fff;
       }
     }
   }
+
   .step-list-num {
     display: flex;
     align-items: center;
@@ -12213,18 +12533,21 @@ button {
     border-radius: 10px;
   }
 }
+
 .ckEth-mint-top {
   margin-bottom: 10px;
   padding: 10px;
   background: #101014;
   border-radius: 10px;
 }
+
 .forge-main {
   display: flex;
   background: #101014;
   padding: 10px;
   border-radius: 10px;
 }
+
 .btc-address-code {
   display: flex;
   align-items: center;
@@ -12232,17 +12555,21 @@ button {
   width: auto;
   margin-top: 10px;
   color: #adb3c4;
+
   img {
     width: 200px;
     min-height: 200px;
     padding: 5px 0;
   }
 }
+
 .ic-balance-item-container-ckbtc {
   filter: grayscale(1);
+
   .balance {
     color: #b4bacd;
   }
+
   button {
     &:hover {
       span {
@@ -12251,9 +12578,11 @@ button {
     }
   }
 }
+
 .btc-txs-ul-spin {
   min-height: 100px;
 }
+
 .loading-spinner {
   display: inline-block;
   background-image: url('../../../../assets/img/loading.svg');
@@ -12266,23 +12595,28 @@ button {
   margin-left: 5px;
   color: #808a94;
 }
+
 .retrieve-btc-status-flex {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+
   &.retrieve-btc-status-flex-pc {
     width: 100px;
   }
 }
+
 .eth-tx-hash {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+
   > div {
     display: flex;
     flex-direction: column;
   }
 }
+
 .step-footer-confirmation {
   position: absolute;
   right: 70px;
@@ -12293,8 +12627,10 @@ button {
   justify-content: space-between;
   font-size: 14px;
 }
+
 .forge-left {
   width: 100%;
+
   .step-footer {
     position: absolute;
     right: 20px;
@@ -12306,99 +12642,120 @@ button {
     color: #1996c4;
     cursor: pointer;
   }
+
   .mint-footer {
     display: flex;
     align-items: center;
     margin-top: 100px;
+
     button {
       width: 200px;
       height: 36px;
       margin: 0;
     }
   }
+
   .next-button {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 40px;
     margin-bottom: 20px;
+
     button {
       width: 100%;
       height: 36px;
     }
   }
+
   .mint-button {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin: 40px 0 20px;
+
     button {
       width: auto;
       height: 36px;
       margin: 0 !important;
+
       img {
         width: 16px;
         margin-right: 5px;
       }
     }
   }
+
   .ckbtc-button {
     /*position: absolute;
 		bottom: 0;
 		margin-bottom: 0;*/
   }
 }
+
 .forge-modal-eth {
   .forge-left {
     margin-right: 0;
     /*background: #131920;
 		padding: 10px;*/
   }
+
   .forge-right {
     width: 100%;
+
     table {
       font-size: 12px;
     }
+
     table,
     tr,
     th,
     td {
       background: transparent !important;
     }
+
     tbody {
       tr:nth-child(2n-1) {
         background: rgba(21, 22, 27, 0.4) !important;
       }
     }
+
     .deposit-balance {
       font-size: 18px;
       color: #f5f5f5;
     }
+
     .deposit-balance-symbol {
       vertical-align: bottom;
       font-size: 12px;
     }
+
     .retrieve-btc-status-block-index {
       width: 60px;
     }
+
     .retrieve-btc-status-ul {
       min-height: 250px;
       max-height: calc(100vh - 400px);
       padding-right: 0;
     }
+
     .btc-txs-ul {
       min-height: 100px;
     }
+
     .btc-txs-ul-spin {
       min-height: 100px;
     }
   }
 }
+
 .dissolve-modal {
   .forge-left {
     height: auto;
   }
 }
+
 .step-footer {
   position: absolute;
   right: 20px;
@@ -12410,45 +12767,56 @@ button {
   color: #1996c4;
   cursor: pointer;
 }
+
 .pc-show {
   display: block;
 }
+
 .h5-show {
   display: none;
 }
+
 .ic-balance-item-container-item-cross {
   display: flex;
   align-items: center;
   justify-content: center;
+
   ::v-deep .ant-select-selection {
     border: 1px solid #646e79;
     color: #d5d5d5;
   }
+
   ::v-deep .ant-select-selection__placeholder {
     height: 28px;
     margin-top: -14px;
     color: #adb3c4;
   }
+
   ::v-deep .ant-select-disabled {
     .ant-select-selection {
       background: #272e36;
       opacity: 0.5;
+
       &:hover {
         border-color: #646e79;
       }
     }
   }
 }
+
 .cross-main {
   display: flex;
+
   .cross-item {
     &:first-child {
       margin-right: 20px;
     }
+
     &:last-child {
       margin-left: 20px;
     }
   }
+
   .cross-item-icon {
     display: flex;
     align-items: center;
@@ -12462,8 +12830,10 @@ button {
     border: 2px solid #000;
     color: #adb3c4;
     transition: all 0.3s;
+
     &.pointer {
       color: #fff;
+
       &:hover {
         i {
           transform: scale(1.1);
@@ -12471,60 +12841,73 @@ button {
       }
     }
   }
+
   .cross-item-title {
     margin-bottom: 20px;
     font-size: 16px;
   }
 }
+
 .cross-button {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 40px;
+
   button {
     height: 40px;
     width: 300px;
     margin-right: 0 !important;
   }
+
   span {
     position: absolute;
     left: 50%;
     margin-left: 160px;
   }
 }
+
 @media screen and (max-width: 1000px) {
   .forge-modal,
   .dissolve-modal {
     .modal-title-info {
       display: block;
+
       .modal-title-main {
         width: auto;
       }
     }
+
     ::v-deep .ant-modal-body {
       max-height: calc(100vh - 172px);
     }
+
     .retrieve-button {
       width: 100%;
       margin-top: 20px;
     }
+
     .btc-txs-ul-spin {
       height: auto;
       min-height: 100px;
     }
+
     .btc-txs-ul {
       min-height: 100px;
       max-height: none;
     }
+
     .forge-main {
       flex-direction: column;
     }
+
     .forge-left,
     .forge-right,
     .btc-address-code {
       width: 100%;
     }
+
     .forge-right {
       margin-top: 20px;
     }
@@ -12544,22 +12927,27 @@ button {
     }
   }
 }
+
 .btc-txs-header-h5 {
   .deposit-balance {
     display: flex;
     align-items: baseline;
   }
 }
+
 .icp-balance-main {
   display: flex;
   align-items: center;
+
   .ic-token-operation {
     margin-left: auto;
+
     .button-history {
       margin-right: 0 !important;
     }
   }
 }
+
 @media screen and (max-width: 768px) {
   .cross-info,
   .cross-item {
@@ -12582,6 +12970,7 @@ button {
   .icp-balance-main {
     align-items: flex-start;
     flex-direction: column;
+
     .ic-token-operation {
       margin-left: 0;
     }
@@ -12590,12 +12979,14 @@ button {
     &.retrieve-btc-status-flex-pc {
       width: auto;
     }
+
     &.retrieve-btc-status-flex-h5 {
       margin-left: auto;
     }
   }
   .btc-txs-header-h5 {
     flex-direction: column;
+
     .margin-left-auto {
       margin-left: 0;
     }
@@ -12630,6 +13021,7 @@ button {
   .btc-txs-ul {
     li {
       font-size: 12px;
+
       .btc-txs-hash {
         flex-wrap: wrap;
       }
@@ -12637,6 +13029,7 @@ button {
   }
   .ic-token-operation {
     flex-wrap: wrap;
+
     button {
       margin-bottom: 8px;
     }
@@ -12644,6 +13037,7 @@ button {
   .cross-title {
     flex-direction: column;
     align-items: flex-start;
+
     .minting-method-info {
       margin-left: 0;
     }
@@ -12654,6 +13048,7 @@ button {
   .cross-main {
     flex-direction: column;
     align-items: center;
+
     .cross-item-icon-down {
       display: flex;
       align-items: center;
@@ -12667,8 +13062,10 @@ button {
       border: 2px solid #000;
       color: #adb3c4;
       transition: all 0.3s;
+
       &.pointer {
         color: #fff;
+
         &:hover {
           i {
             transform: scale(1.1);
@@ -12676,13 +13073,16 @@ button {
         }
       }
     }
+
     .ic-balance-item-launch-event-select {
       margin-top: 20px;
     }
+
     .cross-item {
       &:first-child {
         margin-right: 0;
       }
+
       &:last-child {
         margin-left: 0;
       }
@@ -12694,29 +13094,37 @@ button {
       padding-bottom: 20px;
       font-size: 12px !important;
     }
+
     ::v-deep .ant-modal-header {
       padding: 35px 15px !important;
     }
+
     ::v-deep .ant-modal-body {
       padding: 0 15px !important;
     }
+
     .forge-main.mt20 {
       margin-top: 0;
     }
+
     .step-list {
       .step-list-center {
         padding: 0 5px;
+
         .step-list-center-t {
           padding: 0 5px;
         }
       }
     }
+
     .btc-txs-header {
       flex-wrap: wrap;
       font-size: 12px;
     }
+
     .mint-button {
       flex-wrap: wrap;
+
       button {
         width: 100%;
         margin-bottom: 10px !important;
@@ -12743,25 +13151,30 @@ button {
       flex-wrap: wrap;
       font-size: 12px;
     }
+
     .li-h5-item {
       display: flex;
       align-items: center;
       width: 100%;
       padding: 5px 0;
     }
+
     .no-retrieve-btc-status-ul {
       min-height: 100px;
       height: auto;
     }
+
     .retrieve-btc-status-ul {
       .retrieve-btc-status-block-index {
         width: 55px;
         margin-right: 0;
+
         &.retrieve-btc-status-block-index-block {
           width: 80px;
         }
       }
     }
+
     /*.retrieve-btc-status-ul-table-eth {
       .retrieve-margin-left-auto {
         margin-left: 0;
@@ -12771,13 +13184,16 @@ button {
   }
   .ic-balance-item-container {
     flex-direction: column;
+
     .operation {
       width: 100%;
       flex-wrap: wrap;
+
       button {
         margin-bottom: 10px;
       }
     }
+
     .ic-balance-item-container-item-btc {
       width: 100%;
       border-right: none;

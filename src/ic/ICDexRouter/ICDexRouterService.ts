@@ -1,4 +1,5 @@
 import Service, {
+  EventTrieList,
   MakerCreateArg,
   NFT,
   SysConfig,
@@ -205,6 +206,14 @@ export class ICDexRouterService {
   ): Promise<Array<[Principal, AccountId]>> => {
     await this.check(false, false);
     const res = await this.service.getVipMakers(account);
+    return SerializableIC(res);
+  };
+  public get_events = async (
+    page: Array<bigint>,
+    size: Array<bigint>
+  ): Promise<EventTrieList> => {
+    await this.check(false, false);
+    const res = await this.service.get_events(page, size);
     return SerializableIC(res);
   };
 }

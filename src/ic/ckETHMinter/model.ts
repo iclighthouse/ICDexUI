@@ -1,4 +1,4 @@
-import { Icrc1Account, SubAccount, Time } from '@/ic/common/icType';
+import { Icrc1Account, SubAccount, Time, TokenInfo } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal/lib/cjs';
 
 export type EthAddress = string;
@@ -722,7 +722,7 @@ export type TxFinalizedStatus =
       PendingReimbursement: EthTransaction;
     };
 export interface EthTransaction {
-  effective_transaction_fee: Array<bigint>
+  effective_transaction_fee: Array<bigint>;
   transaction_hash: string;
 }
 export interface MinterInfoDFI {
@@ -812,6 +812,257 @@ export type LedgerError =
         failed_burn_amount: bigint;
       };
     };
+export interface ckETHEvents {
+  total_event_count: bigint;
+  events: Array<ETHEvent>;
+}
+export interface icETHEvents {
+  total: bigint;
+  data: Array<[BlockHeight, [icETHEvent, Time]]>;
+  totalPage: bigint;
+}
+export type icETHEvent =
+  | {
+      depositGas: {
+        txIndex: TxIndex;
+        toid: bigint;
+        address: EthAddress;
+        account: Icrc1Account;
+        amount: Wei;
+      };
+    }
+  | {
+      withdraw: {
+        fee: [] | [Wei];
+        token: EthAddress;
+        txIndex: TxIndex;
+        toid: bigint;
+        address: EthAddress;
+        account: Icrc1Account;
+        amount: Wei;
+      };
+    }
+  | {
+      keeper: {
+        operation: {
+          setRpc: {
+            keeper: Icrc1Account;
+            operation:
+              | {
+                  put: [string, { Available: null } | { Unavailable: null }];
+                }
+              | { remove: null };
+          };
+        };
+      };
+    }
+  | {
+      continueTransaction: {
+        txIndex: TxIndex;
+        preTxid: Array<TxHash>;
+        toid: bigint;
+        updateTx: [] | [UpdateTxArgs];
+        account: Icrc1Account;
+      };
+    }
+  | {
+      depositResult:
+        | {
+            ok: {
+              fee: [] | [Wei];
+              token: EthAddress;
+              txIndex: TxIndex;
+              txid: Array<TxHash>;
+              account: Icrc1Account;
+              amount: Wei;
+            };
+          }
+        | {
+            err: {
+              token: EthAddress;
+              txIndex: TxIndex;
+              txid: Array<TxHash>;
+              account: Icrc1Account;
+              amount: Wei;
+            };
+          };
+    }
+  | {
+      burn: {
+        toid: [] | [bigint];
+        icTokenCanisterId: Principal;
+        address: EthAddress;
+        account: Icrc1Account;
+        amount: Wei;
+        tokenBlockIndex: bigint;
+      };
+    }
+  | { init: { initArgs: InitArgs } }
+  | {
+      mint: {
+        toid: bigint;
+        icTokenCanisterId: Principal;
+        account: Icrc1Account;
+        amount: Wei;
+      };
+    }
+  | {
+      send: {
+        to: Icrc1Account;
+        toid: [] | [bigint];
+        icTokenCanisterId: Principal;
+        amount: Wei;
+      };
+    }
+  | {
+      coverTransaction: {
+        txIndex: TxIndex;
+        preTxid: Array<TxHash>;
+        toid: bigint;
+        updateTx: [] | [UpdateTxArgs];
+        account: Icrc1Account;
+      };
+    }
+  | {
+      claimDepositResult:
+        | {
+            ok: {
+              fee: [] | [Wei];
+              token: EthAddress;
+              signature: string;
+              from: EthAddress;
+              account: Icrc1Account;
+              txHash: TxHash;
+              amount: Wei;
+            };
+          }
+        | {
+            err: {
+              signature: string;
+              error: string;
+              account: Icrc1Account;
+              txHash: TxHash;
+            };
+          };
+    }
+  | { changeOwner: { newOwner: Principal } }
+  | {
+      deposit: {
+        fee: [] | [Wei];
+        token: EthAddress;
+        txIndex: TxIndex;
+        toid: bigint;
+        address: EthAddress;
+        account: Icrc1Account;
+        amount: Wei;
+      };
+    }
+  | { start: { message: [] | [string] } }
+  | {
+      updateTokenPrice: {
+        token: EthAddress;
+        ethRatio: Wei;
+        price: number;
+      };
+    }
+  | {
+      withdrawResult:
+        | {
+            ok: {
+              token: EthAddress;
+              txIndex: TxIndex;
+              txid: Array<TxHash>;
+              account: Icrc1Account;
+              amount: Wei;
+            };
+          }
+        | {
+            err: {
+              token: EthAddress;
+              txIndex: TxIndex;
+              txid: Array<TxHash>;
+              account: Icrc1Account;
+              amount: Wei;
+            };
+          };
+    }
+  | {
+      depositGasResult:
+        | {
+            ok: {
+              token: EthAddress;
+              txIndex: TxIndex;
+              txid: Array<TxHash>;
+              account: Icrc1Account;
+              amount: Wei;
+            };
+          }
+        | {
+            err: {
+              token: EthAddress;
+              txIndex: TxIndex;
+              account: Icrc1Account;
+              amount: Wei;
+            };
+          };
+    }
+  | {
+      claimDeposit: {
+        signature: string;
+        account: Icrc1Account;
+        txHash: TxHash;
+      };
+    }
+  | {
+      config: {
+        setting:
+          | {
+              upgradeTokenWasm: {
+                icTokenCanisterId: Principal;
+                version: string;
+                symbol: string;
+              };
+            }
+          | { setToken: { token: EthAddress; info: IcTokenInfo } }
+          | { depositMethod: number }
+          | {
+              setDexPair: {
+                token: EthAddress;
+                dexPair: [] | [Principal];
+              };
+            }
+          | {
+              updateRpc: {
+                keeper: Icrc1Account;
+                operation:
+                  | {
+                      set: { Available: null } | { Unavailable: null };
+                    }
+                  | { remove: null };
+              };
+            }
+          | { minRpcConfirmations: bigint }
+          | {
+              launchToken: {
+                token: EthAddress;
+                icTokenCanisterId: Principal;
+                symbol: string;
+              };
+            }
+          | {
+              setKeeper: {
+                url: string;
+                status: { Disabled: null } | { Normal: null };
+                name: string;
+                account: Icrc1Account;
+              };
+            }
+          | { dependents: { utilsTool: Principal } }
+          | { setTokenWasm: { size: bigint; version: string } }
+          | { minConfirmations: bigint };
+      };
+    }
+  | { suspend: { message: [] | [string] } };
 
 export default interface Service {
   get_deposit_address(request: Icrc1Account): Promise<string>;
@@ -866,10 +1117,17 @@ export default interface Service {
     account: Array<Icrc1Account>
   ): Promise<Array<[DepositTxn, Time, boolean]>>;
   smart_contract_address(): Promise<string>;
-  get_events(request: {
-    start: bigint;
-    length: bigint;
-  }): Promise<{ total_event_count: bigint; events: Array<ETHEvent> }>;
+  get_events(
+    arg1:
+      | {
+          request: {
+            start: bigint;
+            length: bigint;
+          };
+        }
+      | [bigint],
+    arg2?: [bigint]
+  ): Promise<ckETHEvents | icETHEvents>;
   withdraw_eth(withdrawalArg: WithdrawalArg): Promise<WithdrawalResponse>;
   retrieve_eth_status(blockIndex: bigint): Promise<RetrieveEthStatus>;
   withdraw_erc20(

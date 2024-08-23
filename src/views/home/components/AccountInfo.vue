@@ -1,20 +1,20 @@
 <template>
   <div>
-    <div class="home-header home-header-main">
-      <div class="home-header-main-menu">
+    <div class="home-header">
+      <!--div class="home-header-main-menu">
         <img
           class="home-header-main-menu-left"
           src="@/assets/img/logo-i.png"
           alt=""
         />
-        <!--<a-icon class="home-header-main-menu-left" type="double-left" />-->
+        &lt;!&ndash;<a-icon class="home-header-main-menu-left" type="double-left" />&ndash;&gt;
         <div class="home-header-main-menu-span">
-          <!--<a-icon type="double-right" />-->
+          &lt;!&ndash;<a-icon type="double-right" />&ndash;&gt;
           <span></span>
           <span></span>
           <span></span>
         </div>
-      </div>
+      </div>-->
       <div class="home-header-left">
         <img class="home-header-logo" src="@/assets/img/logo.png" alt="logo" />
         <!--<img
@@ -24,6 +24,128 @@
 				/>-->
       </div>
       <ul>
+        <li
+          @click="changeMenu('wallet', '/wallet')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/wallet')
+          }"
+        >
+          <span>Wallet</span>
+        </li>
+        <a-dropdown
+          :getPopupContainer="() => $refs.homeHeaderICDex"
+          placement="bottomCenter"
+        >
+          <li
+            ref="homeHeaderICDex"
+            :class="{
+              active:
+                $route.path.includes('/ICDex') || $route.path === '/Mining'
+            }"
+          >
+            <span>ICDex</span>
+            <a-icon type="caret-down" />
+          </li>
+          <a-menu slot="overlay" class="base-bg-box home-header-menu">
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('trade', '/ICDex')"
+                :class="{ active: $route.name === 'ICDex' }"
+                class="home-header-item-info"
+              >
+                Trade
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('pools', '/ICDex/pools')"
+                :class="{ active: $route.name.includes('ICDexPool') }"
+                class="home-header-item-info"
+              >
+                Pools
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('Mining', '/Mining')"
+                :class="{ active: $route.name.includes('ICDexMining') }"
+                class="home-header-item-info"
+              >
+                Mining
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('Info', '/ICDex/info')"
+                :class="{ active: $route.name.includes('ICDexInfo') }"
+                class="home-header-item-info"
+              >
+                Info
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('Competitions', '/ICDex/competitions')"
+                :class="{ active: $route.name.includes('Competitions') }"
+                class="home-header-item-info"
+              >
+                Competitions
+              </div>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+        <li
+          @click="changeMenu('icRouter', '/icRouter')"
+          :class="{
+            active: $route.fullPath.toLocaleLowerCase().startsWith('/icrouter')
+          }"
+        >
+          <span>icRouter</span>
+        </li>
+        <a-dropdown
+          :getPopupContainer="() => $refs.homeHeaderCyclesMarket"
+          placement="bottomCenter"
+        >
+          <li
+            ref="homeHeaderCyclesMarket"
+            :class="{
+              active: $route.fullPath
+                .toLocaleLowerCase()
+                .startsWith('/cyclesfinance')
+            }"
+          >
+            <span>CyclesMarket</span>
+            <a-icon type="caret-down" />
+          </li>
+          <a-menu slot="overlay" class="base-bg-box home-header-menu">
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('CyclesFinance', '/cyclesFinance/swap')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/cyclesfinance/swap')
+                }"
+                class="home-header-item-info"
+              >
+                Swap
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('CyclesFinance', '/cyclesFinance/Liquidity')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/cyclesfinance/liquidity')
+                }"
+                class="home-header-item-info"
+              >
+                Liquidity
+              </div>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
         <a-dropdown
           :getPopupContainer="() => $refs.homeHeaderMain"
           placement="bottomCenter"
@@ -32,28 +154,14 @@
             ref="homeHeaderMain"
             :class="{
               active:
-                $route.fullPath.toLocaleLowerCase().startsWith('/wallet') ||
                 $route.fullPath.toLocaleLowerCase().startsWith('/nns') ||
                 $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
             }"
           >
-            <span>ICLight</span>
+            <span>Governance</span>
             <a-icon type="caret-down" />
           </li>
           <a-menu slot="overlay" class="base-bg-box home-header-menu">
-            <a-menu-item class="home-header-item">
-              <div
-                @click="changeMenu('wallet', '/wallet')"
-                :class="{
-                  active: $route.fullPath
-                    .toLocaleLowerCase()
-                    .startsWith('/wallet')
-                }"
-                class="home-header-item-info"
-              >
-                Wallet
-              </div>
-            </a-menu-item>
             <a-menu-item class="home-header-item">
               <div
                 @click="changeMenu('nns', '/nns')"
@@ -80,133 +188,87 @@
             </a-menu-item>
           </a-menu>
         </a-dropdown>
-        <li
-          @click="changeMenu('icRouter', '/icRouter')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/icrouter')
-          }"
+        <a-dropdown
+          :getPopupContainer="() => $refs.homeHeaderMore"
+          placement="bottomCenter"
         >
-          <span>icRouter</span>
-        </li>
-        <!--<li
-					@click="changeMenu('ICSNS', '/ICSNS')"
-					:class="{
-						active: $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
-					}"
-				>
-					<span>ICSNS</span>
-				</li>-->
-        <li
-          @click="changeMenu('ICDex', '/ICDex')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
-          }"
-        >
-          <span>ICDex</span>
-        </li>
-        <li
-          @click="changeMenu('NFT', '/NFT')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
-          }"
-        >
-          <span>NFT</span>
-        </li>
-        <li
-          @click="changeMenu('Airdrop', '/Airdrop')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
-          }"
-        >
-          <span>Airdrop</span>
-        </li>
-        <li
-          @click="changeMenu('CyclesFinance', '/CyclesFinance')"
-          :class="{
-            active: $route.fullPath
-              .toLocaleLowerCase()
-              .startsWith('/cyclesfinance')
-          }"
-        >
-          <span>CyclesFinance</span>
-        </li>
-        <!--<li
-					@click="changeMenu('dapps', '/dapps')"
-					:class="{
-						active:
-							$route.fullPath.toLocaleLowerCase().startsWith('/dapps') ||
-							$route.fullPath.toLocaleLowerCase().startsWith('/icl') ||
-							$route.fullPath
-								.toLocaleLowerCase()
-								.startsWith('/cyclesfinance') ||
-							$route.fullPath.toLocaleLowerCase().startsWith('/icswap')
-					}"
-				>
-					<span>DApps</span>
-				</li>-->
-        <!--<li
-					@click="changeMenu('ICDex', '/ICDex')"
-					:class="{
-						active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
-					}"
-				>
-					<span>Trade</span>
-				</li>
-				<li
-					@click="changeMenu('Info', '/icdex/Info')"
-					:class="{
-						active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
-					}"
-				>
-					<span>Market</span>
-				</li>-->
-        <!--<li
-					@click="changeMenu('/icl', '/icl/tradingMining')"
-					:class="{
-						active: $route.fullPath
-							.toLocaleLowerCase()
-							.startsWith('/icl/tradingmining')
-					}"
-				>
-					<span>Mining</span>
-				</li>-->
-        <li
-          @click="changeMenu('Dashboard', '/Dashboard')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/dashboard')
-          }"
-        >
-          <span>Dashboard</span>
-        </li>
-        <li>
-          <a
-            href="https://ic.house"
-            target="_blank"
-            rel="nofollow noreferrer noopener"
-            >ICHouse</a
+          <li
+            ref="homeHeaderMore"
+            :class="{
+              active:
+                $route.fullPath.toLocaleLowerCase().startsWith('/dashboard') ||
+                $route.fullPath.toLocaleLowerCase().startsWith('/nft') ||
+                $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
+            }"
           >
-        </li>
-        <!--<li
-					v-if="
-						hostname &&
-						hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
-						hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
-					"
-					style="padding: 0 20px; font-size: 12px"
-				>
-					<a
-						:href="
-							hostHref.replace(
-								hostname,
-								'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
-							)
-						"
-						target="_blank"
-						rel="nofollow noreferrer noopener"
-						>OldVersion</a
-					>
-				</li>-->
+            <span>More</span>
+            <a-icon type="caret-down" />
+          </li>
+          <a-menu slot="overlay" class="base-bg-box home-header-menu">
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('Dashboard', '/Dashboard')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/dashboard')
+                }"
+                class="home-header-item-info"
+              >
+                Dashboard
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <a
+                href="https://ic.house"
+                target="_blank"
+                rel="nofollow noreferrer noopener"
+                class="home-header-item-info"
+                >ICHouse</a
+              >
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('NFT', '/NFT')"
+                :class="{
+                  active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
+                }"
+                class="home-header-item-info"
+              >
+                NFT
+              </div>
+            </a-menu-item>
+            <a-menu-item class="home-header-item">
+              <div
+                @click="changeMenu('Airdrop', '/Airdrop')"
+                :class="{
+                  active: $route.fullPath
+                    .toLocaleLowerCase()
+                    .startsWith('/airdrop')
+                }"
+                class="home-header-item-info"
+              >
+                Airdrop
+              </div>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
       </ul>
+      <div class="flex-center margin-left-auto">
+        <launch
+          v-show="
+            $route.name.includes('Competitions') ||
+            $route.name.includes('ICDex') ||
+            $route.name.includes('ICDexInfo') ||
+            $route.name.includes('ICDexMining') ||
+            $route.name.includes('ICDexPool')
+          "
+          :tokens="tokens"
+          ref="launch"
+          @launchSuccess="launchSuccess"
+          @changeLaunch="changeLaunch"
+        ></launch>
+      </div>
       <div class="account-info">
         <slot></slot>
         <div class="current-account" v-if="getPrincipalId">
@@ -584,8 +646,8 @@
               class="user-setting-item"
               :class="{
                 active:
-                  $route.path.toLocaleLowerCase() ===
-                  menu.path.toLocaleLowerCase()
+                  $route.name.toLocaleLowerCase() ===
+                  menu.path.replace(/\//g, '').toLocaleLowerCase()
               }"
             >
               <router-link :to="menu.path">
@@ -771,7 +833,7 @@
         </a-modal>
       </div>
     </div>
-    <div class="home-header">
+    <!--<div class="home-header">
       <div class="home-header-left">
         <span v-show="$route.name.includes('ICSNS')" class="home-header-title"
           >SNS</span
@@ -1163,7 +1225,7 @@
                   <span>CyclesFinance</span>
                 </router-link>
               </a-menu-item>
-              <!--<a-menu-item
+              &lt;!&ndash;<a-menu-item
 								class="user-setting-item"
 								@click="changeMenu('dapps', '/dapps')"
 								:class="{
@@ -1173,8 +1235,8 @@
 								<router-link to="/dapps">
 									<span>DApps</span>
 								</router-link>
-							</a-menu-item>-->
-              <!--<a-menu-item
+							</a-menu-item>&ndash;&gt;
+              &lt;!&ndash;<a-menu-item
 								class="user-setting-item"
 								@click="changeMenu('ICDex', '/ICDex')"
 								:class="{
@@ -1208,7 +1270,7 @@
 								<router-link to="/icl/tradingMining">
 									<span>Mining</span>
 								</router-link>
-							</a-menu-item>-->
+							</a-menu-item>&ndash;&gt;
               <a-menu-item
                 class="user-setting-item"
                 @click="changeMenu('Dashboard', '/Dashboard')"
@@ -1230,7 +1292,7 @@
                   >ICHouse</a
                 >
               </a-menu-item>
-              <!--<a-menu-item
+              &lt;!&ndash;<a-menu-item
 								v-if="
 									hostname &&
 									hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
@@ -1249,7 +1311,7 @@
 									rel="nofollow noreferrer noopener"
 									>OldVersion</a
 								>
-							</a-menu-item>-->
+							</a-menu-item>&ndash;&gt;
             </a-menu>
           </a-dropdown>
           <a-dropdown
@@ -1407,7 +1469,7 @@
                     Download pem file
                   </button>
                 </a-form-model>
-                <!--<div>
+                &lt;!&ndash;<div>
 										<p>Run the following command</p>
 										<div>
 											In order to use your account in DFX, run the following
@@ -1416,7 +1478,7 @@
 										<button class="default w100 mt20" @click="downloadPem">
 											Download pem file
 										</button>
-									</div>-->
+									</div>&ndash;&gt;
               </div>
             </div>
           </a-modal>
@@ -1451,7 +1513,7 @@
           </a-modal>
         </div>
       </div>
-    </div>
+    </div>-->
   </div>
 </template>
 
@@ -1998,7 +2060,6 @@ export default class extends Vue {
 .account-info {
   display: flex;
   align-items: center;
-  margin-left: auto;
 }
 .check-account {
   color: #52c41a;
@@ -2104,7 +2165,6 @@ export default class extends Vue {
   margin-left: 0;
 }
 .home-header {
-  top: 14px;
   .home-header-right-info {
     min-width: 280px;
   }

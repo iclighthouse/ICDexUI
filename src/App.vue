@@ -313,7 +313,20 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       );
       tokens[sns1TokenId].fee = tokens[sns1TokenId].fee.toString();
       delete tokens[sns1TokenId].totalSupply;
+      delete tokens[sns1TokenId].logo;
       console.log(tokens);
+      localStorage.setItem('tokens', JSON.stringify(tokens));
+    }
+    // EXE
+    const EXETokenId = 'rh2pm-ryaaa-aaaan-qeniq-cai';
+    if (tokens[EXETokenId] && tokens[EXETokenId].fee === '100000') {
+      tokens[EXETokenId] = await getTokenInfo(Principal.fromText(EXETokenId), {
+        icrc1: null
+      });
+      tokens[EXETokenId].fee = tokens[EXETokenId].fee.toString();
+      delete tokens[EXETokenId].totalSupply;
+      delete tokens[EXETokenId].logo;
+      console.log(tokens[EXETokenId]);
       localStorage.setItem('tokens', JSON.stringify(tokens));
     }
     const RICHToken = '77xez-aaaaa-aaaar-qaezq-cai';
@@ -323,6 +336,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       });
       tokens[RICHToken].fee = tokens[RICHToken].fee.toString();
       delete tokens[RICHToken].totalSupply;
+      delete tokens[RICHToken].logo;
       console.log(tokens);
       localStorage.setItem('tokens', JSON.stringify(tokens));
     }

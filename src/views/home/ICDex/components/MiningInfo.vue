@@ -283,6 +283,7 @@ export default class extends Vue {
   private tokens: { [key: string]: TokenInfo } = {};
   private miningPairs: Array<PairsData> = [];
   private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService = null;
+  private currentMining = '';
   get isActive(): boolean {
     let flag = false;
     if (this.currentRound && this.currentRound.data.length) {
@@ -318,6 +319,19 @@ export default class extends Vue {
   async created(): Promise<void> {
     if (!flagInit) {
       flagInit = true;
+      const miningList = [
+        {
+          canisterId: 'odhfn-cqaaa-aaaar-qaana-cai',
+          symbol: 'ICL',
+          decimals: 8
+        },
+        {
+          canisterId: 'orbsu-oaaaa-aaaar-qaaoa-cai',
+          symbol: 'CHAT',
+          decimals: 8
+        }
+      ];
+      this.currentMining = 'odhfn-cqaaa-aaaar-qaana-cai';
       this.MiningService = new MiningService();
       this.ICDexRouterService = new ICDexRouterService();
       this.NftService = new NftService();
@@ -389,7 +403,7 @@ export default class extends Vue {
     }
   }
   private async getRound(): Promise<void> {
-    this.currentRound = await this.MiningService.getRound();
+    this.currentRound = await this.MiningService.getRound(this.currentMining);
     console.log(this.currentRound);
     if (!this.miningPairs.length) {
       this.getPairs();
@@ -409,7 +423,7 @@ export default class extends Vue {
         // 2024-02-02 00:00:00 UTC
         this.currentRound.data[0].config.startTime = BigInt(1706832000);
       } else {
-        const res = await this.MiningService.getRound([
+        const res = await this.MiningService.getRound(this.currentMining, [
           BigInt(Number(this.currentRound.round) - 1)
         ]);
         this.currentRound.data[0].config.startTime = res.data[0].config.endTime;
@@ -440,6 +454,7 @@ export default class extends Vue {
   private async getAccelerationRate(): Promise<void> {
     if (this.getPrincipalId) {
       this.accelerationRate = await this.MiningService.getAccelerationRate(
+        this.currentMining,
         hexToBytes(
           principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
         )
@@ -449,6 +464,7 @@ export default class extends Vue {
   private async getAccountData(): Promise<void> {
     if (this.getPrincipalId) {
       this.accountData = await this.MiningService.getAccountData(
+        this.currentMining,
         hexToBytes(
           principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
         )

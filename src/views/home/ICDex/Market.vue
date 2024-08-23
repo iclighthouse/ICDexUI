@@ -1331,7 +1331,7 @@
               style="margin-right: 10px"
               @click="searchMaker"
             >
-              Search vip-maker
+              Search <a-icon type="search" />
             </span>
             <button type="button" class="primary" @click="onBindMaker">
               Add new vip-maker with NFT
@@ -1348,25 +1348,49 @@
               :rules="queryFormRules"
               class="round-account-form"
             >
-              <a-form-model-item label="Owner" prop="owner">
-                <a-input
-                  v-model="queryForm.owner"
-                  autocomplete="off"
-                  placeholder="Owner(Principal)"
-                />
-              </a-form-model-item>
-              <a-form-model-item label="Subaccount (Hex)" prop="subaccount">
-                <a-input
-                  v-model="queryForm.subaccount"
-                  autocomplete="off"
-                  placeholder="Subaccount (optional)"
-                />
-              </a-form-model-item>
-              <a-form-model-item class="margin-left-auto">
-                <button @click="queryAccount" class="primary large-primary">
-                  Search
-                </button>
-              </a-form-model-item>
+              <div>
+                <a-form-model-item label="Owner" prop="owner">
+                  <a-input
+                    v-model="queryForm.owner"
+                    autocomplete="off"
+                    placeholder="Owner(Principal)"
+                  />
+                </a-form-model-item>
+                <a-form-model-item label="Subaccount (Hex)" prop="subaccount">
+                  <a-input
+                    v-model="queryForm.subaccount"
+                    autocomplete="off"
+                    placeholder="Subaccount (optional)"
+                  />
+                </a-form-model-item>
+              </div>
+              <div class="search-token">
+                <a-form-model-item label="Pair">
+                  <a-select
+                    allowClear
+                    v-model="queryForm.pair"
+                    style="width: 910px"
+                    placeholder="select a pair"
+                  >
+                    <a-select-option v-for="pair in makersPairs" :key="pair">
+                      <span v-if="pairToSymbol[pair]">
+                        {{ pairToSymbol[pair].pair.token0[1] }}/{{
+                          pairToSymbol[pair].pair.token1[1]
+                        }}
+                      </span>
+                    </a-select-option>
+                  </a-select>
+                </a-form-model-item>
+                <a-form-model-item class="margin-left-auto">
+                  <button
+                    style="height: 36px"
+                    @click="queryAccount"
+                    class="primary large-primary"
+                  >
+                    Search
+                  </button>
+                </a-form-model-item>
+              </div>
             </a-form-model>
           </div>
           <div class="pc-show">
@@ -2572,6 +2596,7 @@ export default class extends Vue {
   private nftBalanceListingReferrer: Array<NFT> = [];
   private nftBalancePool: Array<NFT> = [];
   private nftBalanceVip: Array<NFT> = [];
+  private makersPairs: Array<string> = [];
   private bindingMakersAll: Array<[Principal, AccountId]> = [];
   private bindingMakers: Array<[Principal, AccountId]> = [];
   private bindingMakersByNFT: {
@@ -2590,7 +2615,8 @@ export default class extends Vue {
   private showSearchAccountBroker = false;
   private queryForm = {
     owner: '',
-    subaccount: ''
+    subaccount: '',
+    pair: undefined
   };
   private validateSubaccount = (
     rule: ValidationRule,
@@ -3133,6 +3159,7 @@ export default class extends Vue {
   private async getBindingMakers(): Promise<void> {
     const makers = [];
     const pairs = [];
+
     this.bindingMakersLoad = true;
     const res = await this.ICDexRouterService.getVipMakers([]);
     console.log(res);
@@ -3161,6 +3188,7 @@ export default class extends Vue {
     }
     console.log(this.bindingMakersByNFT);
     console.log(pairs);
+    this.makersPairs = pairs;
     this.onMakerList(pairs);
     this.bindingMakersAll = makers;
     this.bindingMakers = makers;
@@ -4064,6 +4092,7 @@ export default class extends Vue {
     this.bindingMakers = this.bindingMakersAll;
     this.showSearchAccount = false;
     (this.$refs.queryForm as any).resetFields();
+    this.queryForm.pair = undefined;
     this.account = '';
   }
   private hideAccountBroker(): void {
@@ -4090,7 +4119,14 @@ export default class extends Vue {
         }
         this.account = accountId;
         this.bindingMakers = this.bindingMakersAll.filter((item) => {
-          return toHexString(new Uint8Array(item[1])) === this.account;
+          if (!this.queryForm.pair) {
+            return toHexString(new Uint8Array(item[1])) === this.account;
+          } else {
+            return (
+              item[0].toString() === this.queryForm.pair &&
+              toHexString(new Uint8Array(item[1])) === this.account
+            );
+          }
         });
       }
     });
@@ -4362,9 +4398,6 @@ tbody {
     }
   }
 }
-.market-main {
-  margin-top: 14px;
-}
 .market-main-container {
   padding: 0 20px;
 }
@@ -4390,6 +4423,12 @@ tbody {
     &.active {
       color: #0862bc;
     }
+  }
+}
+.search-token {
+  ::v-deep .ant-select-selection__clear {
+    background: none;
+    color: #636c73;
   }
 }
 .dots {
@@ -4509,7 +4548,11 @@ tbody {
 }
 .round-account-form {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  > div {
+    display: flex;
+    align-items: flex-end;
+  }
   input {
     width: 450px;
     margin-right: 10px;

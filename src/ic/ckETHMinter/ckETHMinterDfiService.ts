@@ -9,6 +9,7 @@ import Service, {
 } from '@/ic/ckETHMinter/model';
 import { createService } from '@/ic/createService';
 import IDL from '@/ic/ckETHMinter/ckETHMinterDfi.did';
+import { SerializableIC } from '@/ic/converter';
 
 export class ckETHMinterDfiService {
   private check = async (
@@ -36,7 +37,13 @@ export class ckETHMinterDfiService {
   }): Promise<{ total_event_count: bigint; events: Array<ETHEvent> }> => {
     const service = await this.check(request.ckETHMinterId, false, false);
     try {
-      return await service.get_events(request);
+      const res = await service.get_events({
+        request: {
+          start: request.start,
+          length: request.length
+        }
+      });
+      return SerializableIC(res);
     } catch (e) {
       console.log(e);
       return null;

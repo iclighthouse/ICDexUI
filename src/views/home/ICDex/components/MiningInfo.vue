@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      v-show="getPrincipalId && type !== 'pool'"
+      v-show="getPrincipalId && type !== 'pool' && type !== 'poolTable'"
       @click.stop="showInfo"
       class="mining-main"
     >
@@ -16,7 +16,7 @@
         alt=""
       />
     </div>
-    <div v-show="type === 'pool'" class="mining-main">
+    <div v-if="type === 'pool'" class="mining-main">
       <a-tooltip placement="top">
         <template slot="title"> mineable </template>
         <img v-show="canMining" src="@/assets/img/mining.png" alt="" />
@@ -24,6 +24,15 @@
       <a-tooltip placement="top">
         <template slot="title"> unmineable </template>
         <img v-show="!canMining" src="@/assets/img/mining.svg" alt="" />
+      </a-tooltip>
+    </div>
+    <div
+      v-if="type === 'poolTable' && canMining"
+      class="mining-main mining-main-table"
+    >
+      <a-tooltip placement="top">
+        <template slot="title"> mineable </template>
+        <img src="@/assets/img/mining.png" alt="" />
       </a-tooltip>
     </div>
     <a-modal
@@ -69,7 +78,7 @@
                   | formatNum
               }}&nbsp;
             </span>
-            ICL.
+            {{ symbol }}.
           </div>
           <div v-show="isActive" class="adopted-countdown-main">
             Round {{ currentRound.round.toString(10) }} of
@@ -95,7 +104,7 @@
                   | formatNum
               }}&nbsp;
             </span>
-            ICL.
+            {{ symbol }}.
           </div>
           <div v-show="isEnd">
             Round {{ currentRound.round.toString(10) }} of
@@ -159,7 +168,7 @@
                       currentRound.data[0].config.supplyForLM
                     ) | formatNum
                   }}
-                  ICL)</span
+                  {{ symbol }})</span
                 ><span v-else
                   >&nbsp;{{ accountData.points.tm.toString(10) }} ({{
                     getRewards(
@@ -168,7 +177,7 @@
                       currentRound.data[0].config.supplyForTM
                     ) | formatNum
                   }}
-                  ICL)</span
+                  {{ symbol }})</span
                 ></span
               ><span v-if="Number(accelerationRate) !== 0"
                 >,&nbsp;+{{ accelerationRate | filterRate }} acceleration by
@@ -237,8 +246,6 @@ import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFidu
 
 const commonModule = namespace('common');
 
-let flagInit = false;
-
 @Component({
   name: 'Mining',
   components: {
@@ -267,6 +274,10 @@ export default class extends Vue {
   public currentPairId!: string;
   @Prop({ type: String, default: '' })
   public type!: string;
+  @Prop({ type: Object, default: () => null })
+  public currentRoundPool!: RoundInfo;
+  @Prop({ type: Array, default: () => [] })
+  public miningPairsPool!: Array<PairsData>;
   private MiningService: MiningService = null;
   private ICDexRouterService: ICDexRouterService = null;
   private NftService: NftService = null;
@@ -276,6 +287,7 @@ export default class extends Vue {
   private isEnd = false;
   private isStart = false;
   private ICLDecimals = 8;
+  private symbol = 'ICL';
   private accelerationRate = '';
   private accountData: AccountData = null;
   private nfts: TokensExt = [];
@@ -313,25 +325,19 @@ export default class extends Vue {
       flag = this.miningPairs.some((item) => {
         return item[0].toString() === this.currentPairId;
       });
+      console.log(flag);
     }
     return flag;
   }
   async created(): Promise<void> {
-    if (!flagInit) {
-      flagInit = true;
-      const miningList = [
-        {
-          canisterId: 'odhfn-cqaaa-aaaar-qaana-cai',
-          symbol: 'ICL',
-          decimals: 8
-        },
-        {
-          canisterId: 'orbsu-oaaaa-aaaar-qaaoa-cai',
-          symbol: 'CHAT',
-          decimals: 8
-        }
-      ];
+    if (this.currentRoundPool && this.miningPairsPool) {
+      this.currentRound = this.currentRoundPool;
+      this.miningPairs = this.miningPairsPool;
+    }
+    if (this.type !== 'pool' && this.type !== 'poolTable') {
       this.currentMining = 'odhfn-cqaaa-aaaar-qaana-cai';
+      this.symbol = 'ICL';
+      this.ICLDecimals = 8;
       this.MiningService = new MiningService();
       this.ICDexRouterService = new ICDexRouterService();
       this.NftService = new NftService();
@@ -341,9 +347,13 @@ export default class extends Vue {
         await this.NFTBalance();
         await this.getTokensExt();
       }
-      this.getRound();
-      this.getAccelerationRate();
-      this.getAccountData();
+      this.getRound().then(() => {
+        Promise.all([this.getAccelerationRate(), this.getAccountData()]).then(
+          () => {
+            this.$emit('init', this.miningPairs, this.currentRound);
+          }
+        );
+      });
     }
   }
   private async getPairs(): Promise<void> {
@@ -383,8 +393,8 @@ export default class extends Vue {
           }
         });
       }
-      console.log(pairs);
       this.miningPairs = pairs;
+      console.log(this.miningPairs);
     }
   }
   private showInfo(): void {
@@ -403,10 +413,78 @@ export default class extends Vue {
     }
   }
   private async getRound(): Promise<void> {
-    this.currentRound = await this.MiningService.getRound(this.currentMining);
+    const miningList = [
+      {
+        canisterId: 'odhfn-cqaaa-aaaar-qaana-cai',
+        symbol: 'ICL',
+        decimals: 8
+      },
+      {
+        canisterId: 'orbsu-oaaaa-aaaar-qaaoa-cai',
+        symbol: 'CHAT',
+        decimals: 8
+      },
+      {
+        canisterId: 'owaua-dyaaa-aaaar-qaaoq-cai',
+        symbol: 'MOTOKO',
+        decimals: 8
+      }
+    ];
+    for (let i = miningList.length - 1; i > 0; i--) {
+      const round = await this.MiningService.getRound(miningList[i].canisterId);
+      console.log(round);
+      let isEnd = false;
+      let isStart = false;
+      if (round) {
+        if (
+          round.data &&
+          round.data.length &&
+          !round.data[0].config.startTime
+        ) {
+          if (Number(round.round) === 1) {
+            // 2024-02-02 00:00:00 UTC
+            round.data[0].config.startTime = BigInt(1706832000);
+          } else {
+            const res = await this.MiningService.getRound(
+              miningList[i].canisterId,
+              [BigInt(Number(round.round) - 1)]
+            );
+            round.data[0].config.startTime = res.data[0].config.endTime;
+          }
+        }
+        const now = new Date().getTime();
+        if (
+          round.data &&
+          round.data.length &&
+          new BigNumber(round.data[0].config.endTime.toString(10))
+            .times(1000)
+            .lt(now)
+        ) {
+          isEnd = true;
+        }
+        if (
+          round.data &&
+          round.data.length &&
+          new BigNumber(round.data[0].config.startTime.toString(10))
+            .times(1000)
+            .lt(now)
+        ) {
+          isStart = true;
+        }
+      }
+      console.log(isStart, isEnd);
+      if (isStart && !isEnd) {
+        this.currentMining = miningList[i].canisterId;
+        this.symbol = miningList[i].symbol;
+        this.ICLDecimals = miningList[i].decimals;
+        this.currentRound = round;
+        break;
+      }
+    }
     console.log(this.currentRound);
     if (!this.miningPairs.length) {
-      this.getPairs();
+      console.log(this.type);
+      await this.getPairs();
     }
     if (this.type === 'pools') {
       this.title = `Liquidity Mining Round ${Number(this.currentRound.round)}`;
@@ -549,6 +627,12 @@ export default class extends Vue {
   color: #8c90a1;
   img {
     width: 14px;
+  }
+  &.mining-main-table {
+    height: 20px;
+    img {
+      width: 10px;
+    }
   }
 }
 .no-nft-modal {

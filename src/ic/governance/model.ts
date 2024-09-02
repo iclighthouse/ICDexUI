@@ -29,6 +29,8 @@ export interface Neuron {
   transfer: [] | [NeuronStakeTransfer];
   known_neuron_data: Array<KnownNeuronData>;
   spawn_at_timestamp_seconds: Array<bigint>;
+  neuron_type: bigint[];
+  visibility: bigint[];
 }
 export type DissolveState =
   | { DissolveDelaySeconds: bigint }
@@ -58,6 +60,8 @@ export interface NeuronInfo {
   known_neuron_data: Array<KnownNeuronData>;
   voting_power: bigint;
   age_seconds: bigint;
+  neuron_type: bigint[];
+  visibility: bigint[];
 }
 export enum NeuronState {
   UNSPECIFIED = 0,
@@ -93,13 +97,12 @@ export type Command =
   | { ClaimOrRefresh: ClaimOrRefresh }
   | { Configure: Configure }
   | { RegisterVote: RegisterVote }
-  | { DisburseToNeuron: DisburseToNeuron }
-  | { StakeMaturity: StakeMaturity }
   | { Merge: Merge }
-  | { MergeMaturity: MergeMaturity }
+  | { DisburseToNeuron: DisburseToNeuron }
   | { MakeProposal: Proposal }
+  | { StakeMaturity: StakeMaturity }
+  | { MergeMaturity: MergeMaturity }
   | { Disburse: Disburse };
-
 export interface StakeMaturity {
   percentage_to_stake: Array<bigint>;
 }
@@ -358,9 +361,9 @@ export interface AddHotKey {
   new_hot_key: Array<Principal>;
 }
 export interface Spawn {
-  percentage_to_spawn: Array<bigint>;
-  new_controller: Array<Principal>;
-  nonce: Array<bigint>;
+  'percentage_to_spawn' : [] | [number],
+  'new_controller' : [] | [Principal],
+  'nonce' : [] | [bigint],
 }
 export interface Split {
   amount_e8s: E8s;
@@ -512,6 +515,8 @@ export interface ListProposalInfoResponse {
   proposal_info: Array<ProposalInfo>;
 }
 export interface ListNeurons {
+  include_public_neurons_in_full_neurons: boolean[];
+  include_empty_neurons_readable_by_caller: boolean[];
   neuron_ids: Array<bigint>;
   include_neurons_readable_by_caller: boolean;
 }

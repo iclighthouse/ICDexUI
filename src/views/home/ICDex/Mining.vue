@@ -1023,6 +1023,11 @@ export default class extends Vue {
         canisterId: 'orbsu-oaaaa-aaaar-qaaoa-cai',
         symbol: 'CHAT',
         decimals: 8
+      },
+      {
+        canisterId: 'owaua-dyaaa-aaaar-qaaoq-cai',
+        symbol: 'MOTOKO',
+        decimals: 8
       }
     ];
     this.miningList.forEach((item) => {
@@ -1046,6 +1051,10 @@ export default class extends Vue {
   private async init(): Promise<void> {
     this.currentRound = null;
     this.accountData = null;
+    this.pageLM = 1;
+    this.totalLM = null;
+    this.pageTM = 1;
+    this.totalTM = null;
     this.maxRound = 1;
     this.accelerationRate = '';
     if (this.$route.params && this.$route.params.type) {

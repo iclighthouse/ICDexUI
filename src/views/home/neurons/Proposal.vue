@@ -707,6 +707,8 @@ export default class extends Vue {
       neuronIdList.push(item.id[0].id);
     });
     const res = await this.governanceService.listNeurons({
+      include_public_neurons_in_full_neurons: [false],
+      include_empty_neurons_readable_by_caller: [false],
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });

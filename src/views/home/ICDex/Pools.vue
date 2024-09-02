@@ -106,6 +106,8 @@
                   border: none;
                 "
                 class="margin-left-auto trading-mining"
+                ref="miningInfo"
+                @init="initMining"
               ></mining-info>
             </span>
             <span
@@ -229,244 +231,337 @@
               alt=""
             />
           </div>
-          <table v-show="!isList" class="pools-table">
-            <thead>
-              <tr>
-                <th>Pool Name</th>
-                <th>Pair</th>
-                <th>NAV</th>
-                <th>Pool Balance</th>
-                <th>Total Shares</th>
-                <th>Your Shares</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in poolsTable" :key="index">
-                <td>
-                  <span
-                    v-if="item[2]"
-                    class="base-font-title"
-                    style="margin-left: 5px"
-                  >
-                    {{ item[2].name | ellipsisAccount(20) }}
-                  </span>
-                </td>
-                <td>
-                  <div
-                    v-if="
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
-                    class="pool-pair-img"
-                  >
-                    <span class="img-content">
-                      <img
-                        v-if="
-                          tokens[item[2].pairInfo.token0[0].toString()].logo
-                        "
-                        :src="
-                          tokens[item[2].pairInfo.token0[0].toString()].logo
-                        "
-                        alt=""
-                      />
-                      <span v-else>
-                        {{
-                          tokens[item[2].pairInfo.token0[0].toString()].symbol
-                            .slice(0, 1)
-                            .toLocaleUpperCase()
-                        }}
+          <a-spin
+            :spinning="
+              !poolLoad &&
+              !pools.length &&
+              !poolsHold.length &&
+              poolsLoad.length > 0
+            "
+            v-show="!isList"
+          >
+            <table class="pools-table">
+              <thead>
+                <tr>
+                  <th>Pool Name</th>
+                  <th>Pair</th>
+                  <th>NAV</th>
+                  <th class="text-right pointer" @click="onSort('balance')">
+                    <span class="sort-table-main">
+                      <span>Pool Balance&nbsp;</span>
+                      <span class="sort-table">
+                        <a-icon
+                          :class="{ active: sortType === 'balanceUp' }"
+                          type="caret-up"
+                        />
+                        <a-icon
+                          :class="{ active: sortType === 'balanceDown' }"
+                          type="caret-down"
+                        />
                       </span>
                     </span>
-                    <span class="img-content">
-                      <img
-                        v-if="
-                          tokens[item[2].pairInfo.token1[0].toString()].logo
-                        "
-                        :src="
-                          tokens[item[2].pairInfo.token1[0].toString()].logo
-                        "
-                        alt=""
-                      />
-                      <span v-else>
-                        {{
-                          tokens[item[2].pairInfo.token1[0].toString()].symbol
-                            .slice(0, 1)
-                            .toLocaleUpperCase()
-                        }}
+                  </th>
+                  <th>Total Shares</th>
+                  <th>7d APY</th>
+                  <th class="text-right pointer" @click="onSort('shares')">
+                    <span class="sort-table-main">
+                      <span>Your Shares&nbsp;</span>
+                      <span class="sort-table">
+                        <a-icon
+                          :class="{ active: sortType === 'sharesUp' }"
+                          type="caret-up"
+                        />
+                        <a-icon
+                          :class="{ active: sortType === 'sharesDown' }"
+                          type="caret-down"
+                        />
                       </span>
                     </span>
+                  </th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(item, index) in poolsTable.slice(
+                    (page - 1) * 20,
+                    page * 20
+                  )"
+                  :key="index"
+                >
+                  <td>
                     <span
-                      @click.stop="
-                        jump(
-                          `/ICDex/${
-                            tokens[item[2].pairInfo.token0[0].toString()].symbol
-                          }/${
-                            tokens[item[2].pairInfo.token1[0].toString()].symbol
-                          }`
-                        )
-                      "
-                      class="pc-show link"
+                      v-if="item[2]"
+                      class="base-font-title"
                       style="margin-left: 5px"
                     >
+                      {{ item[2].name | ellipsisAccount(20) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div
+                      v-if="
+                        item[2] &&
+                        tokens[item[2].pairInfo.token0[0].toString()] &&
+                        tokens[item[2].pairInfo.token1[0].toString()]
+                      "
+                      class="pool-pair-img"
+                    >
+                      <span class="img-content">
+                        <img
+                          v-if="
+                            tokens[item[2].pairInfo.token0[0].toString()].logo
+                          "
+                          :src="
+                            tokens[item[2].pairInfo.token0[0].toString()].logo
+                          "
+                          alt=""
+                        />
+                        <span v-else>
+                          {{
+                            tokens[item[2].pairInfo.token0[0].toString()].symbol
+                              .slice(0, 1)
+                              .toLocaleUpperCase()
+                          }}
+                        </span>
+                      </span>
+                      <span class="img-content">
+                        <img
+                          v-if="
+                            tokens[item[2].pairInfo.token1[0].toString()].logo
+                          "
+                          :src="
+                            tokens[item[2].pairInfo.token1[0].toString()].logo
+                          "
+                          alt=""
+                        />
+                        <span v-else>
+                          {{
+                            tokens[item[2].pairInfo.token1[0].toString()].symbol
+                              .slice(0, 1)
+                              .toLocaleUpperCase()
+                          }}
+                        </span>
+                      </span>
+                      <span
+                        @click.stop="
+                          jump(
+                            `/ICDex/${
+                              tokens[item[2].pairInfo.token0[0].toString()]
+                                .symbol
+                            }/${
+                              tokens[item[2].pairInfo.token1[0].toString()]
+                                .symbol
+                            }`
+                          )
+                        "
+                        class="pc-show link"
+                        style="margin-left: 5px"
+                      >
+                        {{
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        }}/{{
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        }}
+                      </span>
+                      <mining-info
+                        :current-pair-id="
+                          item[2].pairInfo.pairPrincipal.toString()
+                        "
+                        :current-round-pool="currentRound"
+                        :mining-pairs-pool="miningPairs"
+                        type="poolTable"
+                        style="
+                          display: inline-block;
+                          margin-left: 8px;
+                          border: none;
+                        "
+                        class="margin-left-auto trading-mining"
+                      ></mining-info>
+                    </div>
+                  </td>
+                  <td>
+                    <div v-if="item[2] && item[3]">
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares">
+                          0
+                        </span>
+                        <span v-else>
+                          {{
+                            item[3].latestUnitNetValue.token0
+                              | bigintToFloat(
+                                8,
+                                tokens[item[2].pairInfo.token0[0].toString()]
+                                  .decimals
+                              )
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        }}
+                      </div>
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares">
+                          0
+                        </span>
+                        <span v-else>
+                          {{
+                            item[3].latestUnitNetValue.token1
+                              | bigintToFloat(
+                                8,
+                                tokens[item[2].pairInfo.token1[0].toString()]
+                                  .decimals
+                              )
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        }}
+                      </div>
+                    </div>
+                    <span v-else> - </span>
+                  </td>
+                  <td>
+                    <div v-if="item[2] && item[3]">
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares"
+                          >0</span
+                        >
+                        <span v-else>
+                          {{
+                            item[3].poolBalance.balance0
+                              | bigintToFloat(
+                                Math.min(
+                                  tokens[item[2].pairInfo.token0[0].toString()]
+                                    .decimals,
+                                  4
+                                ),
+                                tokens[item[2].pairInfo.token0[0].toString()]
+                                  .decimals
+                              )
+                              | formatNum
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        }}
+                      </div>
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares"
+                          >0</span
+                        >
+                        <span v-else>
+                          {{
+                            item[3].poolBalance.balance1
+                              | bigintToFloat(
+                                Math.min(
+                                  tokens[item[2].pairInfo.token1[0].toString()]
+                                    .decimals,
+                                  4
+                                ),
+                                tokens[item[2].pairInfo.token1[0].toString()]
+                                  .decimals
+                              )
+                              | formatNum
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        }}
+                      </div>
+                    </div>
+                    <span v-else>-</span>
+                  </td>
+                  <td>
+                    <span v-if="item[3] && item[2]">
                       {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}/{{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        item[3].poolShares
+                          | bigintToFloat(0, item[2].shareDecimals)
+                          | formatNum
                       }}
                     </span>
-                  </div>
-                </td>
-                <td>
-                  <div class="base-font-title" v-if="item[2] && item[3]">
-                    <div>
-                      <span v-if="item[2].initialized && !item[3].poolShares">
-                        0
-                      </span>
-                      <span v-else>
-                        {{
-                          item[3].latestUnitNetValue.token0
-                            | bigintToFloat(
-                              8,
-                              tokens[item[2].pairInfo.token0[0].toString()]
-                                .decimals
-                            )
-                        }}
-                      </span>
-                      {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
-                    </div>
-                    <div>
-                      <span v-if="item[2].initialized && !item[3].poolShares">
-                        0
-                      </span>
-                      <span v-else>
-                        {{
-                          item[3].latestUnitNetValue.token1
-                            | bigintToFloat(
-                              8,
-                              tokens[item[2].pairInfo.token1[0].toString()]
-                                .decimals
-                            )
-                        }}
-                      </span>
-                      {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
-                    </div>
-                  </div>
-                  <span v-else> - </span>
-                </td>
-                <td>
-                  <div class="base-font-title" v-if="item[2] && item[3]">
-                    <div>
-                      <span v-if="item[2].initialized && !item[3].poolShares"
-                        >0</span
-                      >
-                      <span v-else>
-                        {{
-                          item[3].poolBalance.balance0
-                            | bigintToFloat(
-                              Math.min(
-                                tokens[item[2].pairInfo.token0[0].toString()]
-                                  .decimals,
-                                4
-                              ),
-                              tokens[item[2].pairInfo.token0[0].toString()]
-                                .decimals
-                            )
-                            | formatNum
-                        }}
-                      </span>
-                      {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
-                    </div>
-                    <div>
-                      <span v-if="item[2].initialized && !item[3].poolShares"
-                        >0</span
-                      >
-                      <span v-else>
-                        {{
-                          item[3].poolBalance.balance1
-                            | bigintToFloat(
-                              Math.min(
-                                tokens[item[2].pairInfo.token1[0].toString()]
-                                  .decimals,
-                                4
-                              ),
-                              tokens[item[2].pairInfo.token1[0].toString()]
-                                .decimals
-                            )
-                            | formatNum
-                        }}
-                      </span>
-                      {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
-                    </div>
-                  </div>
-                  <span v-else>-</span>
-                </td>
-                <td>
-                  <span class="base-font-title" v-if="item[3] && item[2]">
-                    {{
-                      item[3].poolShares
-                        | bigintToFloat(0, item[2].shareDecimals)
-                        | formatNum
-                    }}
-                  </span>
-                  <span v-else>-</span>
-                </td>
-                <td>
-                  <span
-                    v-if="item[4] && item[4][0] && item[2]"
-                    class="base-font-title"
-                  >
-                    {{
-                      item[4][0]
-                        | bigintToFloat(2, item[2].shareDecimals)
-                        | formatNum
-                    }}
-                  </span>
-                  <span v-else>
-                    <span v-if="getPrincipalId">0</span>
                     <span v-else>-</span>
-                  </span>
-                </td>
-                <td>
-                  <span
-                    v-show="item[2] && item[2].initialized"
-                    @click.stop="
-                      jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
-                    "
-                    :disabled="!item[3]"
-                    class="pointer main-color"
-                  >
-                    Add
-                  </span>
-                  <span
-                    v-show="item[2] && item[2].initialized"
-                    @click.stop="
-                      jump(
-                        `/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`
-                      )
-                    "
-                    style="margin-left: 10px"
-                    :disabled="!item[3]"
-                    class="pointer main-color"
-                  >
-                    Remove
-                  </span>
-                  <span
-                    v-show="item[2] && !item[2].initialized"
-                    class="primary"
-                    @click.stop="
-                      jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
-                    "
-                    style="margin-left: 10px"
-                    :disabled="!item[3] || !isCreator(item[1])"
-                  >
-                    Activate by the creator adding the 1st liquidity
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                  <td>
+                    <span v-if="item[3] && item[3].apy7d.apy">
+                      {{ item[3].apy7d.apy[0] | filterBuyFee }}
+                    </span>
+                    <span v-else>-</span>
+                  </td>
+                  <td>
+                    <span
+                      v-if="item[4] && item[4][0] && item[2]"
+                      class="base-font-title"
+                    >
+                      {{
+                        item[4][0]
+                          | bigintToFloat(2, item[2].shareDecimals)
+                          | formatNum
+                      }}
+                      ({{ item[4][0] | filterRatio(item[3].poolShares) }})
+                    </span>
+                    <span v-else>
+                      <span v-if="getPrincipalId">0 (0.0%)</span>
+                      <span v-else>-</span>
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      v-show="item[2] && item[2].initialized"
+                      @click.stop="
+                        jump(
+                          `/ICDex/pools/pool/${item[1][0][0].toString()}/Add`
+                        )
+                      "
+                      :disabled="!item[3]"
+                      class="pointer main-color"
+                    >
+                      Add
+                    </span>
+                    <span
+                      v-show="item[2] && item[2].initialized"
+                      @click.stop="
+                        jump(
+                          `/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`
+                        )
+                      "
+                      style="margin-left: 10px"
+                      :disabled="!item[3]"
+                      class="pointer main-color"
+                    >
+                      Remove
+                    </span>
+                    <span
+                      v-show="item[2] && !item[2].initialized"
+                      class="primary"
+                      @click.stop="
+                        jump(
+                          `/ICDex/pools/pool/${item[1][0][0].toString()}/Add`
+                        )
+                      "
+                      style="margin-left: 10px"
+                      :disabled="!item[3] || !isCreator(item[1])"
+                    >
+                      Activate by the creator adding the 1st liquidity
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="!poolLoad && !poolsLoad.length && isList">
+                  <td colspan="8">No Pools</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="nft-main-pagination mt20 flex-center">
+              <a-pagination
+                class="pagination"
+                v-show="poolsTable.length > 20"
+                :current="page"
+                :defaultPageSize="20"
+                :total="poolsTable.length"
+                @change="changePoolsTable"
+              />
+            </div>
+          </a-spin>
           <ul
             v-if="!poolLoad && poolsLoad.length > 0 && isList"
             class="pool-main mt20"
@@ -582,6 +677,8 @@
                 </a-tooltip>
                 <mining-info
                   :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
+                  :current-round-pool="currentRound"
+                  :mining-pairs-pool="miningPairs"
                   type="pool"
                   style="display: inline-block; margin-left: 8px; border: none"
                   class="margin-left-auto trading-mining"
@@ -941,6 +1038,8 @@
                 </a-tooltip>
                 <mining-info
                   :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
+                  :current-round-pool="currentRound"
+                  :mining-pairs-pool="miningPairs"
                   type="pool"
                   style="display: inline-block; margin-left: 8px; border: none"
                   class="margin-left-auto trading-mining"
@@ -3261,7 +3360,7 @@ import {
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import { namespace } from 'vuex-class';
 import NftBalance from '@/views/home/ICDex/components/NFTBalance.vue';
-import { PairTrie, PairTrieResponse } from '@/ic/ICSwapRouter/model';
+import { PairsData, PairTrie, PairTrieResponse } from '@/ic/ICSwapRouter/model';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { Menu } from '@/components/menu/model';
 import BigNumber from 'bignumber.js';
@@ -3286,6 +3385,7 @@ import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { checkAuth } from '@/ic/CheckAuth';
+import { RoundInfo } from '@/ic/Mining/model';
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
@@ -3322,6 +3422,15 @@ let loading;
           : value && value._isPrincipal
           ? value.toString()
           : value
+      );
+    },
+    filterRatio(val: bigint, total: bigint): string {
+      return (
+        new BigNumber(val.toString(10))
+          .div(total.toString(10))
+          .times(100)
+          .decimalPlaces(3)
+          .toString(10) + '%'
       );
     }
   }
@@ -3370,7 +3479,9 @@ export default class extends Vue {
   private pools: Array<Pool> = [];
   private poolsPri: Array<Pool> = [];
   private poolsTable: Array<Pool> = [];
-  private isList = true;
+  private sortType = '';
+  private page = 1;
+  private isList = false;
   private nfts: TokensExt = [];
   private nftBalancePool: Array<NFT> = [];
   private nftBalanceVip: Array<NFT> = [];
@@ -3419,6 +3530,8 @@ export default class extends Vue {
   private accountEventsSpinning = false;
   private accountEvents: Array<[PoolEvent, Time]> = [];
   private currentAccountEventPage = 1;
+  private miningPairs: Array<PairsData> = [];
+  private currentRound: RoundInfo = null;
   activated(): void {
     const poolId = this.$route.query.id;
     if (
@@ -3537,6 +3650,10 @@ export default class extends Vue {
       this.pairPools = '';
     }
   }
+  private initMining(miningPairs, currentRound): void {
+    this.miningPairs = miningPairs;
+    this.currentRound = currentRound;
+  }
   deactivated(): void {
     console.log('deactivated');
     // this.clearTimeout();
@@ -3584,6 +3701,9 @@ export default class extends Vue {
   }
   private changeHistory(page): void {
     this.currentHistoryPage = page;
+  }
+  private changePoolsTable(page): void {
+    this.page = page;
   }
   private async getTradeList(swapId: string, account: string): Promise<void> {
     this.poolRecord = [];
@@ -4187,6 +4307,162 @@ export default class extends Vue {
       }, 5 * 1000);
     }
   }
+  private onSort(type: string): void {
+    this.page = 1;
+    if (type === 'balance') {
+      if (this.sortType === 'balanceDown') {
+        this.sortType = 'balanceUp';
+      } else {
+        this.sortType = 'balanceDown';
+      }
+    }
+    if (type === 'shares') {
+      if (this.sortType === 'sharesDown') {
+        this.sortType = 'sharesUp';
+      } else {
+        this.sortType = 'sharesDown';
+      }
+    }
+    this.sort();
+  }
+  private sort(): void {
+    if (this.sortType === 'balanceDown') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
+        const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
+        let balance0 = new BigNumber(0);
+        let balance1 = new BigNumber(0);
+        if (a[3] && a[3].poolBalance && b[3] && b[3].poolBalance) {
+          balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
+            .times(price0)
+            .div(
+              10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals
+            );
+          balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
+            .times(price1)
+            .div(
+              10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals
+            );
+        }
+        if (balance0.gt(balance1)) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+    if (this.sortType === 'balanceUp') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
+        const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
+        let balance0 = new BigNumber(0);
+        let balance1 = new BigNumber(0);
+        if (a[3] && a[3].poolBalance && b[3] && b[3].poolBalance) {
+          balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
+            .times(price0)
+            .div(
+              10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals
+            );
+          balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
+            .times(price1)
+            .div(
+              10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals
+            );
+        }
+        if (balance0.lt(balance1)) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+    if (this.sortType === 'sharesDown') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        const shares0 = new BigNumber(a[4][0].toString(10)).div(
+          10 ** a[2].shareDecimals
+        );
+        const shares1 = new BigNumber(b[4][0].toString(10)).div(
+          10 ** b[2].shareDecimals
+        );
+        if (shares0.gt(shares1)) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+    if (this.sortType === 'sharesUp') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        const shares0 = new BigNumber(a[4][0].toString(10)).div(
+          10 ** a[2].shareDecimals
+        );
+        const shares1 = new BigNumber(b[4][0].toString(10)).div(
+          10 ** b[2].shareDecimals
+        );
+        if (shares0.lt(shares1)) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+  }
   private initSort(): void {
     let ICLPool = [];
     let lIndex = null;
@@ -4721,7 +4997,8 @@ export default class extends Vue {
   }
 }
 .pools-table {
-  line-height: 1.5;
+  min-height: 200px;
+  line-height: 1.8;
   th {
     background: #11171d !important;
   }
@@ -4733,6 +5010,24 @@ export default class extends Vue {
   }
   a {
     color: #1996c4;
+  }
+}
+.sort-table-main {
+  display: flex;
+  align-items: center;
+}
+.sort-table {
+  display: flex;
+  flex-direction: column;
+  margin-left: 5px;
+  margin-top: -5px;
+  i {
+    font-size: 12px;
+    height: 8px;
+    color: #646e79;
+    &.active {
+      color: #0862bc;
+    }
   }
 }
 </style>

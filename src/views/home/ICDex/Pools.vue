@@ -262,22 +262,22 @@
                     </span>
                   </th>
                   <th>Total Shares</th>
-                  <th>7d APY</th>
-                  <th class="text-right pointer" @click="onSort('shares')">
+                  <th class="text-right pointer" @click="onSort('apy')">
                     <span class="sort-table-main">
-                      <span>Your Shares&nbsp;</span>
+                      <span>7d APY&nbsp;</span>
                       <span class="sort-table">
                         <a-icon
-                          :class="{ active: sortType === 'sharesUp' }"
+                          :class="{ active: sortType === 'apyUp' }"
                           type="caret-up"
                         />
                         <a-icon
-                          :class="{ active: sortType === 'sharesDown' }"
+                          :class="{ active: sortType === 'apyDown' }"
                           type="caret-down"
                         />
                       </span>
                     </span>
                   </th>
+                  <th>Your Shares</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -288,6 +288,15 @@
                     page * 20
                   )"
                   :key="index"
+                  :class="{
+                    'base-font':
+                      tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        .toLocaleLowerCase()
+                        .includes('test') ||
+                      tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        .toLocaleLowerCase()
+                        .includes('test')
+                  }"
                 >
                   <td>
                     <span
@@ -489,21 +498,35 @@
                     <span v-else>-</span>
                   </td>
                   <td>
-                    <span
+                    <div
                       v-if="item[4] && item[4][0] && item[2]"
                       class="base-font-title"
+                      :class="{
+                        'base-font':
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                            .toLocaleLowerCase()
+                            .includes('test') ||
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                            .toLocaleLowerCase()
+                            .includes('test')
+                      }"
                     >
                       {{
                         item[4][0]
                           | bigintToFloat(2, item[2].shareDecimals)
                           | formatNum
                       }}
-                      ({{ item[4][0] | filterRatio(item[3].poolShares) }})
-                    </span>
-                    <span v-else>
-                      <span v-if="getPrincipalId">0 (0.0%)</span>
+                      <div>
+                        ({{ item[4][0] | filterRatio(item[3].poolShares) }})
+                      </div>
+                    </div>
+                    <div v-else>
+                      <span v-if="getPrincipalId"
+                        >0
+                        <div>(0.0%)</div></span
+                      >
                       <span v-else>-</span>
-                    </span>
+                    </div>
                   </td>
                   <td>
                     <span
@@ -542,7 +565,8 @@
                       style="margin-left: 10px"
                       :disabled="!item[3] || !isCreator(item[1])"
                     >
-                      Activate by the creator adding the 1st liquidity
+                      -
+                      <!--Activate by the creator adding the 1st liquidity-->
                     </span>
                   </td>
                 </tr>
@@ -4316,11 +4340,11 @@ export default class extends Vue {
         this.sortType = 'balanceDown';
       }
     }
-    if (type === 'shares') {
-      if (this.sortType === 'sharesDown') {
-        this.sortType = 'sharesUp';
+    if (type === 'apy') {
+      if (this.sortType === 'apyDown') {
+        this.sortType = 'apyUp';
       } else {
-        this.sortType = 'sharesDown';
+        this.sortType = 'apyDown';
       }
     }
     this.sort();
@@ -4404,7 +4428,7 @@ export default class extends Vue {
         }
       });
     }
-    if (this.sortType === 'sharesDown') {
+    if (this.sortType === 'apyDown') {
       this.poolsTable.sort((a, b) => {
         const token1Symbol = a[2].pairInfo.token1[1];
         const token1Symbol1 = b[2].pairInfo.token1[1];
@@ -4420,20 +4444,14 @@ export default class extends Vue {
         ) {
           return -1;
         }
-        const shares0 = new BigNumber(a[4][0].toString(10)).div(
-          10 ** a[2].shareDecimals
-        );
-        const shares1 = new BigNumber(b[4][0].toString(10)).div(
-          10 ** b[2].shareDecimals
-        );
-        if (shares0.gt(shares1)) {
+        if (new BigNumber(a[3].apy7d.apy[0]).gt(b[3].apy7d.apy[0])) {
           return -1;
         } else {
           return 1;
         }
       });
     }
-    if (this.sortType === 'sharesUp') {
+    if (this.sortType === 'apyUp') {
       this.poolsTable.sort((a, b) => {
         const token1Symbol = a[2].pairInfo.token1[1];
         const token1Symbol1 = b[2].pairInfo.token1[1];
@@ -4449,13 +4467,7 @@ export default class extends Vue {
         ) {
           return -1;
         }
-        const shares0 = new BigNumber(a[4][0].toString(10)).div(
-          10 ** a[2].shareDecimals
-        );
-        const shares1 = new BigNumber(b[4][0].toString(10)).div(
-          10 ** b[2].shareDecimals
-        );
-        if (shares0.lt(shares1)) {
+        if (new BigNumber(a[3].apy7d.apy[0]).lt(b[3].apy7d.apy[0])) {
           return -1;
         } else {
           return 1;
@@ -5001,6 +5013,9 @@ export default class extends Vue {
   line-height: 1.8;
   th {
     background: #11171d !important;
+  }
+  td {
+    padding: 10px 5px;
   }
   tbody {
     tr {

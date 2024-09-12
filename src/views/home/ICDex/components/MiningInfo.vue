@@ -214,6 +214,7 @@
           >
         </div>
       </div>
+      <div v-else class="text-center">No Trading Mining</div>
     </a-modal>
     <nft-balance
       ref="nftBalance"
@@ -364,7 +365,7 @@ export default class extends Vue {
     );
     console.log(res);
     let pairs = [];
-    if (this.currentRound.data.length) {
+    if (this.currentRound && this.currentRound.data.length) {
       const info = this.currentRound.data[0];
       const type = Object.keys(info.config.pairs)[0];
       if (res && res.data && res.data.length) {
@@ -428,6 +429,11 @@ export default class extends Vue {
         canisterId: 'owaua-dyaaa-aaaar-qaaoq-cai',
         symbol: 'MOTOKO',
         decimals: 8
+      },
+      {
+        canisterId: 'oyczi-yiaaa-aaaar-qaapq-cai',
+        symbol: 'EXE',
+        decimals: 8
       }
     ];
     for (let i = miningList.length - 1; i > 0; i--) {
@@ -486,10 +492,14 @@ export default class extends Vue {
       console.log(this.type);
       await this.getPairs();
     }
-    if (this.type === 'pools') {
-      this.title = `Liquidity Mining Round ${Number(this.currentRound.round)}`;
-    } else {
-      this.title = `Trading Mining Round ${Number(this.currentRound.round)}`;
+    if (this.currentRound) {
+      if (this.type === 'pools') {
+        this.title = `Liquidity Mining Round ${Number(
+          this.currentRound.round
+        )}`;
+      } else {
+        this.title = `Trading Mining Round ${Number(this.currentRound.round)}`;
+      }
     }
     if (
       this.currentRound &&

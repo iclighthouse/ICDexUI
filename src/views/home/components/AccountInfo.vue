@@ -331,12 +331,11 @@
               class="user-setting-item"
               @click="showTab"
             >
-              <div class="user-setting-item-setting">
-                <a-icon
-                  v-if="getIdentity && getIdentity.toJSON()[1].length <= 64"
-                  class="account-setting"
-                  type="setting"
-                />
+              <div
+                v-if="getIdentity && getIdentity.toJSON()[1].length <= 64"
+                class="user-setting-item-setting"
+              >
+                <a-icon class="account-setting" type="setting" />
                 <span>Setting</span>
               </div>
             </a-menu-item>

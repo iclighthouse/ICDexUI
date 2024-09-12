@@ -1,5 +1,7 @@
 import { Identity } from '@dfinity/agent';
 import { AstroXWebViewHandler } from '@astrox/sdk-webview';
+import { RootState } from '@/store';
+import { Module } from 'vuex';
 
 export interface State {
   showCheckAuth: boolean;
@@ -10,7 +12,7 @@ export interface State {
   icx: AstroXWebViewHandler;
   accountName: string;
 }
-const common = {
+const common: Module<State, RootState> = {
   namespaced: true,
   state: {
     identity: null,
@@ -22,7 +24,7 @@ const common = {
     accountName: null
   },
   getters: {
-    getIdentity(state: State): Identity {
+    getIdentity(state: State): Identity | null {
       return state.identity;
     },
     getCheckAuth(state: State): boolean {

@@ -1028,6 +1028,11 @@ export default class extends Vue {
         canisterId: 'owaua-dyaaa-aaaar-qaaoq-cai',
         symbol: 'MOTOKO',
         decimals: 8
+      },
+      {
+        canisterId: 'oyczi-yiaaa-aaaar-qaapq-cai',
+        symbol: 'EXE',
+        decimals: 8
       }
     ];
     this.miningList.forEach((item) => {

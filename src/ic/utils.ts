@@ -128,6 +128,8 @@ if (process.env.NODE_ENV === 'production') {
   MINING_CANISTER_ID = 'odhfn-cqaaa-aaaar-qaana-cai';
 }
 const MINING_CANISTER_ID_CHAT = 'orbsu-oaaaa-aaaar-qaaoa-cai';
+const MINING_CANISTER_ID_MOTOKO = 'owaua-dyaaa-aaaar-qaaoq-cai';
+const MINING_CANISTER_ID_EXE = 'oyczi-yiaaa-aaaar-qaapq-cai';
 const plugWhitelist = [
   NNS_DAPP_CANISTER_ID,
   IC_MANAGEMENT_CANISTER_ID,
@@ -162,7 +164,9 @@ const plugWhitelist = [
   AIRDROP_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID_TEST,
   MINING_CANISTER_ID,
-  MINING_CANISTER_ID_CHAT
+  MINING_CANISTER_ID_CHAT,
+  MINING_CANISTER_ID_MOTOKO,
+  MINING_CANISTER_ID_EXE
 ];
 const ICXWhitelist = [
   NNS_DAPP_CANISTER_ID,
@@ -194,7 +198,9 @@ const ICXWhitelist = [
   AIRDROP_CANISTER_ID,
   CK_ETH_LEDGER_CANISTER_ID_TEST,
   MINING_CANISTER_ID,
-  MINING_CANISTER_ID_CHAT
+  MINING_CANISTER_ID_CHAT,
+  MINING_CANISTER_ID_MOTOKO,
+  MINING_CANISTER_ID_EXE
 ];
 const SUB_ACCOUNT_BYTE_LENGTH = 32;
 const ICLighthouseNeuronId =

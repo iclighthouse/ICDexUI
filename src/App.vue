@@ -504,8 +504,12 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         this.isInit = false;
       }
       this.isInit = false;
-      this.showCheckAuthModal =
-        checkAuth && this.type !== 'Plug' && this.type !== 'Infinity';
+      if (this.$route.meta.type && this.$route.meta.type === 'login') {
+        this.showCheckAuthModal = false;
+      } else {
+        this.showCheckAuthModal =
+          checkAuth && this.type !== 'Plug' && this.type !== 'Infinity';
+      }
     }
   }
   private signInstead(): void {

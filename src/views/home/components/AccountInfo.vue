@@ -1980,7 +1980,6 @@ export default class extends Vue {
     this.setPrincipalId(null);
     this.setCheckAuth(false);
     this.setIdentity(null);
-    await this.$router.replace('/loginByExists');
   }
   private setName(): void {
     if (this.getAccountName) {

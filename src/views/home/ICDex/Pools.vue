@@ -298,11 +298,15 @@
                         .includes('test')
                   }"
                 >
-                  <td>
+                  <td @click="jumpPool(item[1])">
                     <span
                       v-if="item[2]"
-                      class="base-font-title"
-                      style="margin-left: 5px"
+                      class="base-font-title pointer link"
+                      style="
+                        margin-left: 5px;
+                        font-size: 13px;
+                        font-weight: bold;
+                      "
                     >
                       {{ item[2].name | ellipsisAccount(20) }}
                     </span>
@@ -5015,7 +5019,7 @@ export default class extends Vue {
     background: #11171d !important;
   }
   td {
-    padding: 10px 5px;
+    padding: 15px 5px;
   }
   tbody {
     tr {

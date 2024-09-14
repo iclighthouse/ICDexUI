@@ -1251,9 +1251,7 @@ export default class extends Vue {
       this.getRoundSettlementsForLM();
       this.getRoundPointsForTM();
       this.getRoundSettlementsForTM();
-      if (!this.miningPairs.length) {
-        this.getPairs();
-      }
+      this.getPairs();
     }
   }
   private showAccount(): void {

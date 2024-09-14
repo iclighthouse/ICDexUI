@@ -838,18 +838,14 @@
             >
               <span>{{ buttonName }}</span>
             </button>
-            <span
-              style="
-                position: relative;
-                right: -100%;
-                top: -28px;
-                margin-left: 5px;
-              "
+            <div
               v-if="getPrincipalId && canFallback"
-              class="pointer base-font-title"
+              class="pointer base-font-title text-center"
+              style="margin: 15px 0"
               @click="fallback"
-              >Fallback</span
             >
+              Fallback
+            </div>
             <button
               v-if="!getPrincipalId"
               class="primary large-primary w100"

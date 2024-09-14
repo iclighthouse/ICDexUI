@@ -110,7 +110,8 @@ const routes: Array<RouteConfig> = [
     name: 'Login',
     component: () => import('@/views/login/Index.vue'),
     meta: {
-      title: 'Login'
+      title: 'Login',
+      type: 'login'
     }
   },
   {
@@ -118,7 +119,8 @@ const routes: Array<RouteConfig> = [
     name: 'loginByExists',
     component: () => import('@/views/loginByExists/Index.vue'),
     meta: {
-      title: 'loginByExists'
+      title: 'loginByExists',
+      type: 'login'
     }
   },
   {
@@ -126,7 +128,8 @@ const routes: Array<RouteConfig> = [
     name: 'Sign',
     component: () => import('@/views/sign/Index.vue'),
     meta: {
-      title: 'Sign'
+      title: 'Sign',
+      type: 'login'
     }
   },
   {

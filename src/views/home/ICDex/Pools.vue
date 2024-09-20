@@ -520,7 +520,7 @@
                           | bigintToFloat(2, item[2].shareDecimals)
                           | formatNum
                       }}
-                      <div>
+                      <div v-if="item[3]">
                         ({{ item[4][0] | filterRatio(item[3].poolShares) }})
                       </div>
                     </div>

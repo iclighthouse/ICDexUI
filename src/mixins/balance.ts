@@ -35,15 +35,7 @@ export class BalanceMixin extends Vue {
     this.ledgerService = new LedgerService();
     // this.account = principalToAccountIdentifier(Principal.fromText(principal));
     if (principal) {
-      if (this.$route.name === 'Account') {
-        console.log(num);
-        if (num === 0) {
-          ++num;
-          this.getIcp();
-        }
-      } else {
-        this.getIcp();
-      }
+      this.getIcp();
     }
   }
   get account(): string {

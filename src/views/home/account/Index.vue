@@ -57,13 +57,19 @@
 						</div>
 					</div>
 				</div>-->
-        <div v-show="currentWalletMenu === 'icRouter'" class="wallet-item">
+        <div v-if="currentWalletMenu === 'icRouter'" class="wallet-item">
           <ledger
             :principal="getPrincipalId"
+            :balance="balance"
+            :balance-pro="balancePro"
+            :get-check-auth="getCheckAuth"
+            :tokens-balance-main="tokensBalanceMain"
+            :tokens-balance-pro="tokensBalancePro"
             type="cross"
             ref="ledger1"
             @topUpSuccess="topUpSuccess"
             @addTokenSuccess="addTokenSuccess"
+            @getBalance="getICPBalance"
           ></ledger>
         </div>
         <!--<ul class="flex-center base-color-w wallet-header-menu">
@@ -122,12 +128,34 @@
             </button>
           </p>
           <ledger
+            v-if="currentWalletMenu === 'wallet'"
             :principal="getPrincipalId"
-            :wallet-menu="currentWalletMenu"
+            :balance="balance"
+            :balance-pro="balancePro"
+            :get-check-auth="getCheckAuth"
+            :tokens-balance-main="tokensBalanceMain"
+            :tokens-balance-pro="tokensBalancePro"
+            wallet-menu="wallet"
             type="ic"
             ref="ledger"
             @topUpSuccess="topUpSuccess"
             @showTraderAccounts="showTraderAccounts"
+            @getBalance="getICPBalance"
+          ></ledger>
+          <ledger
+            v-if="currentWalletMenu === 'proWallet'"
+            :principal="getPrincipalId"
+            :balance="balance"
+            :balance-pro="balancePro"
+            :get-check-auth="getCheckAuth"
+            :tokens-balance-main="tokensBalanceMain"
+            :tokens-balance-pro="tokensBalancePro"
+            wallet-menu="proWallet"
+            type="ic"
+            ref="ledger"
+            @topUpSuccess="topUpSuccess"
+            @showTraderAccounts="showTraderAccounts"
+            @getBalance="getICPBalance"
           ></ledger>
           <div class="ic-token-item">
             <p class="wallet-title token-title">
@@ -1743,6 +1771,9 @@ export default class extends Mixins(BalanceMixin) {
   public topUpSuccess(): void {
     this.getBalance();
     // this.$refs.cyclesWallet.getWalletBalance();
+  }
+  private getICPBalance(): void {
+    this.getBalance();
   }
   private addTokenSuccess(): void {
     this.$refs.addedTokens.getTokens(true);

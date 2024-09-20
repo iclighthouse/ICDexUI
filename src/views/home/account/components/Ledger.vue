@@ -786,6 +786,28 @@
               >
                 Continue
               </button>
+              <span
+                v-show="
+                  (!mintDisabled &&
+                    typeof networkTokenIdMintTo === 'number' &&
+                    ckTokens.includes(
+                      networkTokensTo[networkTokenIdMintTo].tokenId
+                    )) ||
+                  (!mintDisabled &&
+                    typeof networkTokenIdMint === 'number' &&
+                    ckTokens.includes(
+                      networkTokensFrom[networkTokenIdMint].tokenId
+                    ))
+                "
+                >Powered by
+                <a
+                  :href="ckLink"
+                  class="link"
+                  rel="nofollow noreferrer noopener"
+                  target="_blank"
+                  >Dfinity foundation</a
+                ></span
+              >
             </div>
             <div
               v-show="
@@ -2569,7 +2591,7 @@
             <div>
               <span class="base-font-title">Account:</span>
               <div>
-                <span>{{ getPrincipalId }}</span>
+                <span>{{ principal }}</span>
               </div>
             </div>
             <a-form-model
@@ -5041,7 +5063,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator';
+import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
 import TransferIcp from '@/components/transferIcp/Index.vue';
 import TopUp from '@/components/topUp/Index.vue';
 import { BalanceMixin } from '@/mixins';
@@ -5174,7 +5196,7 @@ const ckETHSep = 'apia6-jaaaa-aaaar-qabma-cai';
     }
   }
 })
-export default class extends Mixins(BalanceMixin) {
+export default class extends Vue {
   $refs!: {
     receiveModal;
     transferIcp: HTMLFormElement;
@@ -5182,12 +5204,23 @@ export default class extends Mixins(BalanceMixin) {
     approveIcrc2: HTMLFormElement;
   };
   @Prop()
-  public principal!: string;
+  private principal!: string;
   @Prop()
-  public type!: string;
-  public walletId: PrincipalString = '';
+  private type!: string;
   @Prop()
   private walletMenu!: string;
+  @Prop()
+  private balance!: string;
+  @Prop()
+  private balancePro!: string;
+  @Prop()
+  private getCheckAuth!: boolean;
+  @Prop()
+  private tokensBalanceMain!: { [key: string]: string };
+  @Prop()
+  private tokensBalancePro!: { [key: string]: string };
+
+  private walletId: PrincipalString = '';
   private ckETHMinterDfiService: ckETHMinterDfiService;
   private DRC20TokenService: DRC20TokenService;
   private BTCTypeEnum = BTCTypeEnum;
@@ -5307,6 +5340,8 @@ export default class extends Mixins(BalanceMixin) {
   private networkTokens = networkTokens;
   private networkTokensFrom = networkTokens;
   private networkTokensTo = networkTokens;
+  private ckTokens: Array<string> = [];
+  private ckLink = 'https://dashboard.internetcomputer.org/';
   private networkIdMint: number | Array<any> = [];
   private networkIdMintTo: number | Array<any> = [];
   private networkTokenIdMint: number | Array<any> = [];
@@ -5541,6 +5576,37 @@ export default class extends Mixins(BalanceMixin) {
       // todo networkToIcId
       const networkToIcId = ['1', '2', '3'];
       if (
+        this.networkTokensTo[this.networkTokenIdMintTo].tokenId ===
+          CK_BTC_CANISTER_ID ||
+        this.networkTokensFrom[this.networkTokenIdMint].tokenId ===
+          CK_BTC_CANISTER_ID
+      ) {
+        this.ckLink = 'https://dashboard.internetcomputer.org/bitcoin';
+      } else if (
+        this.networkTokensTo[this.networkTokenIdMintTo].tokenId ===
+          CK_ETH_LEDGER_CANISTER_ID ||
+        this.networkTokensFrom[this.networkTokenIdMint].tokenId ===
+          CK_ETH_LEDGER_CANISTER_ID
+      ) {
+        this.ckLink = 'https://dashboard.internetcomputer.org/ethereum';
+      } else if (
+        this.ckTokens.includes(
+          this.networkTokensTo[this.networkTokenIdMintTo].tokenId
+        )
+      ) {
+        this.ckLink = `https://dashboard.internetcomputer.org/ethereum/${
+          this.networkTokensTo[this.networkTokenIdMintTo].tokenId
+        }`;
+      } else if (
+        this.ckTokens.includes(
+          this.networkTokensFrom[this.networkTokenIdMint].tokenId
+        )
+      ) {
+        this.ckLink = `https://dashboard.internetcomputer.org/ethereum/${
+          this.networkTokensFrom[this.networkTokenIdMint].tokenId
+        }`;
+      }
+      if (
         this.networkTokensTo[this.networkTokenIdMintTo].networkId === '-1' &&
         networkToIcId.includes(
           this.networkTokensTo[this.networkTokenIdMintTo].networkToIcId
@@ -5618,9 +5684,8 @@ export default class extends Mixins(BalanceMixin) {
   }
 
   public async transferSuccess(): Promise<void> {
-    this.getBalance();
+    this.$emit('getBalance');
   }
-
   private showTraderAccounts(): void {
     this.$emit('showTraderAccounts');
   }
@@ -5654,7 +5719,7 @@ export default class extends Mixins(BalanceMixin) {
   }
 
   private proWalletSwapSuccess(): void {
-    this.getBalance();
+    this.$emit('getBalance');
   }
 
   private accountToAddress(account: Icrc1Account): string {
@@ -5671,7 +5736,7 @@ export default class extends Mixins(BalanceMixin) {
   private async getAccountEvents(): Promise<void> {
     const res = await this.ckETHMinterService.getAccountEvents(
       hexToBytes(
-        principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
+        principalToAccountIdentifier(Principal.fromText(this.principal))
       )
     );
     console.log(res);
@@ -5803,6 +5868,7 @@ export default class extends Mixins(BalanceMixin) {
     );
     let minimum_withdrawal_amount = BigInt('30000000000000000');
     console.log(res);
+    this.ckTokens.push(CK_BTC_CANISTER_ID);
     if (res) {
       this.smartContractAddress = res.eth_helper_contract_address[0];
       this.smartContractAddressERC20 = res.erc20_helper_contract_address[0];
@@ -5819,6 +5885,7 @@ export default class extends Mixins(BalanceMixin) {
           promiseValue.push(
             this.getCKERC20TokenInfo(item, minimum_withdrawal_amount)
           );
+          this.ckTokens.push(item.ledger_canister_id.toString());
         });
       }
       console.log(promiseValue);
@@ -5909,6 +5976,7 @@ export default class extends Mixins(BalanceMixin) {
         symbol: 'SepoliaETH'
       });
     }
+    this.ckTokens.push(CK_ETH_LEDGER_CANISTER_ID);
     // ckETH
     const icTokenInfo = {
       ckLedgerId: Principal.fromText(CK_ETH_LEDGER_CANISTER_ID),
@@ -6097,6 +6165,16 @@ export default class extends Mixins(BalanceMixin) {
       ) {
         return -1;
       }
+      if (a.symbol === 'ckBTC' || a.symbol === 'ckETH') {
+        return -1;
+      }
+      if (
+        (a.symbol === 'icBTC' || a.symbol === 'icETH') &&
+        b.symbol.toLocaleLowerCase().startsWith('ic')
+      ) {
+        return -1;
+      }
+      return a.symbol.localeCompare(b.symbol);
     });
     this.networkTokenDisabled = false;
     this.initICRouter();
@@ -6363,7 +6441,7 @@ export default class extends Mixins(BalanceMixin) {
   }
 
   private async getActive(): Promise<void> {
-    if (this.getPrincipalId) {
+    if (this.principal) {
       console.log('getActive');
       // method2 claim step1
       this.onGetClaimPending();
@@ -6536,8 +6614,7 @@ export default class extends Mixins(BalanceMixin) {
   }
 
   private onGetRetrieveCKBTCPending(): void {
-    const currentInfo =
-      JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
     if (currentInfo.ckBTCBlock) {
       const ckBTCRetrieve =
         JSON.parse(JSON.stringify(currentInfo.ckBTCBlock)) || [];
@@ -6577,9 +6654,9 @@ export default class extends Mixins(BalanceMixin) {
   private updateRetrieveBtcStatusResponse(
     response: Array<RetrieveCKBTCResponse>
   ): void {
-    if (this.getPrincipalId) {
+    if (this.principal) {
       const currentInfo =
-        JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+        JSON.parse(localStorage.getItem(this.principal)) || {};
       const time = new Date().getTime();
       response.forEach((val, index) => {
         let status;
@@ -6609,10 +6686,7 @@ export default class extends Mixins(BalanceMixin) {
                 time: val.time
               });
               currentInfo.ckBTCBlock = response;
-              localStorage.setItem(
-                this.getPrincipalId,
-                JSON.stringify(currentInfo)
-              );
+              localStorage.setItem(this.principal, JSON.stringify(currentInfo));
             }
           });
         }
@@ -6666,8 +6740,7 @@ export default class extends Mixins(BalanceMixin) {
   }> {
     let retrievePending: Array<RetrieveActive> = [];
     let retrieve: Array<RetrieveActiveResponse> = [];
-    const currentInfo =
-      JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
     for (let ckETHRetrieveKey in currentInfo) {
       if (ckETHRetrieveKey.startsWith('ckETHRetrieve-')) {
         const retrieveCKETH = currentInfo[ckETHRetrieveKey] || {};
@@ -6741,10 +6814,7 @@ export default class extends Mixins(BalanceMixin) {
         }
         if (flag) {
           currentInfo[ckETHRetrieveKey] = retrieveCKETH;
-          localStorage.setItem(
-            this.getPrincipalId,
-            JSON.stringify(currentInfo)
-          );
+          localStorage.setItem(this.principal, JSON.stringify(currentInfo));
         }
       }
     }
@@ -6797,8 +6867,7 @@ export default class extends Mixins(BalanceMixin) {
   }> {
     let mintPending: Array<ClaimCKETHActive> = [];
     let mint: Array<ClaimCKETHActiveResponse> = [];
-    const currentInfo =
-      JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
     const lastScrapedBlockNumber = await this.getLastScrapedBlockNumber(
       CK_ETH_MINTER_CANISTER_ID
     );
@@ -6875,10 +6944,7 @@ export default class extends Mixins(BalanceMixin) {
         }
         if (flag) {
           currentInfo[ckETHMintKey] = mintCKETH;
-          localStorage.setItem(
-            this.getPrincipalId,
-            JSON.stringify(currentInfo)
-          );
+          localStorage.setItem(this.principal, JSON.stringify(currentInfo));
         }
       }
     }
@@ -7332,7 +7398,7 @@ export default class extends Mixins(BalanceMixin) {
                   time: time.toString(10)
                 });
                 const currentInfo =
-                  JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+                  JSON.parse(localStorage.getItem(this.principal)) || {};
                 if (!currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id]) {
                   currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id] = {};
                 }
@@ -7340,7 +7406,7 @@ export default class extends Mixins(BalanceMixin) {
                   canisterId
                 ] = this.ckETHRetrieve;
                 localStorage.setItem(
-                  this.getPrincipalId,
+                  this.principal,
                   JSON.stringify(currentInfo)
                 );
                 this.retrieveStep = 2;
@@ -7385,7 +7451,7 @@ export default class extends Mixins(BalanceMixin) {
                   time: time.toString(10)
                 });
                 const currentInfo =
-                  JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+                  JSON.parse(localStorage.getItem(this.principal)) || {};
                 if (!currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id]) {
                   currentInfo['ckETHRetrieve-' + this.icNetworkTokens.id] = {};
                 }
@@ -7393,7 +7459,7 @@ export default class extends Mixins(BalanceMixin) {
                   canisterId
                 ] = this.ckETHRetrieve;
                 localStorage.setItem(
-                  this.getPrincipalId,
+                  this.principal,
                   JSON.stringify(currentInfo)
                 );
                 this.retrieveStep = 2;
@@ -8676,11 +8742,11 @@ export default class extends Mixins(BalanceMixin) {
   }
 
   private initCKETHRetrieve(): void {
-    if (this.getPrincipalId && this.icNetworkTokens) {
+    if (this.principal && this.icNetworkTokens) {
       const id = this.icNetworkTokens.id;
       const tokenId = this.icNetworkTokens.tokenId;
       const currentInfo =
-        JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+        JSON.parse(localStorage.getItem(this.principal)) || {};
       const ckETHRetrieve = currentInfo['ckETHRetrieve-' + id] || {};
       this.ckETHRetrieve = ckETHRetrieve[tokenId] || [];
       this.getCkETHRetrieveStatus(id, tokenId);
@@ -8716,12 +8782,9 @@ export default class extends Mixins(BalanceMixin) {
             )
           );
           const currentInfo =
-            JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+            JSON.parse(localStorage.getItem(this.principal)) || {};
           currentInfo['ckETHRetrieve-' + id][tokenId] = this.ckETHRetrieve;
-          localStorage.setItem(
-            this.getPrincipalId,
-            JSON.stringify(currentInfo)
-          );
+          localStorage.setItem(this.principal, JSON.stringify(currentInfo));
         }
       }
     }
@@ -8757,11 +8820,11 @@ export default class extends Mixins(BalanceMixin) {
   }
 
   private initCKETHMint(): void {
-    if (this.getPrincipalId && this.icNetworkTokens) {
+    if (this.principal && this.icNetworkTokens) {
       const id = this.icNetworkTokens.id;
       const tokenId = this.icNetworkTokens.tokenId;
       const currentInfo =
-        JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+        JSON.parse(localStorage.getItem(this.principal)) || {};
       const ckETHMint = currentInfo['ckETHMint-' + id] || {};
       this.ckETHMint = ckETHMint[tokenId] || [];
       this.getCkETHMintBlockNum(id, tokenId);
@@ -8877,15 +8940,12 @@ export default class extends Mixins(BalanceMixin) {
               this.$set(mint, 'txStatus', 'Failed');
             }
             const currentInfo =
-              JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+              JSON.parse(localStorage.getItem(this.principal)) || {};
             if (!currentInfo['ckETHMint-' + id]) {
               currentInfo['ckETHMint-' + id] = {};
             }
             currentInfo['ckETHMint-' + id][tokenId] = this.ckETHMint;
-            localStorage.setItem(
-              this.getPrincipalId,
-              JSON.stringify(currentInfo)
-            );
+            localStorage.setItem(this.principal, JSON.stringify(currentInfo));
           }
         }
       } else {
@@ -9834,7 +9894,7 @@ export default class extends Mixins(BalanceMixin) {
     try {
       await this.questsService.putEvent(
         'ckBTC',
-        Principal.fromText(this.getPrincipalId)
+        Principal.fromText(this.principal)
       );
     } catch (e) {
       console.log(e);
@@ -10493,7 +10553,7 @@ export default class extends Mixins(BalanceMixin) {
 
   private showApprove(type: BTCTypeEnum): void {
     this.BTCType = type;
-    this.getBalance();
+    this.$emit('getBalance');
     const approveTokenInfo = this.tokens[LEDGER_CANISTER_ID] || {
       name: 'ICP',
       symbol: 'ICP',
@@ -10508,7 +10568,7 @@ export default class extends Mixins(BalanceMixin) {
 
   private showTransfer(type: BTCTypeEnum): void {
     this.BTCType = type;
-    this.getBalance();
+    this.$emit('getBalance');
     this.$refs.transferIcp.visibleTransfer = true;
   }
 
@@ -10523,7 +10583,7 @@ export default class extends Mixins(BalanceMixin) {
     if (!this.refreshBalanceLoading) {
       this.refreshBalanceLoading = true;
       try {
-        await this.getBalance();
+        await this.$emit('getBalance');
       } catch (e) {
         console.log(e);
       }
@@ -10539,17 +10599,17 @@ export default class extends Mixins(BalanceMixin) {
       this.topUpType = '';
       this.$refs.topUp.topUpForm.to = '';
     }
-    this.getBalance();
+    this.$emit('getBalance');
     this.$refs.topUp.visibleTopUp = true;
   }
 
   private async topUpSuccess(): Promise<void> {
-    this.getBalance();
+    this.$emit('getBalance');
     this.$emit('topUpSuccess');
   }
 
   private approveIcrc2Success(): void {
-    this.getBalance();
+    this.$emit('getBalance');
   }
 
   private async transferTokenSuccess(): Promise<void> {
@@ -11051,7 +11111,7 @@ export default class extends Mixins(BalanceMixin) {
             const amount =
               '0x' +
               new BigNumber(this.erc20Form.amount).times(10 ** 18).toString(16);
-            const _principalHex = principalToBytes32(this.getPrincipalId);
+            const _principalHex = principalToBytes32(this.principal);
             const web3 = new Web3();
             console.log(amount, _principalHex);
             console.log(this.smartContractAddress);
@@ -11086,17 +11146,14 @@ export default class extends Mixins(BalanceMixin) {
                 time: time.toString(10)
               });
               const currentInfo =
-                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+                JSON.parse(localStorage.getItem(this.principal)) || {};
               if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
                 currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
               }
               currentInfo['ckETHMint-' + this.icNetworkTokens.id][
                 this.icNetworkTokens.tokenId
               ] = this.ckETHMint;
-              localStorage.setItem(
-                this.getPrincipalId,
-                JSON.stringify(currentInfo)
-              );
+              localStorage.setItem(this.principal, JSON.stringify(currentInfo));
               this.changeMintStepCK(2);
               this.onGetMintCKETHPending();
             } else if (this.icNetworkTokens.tokenId === ckETHSep) {
@@ -11130,17 +11187,14 @@ export default class extends Mixins(BalanceMixin) {
                 time: time.toString(10)
               });
               const currentInfo =
-                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+                JSON.parse(localStorage.getItem(this.principal)) || {};
               if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
                 currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
               }
               currentInfo['ckETHMint-' + this.icNetworkTokens.id][
                 this.icNetworkTokens.tokenId
               ] = this.ckETHMint;
-              localStorage.setItem(
-                this.getPrincipalId,
-                JSON.stringify(currentInfo)
-              );
+              localStorage.setItem(this.principal, JSON.stringify(currentInfo));
               this.changeMintStepCK(2);
               this.onGetMintCKETHPending();
             } else {
@@ -11195,17 +11249,14 @@ export default class extends Mixins(BalanceMixin) {
                 time: time.toString(10)
               });
               const currentInfo =
-                JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+                JSON.parse(localStorage.getItem(this.principal)) || {};
               if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
                 currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
               }
               currentInfo['ckETHMint-' + this.icNetworkTokens.id][
                 this.icNetworkTokens.tokenId
               ] = this.ckETHMint;
-              localStorage.setItem(
-                this.getPrincipalId,
-                JSON.stringify(currentInfo)
-              );
+              localStorage.setItem(this.principal, JSON.stringify(currentInfo));
               this.changeMintStepCK(2);
               this.onGetMintCKETHPending();
             }
@@ -11763,7 +11814,7 @@ export default class extends Mixins(BalanceMixin) {
 					*/
             operation: 'deposit for minting token on IC network',
             txHash: txHash,
-            principal: this.getPrincipalId,
+            principal: this.principal,
             subaccount: '0x' + toHexString(new Uint8Array(fromSubAccountId(0)))
           },
           // Refers to the keys of the *types* object below.
@@ -12864,7 +12915,12 @@ button {
   span {
     position: absolute;
     left: 50%;
+    right: -20px;
     margin-left: 160px;
+    font-size: 12px;
+  }
+  a {
+    color: #1996c4;
   }
 }
 

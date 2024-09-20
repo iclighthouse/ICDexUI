@@ -50,20 +50,21 @@ export class LedgerService {
     const amount = BigInt(
       new BigNumber(icp).times(10 ** decimals).toString(10)
     );
-    if (isPlug()) {
-      const params = {
-        to: to,
-        amount: Number(amount),
-        opts: {
-          memo: memo.toString(10),
-          from_subaccount: subaccountId
-        }
-      };
-      const Ic = (window as any).ic.plug;
-      const res = await Ic.requestTransfer(params);
-      return res.height;
-    }
-    // if (isInfinity()) {
+    const request: SendICPTsRequest = {
+      from_subaccount: [getSubAccountArray(subaccountId)],
+      to: to,
+      amount: {
+        e8s: amount
+      },
+      fee: {
+        e8s: BigInt(new BigNumber(fee).times(10 ** decimals).toString(10))
+      },
+      memo: memo,
+      created_at_time: []
+    };
+    console.log(request);
+    return await this.service.send_dfx(request);
+    // if (isPlug()) {
     //   const params = {
     //     to: to,
     //     amount: Number(amount),
@@ -72,42 +73,32 @@ export class LedgerService {
     //       from_subaccount: subaccountId
     //     }
     //   };
-    //   const Ic = (window as any).ic.infinityWallet;
+    //   const Ic = (window as any).ic.plug;
+    //   console.log(params);
     //   const res = await Ic.requestTransfer(params);
-    //   return res.height;
-    // }
-    // else if ((window as any).icx) {
-    //   const icx = store.getters['common/getIcx'];
-    //   const b = await icx.queryBalance();
-    //   console.log('balance:' + b);
-    //   const result = await icx.requestTransfer({
-    //     symbol: 'ICP',
-    //     standard: 'ICP',
-    //     amount,
-    //     to
-    //   });
-    //   if (result.kind === TransactionMessageKind.success) {
-    //     const { blockHeight } = (result as TransactionResponseSuccess)
-    //       .payload as TokenTransferResponse;
-    //     return blockHeight;
+    //   console.log(res);
+    //   if (res.height) {
+    //     if (typeof res.height === 'object' && res.height.height) {
+    //       return res.height.height;
+    //     }
     //   }
+    //   return res.height;
+    // } else {
+    //   const request: SendICPTsRequest = {
+    //     from_subaccount: [getSubAccountArray(subaccountId)],
+    //     to: to,
+    //     amount: {
+    //       e8s: amount
+    //     },
+    //     fee: {
+    //       e8s: BigInt(new BigNumber(fee).times(10 ** decimals).toString(10))
+    //     },
+    //     memo: memo,
+    //     created_at_time: []
+    //   };
+    //   console.log(request);
+    //   return await this.service.send_dfx(request);
     // }
-    else {
-      const request: SendICPTsRequest = {
-        from_subaccount: [getSubAccountArray(subaccountId)],
-        to: to,
-        amount: {
-          e8s: amount
-        },
-        fee: {
-          e8s: BigInt(new BigNumber(fee).times(10 ** decimals).toString(10))
-        },
-        memo: memo,
-        created_at_time: []
-      };
-      console.log(request);
-      return await this.service.send_dfx(request);
-    }
   };
   public notifyDfx = async (
     request: NotifyCanisterRequest

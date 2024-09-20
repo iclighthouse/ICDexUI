@@ -124,6 +124,8 @@ export default class extends Vue {
     );
     if (Number(value) && min < 0) {
       callback('Insufficient ICP');
+    } else if (new BigNumber(this.fee).times(2).gte(value)) {
+      callback(`Amount must be more than ${this.fee * 2} ICP`);
     } else {
       callback();
     }
@@ -183,6 +185,7 @@ export default class extends Vue {
               )
             }
           };
+          console.log(notifyArg);
           await this.ledgerService.notifyDfx(notifyArg);
           loading.close();
           this.visibleTopUp = false;

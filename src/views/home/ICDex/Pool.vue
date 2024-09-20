@@ -30,7 +30,7 @@
             v-if="getPrincipalId"
             class="margin-left-auto pointer main-color"
             style="margin-right: 10px"
-            @click="eventVisible = true"
+            @click="onGetEvents"
             >Activities</span
           >
           <button
@@ -128,8 +128,22 @@
               tokens[pool[1].pairInfo.token1[0].toString()]
             "
           >
-            <span> Pool Balance: </span>
-            <span v-if="pool[2]" class="base-color-w">
+            <span>
+              Total Shares:
+              <span v-if="pool[2] && pool[1]" class="base-color-w">
+                {{
+                  pool[2].poolShares
+                    | bigintToFloat(
+                      pool[1].shareDecimals,
+                      pool[1].shareDecimals
+                    )
+                    | formatNum
+                }}
+              </span>
+              <span v-if="!pool[2] && isBusy" class="loading-spinner"> </span>
+              <span v-if="!pool[2] && !isBusy">-</span>
+            </span>
+            <span v-if="pool[2]" style="margin-top: 5px">
               <span v-if="pool[1].initialized && !pool[2].poolShares"> 0 </span>
               <span v-else>
                 {{
@@ -166,36 +180,76 @@
                 {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
               </span>
             </span>
-            <span v-if="!pool[2] && isBusy" class="loading-spinner"> </span>
-            <span v-if="!pool[2] && !isBusy">-</span>
           </div>
         </div>
-        <div class="pool-item-l pool-item-l-shares">
-          <div>
-            <span>Total Shares: </span>
-            <span v-if="pool[2] && pool[1]" class="base-color-w">
-              {{
-                pool[2].poolShares
-                  | bigintToFloat(pool[1].shareDecimals, pool[1].shareDecimals)
-                  | formatNum
-              }}
+        <div class="pool-item-l">
+          <div
+            class="pool-item-l-net"
+            v-if="
+              getPrincipalId &&
+              pool[1] &&
+              tokens[pool[1].pairInfo.token0[0].toString()] &&
+              tokens[pool[1].pairInfo.token1[0].toString()]
+            "
+          >
+            <span
+              >Your Shares:
+              <span v-if="pool[3] && pool[1]" class="base-color-w">
+                {{
+                  pool[3][0]
+                    | bigintToFloat(
+                      pool[1].shareDecimals,
+                      pool[1].shareDecimals
+                    )
+                    | formatNum
+                }}
+              </span>
+              <span
+                v-if="!pool[3] && !pool[1] && isBusy"
+                class="loading-spinner"
+              >
+              </span>
+              <span v-if="!pool[3] && !pool[1] && !isBusy">-</span>
             </span>
-            <span v-if="!pool[2] && !pool[1] && isBusy" class="loading-spinner">
+            <span v-if="pool[2] && pool[3]" style="margin-top: 5px">
+              <span v-if="pool[1].initialized && !pool[3][0]"> 0 </span>
+              <span v-else>
+                {{
+                  pool[2].poolBalance.balance0
+                    | filterSharesBalance(pool[2].poolShares, pool[3][0])
+                    | bigintToFloat(
+                      Math.min(
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals,
+                        8
+                      ),
+                      tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                    )
+                    | formatNum
+                }}
+              </span>
+              <span class="font12">
+                {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+              </span>
+              +
+              <span v-if="pool[1].initialized && !pool[3][0]"> 0 </span>
+              <span v-else>
+                {{
+                  pool[2].poolBalance.balance1
+                    | filterSharesBalance(pool[2].poolShares, pool[3][0])
+                    | bigintToFloat(
+                      Math.min(
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                        8
+                      ),
+                      tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                    )
+                    | formatNum
+                }}
+              </span>
+              <span class="font12">
+                {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+              </span>
             </span>
-            <span v-if="!pool[2] && !pool[1] && !isBusy">-</span>
-          </div>
-          <div v-if="getPrincipalId">
-            <span>Your Shares: </span>
-            <span v-if="pool[3] && pool[1]" class="base-color-w">
-              {{
-                pool[3][0]
-                  | bigintToFloat(pool[1].shareDecimals, pool[1].shareDecimals)
-                  | formatNum
-              }}
-            </span>
-            <span v-if="!pool[3] && !pool[1] && isBusy" class="loading-spinner">
-            </span>
-            <span v-if="!pool[3] && !pool[1] && !isBusy">-</span>
           </div>
         </div>
         <div class="pool-apy">
@@ -1176,8 +1230,11 @@ import {
 import { Principal } from '@dfinity/principal';
 import { DexRole, PairInfo, StoSetting } from '@/ic/ICDex/model';
 import { getTokenLogo } from '@/ic/getTokenLogo';
-import { ApproveError } from '@/ic/DRC20Token/model';
-import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
+import { ApproveArgs, ApproveError } from '@/ic/DRC20Token/model';
+import {
+  getSubAccountArray,
+  IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+} from '@/ic/utils';
 import TransferToken from '@/components/transferToken/Index.vue';
 import { AddTokenItem, AddTokenItemClass } from '@/views/home/account/model';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
@@ -1200,6 +1257,8 @@ import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { checkAuth } from '@/ic/CheckAuth';
+import { isPlug } from '@/ic/isPlug';
+import drc20TokenIDL from '@/ic/DRC20Token/DRC20Token.did';
 
 const commonModule = namespace('common');
 
@@ -1231,6 +1290,19 @@ const commonModule = namespace('common');
           ? value.toString()
           : value
       );
+    },
+    filterSharesBalance(
+      totalBalance: bigint,
+      totalShares: bigint,
+      shares: bigint
+    ): string {
+      if (totalShares) {
+        return new BigNumber(shares.toString(10))
+          .times(totalBalance.toString(10))
+          .div(totalShares.toString(10))
+          .toString(10);
+      }
+      return '0';
     }
   }
 })
@@ -1318,6 +1390,7 @@ export default class extends Vue {
   private eventVisible = false;
   private currentEventPage = 1;
   private events: Array<[PoolEvent, Time]> = [];
+  private plugBatch = true;
 
   get buttonDisabledRemove(): boolean {
     let flag = false;
@@ -1655,15 +1728,24 @@ export default class extends Vue {
       }
     }
   }
+  private onGetEvents(): void {
+    this.eventVisible = true;
+    // this.getEvents(this.$route.params.poolId);
+  }
   private async getEvents(pool: string): Promise<void> {
     console.log(pool);
     const accountId = hexToBytes(
       principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
     );
     const res = await this.makerPoolService.get_account_events(pool, accountId);
-    const accountTypes = ['withdraw', 'fallback', 'deposit', 'add', 'remove'];
+    const accountTypes = ['fallback', 'add', 'remove'];
     this.events = res.filter((item) => {
       const type = Object.keys(item[0])[0];
+      if (type === 'fallback') {
+        if (!item[0]['fallback'].token0 && !item[0]['fallback'].token0) {
+          return false;
+        }
+      }
       return accountTypes.includes(type);
     });
   }
@@ -1855,6 +1937,7 @@ export default class extends Vue {
       .plus(this.token1fee)
       .times(10 ** this.tokens[token1Id].decimals)
       .toString(10);
+    this.plugBatch = true;
     if (
       token1StdString.toLocaleLowerCase() === 'drc20' ||
       token1StdString.toLocaleLowerCase() === 'icrc2'
@@ -1867,61 +1950,280 @@ export default class extends Vue {
     }
     console.time();
     let promiseValue = [];
+    let batchTransactions = [];
     if (
       token0StdString.toLocaleLowerCase() === 'drc20' ||
       token0StdString.toLocaleLowerCase() === 'icrc2'
     ) {
-      promiseValue.push(
-        this.approve(token0Id, token0StdString, BigInt(needTransferToken0))
-      );
+      const poolId = this.$route.params.poolId;
+      if (isPlug()) {
+        if (token0StdString.toLocaleLowerCase() === 'drc20') {
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token0Id,
+            methodName: 'drc20_approve',
+            args: [poolId, BigInt(needTransferToken0), [], [], []],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+        if (token0StdString.toLocaleLowerCase() === 'icrc2') {
+          const approveArgs: ApproveArgs = {
+            fee: [],
+            memo: [],
+            from_subaccount: [],
+            created_at_time: [],
+            amount: BigInt(needTransferToken0),
+            expected_allowance: [],
+            expires_at: [],
+            spender: {
+              owner: Principal.fromText(poolId),
+              subaccount: []
+            }
+          };
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token0Id,
+            methodName: 'icrc2_approve',
+            args: [approveArgs],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+      } else {
+        promiseValue.push(
+          this.approve(token0Id, token0StdString, BigInt(needTransferToken0))
+        );
+      }
     } else if (token0StdString.toLocaleLowerCase() === 'icrc1') {
-      promiseValue.push(
-        this.transferIcrc1(
-          token0Id,
-          BigInt(needTransferToken0),
-          this.depositAccount[0]
-        )
-      );
+      if (isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken0)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token0Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        promiseValue.push(
+          this.transferIcrc1(
+            token0Id,
+            BigInt(needTransferToken0),
+            this.depositAccount[0]
+          )
+        );
+      }
     } else if (token0StdString.toLocaleLowerCase() === 'icp') {
-      promiseValue.push(
-        this.ledgerService.sendIcp(
-          new BigNumber(needTransferToken0)
-            .div(10 ** this.tokens[token0Id].decimals)
-            .toString(10),
-          this.depositAccount[1]
-        )
-      );
+      if (isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken0)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token0Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        promiseValue.push(
+          this.ledgerService.sendIcp(
+            new BigNumber(needTransferToken0)
+              .div(10 ** this.tokens[token0Id].decimals)
+              .toString(10),
+            this.depositAccount[1]
+          )
+        );
+      }
     }
+    console.log(batchTransactions);
     if (
       token1StdString.toLocaleLowerCase() === 'drc20' ||
       token1StdString.toLocaleLowerCase() === 'icrc2'
     ) {
-      promiseValue.push(
-        this.approve(token1Id, token1StdString, BigInt(needTransferToken1))
-      );
+      if (isPlug()) {
+        if (token1StdString.toLocaleLowerCase() === 'drc20') {
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token1Id,
+            methodName: 'drc20_approve',
+            args: [poolId, BigInt(needTransferToken1), [], [], []],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+        if (token1StdString.toLocaleLowerCase() === 'icrc2') {
+          const approveArgs: ApproveArgs = {
+            fee: [],
+            memo: [],
+            from_subaccount: [],
+            created_at_time: [],
+            amount: BigInt(needTransferToken1),
+            expected_allowance: [],
+            expires_at: [],
+            spender: {
+              owner: Principal.fromText(poolId),
+              subaccount: []
+            }
+          };
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token1Id,
+            methodName: 'icrc2_approve',
+            args: [approveArgs],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+      } else {
+        promiseValue.push(
+          this.approve(token1Id, token1StdString, BigInt(needTransferToken1))
+        );
+      }
     } else if (token1StdString.toLocaleLowerCase() === 'icrc1') {
-      promiseValue.push(
-        this.transferIcrc1(
-          token1Id,
-          BigInt(needTransferToken1),
-          this.depositAccount[0]
-        )
-      );
+      if (isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken1)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token1Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        promiseValue.push(
+          this.transferIcrc1(
+            token1Id,
+            BigInt(needTransferToken1),
+            this.depositAccount[0]
+          )
+        );
+      }
     } else if (token1StdString.toLocaleLowerCase() === 'icp') {
-      promiseValue.push(
-        this.ledgerService.sendIcp(
-          new BigNumber(needTransferToken1)
-            .div(10 ** this.tokens[token1Id].decimals)
-            .toString(10),
-          this.depositAccount[1]
-        )
-      );
+      if (isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken1)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token1Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        promiseValue.push(
+          this.ledgerService.sendIcp(
+            new BigNumber(needTransferToken1)
+              .div(10 ** this.tokens[token1Id].decimals)
+              .toString(10),
+            this.depositAccount[1]
+          )
+        );
+      }
     }
-    const res = await Promise.all(promiseValue);
-    if (res && (!res[0] || !res[1])) {
-      this.$message.error('Error');
-      loading.close();
-      return;
+    console.log(promiseValue);
+    console.log(batchTransactions);
+    if (isPlug()) {
+      try {
+        const plugIc = (window as any).ic.plug;
+        await plugIc.batchTransactions(batchTransactions);
+        console.log(this.plugBatch);
+        if (!this.plugBatch) {
+          loading.close();
+          this.$message.error('Approve error');
+          return;
+        }
+      } catch (e) {
+        console.log(e);
+        loading.close();
+        this.$message.error('Approve error');
+        return;
+      }
+    } else {
+      const res = await Promise.all(promiseValue);
+      if (res && (!res[0] || !res[1])) {
+        this.$message.error('Error');
+        loading.close();
+        return;
+      }
     }
     loading.setText(
       'step2: Adding liquidity.\n(It could take a minute. You can leave this page and the result will be updated soon.)'

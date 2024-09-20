@@ -331,10 +331,7 @@
               class="user-setting-item"
               @click="showTab"
             >
-              <div
-                v-if="getIdentity && getIdentity.toJSON()[1].length <= 64"
-                class="user-setting-item-setting"
-              >
+              <div v-if="showSetting" class="user-setting-item-setting">
                 <a-icon class="account-setting" type="setting" />
                 <span>Setting</span>
               </div>
@@ -1592,6 +1589,32 @@ export default class extends Vue {
   private tokens: { [key: string]: TokenInfo } = {};
   private exchangeMenu = ExchangeEnum;
   private exchangeType: ExchangeType = ExchangeEnum.Swap;
+  get showSetting(): boolean {
+    if (!this.getPrincipalId || !this.priList[this.getPrincipalId]) {
+      return false;
+    }
+    if (this.priList[this.getPrincipalId]) {
+      if (this.priList[this.getPrincipalId] === 'Plug') {
+        return false;
+      } else if (this.priList[this.getPrincipalId] === 'Infinity') {
+        return false;
+      } else if (this.priList[this.getPrincipalId] === 'AuthClient') {
+        return false;
+      } else if (this.priList[this.getPrincipalId] === 'NFID') {
+        return false;
+      } else if (this.priList[this.getPrincipalId].includes('MetaMask')) {
+        return false;
+      } else {
+        if (this.getIdentity && this.getIdentity.toJSON()) {
+          if (this.getIdentity.toJSON()[1].length <= 64) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+    return false;
+  }
   @Watch('$route')
   private onRouteChange() {
     this.setMenuList();

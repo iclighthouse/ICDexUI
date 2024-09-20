@@ -33,19 +33,23 @@ export default class ConnectPlug {
       );
     }
     try {
-      const connected = await (window as any).ic.plug.isConnected();
-      const isOpen = store.getters['common/getIsOpen'];
-      if (connected && !(window as any).ic.plug.agent && isOpen) {
-        await (window as any).ic.plug.createAgent({
-          whitelist: whitelist,
-          host: host
-        });
-      } else {
-        await (window as any).ic.plug.requestConnect({
-          host: host,
-          whitelist: whitelist
-        });
-      }
+      // const connected = await (window as any).ic.plug.isConnected();
+      // const isOpen = store.getters['common/getIsOpen'];
+      // if (connected && !(window as any).ic.plug.agent && isOpen) {
+      //   await (window as any).ic.plug.createAgent({
+      //     whitelist: whitelist,
+      //     host: host
+      //   });
+      // } else {
+      //   await (window as any).ic.plug.requestConnect({
+      //     host: host,
+      //     whitelist: whitelist
+      //   });
+      // }
+      await (window as any).ic.plug.requestConnect({
+        host: host,
+        whitelist: whitelist
+      });
       if (process.env.NODE_ENV !== 'production') {
         // plugIc.plug.agent.fetchRootKey().catch((err) => {
         //   console.warn(
@@ -140,9 +144,5 @@ const getWhitelist = (): string[] => {
   return localWhitelist[principal] || plugWhitelist;
 };
 export const canRequest = async (canisterId: string): Promise<boolean> => {
-  // const connected = await plugIc.plug.isConnected();
-  // return (
-  //   (isPlug() && connected && getWhitelist().includes(canisterId)) || !isPlug()
-  // );
   return (isPlug() && getWhitelist().includes(canisterId)) || !isPlug();
 };

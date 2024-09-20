@@ -131,9 +131,5 @@ const getWhitelist = (): string[] => {
   return localWhitelist[principal] || plugWhitelist;
 };
 export const canRequest = async (canisterId: string): Promise<boolean> => {
-  // const connected = await (window as any).ic.plug.isConnected();
-  // return (
-  //   (isPlug() && connected && getWhitelist().includes(canisterId)) || !isPlug()
-  // );
   return (isInfinity() && getWhitelist().includes(canisterId)) || !isInfinity();
 };

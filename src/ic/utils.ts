@@ -71,17 +71,17 @@ const AIRDROP_CANISTER_ID = 'r43hs-lqaaa-aaaak-afoca-cai';
 // let MINING_CANISTER_ID = 'o7d74-vqaaa-aaaar-qaapa-cai';
 let MINING_CANISTER_ID = 'odhfn-cqaaa-aaaar-qaana-cai';
 const ETHHttps = [
-  'https://eth-sepolia.g.alchemy.com/v2/gm4OKMIz91Ca1w5WoKT3xXafUtQtdJd9',
-  'https://eth-sepolia.g.alchemy.com/v2/wREEsnLaFrPgZaXy3Kfhgx2bJ04spvfc',
+  'https://eth-sepolia.g.alchemy.com/v2/8orVKy1L-zwpKo0N2GdMCEzxpfJExva3',
+  'https://eth-sepolia.g.alchemy.com/v2/Sz5D9aIo4L1UCBwif72PYS8K-B7TgLw3',
   'https://eth-sepolia.g.alchemy.com/v2/cxoNSpAs233I0lszO1j8n3eWLeEjjHf8'
 ];
 const ETHHttpsMainnet = [
-  'https://eth-mainnet.g.alchemy.com/v2/KsCEIRwf5rPkmhFy6uvm7lCPC0gIZxk7',
-  'https://eth-mainnet.g.alchemy.com/v2/3rh5DTcZ97IcSwS-BthnbCWwjLactENf'
+  'https://eth-mainnet.g.alchemy.com/v2/8orVKy1L-zwpKo0N2GdMCEzxpfJExva3',
+  'https://eth-mainnet.g.alchemy.com/v2/Sz5D9aIo4L1UCBwif72PYS8K-B7TgLw3'
 ];
 const ETHWebsocketProvider = [
-  'wss://eth-sepolia.g.alchemy.com/v2/gm4OKMIz91Ca1w5WoKT3xXafUtQtdJd9',
-  'wss://eth-sepolia.g.alchemy.com/v2/wREEsnLaFrPgZaXy3Kfhgx2bJ04spvfc',
+  'wss://eth-sepolia.g.alchemy.com/v2/8orVKy1L-zwpKo0N2GdMCEzxpfJExva3',
+  'wss://eth-sepolia.g.alchemy.com/v2/Sz5D9aIo4L1UCBwif72PYS8K-B7TgLw3',
   'wss://eth-sepolia.g.alchemy.com/v2/cxoNSpAs233I0lszO1j8n3eWLeEjjHf8'
 ];
 const etherScanKey = [
@@ -90,7 +90,7 @@ const etherScanKey = [
   '8IR9XPZHH25RRQX11Y3Q2U7PCYU913TGRM'
 ];
 const ETHHttpsSepolia = [
-  'https://eth-sepolia.g.alchemy.com/v2/mi31Fwitq3xSl5q2-yMwiQ9edeLul_S2'
+  'https://eth-mainnet.g.alchemy.com/v2/8orVKy1L-zwpKo0N2GdMCEzxpfJExva3'
 ];
 if (process.env.NODE_ENV === 'production') {
   IC_SWAP_ROUTER_CANISTER_ID = 'j4d4d-pqaaa-aaaak-aanxq-cai';

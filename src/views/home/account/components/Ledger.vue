@@ -10928,16 +10928,7 @@ export default class extends Vue {
     } else if (new BigNumber(value).lt(retrieve_btc_min_amount)) {
       callback(`Min amount is ${retrieve_btc_min_amount} ${this.BTCType}`);
     } else {
-      if (this.BTCType === BTCTypeEnum.icBTC) {
-        const max = new BigNumber(0.05).toString(10);
-        if (new BigNumber(value).gt(max)) {
-          callback(`Max amount is ${max} ${this.BTCType}`);
-        } else {
-          callback();
-        }
-      } else {
-        callback();
-      }
+      callback();
     }
   }
 

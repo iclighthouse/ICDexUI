@@ -1141,7 +1141,10 @@ export default class extends Vue {
     const MAX_COCURRENCY = 20;
     let promiseAll = [];
     for (let i = 0; i < this.tokens.length; i++) {
-      if (this.$route.name !== 'Account') {
+      if (
+        this.$route.name !== 'Account' ||
+        (this.$route.name === 'Account' && this.walletMenu === 'icRouter')
+      ) {
         return;
       }
       const token = this.tokens[i];

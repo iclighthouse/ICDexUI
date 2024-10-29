@@ -436,7 +436,7 @@ export default class extends Vue {
         decimals: 8
       }
     ];
-    for (let i = miningList.length - 1; i > 0; i--) {
+    for (let i = miningList.length - 1; i >= 0; i--) {
       const round = await this.MiningService.getRound(miningList[i].canisterId);
       console.log(round);
       let isEnd = false;

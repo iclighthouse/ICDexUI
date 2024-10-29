@@ -9734,6 +9734,9 @@ export default class extends Vue {
         .sendSignedTransaction('0x' + toHexString(new Uint8Array(signedTx)))
         .then((receipt) => {
           console.log(receipt);
+        })
+        .catch((e) => {
+          console.log(e);
         });
     }
   }

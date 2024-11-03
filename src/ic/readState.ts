@@ -13,6 +13,7 @@ export const readState = async (
 ): Promise<void | {
   controllers: Array<PrincipalString>;
   moduleHash: string;
+  did: string
 }> => {
   const canisterBuffer = new DataView(
     Principal.from(canisterId).toUint8Array().buffer
@@ -40,7 +41,8 @@ export const readState = async (
     console.warn('read_state:', error);
     return {
       controllers: [],
-      moduleHash: '-'
+      moduleHash: '-',
+      did: ''
     };
   }
   console.log(res);
@@ -76,6 +78,7 @@ export const readState = async (
   try {
     const certCandid = cert.lookup(pathCandid);
     // console.log(Buffer.from(certCandid).toString('utf-8'));
+    candid = Buffer.from(certCandid).toString('utf-8');
   } catch (e) {
     console.log(e);
     candid = '';
@@ -84,7 +87,8 @@ export const readState = async (
   console.log(moduleHash);
   return {
     controllers: controllers,
-    moduleHash: moduleHash
+    moduleHash: moduleHash,
+    did: candid
   };
   // const cert: Certificate = new Certificate(res, agent);
   // if (await cert.verify()) {

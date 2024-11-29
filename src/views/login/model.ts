@@ -6,6 +6,9 @@ enum LoginEnum {
   Infinity,
   MetaMask,
   HardwareWallet,
-  NFID
+  NFID,
+  Signer,
+  SignerPlug,
+  SignerNFID
 }
 export type LoginType = keyof typeof LoginEnum;

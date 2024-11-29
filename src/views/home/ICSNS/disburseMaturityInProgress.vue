@@ -14,8 +14,13 @@ const dayjs = require('dayjs');
   components: {}
 })
 export default class extends Vue {
-  @Prop({ type: BigInt, default: BigInt(0) })
-  public disburseMaturityInProgress!: bigint;
+  // @Prop({ type: BigInt, default: BigInt(0) })
+  // public disburseMaturityInProgress!: bigint;
+  @Prop({
+    default: BigInt(0),
+    validator: (value: any) => typeof value === 'bigint'
+  })
+  private disburseMaturityInProgress!: bigint;
   private countdown = '';
   private timer = null;
   beforeDestroy(): void {

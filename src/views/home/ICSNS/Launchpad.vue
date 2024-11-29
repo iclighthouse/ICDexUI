@@ -35,9 +35,9 @@
               <span class="launch-pad-token-item-info-label">Supply</span>
               <span class="base-color-w margin-left-auto">
                 {{
-                  token.params[0].sns_token_e8s
-                    | bigintToFloat(token.decimals, token.decimals)
-                    | formatNum
+                  token.params[0].sns_token_e8s |
+                    bigintToFloat(token.decimals, token.decimals) |
+                    formatNum
                 }}
               </span>
               <span>&nbsp;{{ token.symbol }}</span>
@@ -52,16 +52,16 @@
                   "
                 >
                   {{
-                    token.params[0].max_direct_participation_icp_e8s[0]
-                      | bigintToFloat(8, 8)
-                      | formatNum
+                    token.params[0].max_direct_participation_icp_e8s[0] |
+                      bigintToFloat(8, 8) |
+                      formatNum
                   }}
                 </span>
                 <span v-else>
                   {{
-                    token.params[0].max_icp_e8s
-                      | bigintToFloat(8, 8)
-                      | formatNum
+                    token.params[0].max_icp_e8s |
+                      bigintToFloat(8, 8) |
+                      formatNum
                   }}
                 </span>
               </span>
@@ -80,9 +80,9 @@
               <span class="launch-pad-token-item-info-label">Max Commit</span>
               <span class="base-color-w margin-left-auto">
                 {{
-                  token.params[0].max_participant_icp_e8s
-                    | bigintToFloat(8, 8)
-                    | formatNum
+                  token.params[0].max_participant_icp_e8s |
+                    bigintToFloat(8, 8) |
+                    formatNum
                 }}
               </span>
               &nbsp;ICP
@@ -91,9 +91,9 @@
               <span class="launch-pad-token-item-info-label">Min Commit</span>
               <span class="base-color-w margin-left-auto">
                 {{
-                  token.params[0].min_participant_icp_e8s
-                    | bigintToFloat(8, 8)
-                    | formatNum
+                  token.params[0].min_participant_icp_e8s |
+                    bigintToFloat(8, 8) |
+                    formatNum
                 }}
               </span>
               &nbsp;ICP
@@ -102,8 +102,8 @@
               <span class="launch-pad-token-item-info-label">Deadline</span>
               <span class="margin-left-auto">
                 {{
-                  token.params[0].swap_due_timestamp_seconds
-                    | formatDateFromSecondUTC
+                  token.params[0].swap_due_timestamp_seconds |
+                    formatDateFromSecondUTC
                 }}
               </span>
             </div>
@@ -202,9 +202,9 @@
               <span class="base-color-w margin-left-auto">
                 <span v-if="token.params && token.params.length">
                   {{
-                    token.params[0].sns_token_e8s
-                      | bigintToFloat(token.decimals, token.decimals)
-                      | formatNum
+                    token.params[0].sns_token_e8s |
+                      bigintToFloat(token.decimals, token.decimals) |
+                      formatNum
                   }}
                 </span>
                 <span v-else>-</span>
@@ -216,9 +216,9 @@
               <span class="base-color-w margin-left-auto">
                 <span v-if="token.params && token.params.length">
                   {{
-                    token.params[0].max_icp_e8s
-                      | bigintToFloat(8, 8)
-                      | formatNum
+                    token.params[0].max_icp_e8s |
+                      bigintToFloat(8, 8) |
+                      formatNum
                   }}
                 </span>
                 <span v-else>-</span>
@@ -230,9 +230,9 @@
               <span class="base-color-w margin-left-auto">
                 <span v-if="token.params && token.params.length">
                   {{
-                    token.params[0].min_icp_e8s
-                      | bigintToFloat(8, 8)
-                      | formatNum
+                    token.params[0].min_icp_e8s |
+                      bigintToFloat(8, 8) |
+                      formatNum
                   }}
                 </span>
                 <span v-else>-</span>
@@ -244,9 +244,9 @@
               <span class="base-color-w margin-left-auto">
                 <span v-if="token.params && token.params.length">
                   {{
-                    token.params[0].max_participant_icp_e8s
-                      | bigintToFloat(8, 8)
-                      | formatNum
+                    token.params[0].max_participant_icp_e8s |
+                      bigintToFloat(8, 8) |
+                      formatNum
                   }}
                 </span>
                 <span v-else>-</span>
@@ -258,9 +258,9 @@
               <span class="base-color-w margin-left-auto">
                 <span v-if="token.params && token.params.length">
                   {{
-                    token.params[0].min_participant_icp_e8s
-                      | bigintToFloat(8, 8)
-                      | formatNum
+                    token.params[0].min_participant_icp_e8s |
+                      bigintToFloat(8, 8) |
+                      formatNum
                   }}
                 </span>
                 <span v-else>-</span>
@@ -272,8 +272,8 @@
               <span class="margin-left-auto">
                 <span v-if="token.params && token.params.length">
                   {{
-                    token.params[0].swap_due_timestamp_seconds
-                      | formatDateFromSecondUTC
+                    token.params[0].swap_due_timestamp_seconds |
+                      formatDateFromSecondUTC
                   }}
                 </span>
                 <span v-else>-</span>
@@ -359,9 +359,9 @@
               <span class="launch-pad-token-item-info-label">Supply</span>
               <span class="base-color-w margin-left-auto">
                 {{
-                  token.params[0].sns_token_e8s
-                    | bigintToFloat(token.decimals, token.decimals)
-                    | formatNum
+                  token.params[0].sns_token_e8s |
+                    bigintToFloat(token.decimals, token.decimals) |
+                    formatNum
                 }}
               </span>
               <span>&nbsp;{{ token.symbol }}</span>
@@ -388,9 +388,9 @@
               <span class="launch-pad-token-item-info-label">Max Commit</span>
               <span class="base-color-w margin-left-auto">
                 {{
-                  token.params[0].max_participant_icp_e8s
-                    | bigintToFloat(8, 8)
-                    | formatNum
+                  token.params[0].max_participant_icp_e8s |
+                    bigintToFloat(8, 8) |
+                    formatNum
                 }}
               </span>
               &nbsp;ICP
@@ -399,9 +399,9 @@
               <span class="launch-pad-token-item-info-label">Min Commit</span>
               <span class="base-color-w margin-left-auto">
                 {{
-                  token.params[0].min_participant_icp_e8s
-                    | bigintToFloat(8, 8)
-                    | formatNum
+                  token.params[0].min_participant_icp_e8s |
+                    bigintToFloat(8, 8) |
+                    formatNum
                 }}
               </span>
               &nbsp;ICP
@@ -410,8 +410,8 @@
               <span class="launch-pad-token-item-info-label">Deadline</span>
               <span class="margin-left-auto">
                 {{
-                  token.params[0].swap_due_timestamp_seconds
-                    | formatDateFromSecondUTC
+                  token.params[0].swap_due_timestamp_seconds |
+                    formatDateFromSecondUTC
                 }}
               </span>
             </div>
@@ -623,7 +623,8 @@ export default class extends Vue {
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
       const needConnectInfinity1 = await needConnectInfinity(canisterIds);
       if (
-        priList[principal] === 'Plug' &&
+        (priList[principal] === 'Plug' ||
+          priList[principal] === 'SignerPlug') &&
         flag &&
         this.$route.name === 'ICSNS-Launchpad'
       ) {

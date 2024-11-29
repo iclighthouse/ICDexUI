@@ -90,7 +90,7 @@ const etherScanKey = [
   '8IR9XPZHH25RRQX11Y3Q2U7PCYU913TGRM'
 ];
 const ETHHttpsSepolia = [
-  'https://eth-mainnet.g.alchemy.com/v2/8orVKy1L-zwpKo0N2GdMCEzxpfJExva3'
+  'https://eth-sepolia.g.alchemy.com/v2/8orVKy1L-zwpKo0N2GdMCEzxpfJExva3'
 ];
 if (process.env.NODE_ENV === 'production') {
   IC_SWAP_ROUTER_CANISTER_ID = 'j4d4d-pqaaa-aaaak-aanxq-cai';

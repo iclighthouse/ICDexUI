@@ -32,8 +32,8 @@
             >
             (#NEPTUNE, #URANUS or #SATURN) holders are required to burn
             {{
-              sysConfig.creatingMakerFee
-                | bigintToFloat(
+              sysConfig.creatingMakerFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -50,8 +50,8 @@
           >
             2. Non-above NFT holders are required to burn
             {{
-              createFee
-                | bigintToFloat(
+              createFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -70,8 +70,8 @@
           >
             1. ICLighthouse Planet NFT (any card) holders are required to burn
             {{
-              sysConfig.creatingMakerFee
-                | bigintToFloat(
+              sysConfig.creatingMakerFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -88,8 +88,8 @@
           >
             2. Non-NFT holders are required to burn
             {{
-              createPrivateFee
-                | bigintToFloat(
+              createPrivateFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -310,8 +310,8 @@
               >
                 (Fee:
                 {{
-                  sysConfig.creatingMakerFee
-                    | bigintToFloat(
+                  sysConfig.creatingMakerFee |
+                    bigintToFloat(
                       tokens[sysConfig.sysToken.toString()].decimals,
                       tokens[sysConfig.sysToken.toString()].decimals
                     )
@@ -337,8 +337,8 @@
               >
                 (Fee:
                 {{
-                  createFee
-                    | bigintToFloat(
+                  createFee |
+                    bigintToFloat(
                       tokens[sysConfig.sysToken.toString()].decimals,
                       tokens[sysConfig.sysToken.toString()].decimals
                     )
@@ -355,8 +355,8 @@
               >
                 (Fee:
                 {{
-                  createPrivateFee
-                    | bigintToFloat(
+                  createPrivateFee |
+                    bigintToFloat(
                       tokens[sysConfig.sysToken.toString()].decimals,
                       tokens[sysConfig.sysToken.toString()].decimals
                     )
@@ -1067,15 +1067,19 @@ export default class extends Vue {
     }
     if (new BigNumber(await this.getIclBalance()).lt(fee)) {
       loading.close();
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
       (this.$info as any)({
+        title: 'Insufficient ICL balance',
         content: `Insufficient balance. A minimum of ${fee} ${tokenInfo.symbol} is required to create a MM Pool.`,
-        class: 'connect-plug register-mining-confirm launch-info-button',
+        class: 'connect-plug register-mining-confirm',
         icon: 'connect-plug',
-        okText: 'Insufficient ICL balance',
+        okText: 'Buy ICL',
         closable: true,
         centered: true,
         onOk() {
-          //
+          that.$router.push('/ICDex/ICL/ICP');
+          that.visible = false;
         }
       });
     } else if (allowance || (allowance !== null && Number(allowance) === 0)) {
@@ -1271,7 +1275,11 @@ export default class extends Vue {
             ]);
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const _that = this;
-            if (priList[this.getPrincipalId] === 'Plug' && flag) {
+            if (
+              (priList[this.getPrincipalId] === 'Plug' ||
+                priList[this.getPrincipalId] === 'SignerPlug') &&
+              flag
+            ) {
               const connectPlug = new ConnectPlug();
               this.$info({
                 content: 'Maker need to be connected to the plug.',

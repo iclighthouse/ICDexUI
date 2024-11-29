@@ -221,7 +221,8 @@ export default class extends Vue {
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
       const needConnectInfinity1 = await needConnectInfinity(canisterIds);
       if (
-        priList[principal] === 'Plug' &&
+        (priList[principal] === 'Plug' ||
+          priList[principal] === 'SignerPlug') &&
         flag &&
         this.$route.name === 'ICSNS-Tokens'
       ) {

@@ -66,7 +66,11 @@ export default class extends Vue {
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const principal = localStorage.getItem('principal');
     this.current = this.$route.path;
-    if (priList[principal] === 'Plug' || priList[principal] === 'Infinity') {
+    if (
+      priList[principal] === 'Plug' ||
+      priList[principal] === 'SignerPlug' ||
+      priList[principal] === 'Infinity'
+    ) {
       this.getTokenList();
     }
   }

@@ -49,8 +49,8 @@
               </td>
               <td class="total-supply">
                 {{
-                  token.totalSupply
-                    | bigintToFloat(
+                  token.totalSupply |
+                    bigintToFloat(
                       Number(token.decimals),
                       Number(token.decimals)
                     )
@@ -992,7 +992,9 @@ export default class extends Mixins(BalanceMixin) {
     console.log(res);
     const remaining = res.reduce((remaining, item) => {
       return BigInt(
-        new BigNumber(remaining.toString(10)).plus(item.remaining.toString(10))
+        new BigNumber(remaining.toString(10))
+          .plus(item.remaining.toString(10))
+          .toString(10)
       );
     }, BigInt('0'));
     console.log(remaining);
@@ -1386,7 +1388,11 @@ export default class extends Mixins(BalanceMixin) {
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const flag = needConnectPlug([tokenId]);
     const connectInfinity = await needConnectInfinity([tokenId]);
-    if (priList[this.getPrincipalId] === 'Plug' && flag) {
+    if (
+      (priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug') &&
+      flag
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       this.$info({

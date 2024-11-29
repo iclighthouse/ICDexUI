@@ -1528,7 +1528,6 @@ import { connectIcx } from '@/ic/connectIcx';
 import EventBus from '@/utils/Event';
 import { WrappedFormUtils } from 'ant-design-vue/types/form/form';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
-import { getNfid } from '@/ic/NFIDAuth';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
 import { TokenInfo } from '@/ic/common/icType';
 import {
@@ -1536,6 +1535,7 @@ import {
   ExchangeType,
   LiquidityType
 } from '@/views/home/cyclesFinance/model';
+import { NFIDLogout } from '@/ic/NFIDAuth';
 
 const commonModule = namespace('common');
 const KeyEncoder = require('key-encoder').default;
@@ -1596,11 +1596,15 @@ export default class extends Vue {
     if (this.priList[this.getPrincipalId]) {
       if (this.priList[this.getPrincipalId] === 'Plug') {
         return false;
+      } else if (this.priList[this.getPrincipalId] === 'SignerPlug') {
+        return false;
       } else if (this.priList[this.getPrincipalId] === 'Infinity') {
         return false;
       } else if (this.priList[this.getPrincipalId] === 'AuthClient') {
         return false;
       } else if (this.priList[this.getPrincipalId] === 'NFID') {
+        return false;
+      } else if (this.priList[this.getPrincipalId] === 'SignerNFID') {
         return false;
       } else if (this.priList[this.getPrincipalId].includes('MetaMask')) {
         return false;
@@ -1745,9 +1749,11 @@ export default class extends Vue {
     console.log(this.principalList);
     if (
       this.priList[this.getPrincipalId] !== 'Plug' &&
+      this.priList[this.getPrincipalId] !== 'SignerPlug' &&
       this.priList[this.getPrincipalId] !== 'Infinity' &&
       this.priList[this.getPrincipalId] !== 'AuthClient' &&
-      this.priList[this.getPrincipalId] !== 'NFID'
+      this.priList[this.getPrincipalId] !== 'NFID' &&
+      this.priList[this.getPrincipalId] !== 'SignerNFID'
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
@@ -1769,6 +1775,8 @@ export default class extends Vue {
     }
     if (this.priList[principal]) {
       if (this.priList[principal] === 'Plug') {
+        return require('@/assets/img/plug.png');
+      } else if (this.priList[principal] === 'SignerPlug') {
         return require('@/assets/img/plug.png');
       } else if (this.priList[principal] === 'Infinity') {
         return require('@/assets/img/infinity.png');
@@ -1836,16 +1844,10 @@ export default class extends Vue {
         }
       } else if (
         this.priList[principal] &&
-        this.priList[principal] === 'NFID'
+        (this.priList[principal] === 'NFID' ||
+          this.priList[principal] === 'SignerNFID')
       ) {
-        const nfid = await getNfid();
-        console.log(nfid);
-        if (nfid) {
-          const identity = nfid.getIdentity();
-          if (identity) {
-            await nfid.logout();
-          }
-        }
+        await NFIDLogout();
       }
     } catch (e) {
       console.log(e);
@@ -1865,9 +1867,19 @@ export default class extends Vue {
           path: '/sign/NFID',
           query: { redirect: this.$route.fullPath }
         });
+      } else if (this.priList[principal] === 'SignerNFID') {
+        await this.$router.replace({
+          path: '/sign/SignerNFID',
+          query: { redirect: this.$route.fullPath }
+        });
       } else if (this.priList[principal] === 'Plug') {
         await this.$router.replace({
-          path: '/sign/plug',
+          path: '/sign/Plug',
+          query: { redirect: this.$route.fullPath }
+        });
+      } else if (this.priList[principal] === 'SignerPlug') {
+        await this.$router.replace({
+          path: '/sign/SignerPlug',
           query: { redirect: this.$route.fullPath }
         });
       } else if (this.priList[principal] === 'Infinity') {
@@ -1973,36 +1985,44 @@ export default class extends Vue {
     this.initPemStep();
   }
   private async logout(): Promise<void> {
-    const authClientAPi = await AuthClientAPi.create();
-    const identity = authClientAPi.tryGetIdentity();
-    if (identity) {
-      await authClientAPi.logout();
-    }
-    const principal = localStorage.getItem('principal');
-    if (this.priList[principal] === 'Plug') {
-      if ((window as any).ic && (window as any).ic.plug) {
-        await (window as any).ic.plug.disconnect();
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      const authClientAPi = await AuthClientAPi.create();
+      const identity = authClientAPi.tryGetIdentity();
+      if (identity) {
+        await authClientAPi.logout();
       }
-    }
-    if (this.priList[principal] === 'Infinity') {
-      if ((window as any).ic && (window as any).ic.infinityWallet) {
-        (window as any).ic.infinityWallet.disconnect();
-      }
-    }
-    if (this.priList[principal] === 'NFID') {
-      const nfid = await getNfid();
-      console.log(nfid);
-      if (nfid) {
-        const identity = nfid.getIdentity();
-        if (identity) {
-          await nfid.logout();
+      const principal = localStorage.getItem('principal');
+      if (
+        this.priList[principal] === 'Plug' ||
+        this.priList[principal] === 'SignerPlug'
+      ) {
+        if ((window as any).ic && (window as any).ic.plug) {
+          await (window as any).ic.plug.disconnect();
         }
       }
+      if (this.priList[principal] === 'Infinity') {
+        if ((window as any).ic && (window as any).ic.infinityWallet) {
+          (window as any).ic.infinityWallet.disconnect();
+        }
+      }
+      if (
+        this.priList[principal] === 'NFID' ||
+        this.priList[principal] === 'SignerNFID'
+      ) {
+        await NFIDLogout();
+      }
+      localStorage.removeItem('principal');
+      this.setPrincipalId(null);
+      this.setCheckAuth(false);
+      this.setIdentity(null);
+    } catch (e) {
+      console.log(e);
     }
-    localStorage.removeItem('principal');
-    this.setPrincipalId(null);
-    this.setCheckAuth(false);
-    this.setIdentity(null);
+    loading.close();
   }
   private setName(): void {
     if (this.getAccountName) {
@@ -2114,7 +2134,7 @@ export default class extends Vue {
   }
 }
 .user-setting {
-  ::v-deep.ant-dropdown-menu-item {
+  ::v-deep .ant-dropdown-menu-item {
     padding: 0;
     &:hover {
       background: rgba(255, 255, 255, 0.08);

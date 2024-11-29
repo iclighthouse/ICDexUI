@@ -204,7 +204,7 @@
           </div>
         </div>
       </div>
-      <!--<div class="dashboard-icdex-main mt20">
+      <div class="dashboard-icdex-main mt20">
         <div class="dashboard-icdex-item w100">
           <div class="dashboard-sns-item-bold link pointer">
             <div>Events</div>
@@ -212,10 +212,14 @@
           <div class="ictc-main w100">
             <div class="ictc-item">
               <div class="link pointer">
-                ICDexRouter&nbsp;<span v-show="eventTotal">
+                ICDexRouter&nbsp;<span
+                  @click="showICDexRouterEvents"
+                  v-show="eventTotal"
+                >
                   ({{ eventTotal }}/<span
                     v-show="seriousEvents.length"
                     :class="{ 'base-red': seriousEvents.length > 0 }"
+                    @click.stop="showICDexRouterSeriousEvents"
                     >{{ seriousEvents.length }}</span
                   >)
                 </span>
@@ -223,10 +227,14 @@
             </div>
             <div class="ictc-item ictc-item-s">
               <div class="link pointer">
-                icETHMinter&nbsp;<span v-show="eventIcETHTotal">
+                icETHMinter&nbsp;<span
+                  @click="showICETHEvents"
+                  v-show="eventIcETHTotal"
+                >
                   ({{ eventIcETHTotal }}/<span
                     v-show="icETHSeriousEvents.length"
                     :class="{ 'base-red': icETHSeriousEvents.length > 0 }"
+                    @click.stop="showICETHSeriousEvents"
                     >{{ icETHSeriousEvents.length }}</span
                   >)
                 </span>
@@ -234,18 +242,22 @@
             </div>
             <div class="ictc-item ictc-item-s">
               <div class="link pointer">
-                icBTCMinter&nbsp;<span v-show="eventTotal">
-                  ({{ eventTotal }}/<span
-                    v-show="seriousEvents.length"
-                    :class="{ 'base-red': seriousEvents.length > 0 }"
-                    >{{ seriousEvents.length }}</span
+                icBTCMinter&nbsp;<span
+                  @click="showICBTCEvents"
+                  v-show="eventIcBTCTotal"
+                >
+                  ({{ eventIcBTCTotal }}/<span
+                    v-show="icBTCSeriousEvents.length"
+                    :class="{ 'base-red': icBTCSeriousEvents.length > 0 }"
+                    @click.stop="showICBTCSeriousEvents"
+                    >{{ icBTCSeriousEvents.length }}</span
                   >)
                 </span>
               </div>
             </div>
           </div>
         </div>
-      </div>-->
+      </div>
       <a-modal
         v-model="SNSCanistersVisible"
         width="860px"
@@ -562,6 +574,300 @@
           </div>
         </div>
       </a-modal>
+      <a-modal
+        v-model="ICDexRouterVisible"
+        width="90%"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="router-modal"
+      >
+        <div class="mt20 router-modal-table">
+          <a-spin :spinning="spinning">
+            <table>
+              <thead>
+                <tr>
+                  <th class="table-index">Index</th>
+                  <th class="table-index">Type</th>
+                  <th class="pl10">Event</th>
+                  <th class="table-time text-right">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in events" :key="index">
+                  <td class="table-index">{{ item[0].toString(10) }}</td>
+                  <td class="table-index">{{ Object.keys(item[1][0])[0] }}</td>
+                  <td style="word-break: break-word" class="pl10">
+                    {{ Object.values(item[1][0])[0] | filterJson }}
+                  </td>
+                  <td class="table-time text-right">
+                    {{ item[1][1] | formatDateFromSecondUTC }}
+                  </td>
+                </tr>
+                <tr v-show="!events.length">
+                  <td class="text-center" colspan="4">No Data</td>
+                </tr>
+              </tbody>
+            </table>
+          </a-spin>
+        </div>
+        <a-pagination
+          v-if="eventTotal > 30"
+          class="pagination"
+          :defaultPageSize="30"
+          :current="pageEvent"
+          :total="eventTotal"
+          @change="pageICDexRouterChange"
+        />
+      </a-modal>
+      <a-modal
+        v-model="ICDexRouterSeriousVisible"
+        width="90%"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="router-modal"
+      >
+        <div class="mt20 router-modal-table">
+          <table>
+            <thead>
+              <tr>
+                <th class="table-index">Index</th>
+                <th class="table-index">Type</th>
+                <th class="pl10">Event</th>
+                <th class="table-time text-right">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in seriousEvents.slice(
+                  (pageSeriousEvent - 1) * 30,
+                  pageSeriousEvent * 30
+                )"
+                :key="index"
+              >
+                <td class="table-index">{{ item[0].toString(10) }}</td>
+                <td class="table-index">{{ Object.keys(item[1][0])[0] }}</td>
+                <td style="word-break: break-word" class="pl10">
+                  {{ Object.values(item[1][0])[0] | filterJson }}
+                </td>
+                <td class="table-time text-right">
+                  {{ item[1][1] | formatDateFromSecondUTC }}
+                </td>
+              </tr>
+              <tr v-show="!seriousEvents.length">
+                <td class="text-center" colspan="4">No Data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <a-pagination
+          v-if="seriousEvents.length > 30"
+          class="pagination"
+          :defaultPageSize="30"
+          :current="pageSeriousEvent"
+          :total="seriousEvents.length"
+          @change="pageICDexRouterSeriousChange"
+        />
+      </a-modal>
+      <a-modal
+        v-model="ICETHVisible"
+        width="90%"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="router-modal"
+      >
+        <div class="mt20 router-modal-table">
+          <a-spin :spinning="spinningICETH">
+            <table>
+              <thead>
+                <tr>
+                  <th class="table-index">Index</th>
+                  <th class="table-index">Type</th>
+                  <th class="pl10">Event</th>
+                  <th class="table-time text-right">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in icETHEvents" :key="index">
+                  <td class="table-index">{{ item[0].toString(10) }}</td>
+                  <td class="table-index">{{ Object.keys(item[1][0])[0] }}</td>
+                  <td style="word-break: break-word" class="pl10">
+                    {{ Object.values(item[1][0])[0] | filterJson }}
+                  </td>
+                  <td class="table-time text-right">
+                    {{ item[1][1] | formatDateFromSecondUTC }}
+                  </td>
+                </tr>
+                <tr v-show="!icETHEvents.length">
+                  <td class="text-center" colspan="4">No Data</td>
+                </tr>
+              </tbody>
+            </table>
+          </a-spin>
+        </div>
+        <a-pagination
+          v-if="eventIcETHTotal > 30"
+          class="pagination"
+          :defaultPageSize="30"
+          :current="pageIcETHEvent"
+          :total="eventIcETHTotal"
+          @change="pageICETHChange"
+        />
+      </a-modal>
+      <a-modal
+        v-model="ICETHSeriousVisible"
+        width="90%"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="router-modal"
+      >
+        <div class="mt20 router-modal-table">
+          <table>
+            <thead>
+              <tr>
+                <th class="table-index">Index</th>
+                <th class="table-index">Type</th>
+                <th class="pl10">Event</th>
+                <th class="table-time text-right">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in icETHSeriousEvents.slice(
+                  (pageSeriousICETHEvent - 1) * 30,
+                  pageSeriousICETHEvent * 30
+                )"
+                :key="index"
+              >
+                <td class="table-index">{{ item[0].toString(10) }}</td>
+                <td class="table-index">{{ Object.keys(item[1][0])[0] }}</td>
+                <td style="word-break: break-word" class="pl10">
+                  {{ Object.values(item[1][0])[0] | filterJson }}
+                </td>
+                <td class="table-time text-right">
+                  {{ item[1][1] | formatDateFromSecondUTC }}
+                </td>
+              </tr>
+              <tr v-show="!icETHSeriousEvents.length">
+                <td class="text-center" colspan="4">No Data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <a-pagination
+          v-if="icETHSeriousEvents.length > 30"
+          class="pagination"
+          :defaultPageSize="30"
+          :current="pageSeriousICETHEvent"
+          :total="icETHSeriousEvents.length"
+          @change="pageICETHSeriousChange"
+        />
+      </a-modal>
+      <a-modal
+        v-model="ICBTCVisible"
+        width="90%"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="router-modal"
+      >
+        <div class="mt20 router-modal-table">
+          <a-spin :spinning="spinningICBTC">
+            <table>
+              <thead>
+                <tr>
+                  <th class="table-index">Index</th>
+                  <th class="table-index">Type</th>
+                  <th class="pl10">Event</th>
+                  <th class="table-time text-right">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in icBTCEvents" :key="index">
+                  <td class="table-index">{{ item[0].toString(10) }}</td>
+                  <td class="table-index">{{ Object.keys(item[1][0])[0] }}</td>
+                  <td style="word-break: break-word" class="pl10">
+                    {{ Object.values(item[1][0])[0] | filterJson }}
+                  </td>
+                  <td class="table-time text-right">
+                    {{ item[1][1] | formatDateFromSecondUTC }}
+                  </td>
+                </tr>
+                <tr v-show="!icBTCEvents.length">
+                  <td class="text-center" colspan="4">No Data</td>
+                </tr>
+              </tbody>
+            </table>
+          </a-spin>
+        </div>
+        <a-pagination
+          v-if="eventIcBTCTotal > 30"
+          class="pagination"
+          :defaultPageSize="30"
+          :current="pageIcBTCEvent"
+          :total="eventIcBTCTotal"
+          @change="pageICBTCChange"
+        />
+      </a-modal>
+      <a-modal
+        v-model="ICBTCSeriousVisible"
+        width="90%"
+        centered
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="router-modal"
+      >
+        <div class="mt20 router-modal-table">
+          <table>
+            <thead>
+              <tr>
+                <th class="table-index">Index</th>
+                <th class="table-index">Type</th>
+                <th class="pl10">Event</th>
+                <th class="table-time text-right">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in icBTCSeriousEvents.slice(
+                  (pageSeriousICBTCEvent - 1) * 30,
+                  pageSeriousICBTCEvent * 30
+                )"
+                :key="index"
+              >
+                <td class="table-index">{{ item[0].toString(10) }}</td>
+                <td class="table-index">{{ Object.keys(item[1][0])[0] }}</td>
+                <td style="word-break: break-word" class="pl10">
+                  {{ Object.values(item[1][0])[0] | filterJson }}
+                </td>
+                <td class="table-time text-right">
+                  {{ item[1][1] | formatDateFromSecondUTC }}
+                </td>
+              </tr>
+              <tr v-show="!icBTCSeriousEvents.length">
+                <td class="text-center" colspan="4">No Data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <a-pagination
+          v-if="icBTCSeriousEvents.length > 30"
+          class="pagination"
+          :defaultPageSize="30"
+          :current="pageSeriousICBTCEvent"
+          :total="icBTCSeriousEvents.length"
+          @change="pageICBTCSeriousChange"
+        />
+      </a-modal>
     </div>
   </div>
 </template>
@@ -600,10 +906,18 @@ import {
 import { PoolInfo } from '@/ic/makerPool/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
-import store from '@/store';
 import { BlockHeight, ICDexEvent } from '@/ic/ICDexRouter/model';
 import { ckETHMinterService } from '@/ic/ckETHMinter/ckETHMinterService';
 import { icETHEvent } from '@/ic/ckETHMinter/model';
+import { BlackholeService } from '@/ic/Blackhole/blackholeService';
+import {
+  gib_storage_per_second_fee_34,
+  gib_storage_per_second_fee,
+  readStateSubnet
+} from '@/ic/readStateSubnet';
+import { ckBTCMinterService } from '@/ic/ckbtcMinter/ckBTCMinterService';
+import { icBTCEvent } from '@/ic/ckbtcMinter/model';
+import { toHexString } from '@/ic/converter';
 
 const ICLighthouseRoot = 'hjcnr-bqaaa-aaaaq-aacka-cai';
 
@@ -611,6 +925,20 @@ const ICLighthouseRoot = 'hjcnr-bqaaa-aaaaq-aacka-cai';
   name: 'Index',
   components: {
     AccountInfo
+  },
+  filters: {
+    filterJson(val): string {
+      const res = JSON.stringify(val, (key, value) =>
+        value instanceof Array && value.length >= 16 // todo 16
+          ? toHexString(new Uint8Array(value))
+          : typeof value === 'bigint'
+          ? value.toString()
+          : value && value['__principal__']
+          ? value['__principal__']
+          : value
+      );
+      return res;
+    }
   }
 })
 export default class extends Vue {
@@ -623,6 +951,7 @@ export default class extends Vue {
   private ICDexService: ICDexService;
   private makerPoolService: makerPoolService;
   private ckETHMinterService: ckETHMinterService;
+  private ckBTCMinterService: ckBTCMinterService;
   private SNSList: Array<DeployedSns> = [];
   private SNSDapps: Array<SnsCanistersSummaryResponse> = [];
   private SNSDappsForDappAll: {
@@ -651,12 +980,22 @@ export default class extends Vue {
   private Vol24 = '';
   private pageEvent = 1;
   private eventTotal = 0;
+  private spinning = false;
+  private spinningICETH = false;
+  private spinningICBTC = false;
   private pageIcETHEvent = 1;
   private eventIcETHTotal = 0;
+  private pageIcBTCEvent = 1;
+  private eventIcBTCTotal = 0;
+  private pageSeriousEvent = 1;
+  private pageSeriousICETHEvent = 1;
+  private pageSeriousICBTCEvent = 1;
   private icETHEvents: Array<[BlockHeight, [icETHEvent, Time]]> = [];
   private icETHSeriousEvents: Array<[BlockHeight, [icETHEvent, Time]]> = [];
   private events: Array<[BlockHeight, [ICDexEvent, Time]]> = [];
   private seriousEvents: Array<[BlockHeight, [ICDexEvent, Time]]> = [];
+  private icBTCEvents: Array<[BlockHeight, [icBTCEvent, Time]]> = [];
+  private icBTCSeriousEvents: Array<[BlockHeight, [icBTCEvent, Time]]> = [];
   private ICTC: ICTCInfo = null;
   private pageICDexCanisters = 1;
   private ICDexCanistersVisible = false;
@@ -684,6 +1023,13 @@ export default class extends Vue {
       TOPoolResponse
     ]
   > = [];
+  private blackholeService: BlackholeService;
+  private ICDexRouterVisible = false;
+  private ICDexRouterSeriousVisible = false;
+  private ICETHVisible = false;
+  private ICETHSeriousVisible = false;
+  private ICBTCVisible = false;
+  private ICBTCSeriousVisible = false;
   created(): void {
     this.SNSWasmService = new SNSWasmService();
     this.SNSSwapService = new SNSSwapService();
@@ -694,16 +1040,56 @@ export default class extends Vue {
     this.ICDexService = new ICDexService();
     this.makerPoolService = new makerPoolService();
     this.ckETHMinterService = new ckETHMinterService();
+    this.blackholeService = new BlackholeService();
+    this.ckBTCMinterService = new ckBTCMinterService();
     this.getSNSList();
     this.getPairs().then(() => {
       this.getPools([], 1);
     });
     this.getTVL();
     this.getVol();
-    // this.getEvents();
-    // this.getSeriousEvents();
-    // this.getIcETHEvents();
-    // this.getIcETHSeriousEvents();
+    this.getEvents();
+    this.getSeriousEvents();
+    this.getIcETHEvents();
+    this.getIcETHSeriousEvents();
+    this.getIcBTCEvents();
+    this.getIcBTCSeriousEvents();
+  }
+  private async getIcBTCSeriousEvents(page = 1): Promise<void> {
+    const res = await this.ckBTCMinterService.get_events(
+      'icBTC',
+      [BigInt(page)],
+      [BigInt(100)]
+    );
+    if (res && res.data && res.data.length) {
+      res.data.forEach((item) => {
+        const type = Object.keys(item[1][0])[0];
+        if (type.toLocaleLowerCase().includes('suspend')) {
+          this.icBTCSeriousEvents.push(item);
+        }
+      });
+      if (page < Number(res.totalPage)) {
+        this.getIcBTCSeriousEvents(++page);
+      }
+    }
+    console.log(this.icBTCSeriousEvents);
+  }
+  private async getIcBTCEvents(): Promise<void> {
+    this.spinningICBTC = true;
+    const res = await this.ckBTCMinterService.get_events(
+      'icBTC',
+      [BigInt(this.pageIcBTCEvent)],
+      [BigInt(30)]
+    );
+    if (res && res.data && res.data.length) {
+      this.icBTCEvents = res.data;
+      if (!this.eventIcBTCTotal) {
+        this.eventIcBTCTotal = Number(res.total);
+      }
+    } else {
+      this.icBTCEvents = [];
+    }
+    this.spinningICBTC = false;
   }
   private async getIcETHSeriousEvents(page = 1): Promise<void> {
     const res = await this.ckETHMinterService.get_events(
@@ -724,9 +1110,10 @@ export default class extends Vue {
     console.log(this.icETHSeriousEvents);
   }
   private async getIcETHEvents(): Promise<void> {
+    this.spinningICETH = true;
     const res = await this.ckETHMinterService.get_events(
       [BigInt(this.pageIcETHEvent)],
-      [BigInt(100)]
+      [BigInt(30)]
     );
     console.log(res);
     if (res && res.data && res.data.length) {
@@ -734,7 +1121,10 @@ export default class extends Vue {
       if (!this.eventIcETHTotal) {
         this.eventIcETHTotal = Number(res.total);
       }
+    } else {
+      this.icETHEvents = [];
     }
+    this.spinningICETH = false;
   }
   private async getSeriousEvents(page = 1): Promise<void> {
     const res = await this.ICDexRouterService.get_events(
@@ -754,16 +1144,43 @@ export default class extends Vue {
     }
   }
   private async getEvents(): Promise<void> {
+    this.spinning = true;
     const res = await this.ICDexRouterService.get_events(
       [BigInt(this.pageEvent)],
-      [BigInt(100)]
+      [BigInt(30)]
     );
+    console.log('getEvents');
+    console.log(res);
     if (res && res.data && res.data.length) {
       this.events = res.data;
       if (!this.eventTotal) {
         this.eventTotal = Number(res.total);
       }
+    } else {
+      this.events = [];
     }
+    this.spinning = false;
+  }
+  private pageICDexRouterChange(page: number): void {
+    this.pageEvent = page;
+    this.getEvents();
+  }
+  private pageICETHChange(page: number): void {
+    this.pageIcETHEvent = page;
+    this.getIcETHEvents();
+  }
+  private pageICBTCChange(page: number): void {
+    this.pageIcBTCEvent = page;
+    this.getIcBTCEvents();
+  }
+  private pageICDexRouterSeriousChange(page: number): void {
+    this.pageSeriousEvent = page;
+  }
+  private pageICETHSeriousChange(page: number): void {
+    this.pageSeriousICETHEvent = page;
+  }
+  private pageICBTCSeriousChange(page: number): void {
+    this.pageSeriousICBTCEvent = page;
   }
   private async getVol(): Promise<void> {
     let total = '0';
@@ -1036,17 +1453,16 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     const SNSList = await this.SNSWasmService.listDeployedSnses();
-    // const promiseValue = [];
-    // SNSList.forEach((item) => {
-    //   promiseValue.push(this.getLifecycle(item));
-    // });
-    // const res = await Promise.all(promiseValue);
-    SNSList.forEach((item, index) => {
+
+    const promiseValue = [];
+    SNSList.forEach((item) => {
       if (item.root_canister_id[0].toString() === ICLighthouseRoot) {
-        this.SNSList.push(item);
-        this.get_sns_canisters_summary(
-          item.root_canister_id[0].toString(),
-          loading
+        this.SNSList = [item];
+        promiseValue.push(
+          this.get_sns_canisters_summary(
+            item.root_canister_id[0].toString(),
+            loading
+          )
         );
         this.getProposalsInfo(item.governance_canister_id[0].toString());
         this.getOpening(item.governance_canister_id[0].toString(), null, 0);
@@ -1056,8 +1472,44 @@ export default class extends Vue {
         );
       }
     });
+    const moreApps = [
+      {
+        type: 'DRC202Root',
+        canister_id: 'bffvb-aiaaa-aaaak-ae3ba-cai'
+      },
+      {
+        type: 'DRC205Root',
+        canister_id: 'lw5dr-uiaaa-aaaak-ae2za-cai'
+      },
+      {
+        type: 'AccountIdData',
+        canister_id: 'gpapk-hqaaa-aaaak-aex4q-cai'
+      },
+      {
+        type: 'ICTokensMain',
+        canister_id: 'igm6s-dqaaa-aaaar-qaa3a-cai'
+      },
+      {
+        type: 'ICHouseList',
+        canister_id: 'ytcww-qyaaa-aaaak-aacra-cai'
+      },
+      {
+        type: 'ICLTeam',
+        canister_id: 'zseoz-qqaaa-aaaap-abzxa-cai'
+      }
+    ];
+    moreApps.forEach((item) => {
+      promiseValue.push(
+        this.readStatus({
+          root: this.SNSList[0].root_canister_id[0].toString(),
+          ...item
+        })
+      );
+    });
+    await Promise.all(promiseValue);
+    console.log(this.SNSList);
     console.log(this.SNSList.length);
-    console.log(this.SNSDapps);
+    console.log(this.SNSDappsForDappAll);
   }
   private async getMetadata(governance: string, root: string): Promise<void> {
     const res = await this.SNSGovernanceService.getMetadata(governance);
@@ -1127,6 +1579,55 @@ export default class extends Vue {
         ++this.snsNumberProposals;
       });
   }
+  private async readStatus(val: {
+    type: string;
+    canister_id: string;
+    root: string;
+  }): Promise<void> {
+    const res = await Promise.all([
+      readStateSubnet(val.canister_id),
+      this.blackholeService.canister_status({
+        canister_id: Principal.fromText(val.canister_id)
+      })
+    ]);
+    if (res && res.length && res[0].subnetId && res[1]) {
+      ++this.canistersNum;
+      let gibStoragePerSecondFee = gib_storage_per_second_fee;
+      if (res[0].nodeKeys.size === 34) {
+        gibStoragePerSecondFee = gib_storage_per_second_fee_34;
+      }
+      const idle_cycles_burned_per_day = BigInt(
+        new BigNumber(res[1].memory_size.toString(10))
+          .plus(res[1].settings.memory_allocation.toString(10))
+          .plus(res[1].settings.compute_allocation.toString(10))
+          .times(gibStoragePerSecondFee) // GIB
+          .times(24 * 60 * 60) // day
+          .div(1024 * 1024 * 1024) // div GIB
+          .decimalPlaces(0)
+          .toString(10)
+      );
+      const dapp: SnsCanistersSummaryResponse = {
+        type: val.type,
+        root: '',
+        canister_id: [Principal.fromText(val.canister_id)],
+        status: [
+          {
+            idle_cycles_burned_per_day: idle_cycles_burned_per_day,
+            status: res[1].status,
+            cycles: res[1].cycles,
+            memory_size: res[1].memory_size,
+            module_hash: res[1].module_hash as [number[]],
+            settings: res[1].settings
+          }
+        ]
+      };
+      this.SNSDapps.unshift(dapp);
+      if (!this.SNSDappsForDappAll[val.root]) {
+        this.SNSDappsForDappAll[val.root] = [];
+      }
+      this.SNSDappsForDappAll[val.root].push(dapp);
+    }
+  }
   private async get_sns_canisters_summary(
     root: string,
     loading
@@ -1191,6 +1692,33 @@ export default class extends Vue {
   }
   private pageICDexCanistersChange(page: number): void {
     this.pageICDexCanisters = page;
+  }
+  private showICDexRouterEvents(): void {
+    this.ICDexRouterVisible = true;
+    this.pageEvent = 1;
+    this.getEvents();
+  }
+  private showICETHEvents(): void {
+    this.ICETHVisible = true;
+    this.pageIcETHEvent = 1;
+    this.getIcETHEvents();
+  }
+  private showICBTCEvents(): void {
+    this.ICBTCVisible = true;
+    this.pageIcBTCEvent = 1;
+    this.getIcBTCEvents();
+  }
+  private showICDexRouterSeriousEvents(): void {
+    this.ICDexRouterSeriousVisible = true;
+    this.pageSeriousEvent = 1;
+  }
+  private showICETHSeriousEvents(): void {
+    this.ICETHSeriousVisible = true;
+    this.pageSeriousICETHEvent = 1;
+  }
+  private showICBTCSeriousEvents(): void {
+    this.ICBTCSeriousVisible = true;
+    this.pageSeriousICBTCEvent = 1;
   }
   private showICDexCanisters(): void {
     this.pageICDexCanisters = 1;
@@ -1346,8 +1874,49 @@ export default class extends Vue {
     right: 0;
   }
 }
+.router-modal {
+  table {
+    min-height: 50px;
+  }
+  .router-modal-table {
+    overflow: auto;
+    max-height: calc(100vh - 240px);
+  }
+  ::v-deep .ant-modal-body {
+    padding-bottom: 50px;
+    .pagination {
+      position: absolute;
+      right: 30px;
+      margin-top: 20px;
+    }
+  }
+}
+/*.position-pagination {*/
+/*	float: right;*/
+/*	margin-top: 20px;*/
+/*}*/
+.router-modal {
+  /**/
+  /*.nft-main-pagination {*/
+  /*  position: absolute;*/
+  /*  right: 0;*/
+  /*}*/
+  td {
+    padding: 15px 0;
+    vertical-align: middle;
+  }
+  .table-index {
+    width: 100px;
+  }
+  .table-time {
+    width: 200px;
+  }
+  .pl10 {
+    padding-left: 10px;
+  }
+}
 .user-setting {
-  ::v-deep.ant-dropdown-menu-item {
+  ::v-deep .ant-dropdown-menu-item {
     padding: 0;
     &:hover {
       background: rgba(255, 255, 255, 0.08);

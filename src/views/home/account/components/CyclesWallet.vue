@@ -334,6 +334,7 @@ import { hexToBytes } from '@/ic/converter';
 import { namespace } from 'vuex-class';
 import { removeWhitelist } from '@/ic/ConnectPlug';
 import { readState } from '@/ic/readState';
+import { isSigner } from '@/ic/isSigner';
 const commonModule = namespace('common');
 @Component({
   name: 'CyclesWallet',
@@ -557,7 +558,9 @@ export default class extends Vue {
           const walletSendRequest: WalletCallRequest = {
             args: Array.from(Buffer.from(args)),
             cycles: BigInt(
-              new BigNumber(this.walletCallForm.cycles).times(10 ** 12)
+              new BigNumber(this.walletCallForm.cycles)
+                .times(10 ** 12)
+                .toString(10)
             ),
             method_name: this.walletCallForm.methodName,
             canister: Principal.fromText(this.walletCallForm.canister)
@@ -726,9 +729,10 @@ export default class extends Vue {
   private getCyclesWalletBalance(): void {
     this.timer = window.setInterval(() => {
       setTimeout(async () => {
-        if (!this.getCheckAuth) {
-          if (this.$route.name === 'Account') {
-          this.getWalletBalance();}
+        if (this.getCheckAuth) {
+          if (this.$route.name === 'Account' && !isSigner()) {
+            this.getWalletBalance();
+          }
         }
       }, 0);
     }, 30 * 1000);

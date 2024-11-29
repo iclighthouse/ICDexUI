@@ -75,6 +75,7 @@ import { LedgerService } from '@/ic/ledger/ledgerService';
 import { validateCanister } from '@/utils/validate';
 import { CyclesMintingService } from '@/ic/cyclesMinting/cyclesMintingService';
 import { checkAuth } from '@/ic/CheckAuth';
+import { NotifyError, NotifyTopUpArg } from '@/ic/cyclesMinting/model';
 
 @Component({
   name: 'Index',
@@ -172,25 +173,26 @@ export default class extends Vue {
             recipient,
             BigInt(TOP_UP_CANISTER_MEMO)
           );
-          const notifyArg = {
-            to_canister: Principal.fromText(CYCLES_MINTING_CANISTER_ID),
-            block_height: blockHeight,
-            to_subaccount: [Array.from(toSubAccount)],
-            from_subaccount: [getSubAccountArray(0)],
-            max_fee: {
-              e8s: BigInt(
-                new BigNumber(this.fee.toString(10))
-                  .times(10 ** this.decimals)
-                  .toString(10)
-              )
-            }
+          const notifyArg: NotifyTopUpArg = {
+            canister_id: Principal.fromText(this.topUpForm.to),
+            block_index: BigInt(blockHeight)
           };
           console.log(notifyArg);
-          await this.ledgerService.notifyDfx(notifyArg);
+          const res = await this.cyclesMintingService.notify_top_up(notifyArg);
+          console.log(res);
+          if ((res as { Ok: bigint }).Ok) {
+            this.visibleTopUp = false;
+            this.$message.success('Top-up Success');
+            this.$emit('topUpSuccess');
+          } else {
+            const err = (res as { Err: NotifyError }).Err;
+            this.$message.error(
+              JSON.stringify(err, (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+              )
+            );
+          }
           loading.close();
-          this.visibleTopUp = false;
-          this.$message.success('Top-up Success');
-          this.$emit('topUpSuccess');
         } catch (e) {
           loading.close();
           console.log(e);

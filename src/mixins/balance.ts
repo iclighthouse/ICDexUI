@@ -53,7 +53,7 @@ export class BalanceMixin extends Vue {
     this.timer = null;
     this.timer = window.setInterval(() => {
       setTimeout(() => {
-        if (!this.getCheckAuth) {
+        if (this.getPrincipalId) {
           this.getBalance().then();
         }
       }, 0);

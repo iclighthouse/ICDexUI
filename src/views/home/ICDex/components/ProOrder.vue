@@ -29,12 +29,12 @@
                 "
                 class="base-font-title"
                 >{{
-                  tokensBalanceSto[currentPair[1][0].token1[0].toString()]
-                    | bigintToFloat(
+                  tokensBalanceSto[currentPair[1][0].token1[0].toString()] |
+                    bigintToFloat(
                       4,
                       tokens[currentPair[1][0].token1[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span
               >
               <a-icon
@@ -54,12 +54,12 @@
                 class="base-font-title"
               >
                 {{
-                  tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                    | bigintToFloat(
+                  tokensBalanceSto[currentPair[1][0].token0[0].toString()] |
+                    bigintToFloat(
                       4,
                       tokens[currentPair[1][0].token0[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <a-icon
@@ -116,12 +116,12 @@
                 "
                 class="base-font-title"
                 >{{
-                  keepingBalanceSto[currentPair[1][0].token1[0].toString()]
-                    | bigintToFloat(
+                  keepingBalanceSto[currentPair[1][0].token1[0].toString()] |
+                    bigintToFloat(
                       4,
                       tokens[currentPair[1][0].token1[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span
               >
               <a-tooltip placement="top">
@@ -146,12 +146,12 @@
                 class="base-font-title"
               >
                 {{
-                  keepingBalanceSto[currentPair[1][0].token0[0].toString()]
-                    | bigintToFloat(
+                  keepingBalanceSto[currentPair[1][0].token0[0].toString()] |
+                    bigintToFloat(
                       4,
                       tokens[currentPair[1][0].token0[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <a-tooltip placement="top">
@@ -470,8 +470,8 @@
               >
                 The amount must should an integral multiple of
                 {{
-                  unit
-                    | bigintToFloat(
+                  unit |
+                    bigintToFloat(
                       tokens[currentPair[1][0].token0[0].toString()].decimals,
                       tokens[currentPair[1][0].token0[0].toString()].decimals
                     )
@@ -931,11 +931,7 @@
             </a-form-model-item>
             <a-form-model-item
               :colon="false"
-              class="
-                ice-setting-item
-                ice-setting-item-suffix
-                ice-setting-item-trigger
-              "
+              class="ice-setting-item ice-setting-item-suffix ice-setting-item-trigger"
               prop="timeInterval"
               ref="timeInterval"
               :autoLink="false"
@@ -1365,8 +1361,8 @@
           <span v-show="dexRole.vipMaker">0</span>
           <span v-show="!dexRole.vipMaker">
             {{
-              stoConfig.poFee1
-                | bigintToFloat(
+              stoConfig.poFee1 |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -1376,8 +1372,8 @@
           <span v-show="dexRole.vipMaker">0</span>
           <span v-show="!dexRole.vipMaker">
             {{
-              stoConfig.poFee1
-                | stoUpdateFee(tokens[sysConfig.sysToken.toString()].decimals)
+              stoConfig.poFee1 |
+                stoUpdateFee(tokens[sysConfig.sysToken.toString()].decimals)
             }}
           </span>
           {{ tokens[sysConfig.sysToken.toString()].symbol }}, (Order) taker
@@ -1420,6 +1416,15 @@
         </button>
       </div>
     </a-modal>
+    <pro-wallet-swap
+      v-if="currentPair"
+      :tokens-balance="tokensBalance"
+      :tokens-balance-sto="tokensBalanceSto"
+      :tokens="tokens"
+      ref="proWalletSwap"
+      @proWalletSwapSuccess="proWalletSwapSuccess"
+			@toTradeICL="toTradeICL"
+    ></pro-wallet-swap>
   </div>
 </template>
 
@@ -1470,12 +1475,14 @@ import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { getFee } from '@/ic/getTokenFee';
 import { SysConfig } from '@/ic/ICDexRouter/model';
 import { getTokenBalance } from '@/ic/getTokenBalance';
+import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
+import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
 
 const ProSubaccountId = 1;
 
 @Component({
   name: 'proOrder',
-  components: {},
+  components: { ProWalletSwap },
   filters: {
     stoUpdateFee(poFee1: bigint, decimals: number): string {
       return new BigNumber(poFee1.toString(10))
@@ -1511,7 +1518,12 @@ export default class extends Vue {
   private currentPair!: DePairs;
   @Prop({ type: Object, default: () => null })
   private keepingBalance!: { [key: string]: string };
-  @Prop({ type: BigInt, default: BigInt(0) })
+  // @Prop({ type: BigInt, default: BigInt(0) })
+  // private unit!: bigint;
+  @Prop({
+    default: BigInt(0),
+    validator: (value: any) => typeof value === 'bigint'
+  })
   private unit!: bigint;
   @Prop({ type: Number, default: 0 })
   private buyUnit!: number;
@@ -1523,6 +1535,8 @@ export default class extends Vue {
   private keepingBalanceSto!: { [key: string]: string };
   @Prop({ type: Object, default: () => null })
   private tokensBalanceSto!: { [key: string]: string };
+  @Prop({ type: Object, default: () => null })
+  private tokensBalance!: { [key: string]: string };
   @Prop({ type: Object, default: () => null })
   private stoConfig!: StoSetting;
   @Prop({ type: Object, default: () => null })
@@ -2649,6 +2663,7 @@ export default class extends Vue {
     }
     const sysToken = this.sysConfig.sysToken.toString();
     console.log(this.sysConfig);
+    console.log(this.stoConfig);
     if (!this.stoConfig.poFee1) {
       return true;
     }
@@ -2702,6 +2717,7 @@ export default class extends Vue {
             `Error! Your Pro-Wallet ICL balance is not enough to pay for pro-trade fee (at least with ${createFee} ICL).`
           );
         }
+        this.showSwapWallet();
         return false;
       } else {
         // const amount = new BigNumber(fee).minus(balance).toString(10);
@@ -2722,7 +2738,7 @@ export default class extends Vue {
           owner: this.currentPair[0],
           subaccount: []
         },
-        BigInt(approve),
+        BigInt(approve.toString(10)),
         [fromSubAccountId(ProSubaccountId)]
       );
     }
@@ -3347,6 +3363,19 @@ export default class extends Vue {
       }
     }
     loading.close();
+  }
+  private showSwapWallet(): void {
+    (this.$refs as any).proWalletSwap.tokenId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID;
+    (this.$refs as any).proWalletSwap.showSwap = false;
+    (this.$refs as any).proWalletSwap.title =
+      'Transfer ICL from Main-wallet to Pro-wallet';
+    (this.$refs as any).proWalletSwap.visible = true;
+  }
+  private proWalletSwapSuccess(): void {
+    this.$emit('transferICLToPro');
+  }
+  private toTradeICL(): void {
+    this.$emit('toTradeICL');
   }
   private async getAccountSetting(): Promise<AccountSetting> {
     const currentICDexService = new ICDexService();

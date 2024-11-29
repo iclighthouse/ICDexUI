@@ -109,8 +109,13 @@ export default class extends Vue {
   public balance!: string;
   @Prop({ type: String, default: 'Transfer' })
   public type!: string;
-  @Prop({ type: BigInt, default: BigInt(0) })
-  public memo!: bigint;
+  // @Prop({ type: BigInt, default: BigInt(0) })
+  // public memo!: bigint;
+  @Prop({
+    default: BigInt(0),
+    validator: (value: any) => typeof value === 'bigint'
+  })
+  private memo!: bigint;
   public decimals = 8;
   public fee = 0.0001;
   private depositFee = 0.0002;

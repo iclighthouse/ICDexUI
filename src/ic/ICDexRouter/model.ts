@@ -1,6 +1,6 @@
 import { Principal } from '@dfinity/principal';
 import { TokenIdentifier } from '@/ic/nft/model';
-import { AccountId, Memo, SubAccount, Time, Txid } from '@/ic/common/icType';
+import { AccountId, Icrc1Account, Memo, SubAccount, Time, Txid } from '@/ic/common/icType';
 import {
   DexSetting,
   IDORequirement,
@@ -440,7 +440,7 @@ export type ICDexEvent =
     }
   | { pairSuspend: { pair: Principal; message: [] | [string] } };
 export interface TransferArgs {
-  to: Account;
+  to: Icrc1Account;
   fee: [] | [bigint];
   memo: [] | [Uint8Array | number[]];
   from_subaccount: [] | [SubAccount];
@@ -470,10 +470,10 @@ export interface TransferRequest {
   amount: bigint;
 }
 export interface TransferFromArgs {
-  to: Account;
+  to: Icrc1Account;
   fee: [] | [bigint];
   spender_subaccount: [] | [Uint8Array | number[]];
-  from: Account;
+  from: Icrc1Account;
   memo: [] | [Uint8Array | number[]];
   created_at_time: [] | [bigint];
   amount: bigint;

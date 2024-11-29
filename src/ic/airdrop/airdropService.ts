@@ -7,7 +7,7 @@ import { buildService } from '@/ic/Service';
 export class AirdropService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
-    this.service = buildService(null, airdropIDL, AIRDROP_CANISTER_ID);
+    this.service = await buildService(null, airdropIDL, AIRDROP_CANISTER_ID);
   };
   public checkAirDrop = async (
     owner: Principal,

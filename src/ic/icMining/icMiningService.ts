@@ -53,7 +53,7 @@ export class IcMiningService {
     return SerializableIC(res);
   };
   public whitelistOn = async (): Promise<boolean> => {
-    await this.check(false);
+    await this.check(false, false);
     return await this.service.whitelistOn();
   };
   public checkWhitelist = async (user: Principal): Promise<boolean> => {
@@ -92,7 +92,7 @@ export class IcMiningService {
     return await this.service.cfTaskCompleted(user);
   };
   public isPaused = async (): Promise<boolean> => {
-    await this.check(false);
+    await this.check(false, false);
     return await this.service.isPaused();
   };
   public tmSetting = async (): Promise<TradingMining> => {

@@ -545,7 +545,7 @@ export default class extends Vue {
   bottom: 0;
   width: 100%;
   text-align: center;
-  ::v-deep.el-loading-spinner {
+  ::v-deep .el-loading-spinner {
     position: static;
     margin-top: 0;
   }

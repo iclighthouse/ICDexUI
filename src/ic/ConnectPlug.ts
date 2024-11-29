@@ -3,10 +3,21 @@ import store from '@/store';
 import router from '@/router';
 import Vue from 'vue';
 import { isPlug } from '@/ic/isPlug';
+import { PlugTransport } from '@slide-computer/signer-transport-plug';
+import {
+  Signer,
+  createCallCanisterPermissionScope
+} from '@slide-computer/signer';
+import { SignerAgent } from '@slide-computer/signer-agent';
+import { Principal } from '@dfinity/principal';
+import { PermissionState } from '@slide-computer/signer/lib/cjs/icrc25';
+import { SignerPermissionScope } from '@slide-computer/signer/lib/cjs/signer';
 
+let signerAgent: SignerAgent<Signer> | null = null;
 export default class ConnectPlug {
   public connect = async (
     newWhitelist?: Array<string>,
+    isSigner = false,
     isCheckAuth = true
   ): Promise<boolean> => {
     let whitelist: string[];
@@ -46,10 +57,13 @@ export default class ConnectPlug {
       //     whitelist: whitelist
       //   });
       // }
-      await (window as any).ic.plug.requestConnect({
+      console.log(host);
+      console.log(whitelist);
+      const res = await (window as any).ic.plug.requestConnect({
         host: host,
         whitelist: whitelist
       });
+      console.log(res);
       if (process.env.NODE_ENV !== 'production') {
         // plugIc.plug.agent.fetchRootKey().catch((err) => {
         //   console.warn(
@@ -59,7 +73,9 @@ export default class ConnectPlug {
         // });
       }
       store.commit('common/SET_IS_OPEN', true);
-      await this.setLocalStorage(whitelist);
+      console.log(isSigner);
+      await this.setLocalStorage(whitelist, isSigner);
+      await this.connectSignerPlug();
       loading && loading.text && loading.close();
       return true;
     } catch (e) {
@@ -68,8 +84,29 @@ export default class ConnectPlug {
       return false;
     }
   };
+  public connectSignerPlug = async (): Promise<SignerAgent<Signer>> => {
+    const transport = new PlugTransport();
+    const signer = new Signer({ transport });
+    // const permissions: Array<{
+    //   scope: SignerPermissionScope;
+    //   state: PermissionState;
+    // }> = await signer.permissions();
+    // const flag = permissions.some((item) => {
+    //   return item.scope.method === 'icrc49_call_canister';
+    // });
+    // if (!flag) {
+    //   await signer.requestPermissions([createCallCanisterPermissionScope()]);
+    // }
+    const principalId: string = (window as any).ic.plug.principalId;
+    signerAgent = await SignerAgent.create({
+      signer: signer,
+      account: Principal.fromText(principalId)
+    });
+    return signerAgent;
+  };
   public setLocalStorage = async (
-    newWhitelist?: Array<string>
+    newWhitelist?: Array<string>,
+    isSigner = false
   ): Promise<void> => {
     const principalId = await (window as any).ic.plug.agent.getPrincipal();
     if (newWhitelist && newWhitelist.length) {
@@ -81,7 +118,12 @@ export default class ConnectPlug {
     localStorage.setItem('principal', principalId.toString());
     store.commit('common/SET_PRINCIPAL_ID', principalId.toString());
     const principalList = JSON.parse(localStorage.getItem('priList')) || {};
-    principalList[principalId.toString()] = 'Plug';
+    console.log(isSigner);
+    if (isSigner) {
+      principalList[principalId.toString()] = 'SignerPlug';
+    } else {
+      principalList[principalId.toString()] = 'Plug';
+    }
     localStorage.setItem('priList', JSON.stringify(principalList));
   };
   public addWhitelist = async (canisterId: string): Promise<boolean> => {
@@ -118,7 +160,10 @@ export const currentPageConnectPlug = async (
   if (whitelist.length) {
     store.commit('common/SET_SHOW_CHECK_AUTH', true);
     const connectPlug = new ConnectPlug();
-    const flag = await connectPlug.connect(whitelist, false);
+    const principal = localStorage.getItem('principal');
+    const priList = JSON.parse(localStorage.getItem('priList')) || {};
+    const isSigner = priList[principal] === 'SignerPlug';
+    const flag = await connectPlug.connect(whitelist, isSigner, false);
     store.commit('common/SET_SHOW_CHECK_AUTH', false);
     return flag;
   }
@@ -145,4 +190,7 @@ const getWhitelist = (): string[] => {
 };
 export const canRequest = async (canisterId: string): Promise<boolean> => {
   return (isPlug() && getWhitelist().includes(canisterId)) || !isPlug();
+};
+export const getPlugSignerAgent = () => {
+  return signerAgent;
 };

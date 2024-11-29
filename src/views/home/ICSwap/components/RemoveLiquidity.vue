@@ -757,7 +757,7 @@ export default class extends Vue {
     console.time();
     const swapId = this.currentPool[0].toString();
     const shares = BigInt(
-      new BigNumber(this.shares).times(10 ** this.currentPool[4])
+      new BigNumber(this.shares).times(10 ** this.currentPool[4]).toString(10)
     );
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       const flag = await this.checkCycles(this.cyclesCanister.trim());

@@ -1,4 +1,5 @@
 import Service, {
+  icBTCEvents,
   MinterInfo,
   RetrieveBtcArgs,
   RetrieveBtcRes,
@@ -161,25 +162,39 @@ export class ckBTCMinterService {
     return await service.batch_send(request);
   };
   public info = async (type: string): Promise<MinterInfo> => {
-    const service = await this.check(type);
+    const service = await this.check(type, false, false);
     return await service.get_minter_info();
   };
   public retrieveLog = async (
     type: string,
     blockIndex: Array<number>
   ): Promise<Array<RetrieveStatus>> => {
-    const service = await this.check(type);
-    const res = await service.retrieveLog(blockIndex);
+    const service = await this.check(type, false, false);
+    const res = await service.retrieval_log(blockIndex);
     return SerializableIC(res);
   };
   public estimate_fee = async (
     type: string,
     request: { amount: Array<bigint> } = { amount: [] }
   ): Promise<bigint> => {
-    const service = await this.check(type);
+    const service = await this.check(type, false, false);
     try {
       const res = await service.estimate_withdrawal_fee(request);
       return res.bitcoin_fee;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  public get_events = async (
+    type: string,
+    page: [bigint],
+    size: [bigint]
+  ): Promise<icBTCEvents> => {
+    const service = await this.check(type, false, false);
+    console.log(service);
+    try {
+      const res = await service.get_events(page, size);
+      return SerializableIC(res);
     } catch (e) {
       console.log(e);
     }

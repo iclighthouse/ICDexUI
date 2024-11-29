@@ -120,8 +120,8 @@
               </span>
               <span class="margin-left-auto pc-show" style="flex-shrink: 0">
                 {{
-                  item.proposal_creation_timestamp_seconds
-                    | formatDateFromSecondUTCD
+                  item.proposal_creation_timestamp_seconds |
+                    formatDateFromSecondUTCD
                 }}
               </span>
             </div>
@@ -220,8 +220,8 @@
               </span>
               <span class="margin-left-auto pc-show" style="flex-shrink: 0">
                 {{
-                  item.proposal_creation_timestamp_seconds
-                    | formatDateFromSecondUTCD
+                  item.proposal_creation_timestamp_seconds |
+                    formatDateFromSecondUTCD
                 }}
               </span>
             </div>
@@ -421,6 +421,9 @@ export default class extends Vue {
   private showLoading = false;
   private showStill = false;
   activated(): void {
+    if (!this.getPrincipalId) {
+      this.showStill = false;
+    }
     if (!this.$route.meta.isBack) {
       this.$nextTick(() => {
         (this.$refs.infiniteScroll as any).scrollTop = 0;
@@ -459,6 +462,9 @@ export default class extends Vue {
     }
   }
   mounted(): void {
+    if (!this.getPrincipalId) {
+      this.showStill = false;
+    }
     if (this.$route.meta.details === 'proposals') {
       this.mountedInit();
     }
@@ -513,11 +519,16 @@ export default class extends Vue {
         const total = val.latest_tally[0].total;
         const yes = val.latest_tally[0].yes;
         const no = val.latest_tally[0].no;
-        // at least 3% of the total voting power
+        const votingLeast = new BigNumber(
+          val.minimum_yes_proportion_of_total[0].basis_points[0].toString(10)
+        )
+          .div(100)
+          .toNumber();
+        // at least votingLeast of the total voting power
         if (
           (new BigNumber(yes.toString()).gt(no.toString(10)) &&
             new BigNumber(total.toString())
-              .times(3 / 100)
+              .times(votingLeast / 100)
               .lt(yes.toString())) ||
           new BigNumber(yes.toString()).times(2).gt(total.toString(10))
         ) {
@@ -757,7 +768,8 @@ export default class extends Vue {
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
       const needConnectInfinity1 = await needConnectInfinity(canisterIds);
       if (
-        priList[principal] === 'Plug' &&
+        (priList[principal] === 'Plug' ||
+          priList[principal] === 'SignerPlug') &&
         flag &&
         this.$route.name === 'ICSNS-Proposals'
       ) {
@@ -1254,7 +1266,7 @@ export default class extends Vue {
   bottom: 0;
   width: 100%;
   text-align: center;
-  ::v-deep.el-loading-spinner {
+  ::v-deep .el-loading-spinner {
     position: static;
     margin-top: 0;
   }

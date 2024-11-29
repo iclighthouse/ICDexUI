@@ -6,6 +6,7 @@ import { createPlugActor } from '@/ic/createPlugActor';
 import { createInfinityActor } from '@/ic/createInfinityActor';
 import store from '@/store';
 import Vue from 'vue';
+import { createNFIDActor } from '@/ic/createNFIDActor';
 
 export const createService = async <T>(
   canisterId: string,
@@ -20,10 +21,13 @@ export const createService = async <T>(
   }
   let service: T;
   if (!isUpdate) {
-    service = buildService(null, IDL, canisterId);
+    service = await buildService(null, IDL, canisterId);
   } else if ((window as any).icx) {
     service = await createIcxActor(IDL, canisterId);
-  } else if (priList[principal] === 'Plug') {
+  } else if (
+    priList[principal] === 'Plug' ||
+    priList[principal] === 'SignerPlug'
+  ) {
     if (!((window as any).ic && (window as any).ic.plug)) {
       Vue.prototype.$info({
         title: 'Plug is not installed.',
@@ -49,13 +53,19 @@ export const createService = async <T>(
         });
         return null;
       } else {
-        service = await createPlugActor(IDL, canisterId);
+        service = await createPlugActor(
+          IDL,
+          canisterId,
+          priList[principal] === 'SignerPlug'
+        );
       }
     }
   } else if (priList[principal] === 'Infinity') {
     service = await createInfinityActor(IDL, canisterId);
+  } else if (priList[principal] === 'SignerNFID') {
+    service = await createNFIDActor(IDL, canisterId);
   } else {
-    service = buildService(
+    service = await buildService(
       store.getters['common/getIdentity'],
       IDL,
       canisterId

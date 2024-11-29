@@ -38,7 +38,7 @@ export class ckETHMinterService {
     );
   };
   public getEthAddress = async (subAccountId = 0): Promise<string> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     let subAccount = [];
     if (subAccountId) {
       subAccount = [fromSubAccountId(subAccountId)];
@@ -91,7 +91,7 @@ export class ckETHMinterService {
     return null;
   };
   public getEthTx = async (txIndex: TxIndex): Promise<Array<TxStatus>> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     try {
       const res = await service.get_tx(txIndex);
       return SerializableIC(res);
@@ -248,7 +248,7 @@ export class ckETHMinterService {
     token: RetrievingToken,
     subAccountId = 0
   ): Promise<Array<[Wei, Array<TxIndex>, Array<TxStatus>]>> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     try {
       let subAccount = [];
       if (subAccountId) {
@@ -271,7 +271,7 @@ export class ckETHMinterService {
     token: RetrievingToken,
     subAccountId = 0
   ): Promise<Array<[TxIndex, TxStatus, Time]>> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     try {
       let subAccount = [];
       if (subAccountId) {
@@ -303,7 +303,7 @@ export class ckETHMinterService {
   public getAccountEvents = async (
     account: Array<number>
   ): Promise<Array<[ckETHEvent, Time]>> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     try {
       const res = await service.get_account_events(account);
       return SerializableIC(res);
@@ -341,7 +341,7 @@ export class ckETHMinterService {
   public getPendingDepositTxn = async (
     txHash: string
   ): Promise<Array<PendingDepositTxn>> => {
-    const service = await this.check();
+    const service = await this.check(false, false);
     try {
       const res = await service.get_mode2_pending_deposit_txn(txHash);
       return SerializableIC(res);

@@ -36,6 +36,9 @@ export default class AuthClientAPi {
     ) {
       derivationOrigin = window.location.origin;
     }
+    if (process.env.NODE_ENV === 'development') {
+      derivationOrigin = window.location.origin;
+    }
     return new Promise((resolve, reject) => {
       this.authClient.login({
         maxTimeToLive: SESSION_TIMEOUT,

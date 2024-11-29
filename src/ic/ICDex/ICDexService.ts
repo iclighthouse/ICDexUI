@@ -270,7 +270,7 @@ export class ICDexService {
     };
   };
   public ictc_TTRun = async (canisterId: string): Promise<bigint> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     return await service.ictc_runTT();
   };
   public getConfig = async (
@@ -412,7 +412,7 @@ export class ICDexService {
   public ta_description = async (
     canisterId: string
   ): Promise<{ pairId: string; ta_description: string }> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     const res = await service.ta_description();
     return {
       pairId: canisterId,
@@ -423,7 +423,7 @@ export class ICDexService {
     canisterId: string,
     address: Address
   ): Promise<{ pairId: string; referrer: Array<[Address, boolean]> }> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     if (validatePrincipal(address)) {
       address = principalToAccountIdentifier(Principal.fromText(address));
     }
@@ -437,7 +437,7 @@ export class ICDexService {
     canisterId: string,
     round: Array<Round> = []
   ): Promise<{ pairId: string; compRoundResponse: CompRoundResponse }> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     const res = await service.comp_round(round);
     return {
       pairId: canisterId,
@@ -452,7 +452,7 @@ export class ICDexService {
     if (!address) {
       return null;
     }
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     if (validatePrincipal(address)) {
       address = principalToAccountIdentifier(Principal.fromText(address));
     }
@@ -684,6 +684,7 @@ export class ICDexService {
     if (subAccountId) {
       subAccount = [fromSubAccountId(subAccountId)];
     }
+    console.log(service);
     return await service.withdraw(token0Amount, token1Amount, subAccount);
   };
   public getRole = async (

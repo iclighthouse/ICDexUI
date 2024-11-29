@@ -119,4 +119,6 @@ export default interface Service {
   updateFavoritesListOrder(pairList: Array<Principal>): Promise<void>;
   getAccountName(account: Principal): Promise<[Principal, [string]]>;
   updateAccountlName(name: string): Promise<void>;
+  getWalletsByAccount(account: Principal): Promise<ManageWalletResponse[]>;
+  getTokensByaccount(account: Principal): Promise<Array<TokenItem>>;
 }

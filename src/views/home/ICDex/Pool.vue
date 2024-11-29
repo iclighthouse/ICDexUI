@@ -88,12 +88,12 @@
               <span v-if="pool[1].initialized && !pool[2].poolShares">0</span>
               <span v-else>
                 {{
-                  pool[2].latestUnitNetValue.token0
-                    | bigintToFloat(
+                  pool[2].latestUnitNetValue.token0 |
+                    bigintToFloat(
                       tokens[pool[1].pairInfo.token0[0].toString()].decimals,
                       tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -103,12 +103,12 @@
               <span v-if="pool[1].initialized && !pool[2].poolShares">0</span>
               <span v-else>
                 {{
-                  pool[2].latestUnitNetValue.token1
-                    | bigintToFloat(
+                  pool[2].latestUnitNetValue.token1 |
+                    bigintToFloat(
                       tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                       tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -132,12 +132,12 @@
               Total Shares:
               <span v-if="pool[2] && pool[1]" class="base-color-w">
                 {{
-                  pool[2].poolShares
-                    | bigintToFloat(
+                  pool[2].poolShares |
+                    bigintToFloat(
                       pool[1].shareDecimals,
                       pool[1].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span v-if="!pool[2] && isBusy" class="loading-spinner"> </span>
@@ -147,15 +147,15 @@
               <span v-if="pool[1].initialized && !pool[2].poolShares"> 0 </span>
               <span v-else>
                 {{
-                  pool[2].poolBalance.balance0
-                    | bigintToFloat(
+                  pool[2].poolBalance.balance0 |
+                    bigintToFloat(
                       Math.min(
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals,
                         8
                       ),
                       tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -165,15 +165,15 @@
               <span v-if="pool[1].initialized && !pool[2].poolShares"> 0 </span>
               <span v-else>
                 {{
-                  pool[2].poolBalance.balance1
-                    | bigintToFloat(
+                  pool[2].poolBalance.balance1 |
+                    bigintToFloat(
                       Math.min(
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                         8
                       ),
                       tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -196,12 +196,12 @@
               >Your Shares:
               <span v-if="pool[3] && pool[1]" class="base-color-w">
                 {{
-                  pool[3][0]
-                    | bigintToFloat(
+                  pool[3][0] |
+                    bigintToFloat(
                       pool[1].shareDecimals,
                       pool[1].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span
@@ -215,16 +215,16 @@
               <span v-if="pool[1].initialized && !pool[3][0]"> 0 </span>
               <span v-else>
                 {{
-                  pool[2].poolBalance.balance0
-                    | filterSharesBalance(pool[2].poolShares, pool[3][0])
-                    | bigintToFloat(
+                  pool[2].poolBalance.balance0 |
+                    filterSharesBalance(pool[2].poolShares, pool[3][0]) |
+                    bigintToFloat(
                       Math.min(
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals,
                         8
                       ),
                       tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -234,16 +234,16 @@
               <span v-if="pool[1].initialized && !pool[3][0]"> 0 </span>
               <span v-else>
                 {{
-                  pool[2].poolBalance.balance1
-                    | filterSharesBalance(pool[2].poolShares, pool[3][0])
-                    | bigintToFloat(
+                  pool[2].poolBalance.balance1 |
+                    filterSharesBalance(pool[2].poolShares, pool[3][0]) |
+                    bigintToFloat(
                       Math.min(
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                         8
                       ),
                       tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -288,12 +288,12 @@
                 {{ pool[1].volFactor.toString(10) }}.
               </template>
               {{
-                pool[1].poolThreshold
-                  | bigintToFloat(
+                pool[1].poolThreshold |
+                  bigintToFloat(
                     tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                     tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                  )
-                  | formatNum
+                  ) |
+                  formatNum
               }}
               {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
             </a-tooltip>
@@ -318,12 +318,12 @@
             available
             <span class="base-green">
               {{
-                getVolAvailable(pool, volUsed)
-                  | bigintToFloat(
+                getVolAvailable(pool, volUsed) |
+                  bigintToFloat(
                     8,
                     tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                  )
-                  | formatNum
+                  ) |
+                  formatNum
               }}
             </span>
             {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}</span
@@ -714,22 +714,22 @@
                 <a-tooltip placement="bottom">
                   <template slot="title">
                     <span>{{
-                      tokensBalance[pool[1].pairInfo.token0[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[pool[1].pairInfo.token0[0].toString()] |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}</span>
                   </template>
                   {{
-                    tokensBalance[pool[1].pairInfo.token0[0].toString()]
-                      | bigintToFloat(
+                    tokensBalance[pool[1].pairInfo.token0[0].toString()] |
+                      bigintToFloat(
                         8,
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                      )
-                      | formatAmount(8)
+                      ) |
+                      formatAmount(8)
                   }}
                 </a-tooltip>
                 {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
@@ -832,22 +832,22 @@
                 <a-tooltip placement="bottom">
                   <template slot="title">
                     <span>{{
-                      tokensBalance[pool[1].pairInfo.token1[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[pool[1].pairInfo.token1[0].toString()] |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}</span>
                   </template>
                   {{
-                    tokensBalance[pool[1].pairInfo.token1[0].toString()]
-                      | bigintToFloat(
+                    tokensBalance[pool[1].pairInfo.token1[0].toString()] |
+                      bigintToFloat(
                         8,
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                      )
-                      | formatAmount(8)
+                      ) |
+                      formatAmount(8)
                   }}
                 </a-tooltip>
                 {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
@@ -986,8 +986,8 @@
                 <div v-if="Object.keys(item[0])[0] === 'add'">
                   <div v-if="Object.keys(item[0].add)[0] === 'ok'">
                     {{
-                      item[0].add.ok.token0
-                        | bigintToFloat(
+                      item[0].add.ok.token0 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token0[0].toString()].decimals
@@ -996,8 +996,8 @@
                     {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
                     +
                     {{
-                      item[0].add.ok.token1
-                        | bigintToFloat(
+                      item[0].add.ok.token1 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token1[0].toString()].decimals
@@ -1006,12 +1006,12 @@
                     {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
                     ->
                     {{
-                      item[0].add.ok.shares
-                        | bigintToFloat(
+                      item[0].add.ok.shares |
+                        bigintToFloat(
                           pool[1].shareDecimals,
                           pool[1].shareDecimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                     Shares
                   </div>
@@ -1021,8 +1021,8 @@
                   >
                     Error:
                     {{
-                      item[0].add.err.depositToken0
-                        | bigintToFloat(
+                      item[0].add.err.depositToken0 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token0[0].toString()].decimals
@@ -1031,8 +1031,8 @@
                     {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
                     +
                     {{
-                      item[0].add.err.depositToken1
-                        | bigintToFloat(
+                      item[0].add.err.depositToken1 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token1[0].toString()].decimals
@@ -1044,17 +1044,17 @@
                 <div v-if="Object.keys(item[0])[0] === 'remove'">
                   <div v-if="Object.keys(item[0].remove)[0] === 'ok'">
                     {{
-                      item[0].remove.ok.shares
-                        | bigintToFloat(
+                      item[0].remove.ok.shares |
+                        bigintToFloat(
                           pool[1].shareDecimals,
                           pool[1].shareDecimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                     Shares ->
                     {{
-                      item[0].remove.ok.token0
-                        | bigintToFloat(
+                      item[0].remove.ok.token0 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token0[0].toString()].decimals
@@ -1063,8 +1063,8 @@
                     {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
                     +
                     {{
-                      item[0].remove.ok.token1
-                        | bigintToFloat(
+                      item[0].remove.ok.token1 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token1[0].toString()].decimals
@@ -1078,8 +1078,8 @@
                   >
                     Error:
                     {{
-                      item[0].remove.err.addPoolToken0
-                        | bigintToFloat(
+                      item[0].remove.err.addPoolToken0 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token0[0].toString()].decimals
@@ -1088,8 +1088,8 @@
                     {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
                     +
                     {{
-                      item[0].remove.err.addPoolToken1
-                        | bigintToFloat(
+                      item[0].remove.err.addPoolToken1 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token1[0].toString()].decimals
@@ -1100,8 +1100,8 @@
                 </div>
                 <div v-if="Object.keys(item[0])[0] === 'withdraw'">
                   {{
-                    item[0].withdraw.token0
-                      | bigintToFloat(
+                    item[0].withdraw.token0 |
+                      bigintToFloat(
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals,
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals
                       )
@@ -1109,8 +1109,8 @@
                   {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
                   +
                   {{
-                    item[0].withdraw.token1
-                      | bigintToFloat(
+                    item[0].withdraw.token1 |
+                      bigintToFloat(
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals
                       )
@@ -1119,8 +1119,8 @@
                 </div>
                 <div v-if="Object.keys(item[0])[0] === 'fallback'">
                   {{
-                    item[0].fallback.token0
-                      | bigintToFloat(
+                    item[0].fallback.token0 |
+                      bigintToFloat(
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals,
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals
                       )
@@ -1128,8 +1128,8 @@
                   {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
                   +
                   {{
-                    item[0].fallback.token1
-                      | bigintToFloat(
+                    item[0].fallback.token1 |
+                      bigintToFloat(
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals
                       )
@@ -1139,8 +1139,8 @@
                 <div v-if="Object.keys(item[0])[0] === 'deposit'">
                   <span v-show="item[0].deposit.token0">
                     {{
-                      item[0].deposit.token0
-                        | bigintToFloat(
+                      item[0].deposit.token0 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token0[0].toString()].decimals
@@ -1154,8 +1154,8 @@
                   >
                   <span v-show="item[0].deposit.token1">
                     {{
-                      item[0].deposit.token1
-                        | bigintToFloat(
+                      item[0].deposit.token1 |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token1[0].toString()].decimals
@@ -1259,6 +1259,7 @@ import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { checkAuth } from '@/ic/CheckAuth';
 import { isPlug } from '@/ic/isPlug';
 import drc20TokenIDL from '@/ic/DRC20Token/DRC20Token.did';
+import { isSigner } from '@/ic/isSigner';
 
 const commonModule = namespace('common');
 
@@ -1687,7 +1688,10 @@ export default class extends Vue {
     const connectInfinity = await needConnectInfinity(ids);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (priList[principal] === 'Plug' && flag) {
+    if (
+      (priList[principal] === 'Plug' || priList[principal] === 'SignerPlug') &&
+      flag
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       this.$info({
@@ -1956,7 +1960,7 @@ export default class extends Vue {
       token0StdString.toLocaleLowerCase() === 'icrc2'
     ) {
       const poolId = this.$route.params.poolId;
-      if (isPlug()) {
+      if (!isSigner() && isPlug()) {
         if (token0StdString.toLocaleLowerCase() === 'drc20') {
           const approve = {
             idl: drc20TokenIDL,
@@ -2003,12 +2007,25 @@ export default class extends Vue {
           batchTransactions.push(approve);
         }
       } else {
-        promiseValue.push(
-          this.approve(token0Id, token0StdString, BigInt(needTransferToken0))
-        );
+        if (isSigner()) {
+          const res = await this.approve(
+            token0Id,
+            token0StdString,
+            BigInt(needTransferToken0)
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.approve(token0Id, token0StdString, BigInt(needTransferToken0))
+          );
+        }
       }
     } else if (token0StdString.toLocaleLowerCase() === 'icrc1') {
-      if (isPlug()) {
+      if (!isSigner() && isPlug()) {
         const transferArgs = {
           to: this.depositAccount[0],
           fee: [],
@@ -2032,16 +2049,29 @@ export default class extends Vue {
         };
         batchTransactions.push(transfer);
       } else {
-        promiseValue.push(
-          this.transferIcrc1(
+        if (isSigner()) {
+          const res = await this.transferIcrc1(
             token0Id,
             BigInt(needTransferToken0),
             this.depositAccount[0]
-          )
-        );
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.transferIcrc1(
+              token0Id,
+              BigInt(needTransferToken0),
+              this.depositAccount[0]
+            )
+          );
+        }
       }
     } else if (token0StdString.toLocaleLowerCase() === 'icp') {
-      if (isPlug()) {
+      if (!isSigner() && isPlug()) {
         const transferArgs = {
           to: this.depositAccount[0],
           fee: [],
@@ -2065,14 +2095,28 @@ export default class extends Vue {
         };
         batchTransactions.push(transfer);
       } else {
-        promiseValue.push(
-          this.ledgerService.sendIcp(
+        if (isSigner()) {
+          const res = await this.ledgerService.sendIcp(
             new BigNumber(needTransferToken0)
               .div(10 ** this.tokens[token0Id].decimals)
               .toString(10),
             this.depositAccount[1]
-          )
-        );
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.ledgerService.sendIcp(
+              new BigNumber(needTransferToken0)
+                .div(10 ** this.tokens[token0Id].decimals)
+                .toString(10),
+              this.depositAccount[1]
+            )
+          );
+        }
       }
     }
     console.log(batchTransactions);
@@ -2080,7 +2124,7 @@ export default class extends Vue {
       token1StdString.toLocaleLowerCase() === 'drc20' ||
       token1StdString.toLocaleLowerCase() === 'icrc2'
     ) {
-      if (isPlug()) {
+      if (!isSigner() && isPlug()) {
         if (token1StdString.toLocaleLowerCase() === 'drc20') {
           const approve = {
             idl: drc20TokenIDL,
@@ -2127,12 +2171,25 @@ export default class extends Vue {
           batchTransactions.push(approve);
         }
       } else {
-        promiseValue.push(
-          this.approve(token1Id, token1StdString, BigInt(needTransferToken1))
-        );
+        if (isSigner()) {
+          const res = await this.approve(
+            token1Id,
+            token1StdString,
+            BigInt(needTransferToken1)
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.approve(token1Id, token1StdString, BigInt(needTransferToken1))
+          );
+        }
       }
     } else if (token1StdString.toLocaleLowerCase() === 'icrc1') {
-      if (isPlug()) {
+      if (!isSigner() && isPlug()) {
         const transferArgs = {
           to: this.depositAccount[0],
           fee: [],
@@ -2156,16 +2213,29 @@ export default class extends Vue {
         };
         batchTransactions.push(transfer);
       } else {
-        promiseValue.push(
-          this.transferIcrc1(
+        if (isSigner()) {
+          const res = await this.transferIcrc1(
             token1Id,
             BigInt(needTransferToken1),
             this.depositAccount[0]
-          )
-        );
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.transferIcrc1(
+              token1Id,
+              BigInt(needTransferToken1),
+              this.depositAccount[0]
+            )
+          );
+        }
       }
     } else if (token1StdString.toLocaleLowerCase() === 'icp') {
-      if (isPlug()) {
+      if (!isSigner() && isPlug()) {
         const transferArgs = {
           to: this.depositAccount[0],
           fee: [],
@@ -2189,14 +2259,28 @@ export default class extends Vue {
         };
         batchTransactions.push(transfer);
       } else {
-        promiseValue.push(
-          this.ledgerService.sendIcp(
+        if (isSigner()) {
+          const res = await this.ledgerService.sendIcp(
             new BigNumber(needTransferToken1)
               .div(10 ** this.tokens[token1Id].decimals)
               .toString(10),
             this.depositAccount[1]
-          )
-        );
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.ledgerService.sendIcp(
+              new BigNumber(needTransferToken1)
+                .div(10 ** this.tokens[token1Id].decimals)
+                .toString(10),
+              this.depositAccount[1]
+            )
+          );
+        }
       }
     }
     console.log(promiseValue);
@@ -2217,8 +2301,9 @@ export default class extends Vue {
         this.$message.error('Approve error');
         return;
       }
-    } else {
+    } else if (!isSigner()) {
       const res = await Promise.all(promiseValue);
+      console.log(res);
       if (res && (!res[0] || !res[1])) {
         this.$message.error('Error');
         loading.close();
@@ -2314,6 +2399,7 @@ export default class extends Vue {
   ): Promise<boolean> {
     const currentDrc20Token = new DRC20TokenService();
     const res = await currentDrc20Token.icrc1Transfer(tokenId, amount, to);
+    console.log(res);
     if (res) {
       return Object.keys(res)[0] !== 'Err';
     }

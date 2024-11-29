@@ -2002,7 +2002,8 @@ export default class extends Vue {
           const connectInfinity1 = await needConnectInfinity([
             this.addTokenForm.tokenId
           ]);
-          if (priList[this.getPrincipalId] === 'Plug' && flag) {
+          if ((priList[this.getPrincipalId] === 'Plug' ||
+            priList[this.getPrincipalId] === 'SignerPlug') && flag) {
             const connectPlug = new ConnectPlug();
             this.$info({
               content: 'Token need to be connected to the plug.',

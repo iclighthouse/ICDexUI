@@ -574,7 +574,7 @@ export class PairsMixin extends Vue {
       //   this.wallets[0].walletId.toString();
       // this.getCycles();
     }
-    if (priList[principal] === 'Plug') {
+    if (priList[principal] === 'Plug' || priList[principal] === 'SignerPlug') {
       this.connectPlug();
     }
   }
@@ -1224,7 +1224,8 @@ export class PairsMixin extends Vue {
         const priList = JSON.parse(localStorage.getItem('priList')) || {};
         const connectInfinity = await needConnectInfinity([this.swapId]);
         if (
-          priList[principal] === 'Plug' &&
+          (priList[principal] === 'Plug' ||
+            priList[principal] === 'SignerPlug') &&
           flag &&
           this.$route.name === 'ICSwap'
         ) {

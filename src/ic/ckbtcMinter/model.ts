@@ -1,4 +1,4 @@
-import { Icrc1Account } from '@/ic/common/icType';
+import { Icrc1Account, Time } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal';
 export interface RetrieveBtcArgs {
   address: string;
@@ -98,7 +98,93 @@ export type BTCAddressReq =
       subaccount: Array<Uint8Array>;
     };
 export type WithdrawalAccountReq = BTCAddressReq;
-
+export type BlockIndex = { block_index: bigint };
+export interface icBTCEvents {
+  total: bigint;
+  data: Array<[bigint, [icBTCEvent, Time]]>;
+  totalPage: bigint;
+}
+export type icBTCEvent =
+  | {
+      received_utxos: {
+        deposit_address: string;
+        total_fee: bigint;
+        to_account: Icrc1Account;
+        utxos: Array<Utxo>;
+        amount: bigint;
+      };
+    }
+  | {
+      sent_transaction: {
+        change_output: [] | [{ value: bigint; vout: number }];
+        txid: string;
+        address: string;
+        account: Icrc1Account;
+        utxos: Array<Utxo>;
+        requests: BigUint64Array | bigint[];
+        retrieveAccount: Icrc1Account;
+      };
+    }
+  | {
+      burn: {
+        toid: [] | [bigint];
+        icTokenCanisterId: Principal;
+        address: string;
+        account: Icrc1Account;
+        amount: bigint;
+        tokenBlockIndex: bigint;
+      };
+    }
+  | {
+      mint: {
+        toid: [] | [bigint];
+        icTokenCanisterId: Principal;
+        address: string;
+        account: Icrc1Account;
+        amount: bigint;
+      };
+    }
+  | {
+      send: {
+        to: Icrc1Account;
+        toid: [] | [bigint];
+        icTokenCanisterId: Principal;
+        amount: bigint;
+      };
+    }
+  | { changeOwner: { newOwner: Principal } }
+  | {
+      accepted_retrieve_btc_request: {
+        txi: bigint;
+        icrc1_burned_txid: bigint;
+        total_fee: bigint;
+        address: string;
+        account: Icrc1Account;
+        amount: bigint;
+      };
+    }
+  | { start: { message: [] | [string] } }
+  | { initOrUpgrade: { initArgs: InitArgs } }
+  | {
+      config: {
+        setting:
+          | {
+              upgradeTokenWasm: {
+                icTokenCanisterId: Principal;
+                version: string;
+                symbol: string;
+              };
+            }
+          | { setTokenWasm: { size: bigint; version: string } };
+      };
+    }
+  | { suspend: { message: [] | [string] } };
+export interface InitArgs {
+  fixed_fee: bigint;
+  retrieve_btc_min_amount: bigint;
+  dex_pair: [] | [Principal];
+  min_confirmations: [] | [number];
+}
 export default interface Service {
   get_btc_address(request: BTCAddressReq): Promise<string>;
   get_withdrawal_account(request?: WithdrawalAccountReq): Promise<Icrc1Account>;
@@ -106,12 +192,13 @@ export default interface Service {
     retrieveBtcArgs: RetrieveBtcArgs,
     sa?: Array<Array<number>>
   ): Promise<RetrieveBtcRes>;
-  retrieve_btc_status({ block_index: bigint }): Promise<RetrieveBtcStatus>;
+  retrieve_btc_status(request: BlockIndex): Promise<RetrieveBtcStatus>;
   update_balance(request: BTCAddressReq): Promise<UpdateBalanceRes>;
   batch_send(request: Array<bigint>): Promise<boolean>;
   get_minter_info(): Promise<MinterInfo>;
-  retrieveLog(blockIndex: Array<number>): Promise<Array<RetrieveStatus>>;
+  retrieval_log(blockIndex: Array<number>): Promise<Array<RetrieveStatus>>;
   estimate_withdrawal_fee(request: {
     amount: Array<bigint>;
   }): Promise<{ minter_fee: bigint; bitcoin_fee: bigint }>;
+  get_events(page: [bigint], size: [bigint]): Promise<icBTCEvents>;
 }

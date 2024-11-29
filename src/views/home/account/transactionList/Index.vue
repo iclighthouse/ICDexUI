@@ -73,7 +73,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
-import RosettaApi, { Transaction } from '@/ic/RosettaApi.ts';
+import RosettaApi, { Transaction } from '@/ic/RosettaApi';
 import BigNumber from 'bignumber.js';
 import { formatDateFromNanosecondUTC } from '@/filters';
 const rosettaApi = new RosettaApi();

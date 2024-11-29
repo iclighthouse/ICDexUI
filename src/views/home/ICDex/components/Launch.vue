@@ -696,16 +696,18 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
       const amount = new BigNumber(this.sysConfig.creatingPairFee.toString(10))
         .div(10 ** tokenInfo.decimals)
         .toString(10);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
       (this.$info as any)({
         title: 'Launch a new trading pair',
         content: `Token listing is permissionless and anyone can spend ${amount} ICL to list an ICRC1 or DRC20 token on ICDex.`,
-        class: 'connect-plug register-mining-confirm launch-info-button',
+        class: 'connect-plug register-mining-confirm',
         icon: 'connect-plug',
-        okText: 'Insufficient ICL balance',
+        okText: 'Buy ICL',
         centered: true,
         closable: true,
         onOk() {
-          //
+          that.$emit('changeLaunch', 'ICL/ICP');
         }
       });
     } else if (allowance || (allowance !== null && Number(allowance) === 0)) {
@@ -862,7 +864,7 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
 }
 .user-setting {
   background-color: #141b23;
-  ::v-deep.ant-dropdown-menu-item {
+  ::v-deep .ant-dropdown-menu-item {
     background-color: #141b23;
     padding: 10px 15px;
     color: #fff;

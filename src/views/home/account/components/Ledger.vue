@@ -157,9 +157,7 @@
           </div>
         </div>
         <div
-          class="
-            ic-balance-item-container-item ic-balance-item-container-item-cross
-          "
+          class="ic-balance-item-container-item ic-balance-item-container-item-cross"
         >
           <div class="cross-info">
             <div class="cross-main">
@@ -384,8 +382,8 @@
                       target="_blank"
                     >
                       {{
-                        networkTokensFrom[networkTokenIdMint].tokenId
-                          | ellipsisAccount(6)
+                        networkTokensFrom[networkTokenIdMint].tokenId |
+                          ellipsisAccount(6)
                       }}
                     </a>
                     <div
@@ -393,7 +391,7 @@
                       v-if="
                         ERC20Balance[
                           networkTokensFrom[networkTokenIdMint].tokenId
-                        ]
+                        ] && principal
                       "
                     >
                       Balance:
@@ -401,13 +399,13 @@
                         {{
                           ERC20Balance[
                             networkTokensFrom[networkTokenIdMint].tokenId
-                          ]
-                            | bigintToFloat(
+                          ] |
+                            bigintToFloat(
                               8,
                               networkTokensFrom[networkTokenIdMint].icTokenInfo
                                 .decimals
-                            )
-                            | formatAmount(8)
+                            ) |
+                            formatAmount(8)
                         }}
                       </span>
                     </div>
@@ -436,8 +434,8 @@
                         target="_blank"
                       >
                         {{
-                          networkTokensFrom[networkTokenIdMint].id
-                            | ellipsisAccount(6)
+                          networkTokensFrom[networkTokenIdMint].id |
+                            ellipsisAccount(6)
                         }}
                       </a>
                     </div>
@@ -447,7 +445,8 @@
                         ethereumIsConnected &&
                         ERC20EthereumBalance[
                           networkTokensFrom[networkTokenIdMint].tokenId
-                        ]
+                        ] &&
+                        principal
                       "
                     >
                       Balance:
@@ -698,8 +697,8 @@
                       target="_blank"
                     >
                       {{
-                        networkTokensTo[networkTokenIdMintTo].tokenId
-                          | ellipsisAccount(6)
+                        networkTokensTo[networkTokenIdMintTo].tokenId |
+                          ellipsisAccount(6)
                       }}
                     </a>
                     <div
@@ -707,7 +706,7 @@
                       v-if="
                         ERC20Balance[
                           networkTokensTo[networkTokenIdMintTo].tokenId
-                        ]
+                        ] && principal
                       "
                     >
                       Balance:
@@ -715,13 +714,13 @@
                         {{
                           ERC20Balance[
                             networkTokensTo[networkTokenIdMintTo].tokenId
-                          ]
-                            | bigintToFloat(
+                          ] |
+                            bigintToFloat(
                               8,
                               networkTokensTo[networkTokenIdMintTo].icTokenInfo
                                 .decimals
-                            )
-                            | formatAmount(8)
+                            ) |
+                            formatAmount(8)
                         }}
                       </span>
                     </div>
@@ -750,8 +749,8 @@
                         target="_blank"
                       >
                         {{
-                          networkTokensTo[networkTokenIdMintTo].id
-                            | ellipsisAccount(6)
+                          networkTokensTo[networkTokenIdMintTo].id |
+                            ellipsisAccount(6)
                         }}
                       </a>
                     </div>
@@ -761,7 +760,8 @@
                         ethereumIsConnected &&
                         ERC20EthereumBalance[
                           networkTokensTo[networkTokenIdMintTo].tokenId
-                        ]
+                        ] &&
+                        principal
                       "
                     >
                       Balance:
@@ -779,12 +779,21 @@
             </div>
             <div class="cross-button">
               <button
+                v-if="principal"
                 :disabled="mintDisabled"
                 @click="onContinue"
                 class="primary"
                 type="button"
               >
                 Continue
+              </button>
+              <button
+                v-else
+                class="primary"
+                @click="connectWallet"
+                type="button"
+              >
+                Connect Wallet
               </button>
               <span
                 v-show="
@@ -809,645 +818,317 @@
                 ></span
               >
             </div>
-            <div
-              v-show="
-                activePending.claim ||
-                activePending.claim2 ||
-                activePending.mint ||
-                activePending.deposit ||
-                activePending.retrieve ||
-                activePending.retrieve2 ||
-                activePending.mintCKETH ||
-                activePending.retrieveCKETH ||
-                activePending.CKETHResponse
-              "
-            >
+            <div v-if="principal">
               <div
-                class="base-font-title"
-                style="margin: 20px 0 10px; font-size: 14px; font-weight: bold"
+                v-show="
+                  activePending.claim ||
+                  activePending.claim2 ||
+                  activePending.mint ||
+                  activePending.deposit ||
+                  activePending.retrieve ||
+                  activePending.retrieve2 ||
+                  activePending.mintCKETH ||
+                  activePending.retrieveCKETH ||
+                  activePending.CKETHResponse
+                "
               >
-                Activities:
-              </div>
-              <div>
-                <div v-if="activePending.claim && activePending.claim.length">
-                  <div
-                    :key="index"
-                    class="active-pending-item"
-                    v-for="(item, index) in activePending.claim"
-                  >
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].symbol }}
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                    </span>
-                    <span class="margin-left-auto">
-                      {{ item.txHash | ellipsisAccount }}
-                    </span>
-                    <button
-                      @click="toActive('claim', item.tokenId, item.txHash)"
-                      class="primary"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <div v-if="activePending.claim2 && activePending.claim2.length">
-                  <div
-                    :key="index"
-                    class="active-pending-item"
-                    v-for="(item, index) in activePending.claim2"
-                  >
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].symbol }}
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                    </span>
-                    <span class="margin-left-auto">
-                      {{ item.txHash | ellipsisAccount }}
-                    </span>
-                    <button
-                      @click="toActive('claim2', item.tokenId)"
-                      class="primary"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <div v-if="activePending.mint && activePending.mint.length">
-                  <div
-                    :key="index"
-                    class="active-pending-item"
-                    v-for="(item, index) in activePending.mint"
-                  >
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].symbol }}
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                    </span>
-                    <span class="margin-left-auto">
-                      {{
-                        item.amount
-                          | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
-                          | formatAmount(8)
-                      }}
-                    </span>
-                    <button
-                      @click="toActive('mint', item.tokenId)"
-                      class="primary"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
                 <div
-                  v-if="
-                    activePending.deposit &&
-                    activePending.deposit[2] &&
-                    activePending.deposit[2][0]
+                  class="base-font-title"
+                  style="
+                    margin: 20px 0 10px;
+                    font-size: 14px;
+                    font-weight: bold;
                   "
                 >
-                  <div class="active-pending-item">
-                    <span
-                      v-if="
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.deposit[2][0].tokenId
-                          ]
-                        ]
-                      "
-                    >
-                      {{
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.deposit[2][0].tokenId
-                          ]
-                        ].symbol
-                      }}
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span
-                      v-if="
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.deposit[2][0].tokenId
-                          ]
-                        ]
-                      "
-                    >
-                      {{
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.deposit[2][0].tokenId
-                          ]
-                        ].ckSymbol
-                      }}(IC Network)
-                    </span>
-                    <span
-                      class="margin-left-auto"
-                      v-if="
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.deposit[2][0].tokenId
-                          ]
-                        ]
-                      "
-                    >
-                      {{
-                        activePending.deposit[2][0].amount
-                          | bigintToFloat(
-                            8,
-                            ckTokenInfo[
-                              ethersTokenIdToCkTokenId[
-                                activePending.deposit[2][0].tokenId
-                              ]
-                            ].decimals
-                          )
-                          | formatAmount(8)
-                      }}
-                    </span>
-                    <button
-                      @click="
-                        toActive(
-                          'deposit',
-                          ethersTokenIdToCkTokenId[
-                            activePending.deposit[2][0].tokenId
-                          ]
-                        )
-                      "
-                      class="primary"
-                    >
-                      View
-                    </button>
-                  </div>
+                  Activities:
                 </div>
-                <div
-                  v-if="activePending.retrieve && activePending.retrieve.length"
-                >
-                  <div
-                    :key="index"
-                    class="active-pending-item"
-                    v-for="(item, index) in activePending.retrieve"
-                  >
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].symbol }}
-                    </span>
-                    <span class="margin-left-auto">
-                      {{
-                        item.amount
-                          | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
-                          | formatAmount(8)
-                      }}
-                    </span>
-                    <button
-                      @click="toActive('retrieve', item.tokenId)"
-                      class="primary"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <div
-                  v-if="
-                    activePending.retrieve2 && activePending.retrieve2.length
-                  "
-                >
-                  <div class="active-pending-item">
-                    <span
-                      v-if="
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.retrieve2[1].tokenId
-                          ]
-                        ]
-                      "
-                    >
-                      {{
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.retrieve2[1].tokenId
-                          ]
-                        ].ckSymbol
-                      }}(IC Network)
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span
-                      v-if="
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.retrieve2[1].tokenId
-                          ]
-                        ]
-                      "
-                    >
-                      {{
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.retrieve2[1].tokenId
-                          ]
-                        ].symbol
-                      }}
-                    </span>
-                    <span
-                      class="margin-left-auto"
-                      v-if="
-                        ckTokenInfo[
-                          ethersTokenIdToCkTokenId[
-                            activePending.retrieve2[1].tokenId
-                          ]
-                        ]
-                      "
-                    >
-                      {{
-                        activePending.retrieve2[1].amount
-                          | bigintToFloat(
-                            8,
-                            ckTokenInfo[
-                              ethersTokenIdToCkTokenId[
-                                activePending.retrieve2[1].tokenId
-                              ]
-                            ].decimals
-                          )
-                          | formatAmount(8)
-                      }}
-                    </span>
-                    <button
-                      @click="
-                        toActive(
-                          'retrieve',
-                          ethersTokenIdToCkTokenId[
-                            activePending.retrieve2[1].tokenId
-                          ]
-                        )
-                      "
-                      class="primary"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <div
-                  v-if="
-                    activePending.mintCKETH && activePending.mintCKETH.length
-                  "
-                >
-                  <div
-                    :key="index"
-                    class="active-pending-item"
-                    v-for="(item, index) in activePending.mintCKETH"
-                  >
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].symbol }}
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                    </span>
-                    <span class="margin-left-auto">
-                      <a
-                        :href="`${ckEthLink}/tx/${item.txHash}`"
-                        class="link"
-                        rel="nofollow noreferrer noopener"
-                        target="_blank"
-                      >
-                        {{ item.txHash | ellipsisAccount() }}
-                      </a>
-                    </span>
-                    <span
-                      class="base-font-title"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: flex-end;
-                        margin: 0 10px 0 20px;
-                        width: 100px;
-                      "
-                    >
-                      <span v-show="!item.blockNumber"
-                        >Pending<span class="loading-spinner"></span
-                      ></span>
-                      <span
-                        v-show="
-                          lastScrapedBlockNumber &&
-                          item.blockNumber &&
-                          lastScrapedBlockNumber >= Number(item.blockNumber)
-                        "
-                      >
-                        Confirmed
-                      </span>
-                      <span
-                        v-show="
-                          lastScrapedBlockNumber &&
-                          item.blockNumber &&
-                          lastScrapedBlockNumber < Number(item.blockNumber)
-                        "
-                      >
-                        Submitted<span class="loading-spinner"></span>
-                      </span>
-                    </span>
-                    <button
-                      @click="toActive('mintCKETH', item.tokenId)"
-                      class="primary"
-                      v-show="
-                        !(
-                          lastScrapedBlockNumber &&
-                          item.blockNumber &&
-                          lastScrapedBlockNumber >= Number(item.blockNumber)
-                        )
-                      "
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <div
-                  v-if="
-                    activePending.retrieveCKETH &&
-                    activePending.retrieveCKETH.length
-                  "
-                >
-                  <div
-                    :key="index"
-                    class="active-pending-item"
-                    v-for="(item, index) in activePending.retrieveCKETH"
-                  >
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                    </span>
-                    &nbsp;->&nbsp;
-                    <span v-if="ckTokenInfo[item.tokenId]">
-                      {{ ckTokenInfo[item.tokenId].symbol }}
-                    </span>
-                    <span
-                      class="margin-left-auto"
-                      v-if="ckTokenInfo[item.tokenId]"
-                    >
-                      <a
-                        :href="`${ckEthLink}/tx/${
-                          Object.values(item.status)[0].transaction_hash
-                        }`"
-                        class="link"
-                        rel="nofollow noreferrer noopener"
-                        target="_blank"
-                        v-if="
-                          item.status &&
-                          Object.keys(item.status)[0] === 'TxSent'
-                        "
-                      >
-                        {{
-                          item.amount
-                            | bigintToFloat(
-                              8,
-                              ckTokenInfo[item.tokenId].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </a>
-                      <a
-                        :href="`${ckEthLink}/tx/${
-                          Object.values(item.status)[0].Success.transaction_hash
-                        }`"
-                        class="link"
-                        rel="nofollow noreferrer noopener"
-                        target="_blank"
-                        v-if="
-                          item.status &&
-                          Object.keys(item.status)[0] === 'TxFinalized' &&
-                          Object.values(item.status)[0] &&
-                          Object.values(item.status)[0].Success &&
-                          Object.values(item.status)[0].Success.transaction_hash
-                        "
-                      >
-                        {{
-                          item.amount
-                            | bigintToFloat(
-                              8,
-                              ckTokenInfo[item.tokenId].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </a>
-                      <span
-                        v-if="
-                          (item.status &&
-                            Object.keys(item.status)[0] !== 'TxSent' &&
-                            Object.keys(item.status)[0] !== 'TxFinalized') ||
-                          !item.status
-                        "
-                      >
-                        {{
-                          item.amount
-                            | bigintToFloat(
-                              8,
-                              ckTokenInfo[item.tokenId].decimals
-                            )
-                            | formatAmount(8)
-                        }}
-                      </span>
-                    </span>
-                    <span
-                      class="base-font-title"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: flex-end;
-                        margin: 0 10px 0 20px;
-                        width: 100px;
-                      "
-                      v-if="item.status && Object.keys(item.status)[0]"
-                    >
-                      {{ Object.keys(item.status)[0]
-                      }}<span
-                        class="loading-spinner"
-                        v-show="
-                          item.status &&
-                          ['Pending', 'TxCreated', 'TxSent'].includes(
-                            Object.keys(item.status)[0]
-                          )
-                        "
-                      ></span>
-                    </span>
-                    <button
-                      @click="toActive('retrieveCKETH', item.tokenId)"
-                      class="primary"
-                      v-if="
-                        !item.status ||
-                        (item.status &&
-                          Object.keys(item.status)[0] &&
-                          Object.keys(item.status)[0] !== 'TxFinalized' &&
-                          Object.keys(item.status)[0] !== 'NotFound')
-                      "
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <div
-                  v-if="
-                    activePending.CKETHResponse &&
-                    activePending.CKETHResponse.length
-                  "
-                >
-                  <div
-                    :key="index"
-                    style="color: #adb7c2"
-                    v-for="(item, index) in activePending.CKETHResponse.slice(
-                      (CKETHResponsePage - 1) * 10,
-                      CKETHResponsePage * 10
-                    )"
-                  >
+                <div>
+                  <div v-if="activePending.claim && activePending.claim.length">
                     <div
+                      :key="index"
                       class="active-pending-item"
-                      v-if="item.type === 'BTCRetrieve'"
+                      v-for="(item, index) in activePending.claim"
                     >
-                      <span style="width: 170px" v-if="item.time">
-                        {{ item.time | formatDateToCalendar }}
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].symbol }}
                       </span>
-                      <span> ckBTC(IC Network) </span>
                       &nbsp;->&nbsp;
-                      <span> BTC </span>
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                      </span>
                       <span class="margin-left-auto">
-                        <a
-                          :href="`https://www.blockchain.com/btc/tx/${getRetrieveBtcTxidResponse(
-                            item.status
-                          )}`"
-                          class="link"
-                          rel="nofollow noreferrer noopener"
-                          target="_blank"
-                          v-if="getRetrieveBtcTxidResponse(item.status)"
-                        >
-                          {{
-                            getRetrieveBtcTxidResponse(item.status)
-                              | ellipsisAccount()
-                          }}
-                        </a>
-                      </span>
-                      <span
-                        :class="{
-                          'base-green':
-                            Object.keys(item.status)[0] === 'Confirmed'
-                        }"
-                        style="
-                          display: flex;
-                          align-items: center;
-                          justify-content: flex-end;
-                          margin: 0 10px 0 20px;
-                          width: 100px;
-                        "
-                      >
-                        <span>
-                          {{ item.status && Object.keys(item.status)[0] }}
-                        </span>
-                        <span
-                          class="loading-spinner"
-                          v-show="
-                            item.status &&
-                            [
-                              'Pending',
-                              'Sending',
-                              'Submitted',
-                              'Signing'
-                            ].includes(Object.keys(item.status)[0])
-                          "
-                        ></span>
+                        {{ item.txHash | ellipsisAccount }}
                       </span>
                       <button
-                        @click="toActive('BTCRetrieve', null)"
+                        @click="toActive('claim', item.tokenId, item.txHash)"
                         class="primary"
-                        v-show="
-                          !item.status ||
-                          (item.status &&
-                            Object.keys(item.status)[0] &&
-                            Object.keys(item.status)[0] !== 'Confirmed' &&
-                            Object.keys(item.status)[0] !== 'NotFound' &&
-                            Object.keys(item.status)[0] !== 'AmountTooLow')
-                        "
                       >
                         View
                       </button>
                     </div>
+                  </div>
+                  <div
+                    v-if="activePending.claim2 && activePending.claim2.length"
+                  >
                     <div
+                      :key="index"
                       class="active-pending-item"
-                      v-if="item.type === 'BTCMint'"
+                      v-for="(item, index) in activePending.claim2"
                     >
-                      <span style="width: 170px" v-if="item.time">
-                        {{ item.time | formatDateToCalendar }}
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].symbol }}
                       </span>
-                      <span> BTC </span>
                       &nbsp;->&nbsp;
-                      <span> ckBTC(IC Network) </span>
-                      <div class="margin-left-auto">
-                        <div :key="index" v-for="(out, index) in item.vout">
-                          <a
-                            :href="`https://www.blockchain.com/btc/tx/${item.txid}`"
-                            class="link"
-                            rel="nofollow noreferrer noopener"
-                            target="_blank"
-                            v-show="out.scriptpubkey_address === BTCAddressCk"
-                            >{{
-                              out.value | bigintToFloat(8, 8) | formatAmount(8)
-                            }}
-                          </a>
-                        </div>
-                      </div>
-                      <span
-                        :class="{
-                          'base-green':
-                            item.status.block_height &&
-                            item.status.block_height <= updateCkBlockHeight
-                        }"
-                        style="
-                          display: flex;
-                          align-items: center;
-                          justify-content: flex-end;
-                          margin: 0 10px 0 20px;
-                          width: 100px;
-                        "
-                        v-show="
-                          item.status.block_height &&
-                          item.status.block_height <= updateCkBlockHeight
-                        "
-                      >
-                        {{ filterStatus(item.status.block_height) }}
-                        <span
-                          v-if="
-                            item.status.block_height &&
-                            blockCount - item.status.block_height < 11
-                          "
-                        >
-                          ({{ blockCount - item.status.block_height + 1 }})
-                        </span>
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                      </span>
+                      <span class="margin-left-auto">
+                        {{ item.txHash | ellipsisAccount }}
                       </span>
                       <button
-                        @click="toActive('mintCKBTC', null)"
+                        @click="toActive('claim2', item.tokenId)"
                         class="primary"
-                        style="margin-left: 40px"
-                        v-show="
-                          !(
-                            item.status.block_height &&
-                            item.status.block_height <= updateCkBlockHeight
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                  <div v-if="activePending.mint && activePending.mint.length">
+                    <div
+                      :key="index"
+                      class="active-pending-item"
+                      v-for="(item, index) in activePending.mint"
+                    >
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].symbol }}
+                      </span>
+                      &nbsp;->&nbsp;
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                      </span>
+                      <span class="margin-left-auto">
+                        {{
+                          item.amount |
+                            bigintToFloat(
+                              8,
+                              ckTokenInfo[item.tokenId].decimals
+                            ) |
+                            formatAmount(8)
+                        }}
+                      </span>
+                      <button
+                        @click="toActive('mint', item.tokenId)"
+                        class="primary"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    v-if="
+                      activePending.deposit &&
+                      activePending.deposit[2] &&
+                      activePending.deposit[2][0]
+                    "
+                  >
+                    <div class="active-pending-item">
+                      <span
+                        v-if="
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.deposit[2][0].tokenId
+                            ]
+                          ]
+                        "
+                      >
+                        {{
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.deposit[2][0].tokenId
+                            ]
+                          ].symbol
+                        }}
+                      </span>
+                      &nbsp;->&nbsp;
+                      <span
+                        v-if="
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.deposit[2][0].tokenId
+                            ]
+                          ]
+                        "
+                      >
+                        {{
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.deposit[2][0].tokenId
+                            ]
+                          ].ckSymbol
+                        }}(IC Network)
+                      </span>
+                      <span
+                        class="margin-left-auto"
+                        v-if="
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.deposit[2][0].tokenId
+                            ]
+                          ]
+                        "
+                      >
+                        {{
+                          activePending.deposit[2][0].amount |
+                            bigintToFloat(
+                              8,
+                              ckTokenInfo[
+                                ethersTokenIdToCkTokenId[
+                                  activePending.deposit[2][0].tokenId
+                                ]
+                              ].decimals
+                            ) |
+                            formatAmount(8)
+                        }}
+                      </span>
+                      <button
+                        @click="
+                          toActive(
+                            'deposit',
+                            ethersTokenIdToCkTokenId[
+                              activePending.deposit[2][0].tokenId
+                            ]
                           )
                         "
+                        class="primary"
                       >
                         View
                       </button>
                     </div>
+                  </div>
+                  <div
+                    v-if="
+                      activePending.retrieve && activePending.retrieve.length
+                    "
+                  >
                     <div
+                      :key="index"
                       class="active-pending-item"
-                      v-if="item.type === 'mint'"
+                      v-for="(item, index) in activePending.retrieve"
                     >
-                      <span style="width: 170px" v-if="item.time">
-                        {{ item.time | formatDateToCalendar }}
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
                       </span>
+                      &nbsp;->&nbsp;
+                      <span v-if="ckTokenInfo[item.tokenId]">
+                        {{ ckTokenInfo[item.tokenId].symbol }}
+                      </span>
+                      <span class="margin-left-auto">
+                        {{
+                          item.amount |
+                            bigintToFloat(
+                              8,
+                              ckTokenInfo[item.tokenId].decimals
+                            ) |
+                            formatAmount(8)
+                        }}
+                      </span>
+                      <button
+                        @click="toActive('retrieve', item.tokenId)"
+                        class="primary"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    v-if="
+                      activePending.retrieve2 && activePending.retrieve2.length
+                    "
+                  >
+                    <div class="active-pending-item">
+                      <span
+                        v-if="
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.retrieve2[1].tokenId
+                            ]
+                          ]
+                        "
+                      >
+                        {{
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.retrieve2[1].tokenId
+                            ]
+                          ].ckSymbol
+                        }}(IC Network)
+                      </span>
+                      &nbsp;->&nbsp;
+                      <span
+                        v-if="
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.retrieve2[1].tokenId
+                            ]
+                          ]
+                        "
+                      >
+                        {{
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.retrieve2[1].tokenId
+                            ]
+                          ].symbol
+                        }}
+                      </span>
+                      <span
+                        class="margin-left-auto"
+                        v-if="
+                          ckTokenInfo[
+                            ethersTokenIdToCkTokenId[
+                              activePending.retrieve2[1].tokenId
+                            ]
+                          ]
+                        "
+                      >
+                        {{
+                          activePending.retrieve2[1].amount |
+                            bigintToFloat(
+                              8,
+                              ckTokenInfo[
+                                ethersTokenIdToCkTokenId[
+                                  activePending.retrieve2[1].tokenId
+                                ]
+                              ].decimals
+                            ) |
+                            formatAmount(8)
+                        }}
+                      </span>
+                      <button
+                        @click="
+                          toActive(
+                            'retrieve',
+                            ethersTokenIdToCkTokenId[
+                              activePending.retrieve2[1].tokenId
+                            ]
+                          )
+                        "
+                        class="primary"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    v-if="
+                      activePending.mintCKETH && activePending.mintCKETH.length
+                    "
+                  >
+                    <div
+                      :key="index"
+                      class="active-pending-item"
+                      v-for="(item, index) in activePending.mintCKETH"
+                    >
                       <span v-if="ckTokenInfo[item.tokenId]">
                         {{ ckTokenInfo[item.tokenId].symbol }}
                       </span>
@@ -1462,14 +1143,7 @@
                           rel="nofollow noreferrer noopener"
                           target="_blank"
                         >
-                          {{
-                            item.amount
-                              | bigintToFloat(
-                                8,
-                                ckTokenInfo[item.tokenId].decimals
-                              )
-                              | formatAmount(8)
-                          }}
+                          {{ item.txHash | ellipsisAccount() }}
                         </a>
                       </span>
                       <span
@@ -1482,11 +1156,10 @@
                           width: 100px;
                         "
                       >
-                        <span v-show="!item.blockNumber">
-                          Pending<span class="loading-spinner"></span
+                        <span v-show="!item.blockNumber"
+                          >Pending<span class="loading-spinner"></span
                         ></span>
                         <span
-                          class="base-green"
                           v-show="
                             lastScrapedBlockNumber &&
                             item.blockNumber &&
@@ -1519,13 +1192,18 @@
                         View
                       </button>
                     </div>
+                  </div>
+                  <div
+                    v-if="
+                      activePending.retrieveCKETH &&
+                      activePending.retrieveCKETH.length
+                    "
+                  >
                     <div
+                      :key="index"
                       class="active-pending-item"
-                      v-if="item.type === 'retrieve'"
+                      v-for="(item, index) in activePending.retrieveCKETH"
                     >
-                      <span style="width: 170px" v-if="item.time">
-                        {{ item.time | formatDateToCalendar }}
-                      </span>
                       <span v-if="ckTokenInfo[item.tokenId]">
                         {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
                       </span>
@@ -1550,12 +1228,12 @@
                           "
                         >
                           {{
-                            item.amount
-                              | bigintToFloat(
+                            item.amount |
+                              bigintToFloat(
                                 8,
                                 ckTokenInfo[item.tokenId].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </a>
                         <a
@@ -1576,12 +1254,12 @@
                           "
                         >
                           {{
-                            item.amount
-                              | bigintToFloat(
+                            item.amount |
+                              bigintToFloat(
                                 8,
                                 ckTokenInfo[item.tokenId].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </a>
                         <span
@@ -1593,20 +1271,17 @@
                           "
                         >
                           {{
-                            item.amount
-                              | bigintToFloat(
+                            item.amount |
+                              bigintToFloat(
                                 8,
                                 ckTokenInfo[item.tokenId].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                       </span>
                       <span
-                        :class="{
-                          'base-green':
-                            Object.keys(item.status)[0] === 'TxFinalized'
-                        }"
+                        class="base-font-title"
                         style="
                           display: flex;
                           align-items: center;
@@ -1642,16 +1317,371 @@
                       </button>
                     </div>
                   </div>
-                  <div class="pagination-transaction-main">
-                    <a-pagination
-                      :current="CKETHResponsePage"
-                      :default-page-size="10"
-                      :total="activePending.CKETHResponse.length"
-                      @change="pageChangeCKETHResponse"
-                      class="pagination-transaction"
-                      style="margin-right: 10px"
-                      v-if="activePending.CKETHResponse.length > 10"
-                    />
+                  <div
+                    v-if="
+                      activePending.CKETHResponse &&
+                      activePending.CKETHResponse.length
+                    "
+                  >
+                    <div
+                      :key="index"
+                      style="color: #adb7c2"
+                      v-for="(item, index) in activePending.CKETHResponse.slice(
+                        (CKETHResponsePage - 1) * 10,
+                        CKETHResponsePage * 10
+                      )"
+                    >
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'BTCRetrieve'"
+                      >
+                        <span style="width: 170px" v-if="item.time">
+                          {{ item.time | formatDateToCalendar }}
+                        </span>
+                        <span> ckBTC(IC Network) </span>
+                        &nbsp;->&nbsp;
+                        <span> BTC </span>
+                        <span class="margin-left-auto">
+                          <a
+                            :href="`https://www.blockchain.com/btc/tx/${getRetrieveBtcTxidResponse(
+                              item.status
+                            )}`"
+                            class="link"
+                            rel="nofollow noreferrer noopener"
+                            target="_blank"
+                            v-if="getRetrieveBtcTxidResponse(item.status)"
+                          >
+                            {{
+                              getRetrieveBtcTxidResponse(item.status) |
+                                ellipsisAccount()
+                            }}
+                          </a>
+                        </span>
+                        <span
+                          :class="{
+                            'base-green':
+                              Object.keys(item.status)[0] === 'Confirmed'
+                          }"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin: 0 10px 0 20px;
+                            width: 100px;
+                          "
+                        >
+                          <span>
+                            {{ item.status && Object.keys(item.status)[0] }}
+                          </span>
+                          <span
+                            class="loading-spinner"
+                            v-show="
+                              item.status &&
+                              [
+                                'Pending',
+                                'Sending',
+                                'Submitted',
+                                'Signing'
+                              ].includes(Object.keys(item.status)[0])
+                            "
+                          ></span>
+                        </span>
+                        <button
+                          @click="toActive('BTCRetrieve', null)"
+                          class="primary"
+                          v-show="
+                            !item.status ||
+                            (item.status &&
+                              Object.keys(item.status)[0] &&
+                              Object.keys(item.status)[0] !== 'Confirmed' &&
+                              Object.keys(item.status)[0] !== 'NotFound' &&
+                              Object.keys(item.status)[0] !== 'AmountTooLow')
+                          "
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'BTCMint'"
+                      >
+                        <span style="width: 170px" v-if="item.time">
+                          {{ item.time | formatDateToCalendar }}
+                        </span>
+                        <span> BTC </span>
+                        &nbsp;->&nbsp;
+                        <span> ckBTC(IC Network) </span>
+                        <div class="margin-left-auto">
+                          <div :key="index" v-for="(out, index) in item.vout">
+                            <a
+                              :href="`https://www.blockchain.com/btc/tx/${item.txid}`"
+                              class="link"
+                              rel="nofollow noreferrer noopener"
+                              target="_blank"
+                              v-show="out.scriptpubkey_address === BTCAddressCk"
+                              >{{
+                                out.value |
+                                  bigintToFloat(8, 8) |
+                                  formatAmount(8)
+                              }}
+                            </a>
+                          </div>
+                        </div>
+                        <span
+                          :class="{
+                            'base-green':
+                              item.status.block_height &&
+                              item.status.block_height <= updateCkBlockHeight
+                          }"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin: 0 10px 0 20px;
+                            width: 100px;
+                          "
+                          v-show="
+                            item.status.block_height &&
+                            item.status.block_height <= updateCkBlockHeight
+                          "
+                        >
+                          {{ filterStatus(item.status.block_height) }}
+                          <span
+                            v-if="
+                              item.status.block_height &&
+                              blockCount - item.status.block_height < 11
+                            "
+                          >
+                            ({{ blockCount - item.status.block_height + 1 }})
+                          </span>
+                        </span>
+                        <button
+                          @click="toActive('mintCKBTC', null)"
+                          class="primary"
+                          style="margin-left: 40px"
+                          v-show="
+                            !(
+                              item.status.block_height &&
+                              item.status.block_height <= updateCkBlockHeight
+                            )
+                          "
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'mint'"
+                      >
+                        <span style="width: 170px" v-if="item.time">
+                          {{ item.time | formatDateToCalendar }}
+                        </span>
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].symbol }}
+                        </span>
+                        &nbsp;->&nbsp;
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                        </span>
+                        <span class="margin-left-auto">
+                          <a
+                            :href="`${ckEthLink}/tx/${item.txHash}`"
+                            class="link"
+                            rel="nofollow noreferrer noopener"
+                            target="_blank"
+                          >
+                            {{
+                              item.amount |
+                                bigintToFloat(
+                                  8,
+                                  ckTokenInfo[item.tokenId].decimals
+                                ) |
+                                formatAmount(8)
+                            }}
+                          </a>
+                        </span>
+                        <span
+                          class="base-font-title"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin: 0 10px 0 20px;
+                            width: 100px;
+                          "
+                        >
+                          <span v-show="!item.blockNumber">
+                            Pending<span class="loading-spinner"></span
+                          ></span>
+                          <span
+                            class="base-green"
+                            v-show="
+                              lastScrapedBlockNumber &&
+                              item.blockNumber &&
+                              lastScrapedBlockNumber >= Number(item.blockNumber)
+                            "
+                          >
+                            Confirmed
+                          </span>
+                          <span
+                            v-show="
+                              lastScrapedBlockNumber &&
+                              item.blockNumber &&
+                              lastScrapedBlockNumber < Number(item.blockNumber)
+                            "
+                          >
+                            Submitted<span class="loading-spinner"></span>
+                          </span>
+                        </span>
+                        <button
+                          @click="toActive('mintCKETH', item.tokenId)"
+                          class="primary"
+                          v-show="
+                            !(
+                              lastScrapedBlockNumber &&
+                              item.blockNumber &&
+                              lastScrapedBlockNumber >= Number(item.blockNumber)
+                            )
+                          "
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'retrieve'"
+                      >
+                        <span style="width: 170px" v-if="item.time">
+                          {{ item.time | formatDateToCalendar }}
+                        </span>
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                        </span>
+                        &nbsp;->&nbsp;
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].symbol }}
+                        </span>
+                        <span
+                          class="margin-left-auto"
+                          v-if="ckTokenInfo[item.tokenId]"
+                        >
+                          <a
+                            :href="`${ckEthLink}/tx/${
+                              Object.values(item.status)[0].transaction_hash
+                            }`"
+                            class="link"
+                            rel="nofollow noreferrer noopener"
+                            target="_blank"
+                            v-if="
+                              item.status &&
+                              Object.keys(item.status)[0] === 'TxSent'
+                            "
+                          >
+                            {{
+                              item.amount |
+                                bigintToFloat(
+                                  8,
+                                  ckTokenInfo[item.tokenId].decimals
+                                ) |
+                                formatAmount(8)
+                            }}
+                          </a>
+                          <a
+                            :href="`${ckEthLink}/tx/${
+                              Object.values(item.status)[0].Success
+                                .transaction_hash
+                            }`"
+                            class="link"
+                            rel="nofollow noreferrer noopener"
+                            target="_blank"
+                            v-if="
+                              item.status &&
+                              Object.keys(item.status)[0] === 'TxFinalized' &&
+                              Object.values(item.status)[0] &&
+                              Object.values(item.status)[0].Success &&
+                              Object.values(item.status)[0].Success
+                                .transaction_hash
+                            "
+                          >
+                            {{
+                              item.amount |
+                                bigintToFloat(
+                                  8,
+                                  ckTokenInfo[item.tokenId].decimals
+                                ) |
+                                formatAmount(8)
+                            }}
+                          </a>
+                          <span
+                            v-if="
+                              (item.status &&
+                                Object.keys(item.status)[0] !== 'TxSent' &&
+                                Object.keys(item.status)[0] !==
+                                  'TxFinalized') ||
+                              !item.status
+                            "
+                          >
+                            {{
+                              item.amount |
+                                bigintToFloat(
+                                  8,
+                                  ckTokenInfo[item.tokenId].decimals
+                                ) |
+                                formatAmount(8)
+                            }}
+                          </span>
+                        </span>
+                        <span
+                          :class="{
+                            'base-green':
+                              Object.keys(item.status)[0] === 'TxFinalized'
+                          }"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin: 0 10px 0 20px;
+                            width: 100px;
+                          "
+                          v-if="item.status && Object.keys(item.status)[0]"
+                        >
+                          {{ Object.keys(item.status)[0]
+                          }}<span
+                            class="loading-spinner"
+                            v-show="
+                              item.status &&
+                              ['Pending', 'TxCreated', 'TxSent'].includes(
+                                Object.keys(item.status)[0]
+                              )
+                            "
+                          ></span>
+                        </span>
+                        <button
+                          @click="toActive('retrieveCKETH', item.tokenId)"
+                          class="primary"
+                          v-if="
+                            !item.status ||
+                            (item.status &&
+                              Object.keys(item.status)[0] &&
+                              Object.keys(item.status)[0] !== 'TxFinalized' &&
+                              Object.keys(item.status)[0] !== 'NotFound')
+                          "
+                        >
+                          View
+                        </button>
+                      </div>
+                    </div>
+                    <div class="pagination-transaction-main">
+                      <a-pagination
+                        :current="CKETHResponsePage"
+                        :default-page-size="10"
+                        :total="activePending.CKETHResponse.length"
+                        @change="pageChangeCKETHResponse"
+                        class="pagination-transaction"
+                        style="margin-right: 10px"
+                        v-if="activePending.CKETHResponse.length > 10"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1790,9 +1820,9 @@
                 <div class="balance base-font-normal">
                   <span>
                     {{
-                      ERC20Balance[icNetworkTokens.tokenId]
-                        | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                        | formatAmount(8)
+                      ERC20Balance[icNetworkTokens.tokenId] |
+                        bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                        formatAmount(8)
                     }}
                   </span>
                 </div>
@@ -1821,8 +1851,8 @@
                 Fee:&nbsp;
                 <span>
                   {{
-                    tokens[icNetworkTokens.tokenId].fee
-                      | bigintToFloat(
+                    tokens[icNetworkTokens.tokenId].fee |
+                      bigintToFloat(
                         icNetworkTokens.icTokenInfo.decimals,
                         icNetworkTokens.icTokenInfo.decimals
                       )
@@ -1875,12 +1905,12 @@
               <div class="balance base-font-normal">
                 <span>
                   &nbsp;{{
-                    ERC20Balance['apia6-jaaaa-aaaar-qabma-cai']
-                      | bigintToFloat(
+                    ERC20Balance['apia6-jaaaa-aaaar-qabma-cai'] |
+                      bigintToFloat(
                         8,
                         tokens['apia6-jaaaa-aaaar-qabma-cai'].decimals
-                      )
-                      | formatAmount(8)
+                      ) |
+                      formatAmount(8)
                   }}&nbsp;
                 </span>
               </div>
@@ -1900,12 +1930,12 @@
               <div class="balance base-font-normal">
                 <span>
                   {{
-                    ERC20Balance['ss2fx-dyaaa-aaaar-qacoq-cai']
-                      | bigintToFloat(
+                    ERC20Balance['ss2fx-dyaaa-aaaar-qacoq-cai'] |
+                      bigintToFloat(
                         8,
                         tokens['ss2fx-dyaaa-aaaar-qacoq-cai'].decimals
-                      )
-                      | formatAmount(8)
+                      ) |
+                      formatAmount(8)
                   }}
                 </span>
               </div>
@@ -1951,12 +1981,12 @@
                   <td>
                     <span>
                       {{
-                        item.amount
-                          | bigintToFloat(
+                        item.amount |
+                          bigintToFloat(
                             8,
                             icNetworkTokens.icTokenInfo.decimals
-                          )
-                          | formatAmount(8)
+                          ) |
+                          formatAmount(8)
                       }}
                     </span>
                   </td>
@@ -2030,9 +2060,9 @@
                 <span class="li-left">Amount:</span>
                 <span class="margin-left-auto">
                   {{
-                    item.amount
-                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                      | formatAmount(8)
+                    item.amount |
+                      bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                      formatAmount(8)
                   }}
                 </span>
               </div>
@@ -2151,9 +2181,9 @@
           Balance:
           <span>
             {{
-              ERC20Balance[icNetworkTokens.tokenId]
-                | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                | formatAmount(8)
+              ERC20Balance[icNetworkTokens.tokenId] |
+                bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                formatAmount(8)
             }}
           </span>
           &nbsp;{{ icNetworkTokens.symbol }} ({{
@@ -2249,12 +2279,12 @@
                   <td>
                     <span>
                       {{
-                        item.amount
-                          | bigintToFloat(
+                        item.amount |
+                          bigintToFloat(
                             8,
                             icNetworkTokens.icTokenInfo.decimals
-                          )
-                          | formatAmount(8)
+                          ) |
+                          formatAmount(8)
                       }}
                     </span>
                   </td>
@@ -2318,9 +2348,9 @@
                 <span class="li-left">Amount:</span>
                 <span class="margin-left-auto">
                   {{
-                    item.amount
-                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                      | formatAmount(8)
+                    item.amount |
+                      bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                      formatAmount(8)
                   }}
                 </span>
               </div>
@@ -2548,9 +2578,9 @@
               <div class="balance base-font-normal">
                 <span>
                   {{
-                    ERC20Balance[icNetworkTokens.tokenId]
-                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                      | formatNum
+                    ERC20Balance[icNetworkTokens.tokenId] |
+                      bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                      formatNum
                   }}
                 </span>
               </div>
@@ -2649,9 +2679,9 @@
               <div class="balance base-font-normal">
                 <span>
                   {{
-                    ERC20Balance[icNetworkTokens.tokenId]
-                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                      | formatNum
+                    ERC20Balance[icNetworkTokens.tokenId] |
+                      bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                      formatNum
                   }}
                 </span>
               </div>
@@ -2733,11 +2763,7 @@
               </div>
               &nbsp;->&nbsp;
               <span
-                class="
-                  retrieve-btc-status-flex
-                  retrieve-btc-status-flex-pc
-                  retrieve-btc-status-flex-h5
-                "
+                class="retrieve-btc-status-flex retrieve-btc-status-flex-pc retrieve-btc-status-flex-h5"
                 v-if="item[2] && item[2].mint"
               >
                 <a
@@ -2756,9 +2782,9 @@
                 v-if="item[2] && item[2].mint"
               >
                 {{
-                  item[2].mint.amount
-                    | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                    | formatAmount(8)
+                  item[2].mint.amount |
+                    bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                    formatAmount(8)
                 }}
                 {{ icNetworkTokens.icTokenInfo.symbol }} ({{
                   networkIds[otherNetworkTokens.networkId]
@@ -2875,9 +2901,9 @@
               <div class="cell" style="width: 210px">
                 <span v-if="icNetworkTokens && icNetworkTokens.icTokenInfo">
                   {{
-                    item.amount
-                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                      | formatAmount(8)
+                    item.amount |
+                      bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                      formatAmount(8)
                   }}
                   <span v-show="Object.keys(item.txType)[0] === 'Deposit'">
                     {{ icNetworkTokens.symbol }} ({{
@@ -2952,9 +2978,9 @@
                   v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
                 >
                   {{
-                    item.amount
-                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                      | formatAmount(8)
+                    item.amount |
+                      bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                      formatAmount(8)
                   }}
                   <span v-show="Object.keys(item.txType)[0] === 'Deposit'">
                     {{ icNetworkTokens.symbol }} ({{
@@ -3044,8 +3070,8 @@
             "
             >, last update:
             {{
-              currentTxTimeCkETH[icNetworkTokens.tokenId]
-                | formatDateFromSecondUTCToHour
+              currentTxTimeCkETH[icNetworkTokens.tokenId] |
+                formatDateFromSecondUTCToHour
             }}</span
           >
         </div>
@@ -3110,12 +3136,12 @@
                       target="_blank"
                     >
                       {{
-                        tx.value
-                          | bigintToFloat(
+                        tx.value |
+                          bigintToFloat(
                             8,
                             icNetworkTokens.icTokenInfo.decimals
-                          )
-                          | formatAmount(8)
+                          ) |
+                          formatAmount(8)
                       }}
                       {{ icNetworkTokens.icTokenInfo.symbol }} ({{
                         networkIds[otherNetworkTokens.networkId]
@@ -3246,12 +3272,12 @@
                       target="_blank"
                     >
                       {{
-                        tx.value
-                          | bigintToFloat(
+                        tx.value |
+                          bigintToFloat(
                             8,
                             icNetworkTokens.icTokenInfo.decimals
-                          )
-                          | formatAmount(8)
+                          ) |
+                          formatAmount(8)
                       }}
                       {{ icNetworkTokens.icTokenInfo.symbol }} ({{
                         networkIds[otherNetworkTokens.networkId]
@@ -3535,8 +3561,8 @@
                             target="_blank"
                           >
                             {{
-                              account.prevout.scriptpubkey_address
-                                | ellipsisAccount(6)
+                              account.prevout.scriptpubkey_address |
+                                ellipsisAccount(6)
                             }}
                           </a>
                           <span class="tx-balance flex1">
@@ -3672,8 +3698,8 @@
                             target="_blank"
                           >
                             {{
-                              account.prevout.scriptpubkey_address
-                                | ellipsisAccount(6)
+                              account.prevout.scriptpubkey_address |
+                                ellipsisAccount(6)
                             }}
                           </a>
                           <span class="tx-balance flex1">
@@ -4013,10 +4039,7 @@
               <ul class="retrieve-btc-status-ul">
                 <li>
                   <div
-                    class="
-                      retrieve-btc-status-block-index
-                      retrieve-btc-status-block-index-block
-                    "
+                    class="retrieve-btc-status-block-index retrieve-btc-status-block-index-block"
                   >
                     BlockIndex
                   </div>
@@ -4197,12 +4220,12 @@
                   <div class="balance base-font-normal">
                     <span>
                       {{
-                        ERC20Balance[icNetworkTokens.tokenId]
-                          | bigintToFloat(
+                        ERC20Balance[icNetworkTokens.tokenId] |
+                          bigintToFloat(
                             8,
                             icNetworkTokens.icTokenInfo.decimals
-                          )
-                          | formatAmount(8)
+                          ) |
+                          formatAmount(8)
                       }}
                     </span>
                   </div>
@@ -4231,8 +4254,8 @@
                   Fee:&nbsp;
                   <span>
                     {{
-                      tokens[icNetworkTokens.tokenId].fee
-                        | bigintToFloat(
+                      tokens[icNetworkTokens.tokenId].fee |
+                        bigintToFloat(
                           icNetworkTokens.icTokenInfo.decimals,
                           icNetworkTokens.icTokenInfo.decimals
                         )
@@ -4305,8 +4328,8 @@
                   networkIds[icNetworkTokens.networkId]
                 }}) available:
                 {{
-                  dissolveBalanceETH
-                    | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                  dissolveBalanceETH |
+                    bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
                 }}
               </div>
               <div v-if="minterInfo">
@@ -4329,8 +4352,8 @@
               >
                 Retrieve
                 {{
-                  dissolveBalanceETH
-                    | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
+                  dissolveBalanceETH |
+                    bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
                 }}
                 {{ icNetworkTokens.symbol }} ({{
                   networkIds[icNetworkTokens.networkId]
@@ -4393,12 +4416,7 @@
                   </span>
                 </span>
                 <span
-                  class="
-                    base-font-title
-                    margin-left-auto
-                    text-right
-                    retrieve-margin-left-auto
-                  "
+                  class="base-font-title margin-left-auto text-right retrieve-margin-left-auto"
                   style="min-width: 30%"
                   v-if="
                     item[2] &&
@@ -4407,9 +4425,9 @@
                   "
                 >
                   {{
-                    item[2].withdrawResult.ok.amount
-                      | bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals)
-                      | formatAmount(8)
+                    item[2].withdrawResult.ok.amount |
+                      bigintToFloat(8, icNetworkTokens.icTokenInfo.decimals) |
+                      formatAmount(8)
                   }}
                   {{ icNetworkTokens.icTokenInfo.symbol }} ({{
                     networkIds[otherNetworkTokens.networkId]
@@ -4512,12 +4530,12 @@
                   <div class="margin-left-auto" style="text-align: right">
                     <span>
                       {{
-                        status[1].amount
-                          | bigintToFloat(
+                        status[1].amount |
+                          bigintToFloat(
                             8,
                             icNetworkTokens.icTokenInfo.decimals
-                          )
-                          | formatAmount(8)
+                          ) |
+                          formatAmount(8)
                       }}
                       {{ icNetworkTokens.icTokenInfo.symbol }} ({{
                         networkIds[otherNetworkTokens.networkId]
@@ -4575,12 +4593,12 @@
                     <span class="margin-left-auto">
                       <span>
                         {{
-                          status[1].amount
-                            | bigintToFloat(
+                          status[1].amount |
+                            bigintToFloat(
                               8,
                               icNetworkTokens.icTokenInfo.decimals
-                            )
-                            | formatAmount(8)
+                            ) |
+                            formatAmount(8)
                         }}
                         {{ icNetworkTokens.icTokenInfo.symbol }} ({{
                           networkIds[otherNetworkTokens.networkId]
@@ -4801,9 +4819,9 @@
             </span>
             <span class="margin-left-auto">
               {{
-                item.amount
-                  | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
-                  | formatAmount(8)
+                item.amount |
+                  bigintToFloat(8, ckTokenInfo[item.tokenId].decimals) |
+                  formatAmount(8)
               }}
             </span>
             <button @click="toActive('mint', item.tokenId)" class="primary">
@@ -4855,16 +4873,16 @@
               "
             >
               {{
-                activePending.deposit[2][0].amount
-                  | bigintToFloat(
+                activePending.deposit[2][0].amount |
+                  bigintToFloat(
                     8,
                     ckTokenInfo[
                       ethersTokenIdToCkTokenId[
                         activePending.deposit[2][0].tokenId
                       ]
                     ].decimals
-                  )
-                  | formatAmount(8)
+                  ) |
+                  formatAmount(8)
               }}
             </span>
             <button
@@ -4895,9 +4913,9 @@
             </span>
             <span class="margin-left-auto">
               {{
-                item.amount
-                  | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
-                  | formatAmount(8)
+                item.amount |
+                  bigintToFloat(8, ckTokenInfo[item.tokenId].decimals) |
+                  formatAmount(8)
               }}
             </span>
             <button @click="toActive('retrieve', item.tokenId)" class="primary">
@@ -4943,16 +4961,16 @@
               "
             >
               {{
-                activePending.retrieve2[1].amount
-                  | bigintToFloat(
+                activePending.retrieve2[1].amount |
+                  bigintToFloat(
                     8,
                     ckTokenInfo[
                       ethersTokenIdToCkTokenId[
                         activePending.retrieve2[1].tokenId
                       ]
                     ].decimals
-                  )
-                  | formatAmount(8)
+                  ) |
+                  formatAmount(8)
               }}
             </span>
             <button
@@ -5011,9 +5029,9 @@
             </span>
             <span class="margin-left-auto" v-if="ckTokenInfo[item.tokenId]">
               {{
-                item.amount
-                  | bigintToFloat(8, ckTokenInfo[item.tokenId].decimals)
-                  | formatAmount(8)
+                item.amount |
+                  bigintToFloat(8, ckTokenInfo[item.tokenId].decimals) |
+                  formatAmount(8)
               }}
             </span>
             <!--<button
@@ -5163,6 +5181,7 @@ import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 import erc20ABI from '@/ic/abi/erc20Deposit';
 import { getFee } from '@/ic/getTokenFee';
+import { connectIcx } from '@/ic/connectIcx';
 
 const { Web3 } = require('web3');
 
@@ -5651,7 +5670,6 @@ export default class extends Vue {
     window.clearInterval(this.activeTimer);
     this.activeTimer = null;
   }
-
   created(): void {
     this.DRC20TokenService = new DRC20TokenService();
     this.ckBTCMinterService = new ckBTCMinterService();
@@ -5666,10 +5684,12 @@ export default class extends Vue {
       this.getMinterInfo().then(() => {
         this.networkTokenDisabled = true;
         this.getCkTokens().then(() => {
-          this.getActive();
+          if (this.principal) {
+            this.getActive();
+          }
           this.activeTimer && clearTimeout(this.activeTimer);
           window.setInterval(() => {
-            if (this.$route.name === 'Account') {
+            if (this.principal && this.$route.name === 'Account') {
               this.getActive();
             }
           }, 60 * 1000);
@@ -6475,51 +6495,46 @@ export default class extends Vue {
       this.updateCkBlockHeight = Number(currentInfo.ckBTCUpdateBlockHeight);
       console.log(this.updateBlockHeight, this.updateCkBlockHeight);
     }
-    this.BTCAddress('1.0', BTCTypeEnum.ckBTC);
-    this.ckBTCMinterService
-      .getBtcAddress(BTCTypeEnum.ckBTC)
-      .then((btcAddress) => {
+    if (this.BTCAddressCk) {
+      axios.get('https://blockchain.info/q/getblockcount').then((blockRes) => {
         axios
-          .get('https://blockchain.info/q/getblockcount')
-          .then((blockRes) => {
-            axios
-              .get(`https://blockstream.info/api/address/${btcAddress}/txs`)
-              .then((res) => {
-                this.blockCount = blockRes.data;
-                const txs = this.filterBTCTxRes(
-                  res,
-                  blockRes.data,
-                  BTCTypeEnum.ckBTC,
-                  btcAddress
-                );
-                console.log(txs);
-                const CKETHResponse = [];
-                if (
-                  this.activePending.CKETHResponse &&
-                  this.activePending.CKETHResponse.length
-                ) {
-                  this.activePending.CKETHResponse.forEach((item) => {
-                    if (item.type !== 'BTCMint') {
-                      CKETHResponse.push(item);
-                    }
-                  });
-                  this.activePending.CKETHResponse = CKETHResponse.concat(txs);
-                } else {
-                  this.activePending.CKETHResponse = txs;
-                }
-                if (this.activePending.CKETHResponse.length) {
-                  const CKETHResponse = this.activePending.CKETHResponse.sort(
-                    (a, b) => {
-                      return Number(b.time) - Number(a.time);
-                    }
-                  );
-                  this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
-                } else {
-                  this.$set(this.activePending, 'CKETHResponse', null);
+          .get(`https://blockstream.info/api/address/${this.BTCAddressCk}/txs`)
+          .then((res) => {
+            this.blockCount = blockRes.data;
+            const txs = this.filterBTCTxRes(
+              res,
+              blockRes.data,
+              BTCTypeEnum.ckBTC,
+              this.BTCAddressCk
+            );
+            console.log(txs);
+            const CKETHResponse = [];
+            if (
+              this.activePending.CKETHResponse &&
+              this.activePending.CKETHResponse.length
+            ) {
+              this.activePending.CKETHResponse.forEach((item) => {
+                if (item.type !== 'BTCMint') {
+                  CKETHResponse.push(item);
                 }
               });
+              this.activePending.CKETHResponse = CKETHResponse.concat(txs);
+            } else {
+              this.activePending.CKETHResponse = txs;
+            }
+            if (this.activePending.CKETHResponse.length) {
+              const CKETHResponse = this.activePending.CKETHResponse.sort(
+                (a, b) => {
+                  return Number(b.time) - Number(a.time);
+                }
+              );
+              this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
+            } else {
+              this.$set(this.activePending, 'CKETHResponse', null);
+            }
           });
       });
+    }
   }
 
   private filterBTCTxRes(
@@ -7173,7 +7188,7 @@ export default class extends Vue {
   }
 
   private getBalanceInit(): void {
-    if (!this.getCheckAuth) {
+    if (this.principal) {
       if (this.BTCType === BTCTypeEnum.icBTC) {
         getTokenBalance({ icrc1: null }, IC_BTC_CANISTER_ID).then((res) => {
           this.icBTCBalance = res;
@@ -7231,11 +7246,13 @@ export default class extends Vue {
     console.log(this.BTCType);
     this.getBalanceInit();
     this.btcTimer = window.setInterval(() => {
-      setTimeout(async () => {
-        if (this.$route.name === 'Account') {
-          this.getBalanceInit();
-        }
-      }, 0);
+      if (this.principal) {
+        setTimeout(async () => {
+          if (this.$route.name === 'Account') {
+            this.getBalanceInit();
+          }
+        }, 0);
+      }
     }, 10000);
   }
 
@@ -7805,7 +7822,7 @@ export default class extends Vue {
     // this.updateRetrieveETHStatus();
     this.updateRetrieveETHStatusTimer = window.setInterval(() => {
       window.setTimeout(() => {
-        if (!this.getCheckAuth) {
+        if (this.principal) {
           if (this.$route.name === 'Account') {
             this.getRetrieveETHList(false);
           }
@@ -8311,7 +8328,7 @@ export default class extends Vue {
       this.balanceTimer = window.setInterval(() => {
         setTimeout(async () => {
           if (this.$route.name === 'Account') {
-            if (!this.getCheckAuth) {
+            if (this.principal) {
               this.dissolveBalanceETH = await getDepositing(
                 { icrc1: null },
                 tokenId,
@@ -8346,7 +8363,7 @@ export default class extends Vue {
     this.updateRetrieveBtcStatus();
     this.updateRetrieveBtcStatusTimer = window.setInterval(() => {
       window.setTimeout(() => {
-        if (!this.getCheckAuth) {
+        if (this.principal) {
           if (this.$route.name === 'Account') {
             this.updateRetrieveBtcStatus();
           }
@@ -8359,7 +8376,7 @@ export default class extends Vue {
       this.updateIcBtcConfirmed();
       this.updateRetrieveBtcSubmittedStatusTimer = window.setInterval(() => {
         window.setTimeout(() => {
-          if (!this.getCheckAuth) {
+          if (this.principal) {
             if (this.$route.name === 'Account') {
               this.updateIcBtcConfirmed();
             }
@@ -8649,7 +8666,7 @@ export default class extends Vue {
     this.btcTxTimer = null;
     this.btcTxTimer = window.setInterval(() => {
       setTimeout(() => {
-        if (!this.getCheckAuth) {
+        if (this.principal) {
           if (this.$route.name === 'Account') {
             this.getBTCTxs();
           }
@@ -8798,12 +8815,14 @@ export default class extends Vue {
       this.ckETHTimer = null;
     }
     this.ckETHTimer = window.setInterval(() => {
-      if (this.$route.name === 'Account') {
-        this.getCKETHBalance(icNetworkTokens);
-        this.getCkETHRetrieveStatus(
-          icNetworkTokens.id,
-          icNetworkTokens.tokenId
-        );
+      if (this.principal) {
+        if (this.$route.name === 'Account') {
+          this.getCKETHBalance(icNetworkTokens);
+          this.getCkETHRetrieveStatus(
+            icNetworkTokens.id,
+            icNetworkTokens.tokenId
+          );
+        }
       }
     }, 30 * 1000);
   }
@@ -8884,19 +8903,24 @@ export default class extends Vue {
       this.ckETHTimer = null;
     }
     this.ckETHTimer = window.setInterval(() => {
-      if (this.$route.name === 'Account') {
-        this.getCkETHMintBlockNum(icNetworkTokens.id, icNetworkTokens.tokenId);
-        let minterId = CK_ETH_MINTER_CANISTER_ID;
-        if (
-          icNetworkTokens.networkId === '3' ||
-          icNetworkTokens.networkToIcId === '3'
-        ) {
-          minterId = CK_ETH_MINTER_CANISTER_ID_TEST;
+      if (this.principal) {
+        if (this.$route.name === 'Account') {
+          this.getCkETHMintBlockNum(
+            icNetworkTokens.id,
+            icNetworkTokens.tokenId
+          );
+          let minterId = CK_ETH_MINTER_CANISTER_ID;
+          if (
+            icNetworkTokens.networkId === '3' ||
+            icNetworkTokens.networkToIcId === '3'
+          ) {
+            minterId = CK_ETH_MINTER_CANISTER_ID_TEST;
+          }
+          this.getLastScrapedBlockNumber(minterId).then((res) => {
+            this.lastScrapedBlockNumber = res;
+          });
+          this.getCKETHBalance(icNetworkTokens);
         }
-        this.getLastScrapedBlockNumber(minterId).then((res) => {
-          this.lastScrapedBlockNumber = res;
-        });
-        this.getCKETHBalance(icNetworkTokens);
       }
     }, 30 * 1000);
   }
@@ -8971,7 +8995,7 @@ export default class extends Vue {
       console.log('getMintDepositing');
       this.updateDepositETHStatusTimer = window.setInterval(() => {
         window.setTimeout(() => {
-          if (!this.getCheckAuth) {
+          if (this.principal) {
             if (this.$route.name === 'Account') {
               // this.updateDepositETHStatus();
               this.getETHDepositBalance();
@@ -9247,7 +9271,7 @@ export default class extends Vue {
     });
     if (this.networkTokensFrom[val].networkId === '-1') {
       const ERC20TokenId = this.networkTokensFrom[val].tokenId;
-      if (ERC20TokenId) {
+      if (ERC20TokenId && this.principal) {
         getTokenBalance({ icrc1: null }, ERC20TokenId).then((balance) => {
           this.$set(this.ERC20Balance, ERC20TokenId, balance);
           console.log(this.ERC20Balance[ERC20TokenId]);
@@ -9330,7 +9354,7 @@ export default class extends Vue {
     console.log(this.networkTokensTo[val].networkId);
     if (this.networkTokensTo[val].networkId === '-1') {
       const ERC20TokenId = this.networkTokensTo[val].tokenId;
-      if (ERC20TokenId) {
+      if (ERC20TokenId && this.principal) {
         getTokenBalance({ icrc1: null }, ERC20TokenId).then((balance) => {
           this.$set(this.ERC20Balance, ERC20TokenId, balance);
           console.log(this.ERC20Balance[ERC20TokenId]);
@@ -10339,7 +10363,7 @@ export default class extends Vue {
       );
       this.balanceTimer = window.setInterval(() => {
         setTimeout(async () => {
-          if (!this.getCheckAuth) {
+          if (this.principal) {
             if (this.$route.name === 'Account') {
               this.dissolveBalance = await getDepositing(
                 { icrc1: null },
@@ -11531,8 +11555,10 @@ export default class extends Vue {
     }
     this.checkTxReceipt(hash);
     this.txReceiptTimer = window.setInterval(async () => {
-      if (this.$route.name === 'Account') {
-        this.checkTxReceipt(hash);
+      if (this.principal) {
+        if (this.$route.name === 'Account') {
+          this.checkTxReceipt(hash);
+        }
       }
     }, 60 * 1000);
   }
@@ -11876,6 +11902,18 @@ export default class extends Vue {
       return value.Success.transaction_hash;
     }
     return '';
+  }
+  private async connectWallet(): Promise<void> {
+    if ((window as any).icx) {
+      const icxCanisterIds: Array<string> =
+        JSON.parse(localStorage.getItem('icxCanisterIds')) || [];
+      await connectIcx(icxCanisterIds);
+    } else {
+      this.$router.push({
+        path: '/login',
+        query: { redirect: this.$route.fullPath }
+      });
+    }
   }
 }
 </script>

@@ -170,7 +170,7 @@ export class ICSwapService {
     return SerializableIC(res);
   };
   public userCount = async (canisterId: string): Promise<bigint> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     return await service.userCount();
   };
   public decimals = async (canisterId: string): Promise<number> => {

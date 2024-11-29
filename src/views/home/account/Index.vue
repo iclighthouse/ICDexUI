@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="wallet-main container-width">
-      <div v-if="getPrincipalId">
+      <div>
         <ul class="icsns-menu">
           <li
             v-for="menu in ICSNSMenu"
@@ -82,7 +82,10 @@
 						{{ item.name }}
 					</li>
 				</ul>-->
-        <div v-show="currentWalletMenu !== 'icRouter'" class="wallet-item">
+        <div
+          v-show="currentWalletMenu !== 'icRouter' && getPrincipalId"
+          class="wallet-item"
+        >
           <p class="base-title-size flex-center">
             IC network
             <button
@@ -105,13 +108,7 @@
             </span>
             <span
               v-show="currentWalletMenu === 'proWallet'"
-              class="
-                flex-center
-                base-tip-size
-                margin-left-auto
-                base-font-title
-                h5-show
-              "
+              class="flex-center base-tip-size margin-left-auto base-font-title h5-show"
             >
               subaccount:&nbsp;<copy-account
                 account="0000000000000000000000000000000000000000000000000000000000000001"
@@ -206,7 +203,7 @@
           </div>
         </div>
         <div
-          v-show="currentWalletMenu === 'wallet'"
+          v-show="currentWalletMenu === 'wallet' && getPrincipalId"
           class="wallet-item wallet-item-no-border"
         >
           <div class="wallet-title">
@@ -254,7 +251,7 @@
           </div>
         </div>
         <div
-          v-show="currentWalletMenu === 'wallet'"
+          v-show="currentWalletMenu === 'wallet' && getPrincipalId"
           class="wallet-item wallet-item-no-border"
         >
           <p class="wallet-title token-title">
@@ -426,7 +423,7 @@
           ref="cyclesCreateWallet"
         ></create-wallet>
       </div>
-      <div v-else>
+      <div v-if="!getPrincipalId && currentWalletMenu !== 'icRouter'">
         <div class="wallet-empty container-width">
           <img src="@/assets/img/empty.png" alt="" />
           <p>Connect wallet to view</p>
@@ -490,12 +487,12 @@
                         >
                           {{
                             mainTokensBalance[item[1][0].canisterId.toString()]
-                              .token0.available
-                              | bigintToFloat(
+                              .token0.available |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token0[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -516,12 +513,12 @@
                         >
                           {{
                             proTokensBalance[item[1][0].canisterId.toString()]
-                              .token0.available
-                              | bigintToFloat(
+                              .token0.available |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token0[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -545,12 +542,12 @@
                         >
                           {{
                             mainTokensBalance[item[1][0].canisterId.toString()]
-                              .token0.locked
-                              | bigintToFloat(
+                              .token0.locked |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token0[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -571,12 +568,12 @@
                         >
                           {{
                             proTokensBalance[item[1][0].canisterId.toString()]
-                              .token0.locked
-                              | bigintToFloat(
+                              .token0.locked |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token0[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -604,12 +601,12 @@
                         >
                           {{
                             mainTokensBalance[item[1][0].canisterId.toString()]
-                              .token1.available
-                              | bigintToFloat(
+                              .token1.available |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token1[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -630,12 +627,12 @@
                         >
                           {{
                             proTokensBalance[item[1][0].canisterId.toString()]
-                              .token1.available
-                              | bigintToFloat(
+                              .token1.available |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token1[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -659,12 +656,12 @@
                         >
                           {{
                             mainTokensBalance[item[1][0].canisterId.toString()]
-                              .token1.locked
-                              | bigintToFloat(
+                              .token1.locked |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token1[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -685,12 +682,12 @@
                         >
                           {{
                             proTokensBalance[item[1][0].canisterId.toString()]
-                              .token1.locked
-                              | bigintToFloat(
+                              .token1.locked |
+                              bigintToFloat(
                                 8,
                                 tokens[item[1][0].token1[0].toString()].decimals
-                              )
-                              | formatAmount(8)
+                              ) |
+                              formatAmount(8)
                           }}
                         </span>
                         <span v-else>-</span>
@@ -1042,12 +1039,16 @@ export default class extends Mixins(BalanceMixin) {
     if (priList[principal]) {
       if (priList[principal] === 'Plug') {
         this.loginType = 'Plug';
+      } else if (priList[principal] === 'SignerPlug') {
+        this.loginType = 'SignerPlug';
       } else if (priList[principal] === 'Infinity') {
         this.loginType = 'Infinity';
       } else if (priList[principal] === 'AuthClient') {
         this.loginType = 'Internet Identity';
       } else if (priList[principal] === 'NFID') {
         this.loginType = 'NFID';
+      } else if (priList[principal] === 'SignerNFID') {
+        this.loginType = 'SignerNFID';
       } else if (priList[principal].includes('MetaMask')) {
         this.loginType = 'MetaMask';
         this.ethAccount = priList[principal].split('MetaMask-')[1];
@@ -1810,7 +1811,11 @@ export default class extends Mixins(BalanceMixin) {
     const NeedconnectInfinity = await needConnectInfinity([
       walletId.toString()
     ]);
-    if (priList[this.getPrincipalId] === 'Plug' && flag) {
+    if (
+      (priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug') &&
+      flag
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       const connectPlug = new ConnectPlug();
@@ -1984,7 +1989,11 @@ export default class extends Mixins(BalanceMixin) {
           const NeedConnectInfinity = await needConnectInfinity([
             this.manageWalletForm.wallet
           ]);
-          if (priList[this.getPrincipalId] === 'Plug' && flag) {
+          if (
+            (priList[this.getPrincipalId] === 'Plug' ||
+              priList[this.getPrincipalId] === 'SignerPlug') &&
+            flag
+          ) {
             const connectPlug = new ConnectPlug();
             this.$info({
               content: 'cycles wallet need to be connected to the plug.',
@@ -2102,7 +2111,11 @@ export default class extends Mixins(BalanceMixin) {
       const needConnectInfinity1 = await needConnectInfinity([
         wallet.toString()
       ]);
-      if (priList[this.getPrincipalId] === 'Plug' && flag) {
+      if (
+        (priList[this.getPrincipalId] === 'Plug' ||
+          priList[this.getPrincipalId] === 'SignerPlug') &&
+        flag
+      ) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const _that = this;
         const connectPlug = new ConnectPlug();
@@ -2261,7 +2274,8 @@ export default class extends Mixins(BalanceMixin) {
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const connectInfinity = await needConnectInfinity(canisterIds);
     if (
-      priList[this.getPrincipalId] === 'Plug' &&
+      (priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug') &&
       flag &&
       this.$route.name === 'Account'
     ) {

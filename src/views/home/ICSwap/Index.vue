@@ -212,7 +212,8 @@ export default class extends Mixins(BalanceMixin) {
         const priList = JSON.parse(localStorage.getItem('priList')) || {};
         const connectInfinity = await needConnectInfinity(canisterIds);
         if (
-          priList[principal] === 'Plug' &&
+          (priList[principal] === 'Plug' ||
+            priList[principal] === 'SignerPlug') &&
           flag &&
           this.$route.name === 'ICSwap'
         ) {

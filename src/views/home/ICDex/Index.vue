@@ -333,14 +333,14 @@
                               "
                             >
                               24h: ${{
-                                item.pair[2].vol24h.value1
-                                  | icpToUsdt(
+                                item.pair[2].vol24h.value1 |
+                                  icpToUsdt(
                                     currentMarketPrice,
                                     item.pair[1][0].token1[1],
                                     tokens[item.pair[1][0].token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatNum
+                                  ) |
+                                  formatNum
                               }}
                             </span>
                           </dt>
@@ -354,14 +354,14 @@
                               "
                             >
                               Total: ${{
-                                item.pair[2].totalVol.value1
-                                  | icpToUsdt(
+                                item.pair[2].totalVol.value1 |
+                                  icpToUsdt(
                                     currentMarketPrice,
                                     item.pair[1][0].token1[1],
                                     tokens[item.pair[1][0].token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatNum
+                                  ) |
+                                  formatNum
                               }}
                             </span>
                           </dd>
@@ -470,8 +470,8 @@
                                 "
                               >
                                 {{
-                                  item.pair[2].price
-                                    | filterPairTokenPrice(
+                                  item.pair[2].price |
+                                    filterPairTokenPrice(
                                       tokens[
                                         item.pair[1][0].token0[0].toString()
                                       ].decimals,
@@ -512,14 +512,14 @@
                                 "
                               >
                                 {{
-                                  item.pair[2].vol24h.value1
-                                    | bigintToFloat(
+                                  item.pair[2].vol24h.value1 |
+                                    bigintToFloat(
                                       2,
                                       tokens[
                                         item.pair[1][0].token1[0].toString()
                                       ].decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dt>
@@ -535,14 +535,14 @@
                                 "
                               >
                                 {{
-                                  item.pair[2].totalVol.value1
-                                    | bigintToFloat(
+                                  item.pair[2].totalVol.value1 |
+                                    bigintToFloat(
                                       2,
                                       tokens[
                                         item.pair[1][0].token1[0].toString()
                                       ].decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dd>
@@ -604,14 +604,14 @@
                                 "
                               >
                                 24h: ${{
-                                  pair[2].vol24h.value1
-                                    | icpToUsdt(
+                                  pair[2].vol24h.value1 |
+                                    icpToUsdt(
                                       currentMarketPrice,
                                       pair[1][0].token1[1],
                                       tokens[pair[1][0].token1[0].toString()]
                                         .decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dt>
@@ -625,14 +625,14 @@
                                 "
                               >
                                 Total: ${{
-                                  pair[2].totalVol.value1
-                                    | icpToUsdt(
+                                  pair[2].totalVol.value1 |
+                                    icpToUsdt(
                                       currentMarketPrice,
                                       pair[1][0].token1[1],
                                       tokens[pair[1][0].token1[0].toString()]
                                         .decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dd>
@@ -739,8 +739,8 @@
                                   "
                                 >
                                   {{
-                                    pair[2].price
-                                      | filterPairTokenPrice(
+                                    pair[2].price |
+                                      filterPairTokenPrice(
                                         tokens[pair[1][0].token0[0].toString()]
                                           .decimals,
                                         tokens[pair[1][0].token1[0].toString()]
@@ -777,13 +777,13 @@
                                   "
                                 >
                                   {{
-                                    pair[2].vol24h.value1
-                                      | bigintToFloat(
+                                    pair[2].vol24h.value1 |
+                                      bigintToFloat(
                                         2,
                                         tokens[pair[1][0].token1[0].toString()]
                                           .decimals
-                                      )
-                                      | formatNum
+                                      ) |
+                                      formatNum
                                   }}
                                 </span>
                               </dt>
@@ -797,13 +797,13 @@
                                   "
                                 >
                                   {{
-                                    pair[2].totalVol.value1
-                                      | bigintToFloat(
+                                    pair[2].totalVol.value1 |
+                                      bigintToFloat(
                                         2,
                                         tokens[pair[1][0].token1[0].toString()]
                                           .decimals
-                                      )
-                                      | formatNum
+                                      ) |
+                                      formatNum
                                   }}
                                 </span>
                               </dd>
@@ -872,8 +872,8 @@
                           getTradeSide(item[2].token0Value) === 'Sell'
                       }"
                       >{{
-                        item[2]
-                          | filterLatestPrice(
+                        item[2] |
+                          filterLatestPrice(
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
                             tokens[currentPair[1][0].token1[0].toString()]
@@ -892,8 +892,8 @@
                         tokens[currentPair[1][0].token0[0].toString()]
                       "
                       >{{
-                        Object.values(item[2].token0Value)[0]
-                          | filterLatestAmount(
+                        Object.values(item[2].token0Value)[0] |
+                          filterLatestAmount(
                             tokenMinUnit,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -1069,13 +1069,13 @@
                     "
                   >
                     {{
-                      currentPair[2].vol24h.value1
-                        | bigintToFloat(
+                      currentPair[2].vol24h.value1 |
+                        bigintToFloat(
                           2,
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                 </div>
@@ -1597,8 +1597,8 @@
                             getTradeSide(item[2].token0Value) === 'Sell'
                         }"
                         >{{
-                          item[2]
-                            | filterLatestPrice(
+                          item[2] |
+                            filterLatestPrice(
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals,
                               tokens[currentPair[1][0].token1[0].toString()]
@@ -1617,8 +1617,8 @@
                           tokens[currentPair[1][0].token0[0].toString()]
                         "
                         >{{
-                          Object.values(item[2].token0Value)[0]
-                            | filterLatestAmount(
+                          Object.values(item[2].token0Value)[0] |
+                            filterLatestAmount(
                               tokenMinUnit,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -1773,8 +1773,8 @@
                       "
                       :to="`/icRouter?type=mint&token=${currentPair[1][0].token1[0].toString()}`"
                       >{{
-                        tokensBalance[currentPair[1][0].token1[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token1[0].toString()] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals,
@@ -1782,8 +1782,8 @@
                             ),
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}<span
                         >&nbsp;{{ currentPair[1][0].token1[1] }}
                         <span
@@ -1810,8 +1810,8 @@
                     "
                   >
                     {{
-                      tokensBalance[currentPair[1][0].token1[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[currentPair[1][0].token1[0].toString()] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
@@ -1819,8 +1819,8 @@
                           ),
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token1[1] }}
                   </span>
                 </span>
@@ -1877,14 +1877,14 @@
                     "
                   >
                     {{
-                      keepingBalance[currentPair[1][0].token1[0].toString()]
-                        | filterKeepingBalance(
+                      keepingBalance[currentPair[1][0].token1[0].toString()] |
+                        filterKeepingBalance(
                           stopLimitNeed.token1,
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals,
                           8
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token1[1] }}
                   </span>
                 </a-tooltip>
@@ -1980,9 +1980,9 @@
                   <template slot="title">
                     <span v-if="currentMarketPrice['']"
                       >≈ ${{
-                        stopBuyPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        stopBuyPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2027,9 +2027,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        buyPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        buyPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2123,9 +2123,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        buyTotal
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        buyTotal |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2174,8 +2174,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | bigintToFloat(
+                        stoConfig.sloFee1 |
+                          bigintToFloat(
                             tokens[sysConfig.sysToken.toString()].decimals,
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
@@ -2187,8 +2187,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | stoUpdateFee(
+                        stoConfig.sloFee1 |
+                          stoUpdateFee(
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
                       }}
@@ -2369,9 +2369,9 @@
                     </span>
                     <span v-show="!buyTotalMKTError"
                       >≈ ${{
-                        buyTotalMKT
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        buyTotalMKT |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2545,8 +2545,8 @@
                       :to="`/icRouter?type=mint&token=${currentPair[1][0].token0[0].toString()}`"
                     >
                       {{
-                        tokensBalance[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token0[0].toString()] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals,
@@ -2554,8 +2554,8 @@
                             ),
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}<span
                         >&nbsp;{{ currentPair[1][0].token0[1] }}
                         <span
@@ -2582,8 +2582,8 @@
                     "
                   >
                     {{
-                      tokensBalance[currentPair[1][0].token0[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[currentPair[1][0].token0[0].toString()] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
@@ -2591,8 +2591,8 @@
                           ),
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token0[1] }}
                     <span
                       class="old-icl-type"
@@ -2654,14 +2654,14 @@
                     "
                   >
                     {{
-                      keepingBalance[currentPair[1][0].token0[0].toString()]
-                        | filterKeepingBalance(
+                      keepingBalance[currentPair[1][0].token0[0].toString()] |
+                        filterKeepingBalance(
                           stopLimitNeed.token0,
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals,
                           8
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token0[1] }}
                   </span>
                 </a-tooltip>
@@ -2755,9 +2755,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        stopSellPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        stopSellPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2803,9 +2803,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        sellPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        sellPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2904,9 +2904,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        sellTotal
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        sellTotal |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2955,8 +2955,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | bigintToFloat(
+                        stoConfig.sloFee1 |
+                          bigintToFloat(
                             tokens[sysConfig.sysToken.toString()].decimals,
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
@@ -2966,8 +2966,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | stoUpdateFee(
+                        stoConfig.sloFee1 |
+                          stoUpdateFee(
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
                       }}
@@ -3337,8 +3337,10 @@
                       style="line-height: 14px"
                     >
                       {{
-                        tokensBalanceSto[currentPair[1][0].token1[0].toString()]
-                          | bigintToFloat(
+                        tokensBalanceSto[
+                          currentPair[1][0].token1[0].toString()
+                        ] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals,
@@ -3346,8 +3348,8 @@
                             ),
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       {{
                         tokens[currentPair[1][0].token1[0].toString()].symbol
@@ -3379,8 +3381,10 @@
                       style="line-height: 14px"
                     >
                       {{
-                        tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
+                        tokensBalanceSto[
+                          currentPair[1][0].token0[0].toString()
+                        ] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals,
@@ -3388,8 +3392,8 @@
                             ),
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       {{
                         tokens[currentPair[1][0].token0[0].toString()].symbol
@@ -3458,8 +3462,8 @@
                           {{
                             keepingBalanceSto[
                               currentPair[1][0].token1[0].toString()
-                            ]
-                              | bigintToFloat(
+                            ] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals,
@@ -3467,8 +3471,8 @@
                                 ),
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                         </span>
                         {{
@@ -3544,8 +3548,8 @@
                           {{
                             keepingBalanceSto[
                               currentPair[1][0].token0[0].toString()
-                            ]
-                              | bigintToFloat(
+                            ] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals,
@@ -3553,8 +3557,8 @@
                                 ),
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                         </span>
                         {{
@@ -3976,11 +3980,7 @@
       </div>
       <div class="swap-transfer-list">
         <div
-          class="
-            swap-transfer-list-header
-            swap-transfer-list-header-fallback
-            swap-transfer-list-header-fallback-trades
-          "
+          class="swap-transfer-list-header swap-transfer-list-header-fallback swap-transfer-list-header-fallback-trades"
         >
           <ul>
             <li
@@ -4074,9 +4074,9 @@
             "
           >
             {{
-              pendingList
-                | filterPendingToken0
-                | bigintToFloat(
+              pendingList |
+                filterPendingToken0 |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token0[0].toString()].decimals,
                     8
@@ -4099,15 +4099,15 @@
             "
           >
             {{
-              pendingList
-                | filterPendingToken1(
+              pendingList |
+                filterPendingToken1(
                   unit,
                   buyUnit,
                   tokenMinUnit,
                   tokens[currentPair[1][0].token0[0].toString()].decimals,
                   tokens[currentPair[1][0].token1[0].toString()].decimals
-                )
-                | bigintToFloat(
+                ) |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token1[0].toString()].decimals,
                     8
@@ -4133,8 +4133,8 @@
             "
           >
             {{
-              userLiquidity.vol.value0
-                | bigintToFloat(
+              userLiquidity.vol.value0 |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token0[0].toString()].decimals,
                     8
@@ -4154,8 +4154,8 @@
             "
           >
             {{
-              userLiquidity.vol.value1
-                | bigintToFloat(
+              userLiquidity.vol.value1 |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token1[0].toString()].decimals,
                     8
@@ -4288,8 +4288,8 @@
                           "
                         >
                           {{
-                            item.strategy.GridOrder.setting.spread.Geom
-                              | filterPpm
+                            item.strategy.GridOrder.setting.spread.Geom |
+                              filterPpm
                           }}
                         </span>
                         <span
@@ -4337,8 +4337,8 @@
                                 .length
                             "
                             >{{
-                              item.strategy.GridOrder.setting.amount.Percent[0]
-                                | filterPpm
+                              item.strategy.GridOrder.setting.amount
+                                .Percent[0] | filterPpm
                             }}
                             <a-tooltip placement="top">
                               <template slot="title">
@@ -4362,8 +4362,8 @@
                           "
                         >
                           {{
-                            item.strategy.GridOrder.setting.amount.Token0
-                              | bigintToFloat(
+                            item.strategy.GridOrder.setting.amount.Token0 |
+                              bigintToFloat(
                                 tokenMinUnit,
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
@@ -4386,8 +4386,8 @@
                           "
                         >
                           {{
-                            item.strategy.GridOrder.setting.amount.Token1
-                              | bigintToFloat(
+                            item.strategy.GridOrder.setting.amount.Token1 |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -4442,13 +4442,13 @@
                         Period:
                         <span>
                           {{
-                            item.strategy.IcebergOrder.setting.startingTime
-                              | formatDateToMinuteFilter
+                            item.strategy.IcebergOrder.setting.startingTime |
+                              formatDateToMinuteFilter
                           }}
                           ~
                           {{
-                            item.strategy.IcebergOrder.setting.endTime
-                              | formatDateToMinuteFilter
+                            item.strategy.IcebergOrder.setting.endTime |
+                              formatDateToMinuteFilter
                           }}
                         </span>
                       </div>
@@ -4624,13 +4624,13 @@
                         Period:
                         <span>
                           {{
-                            Object.values(item.strategy)[0].setting.startingTime
-                              | formatDateToMinuteFilter
+                            Object.values(item.strategy)[0].setting
+                              .startingTime | formatDateToMinuteFilter
                           }}
                           ~
                           {{
-                            Object.values(item.strategy)[0].setting.endTime
-                              | formatDateToMinuteFilter
+                            Object.values(item.strategy)[0].setting.endTime |
+                              formatDateToMinuteFilter
                           }}
                         </span>
                       </div>
@@ -4654,14 +4654,14 @@
                           "
                         >
                           {{
-                            item.strategy.VWAP.setting.triggerVol.Geom
-                              | filterPpm
+                            item.strategy.VWAP.setting.triggerVol.Geom |
+                              filterPpm
                           }}
                           <a-tooltip placement="top">
                             <template slot="title">
                               {{
-                                item.strategy.VWAP.setting.triggerVol.Geom
-                                  | filterPpm
+                                item.strategy.VWAP.setting.triggerVol.Geom |
+                                  filterPpm
                               }}
                               of volume in the last 24 hours.
                             </template>
@@ -4683,8 +4683,8 @@
                           {{
                             Object.values(
                               item.strategy.VWAP.setting.triggerVol
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -4768,8 +4768,8 @@
                           {{
                             Object.values(
                               Object.values(item.strategy)[0].setting.totalLimit
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -4912,8 +4912,8 @@
                             Object.values(
                               Object.values(item.strategy)[0].setting
                                 .amountPerTrigger
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -5390,8 +5390,8 @@
                   <td class="swap-transfer-list-time">
                     <span v-if="item.details && item.details.length">
                       {{
-                        item.details[item.details.length - 1].time
-                          | formatDateFromNanosecondUTC
+                        item.details[item.details.length - 1].time |
+                          formatDateFromNanosecondUTC
                       }}
                     </span>
                     <span v-else>
@@ -5445,8 +5445,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -5472,8 +5472,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -5499,8 +5499,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -5526,8 +5526,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -5567,8 +5567,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -5602,8 +5602,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -5637,8 +5637,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -5672,8 +5672,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -5758,8 +5758,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5793,8 +5793,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -5826,8 +5826,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5861,8 +5861,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -5896,8 +5896,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5923,8 +5923,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -5950,8 +5950,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5979,8 +5979,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -6028,8 +6028,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6068,8 +6068,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6108,8 +6108,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6148,8 +6148,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6189,8 +6189,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6224,8 +6224,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6259,8 +6259,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6294,8 +6294,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6406,8 +6406,8 @@
                 <td class="swap-transfer-list-time">
                   <span v-if="item.details && item.details.length">
                     {{
-                      item.details[item.details.length - 1].time
-                        | formatDateFromNanosecondUTC
+                      item.details[item.details.length - 1].time |
+                        formatDateFromNanosecondUTC
                     }}
                   </span>
                   <span v-else>
@@ -6460,8 +6460,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals,
@@ -6486,8 +6486,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals,
@@ -6512,8 +6512,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals,
@@ -6538,8 +6538,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals,
@@ -6578,8 +6578,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
@@ -6613,8 +6613,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -6648,8 +6648,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
@@ -6683,8 +6683,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -6767,8 +6767,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6799,8 +6799,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6831,8 +6831,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6863,8 +6863,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6897,8 +6897,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6923,8 +6923,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6949,8 +6949,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6975,8 +6975,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -7022,8 +7022,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -7060,8 +7060,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -7098,8 +7098,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -7136,8 +7136,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -7176,8 +7176,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -7210,8 +7210,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -7244,8 +7244,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -7278,8 +7278,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -8589,8 +8589,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -8623,8 +8623,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -8657,8 +8657,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -8691,8 +8691,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -8772,8 +8772,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -8808,8 +8808,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -8844,8 +8844,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -8880,8 +8880,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -8919,8 +8919,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -8950,8 +8950,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -8981,8 +8981,8 @@
                         class="token-id-rocks"
                         rel="nofollow noreferrer noopener"
                         >{{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -9013,8 +9013,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -9093,8 +9093,8 @@
                 <span class="pending-item-right">
                   <span v-if="item.details && item.details.length">
                     {{
-                      item.details[item.details.length - 1].time
-                        | formatDateFromNanosecondUTC
+                      item.details[item.details.length - 1].time |
+                        formatDateFromNanosecondUTC
                     }}
                   </span>
                   <span v-else>
@@ -9233,13 +9233,13 @@
                 <span class="pending-item-left">Period</span>
                 <span class="pending-item-right">
                   {{
-                    Object.values(item.strategy)[0].setting.startingTime
-                      | formatDateToMinuteFilter
+                    Object.values(item.strategy)[0].setting.startingTime |
+                      formatDateToMinuteFilter
                   }}
                   ~
                   {{
-                    Object.values(item.strategy)[0].setting.endTime
-                      | formatDateToMinuteFilter
+                    Object.values(item.strategy)[0].setting.endTime |
+                      formatDateToMinuteFilter
                   }}
                 </span>
               </div>
@@ -9287,8 +9287,8 @@
                   "
                 >
                   {{
-                    Object.values(item.strategy.VWAP.setting.triggerVol)[0]
-                      | bigintToFloat(
+                    Object.values(item.strategy.VWAP.setting.triggerVol)[0] |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -9352,8 +9352,8 @@
                   {{
                     Object.values(
                       Object.values(item.strategy)[0].setting.totalLimit
-                    )[0]
-                      | bigintToFloat(
+                    )[0] |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -9572,8 +9572,8 @@
                   {{
                     Object.values(
                       Object.values(item.strategy)[0].setting.amountPerTrigger
-                    )[0]
-                      | bigintToFloat(
+                    )[0] |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -9653,8 +9653,8 @@
                   <span
                     v-if="item.strategy.GridOrder.setting.amount.Percent.length"
                     >{{
-                      item.strategy.GridOrder.setting.amount.Percent[0]
-                        | filterPpm
+                      item.strategy.GridOrder.setting.amount.Percent[0] |
+                        filterPpm
                     }}
                     <a-tooltip placement="top">
                       <template slot="title">
@@ -9677,8 +9677,8 @@
                   "
                 >
                   {{
-                    item.strategy.GridOrder.setting.amount.Token0
-                      | bigintToFloat(
+                    item.strategy.GridOrder.setting.amount.Token0 |
+                      bigintToFloat(
                         tokenMinUnit,
                         tokens[currentPair[1][0].token0[0].toString()].decimals
                       )
@@ -9696,8 +9696,8 @@
                   "
                 >
                   {{
-                    item.strategy.GridOrder.setting.amount.Token1
-                      | bigintToFloat(
+                    item.strategy.GridOrder.setting.amount.Token1 |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -10151,8 +10151,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -10185,8 +10185,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -10219,8 +10219,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -10253,8 +10253,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -10334,8 +10334,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10370,8 +10370,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10406,8 +10406,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10442,8 +10442,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10481,8 +10481,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10512,8 +10512,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10543,8 +10543,8 @@
                         class="token-id-rocks"
                         rel="nofollow noreferrer noopener"
                         >{{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10575,8 +10575,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10655,8 +10655,8 @@
                 <span class="pending-item-right">
                   <span v-if="item.details && item.details.length">
                     {{
-                      item.details[item.details.length - 1].time
-                        | formatDateFromNanosecondUTC
+                      item.details[item.details.length - 1].time |
+                        formatDateFromNanosecondUTC
                     }}
                   </span>
                   <span v-else>
@@ -10869,8 +10869,8 @@
                         "
                       >
                         {{
-                          pair[2].price
-                            | filterPairTokenPrice(
+                          pair[2].price |
+                            filterPairTokenPrice(
                               tokens[pair[1][0].token0[0].toString()].decimals,
                               tokens[pair[1][0].token1[0].toString()].decimals
                             )
@@ -10906,12 +10906,12 @@
                         "
                       >
                         {{
-                          pair[2].vol24h.value1
-                            | bigintToFloat(
+                          pair[2].vol24h.value1 |
+                            bigintToFloat(
                               2,
                               tokens[pair[1][0].token1[0].toString()].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                       </span>
                     </dt>
@@ -10925,12 +10925,12 @@
                         "
                       >
                         {{
-                          pair[2].totalVol.value1
-                            | bigintToFloat(
+                          pair[2].totalVol.value1 |
+                            bigintToFloat(
                               2,
                               tokens[pair[1][0].token1[0].toString()].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                       </span>
                     </dd>
@@ -11026,9 +11026,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          buyPrice
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          buyPrice |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11125,9 +11125,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          buyTotal
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          buyTotal |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11216,9 +11216,9 @@
                       </span>
                       <span v-show="!buyTotalMKTError"
                         >≈ ${{
-                          buyTotalMKT
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          buyTotalMKT |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11277,13 +11277,13 @@
                       "
                     >
                       {{
-                        tokensBalance[currentPair[1][0].token1[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token1[0].toString()] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                     </span>
                     <span v-else>-</span>
@@ -11320,14 +11320,14 @@
                       "
                     >
                       {{
-                        keepingBalance[currentPair[1][0].token1[0].toString()]
-                          | filterKeepingBalance(
+                        keepingBalance[currentPair[1][0].token1[0].toString()] |
+                          filterKeepingBalance(
                             stopLimitNeed.token1,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
                             4
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}&nbsp;{{ currentPair[1][0].token1[1] }}
                     </span>
                     <span
@@ -11564,9 +11564,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          sellPrice
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          sellPrice |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11668,9 +11668,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          sellTotal
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          sellTotal |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11803,13 +11803,13 @@
                       "
                     >
                       {{
-                        tokensBalance[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token0[0].toString()] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                     </span>
                     <span v-else>-</span>
@@ -11853,14 +11853,14 @@
                       "
                     >
                       {{
-                        keepingBalance[currentPair[1][0].token0[0].toString()]
-                          | filterKeepingBalance(
+                        keepingBalance[currentPair[1][0].token0[0].toString()] |
+                          filterKeepingBalance(
                             stopLimitNeed.token0,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
                             4
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}&nbsp;{{ currentPair[1][0].token0[1] }}
                       <span
                         class="old-icl-type"
@@ -12245,11 +12245,7 @@
               </div>
               <div
                 v-if="currentSize"
-                class="
-                  order-book-tick-size order-book-tick-size-h5
-                  margin-left-auto
-                  base-font-title
-                "
+                class="order-book-tick-size order-book-tick-size-h5 margin-left-auto base-font-title"
               >
                 <a-dropdown
                   placement="bottomCenter"
@@ -12395,16 +12391,16 @@
                   "
                 >
                   {{
-                    tokensBalanceSto[currentPair[1][0].token1[0].toString()]
-                      | bigintToFloat(
+                    tokensBalanceSto[currentPair[1][0].token1[0].toString()] |
+                      bigintToFloat(
                         Math.min(
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals,
                           4
                         ),
                         tokens[currentPair[1][0].token1[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
                 </span>
@@ -12450,8 +12446,10 @@
                 >
                   <span class="base-font-title" style="font-weight: bold">
                     {{
-                      keepingBalanceSto[currentPair[1][0].token1[0].toString()]
-                        | bigintToFloat(
+                      keepingBalanceSto[
+                        currentPair[1][0].token1[0].toString()
+                      ] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
@@ -12459,8 +12457,8 @@
                           ),
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
@@ -12503,16 +12501,16 @@
                   "
                 >
                   {{
-                    tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                      | bigintToFloat(
+                    tokensBalanceSto[currentPair[1][0].token0[0].toString()] |
+                      bigintToFloat(
                         Math.min(
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals,
                           4
                         ),
                         tokens[currentPair[1][0].token0[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
                 </span>
@@ -12558,8 +12556,10 @@
                 >
                   <span class="base-font-title" style="font-weight: bold">
                     {{
-                      keepingBalanceSto[currentPair[1][0].token0[0].toString()]
-                        | bigintToFloat(
+                      keepingBalanceSto[
+                        currentPair[1][0].token0[0].toString()
+                      ] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
@@ -12567,8 +12567,8 @@
                           ),
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
@@ -12754,9 +12754,7 @@
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
                             buyUnit,
-                            filterSide(item[1].orderPrice) === 'Buy'
-                              ? 'bid'
-                              : 'ask'
+                            item.side === 'Buy' ? 'bid' : 'ask'
                           )
                     }}
                   </span>
@@ -12811,9 +12809,7 @@
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
                             buyUnit,
-                            filterSide(item[1].orderPrice) === 'Buy'
-                              ? 'bid'
-                              : 'ask'
+                            item.side === 'Buy' ? 'bid' : 'ask'
                           ),
                           filterAmount(
                             item.orderPrice,
@@ -13020,6 +13016,7 @@
       v-if="currentPair"
       :current-pair="currentPair"
       :keeping-balance="keepingBalance"
+      :tokens-balance="tokensBalance"
       :tokens-balance-sto="tokensBalanceSto"
       :keeping-balance-sto="keepingBalanceSto"
       :buy-unit="buyUnit"
@@ -13035,6 +13032,8 @@
       @proOrderDepositKeepingBalance="proOrderDepositKeepingBalance"
       @gridTransferToken="gridTransferToken"
       @gridDepositKeepingBalance="gridDepositKeepingBalance"
+      @transferICLToPro="transferICLToPro"
+      @toTradeICL="toTradeICL"
     ></pro-order>
     <pro-wallet-swap
       v-if="currentPair"
@@ -18264,6 +18263,15 @@ export default class extends Vue {
       this.getDepositBalance();
     }
   }
+  private transferICLToPro(): void {
+    const tokenInfo: SwapTokenInfo = [
+      Principal.fromText(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
+      'ICL',
+      { icrc1: null }
+    ];
+    this.getTokenBalance(tokenInfo);
+    this.getTokenBalanceSto(tokenInfo);
+  }
   private proWalletSwapSuccess(): void {
     const token0Info = this.currentPair[1][0].token0;
     const token1Info = this.currentPair[1][0].token1;
@@ -18271,6 +18279,12 @@ export default class extends Vue {
     this.getTokenBalance(token1Info);
     this.getTokenBalanceSto(token0Info);
     this.getTokenBalanceSto(token1Info);
+    if (
+      token0Info[0].toString() !== IC_LIGHTHOUSE_TOKEN_CANISTER_ID &&
+      token1Info[0].toString() !== IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+    ) {
+      this.transferICLToPro();
+    }
   }
   private gridDepositKeepingBalance(isToken0: boolean): void {
     if (isToken0) {
@@ -19155,7 +19169,7 @@ export default class extends Vue {
           owner: currentPair[0],
           subaccount: []
         },
-        BigInt(approve)
+        BigInt(approve.toString(10))
       );
     }
     return true;
@@ -20172,7 +20186,8 @@ export default class extends Vue {
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const needConnectInfinity1 = await needConnectInfinity(canisterIds);
     if (
-      priList[this.getPrincipalId] === 'Plug' &&
+      (priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug') &&
       flag &&
       this.$route.name === 'ICDex'
     ) {
@@ -20299,7 +20314,29 @@ export default class extends Vue {
       );
     }
   }
+  private toTradeICL(): void {
+    (this.$refs as any).proOrder.visibleProOrder = false;
+    console.log((this.$refs as any).proOrder.visibleProOrder);
+    const token0 = this.currentPair[1][0].token0[0].toString();
+    const token1 = this.currentPair[1][0].token1[0].toString();
+    if (
+      token0 === IC_LIGHTHOUSE_TOKEN_CANISTER_ID &&
+      token1 === LEDGER_CANISTER_ID
+    ) {
+      return;
+    }
+    this.$router.push('/ICDex/ICL/ICP').then(() => {
+      this.orderType = 'LMT';
+      this.getDexPairs('icdex');
+    });
+  }
   private changeLaunch(pair: string): void {
+    const pairs = pair.split('\\');
+    const token0 = this.currentPair[1][0].token0[0].toString();
+    const token1 = this.currentPair[1][0].token1[0].toString();
+    if (token0 === pairs[0] && token1 === pairs[1]) {
+      return;
+    }
     this.$router.push(`/ICDex/${pair}`).then(() => {
       this.getDexPairs('icdex');
     });

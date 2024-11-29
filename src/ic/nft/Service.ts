@@ -29,6 +29,7 @@ export class NftService {
       return null;
     }
     const account = principalToAccountIdentifier(Principal.fromText(principal));
+    console.log(this.service);
     const res = await this.service.tokens_ext(account);
     return SerializableIC(res);
   };
@@ -41,6 +42,7 @@ export class NftService {
   };
   public approve = async (approveRequest: ApproveRequest): Promise<boolean> => {
     await this.check();
+    console.log(this.service);
     return await this.service.approve(approveRequest);
   };
   public allowance = async (

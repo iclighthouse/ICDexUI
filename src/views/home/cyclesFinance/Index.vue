@@ -776,9 +776,7 @@
                 <div>Shares</div>
               </div>
               <div
-                class="
-                  exchange-swap-item-bottom exchange-swap-item-bottom-share
-                "
+                class="exchange-swap-item-bottom exchange-swap-item-bottom-share"
               >
                 <div>1,000,000</div>
                 <div>&nbsp;Shares =&nbsp;</div>
@@ -968,10 +966,7 @@
               <div class="exchange-swap-item-bottom">
                 <!--<span>Value: {{ shareIcp }} ICP + {{ shareCycles }} TCycles</span>-->
                 <span
-                  class="
-                    exchange-swap-item-bottom-fee
-                    exchange-swap-item-bottom-fee-share
-                  "
+                  class="exchange-swap-item-bottom-fee exchange-swap-item-bottom-fee-share"
                   @click="setMaxShare"
                   >Max</span
                 >
@@ -2307,12 +2302,14 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.shareCycles).times(10 ** 12)
+              new BigNumber(this.shareCycles).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.shareIcp).times(10 ** this.decimals)
+              new BigNumber(this.shareIcp)
+                .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2440,9 +2437,9 @@ export default class extends Mixins(BalanceMixin) {
         CreditIcp = BigInt('0');
       } else {
         CreditIcp = BigInt(
-          new BigNumber(this.lpRewards.icp.toString(10)).minus(
-            this.fee * 10 ** this.decimals
-          )
+          new BigNumber(this.lpRewards.icp.toString(10))
+            .minus(this.fee * 10 ** this.decimals)
+            .toString(10)
         );
       }
       const record1 = {
@@ -2567,7 +2564,7 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             DebitRecord: BigInt(
-              new BigNumber(this.cyclesAmount).times(10 ** 12)
+              new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
@@ -2575,6 +2572,7 @@ export default class extends Mixins(BalanceMixin) {
               new BigNumber(this.depositAmount)
                 .minus(this.fee)
                 .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2599,7 +2597,9 @@ export default class extends Mixins(BalanceMixin) {
       const walletCallRequest: WalletCallRequest = {
         canister: Principal.fromText(CYCLES_FINANCE_CANISTER_ID),
         method_name: 'add',
-        cycles: BigInt(new BigNumber(this.cyclesAmount).times(10 ** 12)),
+        cycles: BigInt(
+          new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
+        ),
         args: Array.from(Buffer.from(args))
       };
       this.walletService
@@ -2712,12 +2712,14 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             DebitRecord: BigInt(
-              new BigNumber(this.cyclesAmount).times(10 ** 12)
+              new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.depositAmount).times(10 ** this.decimals)
+              new BigNumber(this.depositAmount)
+                .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2741,7 +2743,9 @@ export default class extends Mixins(BalanceMixin) {
       const walletCallRequest: WalletCallRequest = {
         canister: Principal.fromText(CYCLES_FINANCE_CANISTER_ID),
         method_name: 'cyclesToIcp',
-        cycles: BigInt(new BigNumber(this.cyclesAmount).times(10 ** 12)),
+        cycles: BigInt(
+          new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
+        ),
         args: Array.from(Buffer.from(args))
       };
       this.walletService
@@ -2825,7 +2829,9 @@ export default class extends Mixins(BalanceMixin) {
       // todo AccountId
       await this.getDepositAccountId();
       const icp = BigInt(
-        new BigNumber(this.depositAmount).times(10 ** this.decimals)
+        new BigNumber(this.depositAmount)
+          .times(10 ** this.decimals)
+          .toString(10)
       );
       console.log(icp);
       const blockHeight = await this.ledgerService.sendIcp(
@@ -2844,7 +2850,7 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.cyclesAmount).times(10 ** 12)
+              new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
@@ -2852,6 +2858,7 @@ export default class extends Mixins(BalanceMixin) {
               new BigNumber(this.depositAmount)
                 .minus(this.fee)
                 .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2943,7 +2950,10 @@ export default class extends Mixins(BalanceMixin) {
       this.getCycles();
     }
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (priList[this.getPrincipalId] === 'Plug') {
+    if (
+      priList[this.getPrincipalId] === 'Plug' ||
+      priList[this.getPrincipalId] === 'SignerPlug'
+    ) {
       this.connectPlug();
     }
   }

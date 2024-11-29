@@ -3,6 +3,8 @@ import store from '@/store';
 import { Identity } from '@dfinity/agent';
 import { plugWhitelist } from '@/ic/utils';
 import router from '@/router';
+import { createSignerAgent, getNFIDSignerAgent } from '@/ic/NFIDAuth';
+import { Principal } from '@dfinity/principal';
 
 export interface CommonState {
   common: {
@@ -48,7 +50,18 @@ export const checkAuth = (
           resolve(true);
         }
       });
-    } else if (priList[principal] === 'Plug') {
+    } else if (priList[principal] === 'SingerNFID') {
+      if (!principal) {
+        resolve(true);
+      } else {
+        // const signerAgent = getNFIDSignerAgent();
+        // console.log(signerAgent);
+        refreshingPlugOrInfinity(resolve);
+      }
+    } else if (
+      priList[principal] === 'Plug' ||
+      priList[principal] === 'SignerPlug'
+    ) {
       const principal = localStorage.getItem('principal');
       const localWhitelist =
         JSON.parse(localStorage.getItem('whitelist')) || {};
@@ -66,7 +79,7 @@ export const checkAuth = (
           (window as any).ic.plug.agent
             .getPrincipal()
             .then((currentPrincipal) => {
-              console.log(currentPrincipal);
+              console.log(currentPrincipal.toString());
               if (currentPrincipal.toString() !== principal) {
                 // router.go(0);
                 resolve(false);
@@ -168,3 +181,27 @@ function refreshing(resolve) {
     });
   }
 }
+const refreshingNFID = async (resolve) => {
+  if (!isRefreshing) {
+    isRefreshing = true;
+    // const principal = localStorage.getItem('principal');
+    store.commit('common/SET_SHOW_CHECK_AUTH', true);
+    // await createSignerAgent(Principal.fromText(principal));
+    // store.commit('common/SET_SHOW_CHECK_AUTH', false);
+    store.watch(
+      (state: CommonState) => state.common.showCheckAuth,
+      (newValue) => {
+        if (!newValue) {
+          methods.forEach((m) => m());
+          methods = [];
+          isRefreshing = false;
+          resolve(true);
+        }
+      }
+    );
+  } else {
+    methods.push(() => {
+      resolve(true);
+    });
+  }
+};

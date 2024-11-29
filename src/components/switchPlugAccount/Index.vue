@@ -34,7 +34,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import AuthClientAPi from '@/ic/AuthClientApi';
 import { namespace } from 'vuex-class';
-import { getNfid } from '@/ic/NFIDAuth';
+import { NFIDLogout } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 
 @Component({
@@ -53,41 +53,49 @@ export default class extends Vue {
   private accountType!: string;
   public plugVisible = false;
   private async login(): Promise<void> {
-    const authClientAPi = await AuthClientAPi.create();
-    const identity = authClientAPi.tryGetIdentity();
-    if (identity) {
-      await authClientAPi.logout();
-    }
-    const principal = localStorage.getItem('principal');
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (priList[principal] === 'Plug') {
-      if ((window as any).ic && (window as any).ic.plug) {
-        await (window as any).ic.plug.disconnect();
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      const authClientAPi = await AuthClientAPi.create();
+      const identity = authClientAPi.tryGetIdentity();
+      if (identity) {
+        await authClientAPi.logout();
       }
-    }
-    if (priList[principal] === 'Infinity') {
-      if ((window as any).ic && (window as any).ic.infinityWallet) {
-        (window as any).ic.infinityWallet.disconnect();
-      }
-    }
-    if (priList[principal] === 'NFID') {
-      const nfid = await getNfid();
-      console.log(nfid);
-      if (nfid) {
-        const identity = nfid.getIdentity();
-        if (identity) {
-          await nfid.logout();
+      const principal = localStorage.getItem('principal');
+      const priList = JSON.parse(localStorage.getItem('priList')) || {};
+      if (
+        priList[principal] === 'Plug' ||
+        priList[principal] === 'SignerPlug'
+      ) {
+        if ((window as any).ic && (window as any).ic.plug) {
+          await (window as any).ic.plug.disconnect();
         }
       }
+      if (priList[principal] === 'Infinity') {
+        if ((window as any).ic && (window as any).ic.infinityWallet) {
+          (window as any).ic.infinityWallet.disconnect();
+        }
+      }
+      if (
+        priList[principal] === 'NFID' ||
+        priList[principal] === 'SignerNFID'
+      ) {
+        await NFIDLogout();
+      }
+      localStorage.removeItem('principal');
+      this.setPrincipalId(null);
+      this.setCheckAuth(false);
+      this.setIdentity(null);
+      this.$router.replace({
+        path: '/login',
+        query: { redirect: this.$route.fullPath }
+      });
+    } catch (e) {
+      console.log(e);
     }
-    localStorage.removeItem('principal');
-    this.setPrincipalId(null);
-    this.setCheckAuth(false);
-    this.setIdentity(null);
-    this.$router.replace({
-      path: '/login',
-      query: { redirect: this.$route.fullPath }
-    });
+    loading.close();
   }
 }
 </script>

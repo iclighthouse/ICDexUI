@@ -401,8 +401,8 @@
                         </span>
                         <span v-else>
                           {{
-                            item[3].latestUnitNetValue.token0
-                              | bigintToFloat(
+                            item[3].latestUnitNetValue.token0 |
+                              bigintToFloat(
                                 8,
                                 tokens[item[2].pairInfo.token0[0].toString()]
                                   .decimals
@@ -419,8 +419,8 @@
                         </span>
                         <span v-else>
                           {{
-                            item[3].latestUnitNetValue.token1
-                              | bigintToFloat(
+                            item[3].latestUnitNetValue.token1 |
+                              bigintToFloat(
                                 8,
                                 tokens[item[2].pairInfo.token1[0].toString()]
                                   .decimals
@@ -442,8 +442,8 @@
                         >
                         <span v-else>
                           {{
-                            item[3].poolBalance.balance0
-                              | bigintToFloat(
+                            item[3].poolBalance.balance0 |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[item[2].pairInfo.token0[0].toString()]
                                     .decimals,
@@ -451,8 +451,8 @@
                                 ),
                                 tokens[item[2].pairInfo.token0[0].toString()]
                                   .decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                         </span>
                         {{
@@ -465,8 +465,8 @@
                         >
                         <span v-else>
                           {{
-                            item[3].poolBalance.balance1
-                              | bigintToFloat(
+                            item[3].poolBalance.balance1 |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[item[2].pairInfo.token1[0].toString()]
                                     .decimals,
@@ -474,8 +474,8 @@
                                 ),
                                 tokens[item[2].pairInfo.token1[0].toString()]
                                   .decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                         </span>
                         {{
@@ -488,9 +488,9 @@
                   <td>
                     <span v-if="item[3] && item[2]">
                       {{
-                        item[3].poolShares
-                          | bigintToFloat(0, item[2].shareDecimals)
-                          | formatNum
+                        item[3].poolShares |
+                          bigintToFloat(0, item[2].shareDecimals) |
+                          formatNum
                       }}
                     </span>
                     <span v-else>-</span>
@@ -516,9 +516,9 @@
                       }"
                     >
                       {{
-                        item[4][0]
-                          | bigintToFloat(2, item[2].shareDecimals)
-                          | formatNum
+                        item[4][0] |
+                          bigintToFloat(2, item[2].shareDecimals) |
+                          formatNum
                       }}
                       <div v-if="item[3]">
                         ({{ item[4][0] | filterRatio(item[3].poolShares) }})
@@ -726,8 +726,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token0
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token0 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
                         )
@@ -740,8 +740,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token1
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token1 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
                         )
@@ -768,16 +768,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance0
-                        | bigintToFloat(
+                      item[3].poolBalance.balance0 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token0[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
@@ -787,16 +787,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance1
-                        | bigintToFloat(
+                      item[3].poolBalance.balance1 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token1[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
@@ -806,12 +806,12 @@
               <div>
                 <span>Total Shares: </span>
                 <span class="base-font-title" v-if="item[3] && item[2]">{{
-                  item[3].poolShares
-                    | bigintToFloat(
+                  item[3].poolShares |
+                    bigintToFloat(
                       item[2].shareDecimals,
                       item[2].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
                 <span v-else>-</span>
               </div>
@@ -819,12 +819,12 @@
                 <span>Your Shares: </span>
                 <span class="base-font-title">
                   {{
-                    item[4][0]
-                      | bigintToFloat(
+                    item[4][0] |
+                      bigintToFloat(
                         item[2].shareDecimals,
                         item[2].shareDecimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </span>
                 <img
@@ -1083,8 +1083,8 @@
                 <span>NAV: </span>
                 <span class="base-font-title" v-if="item[3]">
                   {{
-                    item[3].latestUnitNetValue.token0
-                      | bigintToFloat(
+                    item[3].latestUnitNetValue.token0 |
+                      bigintToFloat(
                         8,
                         tokens[item[2].pairInfo.token0[0].toString()].decimals
                       )
@@ -1092,8 +1092,8 @@
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
                   {{
-                    item[3].latestUnitNetValue.token1
-                      | bigintToFloat(
+                    item[3].latestUnitNetValue.token1 |
+                      bigintToFloat(
                         8,
                         tokens[item[2].pairInfo.token1[0].toString()].decimals
                       )
@@ -1115,30 +1115,30 @@
                 <span> Pool Balance: </span>
                 <span class="base-font-title" v-if="item[3]">
                   {{
-                    item[3].poolBalance.balance0
-                      | bigintToFloat(
+                    item[3].poolBalance.balance0 |
+                      bigintToFloat(
                         Math.min(
                           tokens[item[2].pairInfo.token0[0].toString()]
                             .decimals,
                           8
                         ),
                         tokens[item[2].pairInfo.token0[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
                   {{
-                    item[3].poolBalance.balance1
-                      | bigintToFloat(
+                    item[3].poolBalance.balance1 |
+                      bigintToFloat(
                         Math.min(
                           tokens[item[2].pairInfo.token1[0].toString()]
                             .decimals,
                           8
                         ),
                         tokens[item[2].pairInfo.token1[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
                 </span>
@@ -1147,12 +1147,12 @@
               <div>
                 <span>Total Shares: </span>
                 <span class="base-font-title" v-if="item[3] && item[2]">{{
-                  item[3].poolShares
-                    | bigintToFloat(
+                  item[3].poolShares |
+                    bigintToFloat(
                       item[2].shareDecimals,
                       item[2].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
                 <span v-else>-</span>
               </div>
@@ -1160,12 +1160,12 @@
                 <span>Your Shares: </span>
                 <span class="base-font-title">
                   {{
-                    item[4][0]
-                      | bigintToFloat(
+                    item[4][0] |
+                      bigintToFloat(
                         item[2].shareDecimals,
                         item[2].shareDecimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </span>
               </div>
@@ -1389,8 +1389,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token0
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token0 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
                         )
@@ -1403,8 +1403,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token1
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token1 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
                         )
@@ -1431,16 +1431,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance0
-                        | bigintToFloat(
+                      item[3].poolBalance.balance0 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token0[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
@@ -1450,16 +1450,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance1
-                        | bigintToFloat(
+                      item[3].poolBalance.balance1 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token1[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
@@ -1469,12 +1469,12 @@
               <div>
                 <span>Total Shares: </span>
                 <span class="base-font-title" v-if="item[3] && item[2]">{{
-                  item[3].poolShares
-                    | bigintToFloat(
+                  item[3].poolShares |
+                    bigintToFloat(
                       item[2].shareDecimals,
                       item[2].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
                 <span v-else>-</span>
               </div>
@@ -1482,12 +1482,12 @@
                 <span>Your Shares: </span>
                 <span class="base-font-title">
                   {{
-                    item[4][0]
-                      | bigintToFloat(
+                    item[4][0] |
+                      bigintToFloat(
                         item[2].shareDecimals,
                         item[2].shareDecimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </span>
               </div>
@@ -1713,8 +1713,8 @@
                         "
                       >
                         {{
-                          item.strategy.GridOrder.setting.amount.Percent[0]
-                            | filterPpm
+                          item.strategy.GridOrder.setting.amount.Percent[0] |
+                            filterPpm
                         }}
                       </span>
                       <span
@@ -1723,8 +1723,8 @@
                         "
                       >
                         {{
-                          item.strategy.GridOrder.setting.ppmFactor[0]
-                            | filterPpm
+                          item.strategy.GridOrder.setting.ppmFactor[0] |
+                            filterPpm
                         }}
                       </span>
                       <a-tooltip placement="top">
@@ -1748,8 +1748,8 @@
                     "
                   >
                     {{
-                      item.strategy.GridOrder.setting.amount.Token0
-                        | bigintToFloat(
+                      item.strategy.GridOrder.setting.amount.Token0 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -1773,8 +1773,8 @@
                     "
                   >
                     {{
-                      item.strategy.GridOrder.setting.amount.Token1
-                        | bigintToFloat(
+                      item.strategy.GridOrder.setting.amount.Token1 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -1996,8 +1996,8 @@
               <td>
                 <span v-if="item.details && item.details.length">
                   {{
-                    item.details[item.details.length - 1].time
-                      | formatDateFromNanosecondUTC
+                    item.details[item.details.length - 1].time |
+                      formatDateFromNanosecondUTC
                   }}
                 </span>
                 <span v-else>
@@ -2051,8 +2051,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2082,8 +2082,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2112,8 +2112,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2143,8 +2143,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2187,8 +2187,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token0[0].toString()
@@ -2224,8 +2224,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token1[0].toString()
@@ -2262,8 +2262,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token0[0].toString()
@@ -2299,8 +2299,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token1[0].toString()
@@ -2392,8 +2392,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2426,8 +2426,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2457,8 +2457,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2491,8 +2491,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2527,8 +2527,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2555,8 +2555,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2582,8 +2582,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2612,8 +2612,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2659,8 +2659,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2700,8 +2700,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2738,8 +2738,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2779,8 +2779,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2822,8 +2822,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2860,8 +2860,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2897,8 +2897,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2935,8 +2935,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -3094,8 +3094,8 @@
                   <div v-if="Object.keys(item[0])[0] === 'add'">
                     <div v-if="Object.keys(item[0].add)[0] === 'ok'">
                       {{
-                        item[0].add.ok.token0
-                          | bigintToFloat(
+                        item[0].add.ok.token0 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -3108,8 +3108,8 @@
                       }}
                       +
                       {{
-                        item[0].add.ok.token1
-                          | bigintToFloat(
+                        item[0].add.ok.token1 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -3122,12 +3122,12 @@
                       }}
                       ->
                       {{
-                        item[0].add.ok.shares
-                          | bigintToFloat(
+                        item[0].add.ok.shares |
+                          bigintToFloat(
                             currentPool[2].shareDecimals,
                             currentPool[2].shareDecimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       Shares
                     </div>
@@ -3137,8 +3137,8 @@
                     >
                       Error:
                       {{
-                        item[0].add.err.depositToken0
-                          | bigintToFloat(
+                        item[0].add.err.depositToken0 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -3151,8 +3151,8 @@
                       }}
                       +
                       {{
-                        item[0].add.err.depositToken1
-                          | bigintToFloat(
+                        item[0].add.err.depositToken1 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -3168,17 +3168,17 @@
                   <div v-if="Object.keys(item[0])[0] === 'remove'">
                     <div v-if="Object.keys(item[0].remove)[0] === 'ok'">
                       {{
-                        item[0].remove.ok.shares
-                          | bigintToFloat(
+                        item[0].remove.ok.shares |
+                          bigintToFloat(
                             currentPool[2].shareDecimals,
                             currentPool[2].shareDecimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       Shares ->
                       {{
-                        item[0].remove.ok.token0
-                          | bigintToFloat(
+                        item[0].remove.ok.token0 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -3191,8 +3191,8 @@
                       }}
                       +
                       {{
-                        item[0].remove.ok.token1
-                          | bigintToFloat(
+                        item[0].remove.ok.token1 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -3210,8 +3210,8 @@
                     >
                       Error:
                       {{
-                        item[0].remove.err.addPoolToken0
-                          | bigintToFloat(
+                        item[0].remove.err.addPoolToken0 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -3224,8 +3224,8 @@
                       }}
                       +
                       {{
-                        item[0].remove.err.addPoolToken1
-                          | bigintToFloat(
+                        item[0].remove.err.addPoolToken1 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -3240,8 +3240,8 @@
                   </div>
                   <div v-if="Object.keys(item[0])[0] === 'withdraw'">
                     {{
-                      item[0].withdraw.token0
-                        | bigintToFloat(
+                      item[0].withdraw.token0 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -3254,8 +3254,8 @@
                     }}
                     +
                     {{
-                      item[0].withdraw.token1
-                        | bigintToFloat(
+                      item[0].withdraw.token1 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -3269,8 +3269,8 @@
                   </div>
                   <div v-if="Object.keys(item[0])[0] === 'fallback'">
                     {{
-                      item[0].fallback.token0
-                        | bigintToFloat(
+                      item[0].fallback.token0 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -3283,8 +3283,8 @@
                     }}
                     +
                     {{
-                      item[0].fallback.token1
-                        | bigintToFloat(
+                      item[0].fallback.token1 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -3299,8 +3299,8 @@
                   <div v-if="Object.keys(item[0])[0] === 'deposit'">
                     <span v-show="item[0].deposit.token0">
                       {{
-                        item[0].deposit.token0
-                          | bigintToFloat(
+                        item[0].deposit.token0 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -3318,8 +3318,8 @@
                     >
                     <span v-show="item[0].deposit.token1">
                       {{
-                        item[0].deposit.token1
-                          | bigintToFloat(
+                        item[0].deposit.token1 |
+                          bigintToFloat(
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
                               .decimals,
                             tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -4117,7 +4117,11 @@ export default class extends Vue {
     // }
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const needConnectInfinity1 = await needConnectInfinity(canisterIds);
-    if (priList[principal] === 'Plug' && flag && this.$route.name === 'Pools') {
+    if (
+      (priList[principal] === 'Plug' || priList[principal] === 'SignerPlug') &&
+      flag &&
+      this.$route.name === 'Pools'
+    ) {
       // this.loading.close();
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;

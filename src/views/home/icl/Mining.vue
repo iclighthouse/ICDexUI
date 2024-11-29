@@ -117,9 +117,9 @@
                   <span>Total minted: </span
                   ><span
                     >{{
-                      miningStatus.totalSupply
-                        | bigintToFloat(2, iclDecimals)
-                        | formatNum
+                      miningStatus.totalSupply |
+                        bigintToFloat(2, iclDecimals) |
+                        formatNum
                     }}
                     ICL</span
                   >
@@ -700,7 +700,9 @@ export default class extends Vue {
           );
           const walletSendRequest: WalletCallRequest = {
             args: Array.from(Buffer.from(args)),
-            cycles: BigInt(new BigNumber(this.mintForm.cycles).times(10 ** 12)),
+            cycles: BigInt(
+              new BigNumber(this.mintForm.cycles).times(10 ** 12).toString(10)
+            ),
             method_name: 'mint',
             canister: Principal.fromText(IC_MINING_CANISTER_ID)
           };
@@ -741,7 +743,10 @@ export default class extends Vue {
       this.getCycles();
     }
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (priList[this.getPrincipalId] === 'Plug') {
+    if (
+      priList[this.getPrincipalId] === 'Plug' ||
+      priList[this.getPrincipalId] === 'SignerPlug'
+    ) {
       this.connectPlug();
     }
   }

@@ -33,7 +33,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.2.042
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.2.1
             </span>
           </span>
         </span>
@@ -327,8 +327,10 @@ export default class extends Vue {
     this.principalList = Object.keys(this.priList);
     if (
       this.priList[this.getPrincipalId] !== 'Plug' &&
+      this.priList[this.getPrincipalId] !== 'SignerPlug' &&
       this.priList[this.getPrincipalId] !== 'AuthClient' &&
-      this.priList[this.getPrincipalId] !== 'NFID'
+      this.priList[this.getPrincipalId] !== 'NFID' &&
+      this.priList[this.getPrincipalId] !== 'SignerNFID'
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
@@ -410,7 +412,7 @@ export default class extends Vue {
   }
 }
 .user-setting {
-  ::v-deep.ant-dropdown-menu-item {
+  ::v-deep .ant-dropdown-menu-item {
     padding: 0;
     &:hover {
       background: rgba(255, 255, 255, 0.08);

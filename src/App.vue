@@ -21,7 +21,9 @@
             <!--<p v-if="type !== 'authClient'">Welcome back</p>-->
           </div>
           <p
-            v-if="type !== 'AuthClient' && type !== 'NFID'"
+            v-if="
+              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+            "
             class="account-list-title"
           >
             Re-verify your identity
@@ -33,7 +35,9 @@
           />
           <div
             class="verify-internet verify-internet-main"
-            v-if="type === 'AuthClient' || type === 'NFID'"
+            v-if="
+              type === 'AuthClient' || type === 'NFID' || type === 'SignerNFID'
+            "
             @click="authClient"
           >
             <img
@@ -41,19 +45,23 @@
               src="@/assets/img/dfinity.png"
               alt=""
             /><img
-              v-show="type === 'NFID'"
+              v-show="type === 'NFID' || type === 'SignerNFID'"
               src="@/assets/img/NFID.svg"
               alt=""
             />Re-verify your identity
           </div>
           <a-input-password
-            v-if="type !== 'AuthClient' && type !== 'NFID'"
+            v-if="
+              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+            "
             placeholder="input password"
             v-model="password"
           />
           <button
             type="button"
-            v-if="type !== 'AuthClient' && type !== 'NFID'"
+            v-if="
+              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+            "
             class="primary large-primary form-button w100"
             @click="onSubmit"
           >
@@ -197,7 +205,7 @@ import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { Principal } from '@dfinity/principal';
-import { getNfid, nfidEmbedLogin } from '@/ic/NFIDAuth';
+import { getNFID, NFIDLogin, NFIDLogout } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
 
@@ -241,7 +249,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
   async mounted(): Promise<void> {
     // todo new site
-    getNfid();
+    getNFID();
     const hostname = window.location.hostname;
     this.hostname = window.location.hostname;
     console.log(window.parent.origin);
@@ -293,7 +301,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       //     });
       //   }
       // }
-      // if (e.key && e.key == 'plug' && e.newValue) {
+      // if (e.key && e.key == 'Plug' && e.newValue) {
       //   this.$router.go(0);
       // }
     });
@@ -363,35 +371,45 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     Vue.prototype.$app = this;
   }
   private async logout(): Promise<void> {
-    const authClientAPi = await AuthClientAPi.create();
-    const identity = authClientAPi.tryGetIdentity();
-    if (identity) {
-      await authClientAPi.logout();
-    }
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    const principal = localStorage.getItem('principal');
-    if (priList[principal] === 'Plug') {
-      if ((window as any).ic && (window as any).ic.plug) {
-        (window as any).ic.plug.disconnect();
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      const authClientAPi = await AuthClientAPi.create();
+      const identity = authClientAPi.tryGetIdentity();
+      if (identity) {
+        await authClientAPi.logout();
       }
-    }
-    if (priList[principal] === 'Infinity') {
-      if ((window as any).ic && (window as any).ic.infinityWallet) {
-        (window as any).ic.infinityWallet.disconnect();
+      const priList = JSON.parse(localStorage.getItem('priList')) || {};
+      const principal = localStorage.getItem('principal');
+      if (
+        priList[principal] === 'Plug' ||
+        priList[principal] === 'SignerPlug'
+      ) {
+        if ((window as any).ic && (window as any).ic.plug) {
+          (window as any).ic.plug.disconnect();
+        }
       }
-    }
-    if (priList[principal] === 'NFID') {
-      const nfid = await getNfid();
-      const NFIDIdentity = await nfidEmbedLogin(nfid);
-      console.log(NFIDIdentity);
-      if (NFIDIdentity) {
-        await nfid.logout();
+      if (priList[principal] === 'Infinity') {
+        if ((window as any).ic && (window as any).ic.infinityWallet) {
+          (window as any).ic.infinityWallet.disconnect();
+        }
       }
+      if (
+        priList[principal] === 'NFID' ||
+        priList[principal] === 'SignerNFID'
+      ) {
+        await NFIDLogout();
+      }
+      localStorage.removeItem('principal');
+      this.setPrincipalId(null);
+      this.setIdentity(null);
+      this.setCheckAuth(false);
+    } catch (e) {
+      console.log(e);
     }
-    localStorage.removeItem('principal');
-    this.setPrincipalId(null);
-    this.setIdentity(null);
-    this.setCheckAuth(false);
+    loading.close();
   }
   private checkRiskWarning(): void {
     if (this.$route.fullPath.toLocaleLowerCase().includes('icdex')) {
@@ -412,6 +430,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         this.type = 'AuthClient';
       } else if (priList[this.getPrincipalId] === 'NFID') {
         this.type = 'NFID';
+      } else if (priList[this.getPrincipalId] === 'SignerNFID') {
+        this.type = 'SignerNFID';
       } else if (
         priList[this.getPrincipalId] &&
         priList[this.getPrincipalId].includes('MetaMask')
@@ -441,8 +461,11 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
             return;
           }
         }
-      } else if (priList[this.getPrincipalId] === 'Plug') {
-        this.type = 'Plug';
+      } else if (
+        priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug'
+      ) {
+        this.type = priList[this.getPrincipalId];
         const localWhitelist =
           JSON.parse(localStorage.getItem('whitelist')) || {};
         const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
@@ -469,14 +492,24 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
               centered: true,
               okText: 'Confirm',
               async onOk() {
-                await connectPlug.connect(whitelist);
-                await createPlugWhiteActor();
+                await connectPlug.connect(
+                  whitelist,
+                  priList[this.getPrincipalId] === 'SignerPlug'
+                );
+                await createPlugWhiteActor(
+                  priList[this.getPrincipalId] === 'SignerPlug'
+                );
                 _that.setCheckAuth(false);
               }
             });
           } else {
-            await connectPlug.connect(whitelist);
-            await createPlugWhiteActor();
+            await connectPlug.connect(
+              whitelist,
+              priList[this.getPrincipalId] === 'SignerPlug'
+            );
+            await createPlugWhiteActor(
+              priList[this.getPrincipalId] === 'SignerPlug'
+            );
             this.setCheckAuth(false);
           }
         }
@@ -508,7 +541,10 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         this.showCheckAuthModal = false;
       } else {
         this.showCheckAuthModal =
-          checkAuth && this.type !== 'Plug' && this.type !== 'Infinity';
+          checkAuth &&
+          this.type !== 'Plug' &&
+          this.type !== 'SignerPlug' &&
+          this.type !== 'Infinity';
       }
     }
   }
@@ -532,11 +568,13 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       const authClientAPi = await AuthClientAPi.create();
       await authClientAPi.login();
     } else if (this.type === 'NFID') {
-      const nfid = await getNfid();
-      console.log(nfid);
-      const nfidLogin = await nfidEmbedLogin(nfid);
-      console.log(nfidLogin);
-      if (!nfidLogin) {
+      await NFIDLogin();
+      loading.close();
+      return;
+    } else if (this.type === 'SignerNFID') {
+      const signerAgent = await NFIDLogin(true);
+      console.log(signerAgent);
+      if (signerAgent) {
         loading.close();
         return;
       }

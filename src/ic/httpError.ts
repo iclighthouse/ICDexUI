@@ -38,7 +38,9 @@ export function toHttpRejectError(error: Error): string {
     return error.message
       .split('\n')
       .map((l) => l.trim().toLowerCase())
-      .find((l) => l.startsWith('reject text:'));
+      .find(
+        (l) => l.startsWith('reject text:') || l.startsWith('"reject message":')
+      );
   } catch (e) {
     console.log(e);
     return null;

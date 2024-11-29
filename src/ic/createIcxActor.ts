@@ -31,7 +31,7 @@ export const createIcxActor = async <T>(
       icxIsAnonymous[canisterId] = false;
     } else {
       icxIsAnonymous[canisterId] = true;
-      icxActor[canisterId] = buildService(null, IDL, canisterId);
+      icxActor[canisterId] = await buildService(null, IDL, canisterId);
     }
     return icxActor[canisterId];
   }

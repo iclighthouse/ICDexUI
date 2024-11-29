@@ -1,6 +1,6 @@
-export const isPlug = (): boolean => {
+export const isSigner = (): boolean => {
   const priList = JSON.parse(localStorage.getItem('priList')) || {};
   const principal = localStorage.getItem('principal');
   const type = priList[principal];
-  return type === 'Plug' || type === 'SignerPlug';
+  return type === 'SignerNFID' || type === 'SignerPlug';
 };

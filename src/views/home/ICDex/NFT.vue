@@ -372,7 +372,6 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Menu } from '@/components/menu/model';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { namespace } from 'vuex-class';
@@ -386,6 +385,7 @@ import {
   User
 } from '@/ic/nft/model';
 import {
+  fromSubAccountId,
   getTokenIdentifier,
   principalToAccountIdentifier
 } from '@/ic/converter';
@@ -651,6 +651,7 @@ export default class extends Vue {
       if (res) {
         this.depositDexAggregator(loading, NFTIndex);
       } else {
+        console.log(res);
         this.$message.error('Approve error');
         loading.close();
       }
@@ -677,12 +678,11 @@ export default class extends Vue {
   }
   private async depositToICDexRouter(NFTIndex: bigint): Promise<void> {
     const token = getTokenIdentifier(NFT_CANISTER_ID, Number(NFTIndex));
-    const spender = IC_DEX_ROUTER_CANISTER_ID;
     const approveRequest: ApproveRequest = {
       token: token,
       subaccount: [],
       allowance: BigInt(1),
-      spender: Principal.fromText(spender)
+      spender: Principal.fromText(IC_DEX_ROUTER_CANISTER_ID)
     };
     const loading = this.$loading({
       lock: true,
@@ -690,9 +690,11 @@ export default class extends Vue {
     });
     try {
       const res = await this.NftService.approve(approveRequest);
+      console.log(res);
       if (res) {
         this.deposit(loading, NFTIndex);
       } else {
+        console.log(res);
         this.$message.error('Approve error');
         loading.close();
       }

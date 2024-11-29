@@ -5,14 +5,18 @@ import { DID_CANISTER_ID } from '@/ic/utils';
 
 export class DIDGenerateService {
   private service: Service;
-  constructor() {
-    this.service = buildService(null, DIDGenerateIDL, DID_CANISTER_ID);
-  }
+  // constructor () {
+  //   this.service = buildService(null, DIDGenerateIDL, DID_CANISTER_ID);
+  // }
+  private check = async (): Promise<void> => {
+    this.service = await buildService(null, DIDGenerateIDL, DID_CANISTER_ID);
+  };
   public binding = async (
     prog: string,
     lang: string
   ): Promise<Array<string>> => {
     try {
+      await this.check();
       return await this.service.binding(prog, lang);
     } catch (e) {
       console.log(e);
@@ -21,6 +25,7 @@ export class DIDGenerateService {
   };
   public did_to_js = async (prog: string): Promise<Array<string>> => {
     try {
+      await this.check();
       return await this.service.did_to_js(prog);
     } catch (e) {
       console.log(e);

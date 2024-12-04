@@ -687,6 +687,7 @@ export type BlockTag =
   | { Latest: null };
 export interface WithdrawalArg {
   recipient: string;
+  from_subaccount: [] | [Uint8Array | number[]];
   amount: bigint;
 }
 export type WithdrawalResponse =
@@ -710,7 +711,12 @@ export type RetrieveEthStatus =
   | { TxCreated: null }
   | { Pending: null };
 export type TxFinalizedStatus =
-  | { Success: EthTransaction }
+  | {
+      Success: {
+        transaction_hash: string;
+        effective_transaction_fee: [] | [bigint];
+      };
+    }
   | {
       Reimbursed: {
         transaction_hash: string;
@@ -718,26 +724,30 @@ export type TxFinalizedStatus =
         reimbursed_in_block: bigint;
       };
     }
-  | {
-      PendingReimbursement: EthTransaction;
-    };
+  | { PendingReimbursement: EthTransaction };
 export interface EthTransaction {
-  effective_transaction_fee: Array<bigint>;
   transaction_hash: string;
 }
 export interface MinterInfoDFI {
-  eth_balance: Array<bigint>;
-  eth_helper_contract_address: Array<string>;
-  last_observed_block_number: Array<bigint>;
-  erc20_helper_contract_address: Array<string>;
-  supported_ckerc20_tokens: Array<Array<CkErc20Token>>;
-  last_gas_fee_estimate: Array<GasFeeEstimate>;
-  minimum_withdrawal_amount: Array<bigint>;
-  erc20_balances: Array<
-    Array<{ balance: bigint; erc20_contract_address: string }>
-  >;
-  minter_address: Array<string>;
-  ethereum_block_height: Array<BlockTag>;
+  deposit_with_subaccount_helper_contract_address: [] | [string];
+  eth_balance: [] | [bigint];
+  eth_helper_contract_address: [] | [string];
+  last_observed_block_number: [] | [bigint];
+  evm_rpc_id: [] | [Principal];
+  erc20_helper_contract_address: [] | [string];
+  last_erc20_scraped_block_number: [] | [bigint];
+  supported_ckerc20_tokens: [] | [Array<CkErc20Token>];
+  last_gas_fee_estimate: [] | [GasFeeEstimate];
+  cketh_ledger_id: [] | [Principal];
+  smart_contract_address: [] | [string];
+  last_eth_scraped_block_number: [] | [bigint];
+  minimum_withdrawal_amount: [] | [bigint];
+  erc20_balances:
+    | []
+    | [Array<{ balance: bigint; erc20_contract_address: string }>];
+  minter_address: [] | [string];
+  last_deposit_with_subaccount_scraped_block_number: [] | [bigint];
+  ethereum_block_height: [] | [BlockTag];
 }
 export interface GasFeeEstimate {
   max_priority_fee_per_gas: bigint;
@@ -752,6 +762,8 @@ export interface CkErc20Token {
 export interface WithdrawErc20Arg {
   ckerc20_ledger_id: Principal;
   recipient: string;
+  from_cketh_subaccount: [] | [[] | [Uint8Array | number[]]];
+  from_ckerc20_subaccount: [] | [[] | [Uint8Array | number[]]];
   amount: bigint;
 }
 export type WithdrawErc20Response =

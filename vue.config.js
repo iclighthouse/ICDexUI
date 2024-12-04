@@ -8,7 +8,6 @@ module.exports = {
 
   // (js/css/img/font/...)
   assetsDir: './static',
-
   //lintOnSave: process.env.NODE_ENV !== 'production',
 
   // https://cn.vuejs.org/v2/guide/installation.html#

@@ -99,23 +99,23 @@
                 <div>
                   Total:
                   {{
-                    token[5]
-                      | bigintToFloat(
+                    token[5] |
+                      bigintToFloat(
                         Number(token[1].decimals),
                         Number(token[1].decimals)
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </div>
                 <div>
                   Max:
                   {{
-                    token[9]
-                      | bigintToFloat(
+                    token[9] |
+                      bigintToFloat(
                         Number(token[1].decimals),
                         Number(token[1].decimals)
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </div>
               </td>
@@ -424,7 +424,7 @@ export default class extends Vue {
             this.$message.success('Success');
             this.starTokens.push(tokenItem[0].toString());
             tokenItem[3] = BigInt(
-              new BigNumber(tokenItem[3].toString()).plus(1)
+              new BigNumber(tokenItem[3].toString()).plus(1).toString(10)
             );
           } catch (e) {
             console.log(e);
@@ -476,7 +476,7 @@ export default class extends Vue {
     const that = this;
     if (
       type &&
-      priList[principal] === 'Plug' &&
+      (priList[principal] === 'Plug' || priList[principal] === 'SignerPlug') &&
       flag &&
       this.$route.name === 'icTokens'
     ) {
@@ -689,7 +689,9 @@ export default class extends Vue {
       this.$message.success('Cancel Star Success');
       const index = this.starTokens.indexOf(tokenItem[0].toString());
       this.starTokens.splice(index, 1);
-      tokenItem[3] = BigInt(new BigNumber(tokenItem[3].toString()).minus(1));
+      tokenItem[3] = BigInt(
+        new BigNumber(tokenItem[3].toString()).minus(1).toString(10)
+      );
     } else {
       this.$message.error('Cancel Star Error');
     }

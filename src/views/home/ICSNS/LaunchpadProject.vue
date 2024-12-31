@@ -47,12 +47,12 @@
                   >
                   <span class="base-color-w" v-if="totalSupply">
                     {{
-                      totalSupply
-                        | bigintToFloat(
+                      totalSupply |
+                        bigintToFloat(
                           currentToken.decimals,
                           currentToken.decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   <span v-else>-</span>
@@ -69,12 +69,12 @@
                     v-if="currentToken.params && currentToken.params[0]"
                   >
                     {{
-                      currentToken.params[0].sns_token_e8s
-                        | bigintToFloat(
+                      currentToken.params[0].sns_token_e8s |
+                        bigintToFloat(
                           currentToken.decimals,
                           currentToken.decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   <span v-else>-</span>
@@ -107,9 +107,9 @@
                     v-if="currentToken.params && currentToken.params[0]"
                   >
                     {{
-                      currentToken.params[0].max_icp_e8s
-                        | bigintToFloat(8, 8)
-                        | formatNum
+                      currentToken.params[0].max_icp_e8s |
+                        bigintToFloat(8, 8) |
+                        formatNum
                     }}
                   </span>
                   <span v-else>-</span>
@@ -124,9 +124,9 @@
                     v-if="currentToken.params && currentToken.params[0]"
                   >
                     {{
-                      currentToken.params[0].min_icp_e8s
-                        | bigintToFloat(8, 8)
-                        | formatNum
+                      currentToken.params[0].min_icp_e8s |
+                        bigintToFloat(8, 8) |
+                        formatNum
                     }}
                   </span>
                   <span v-else>-</span>
@@ -156,9 +156,9 @@
                     v-if="currentToken.params && currentToken.params[0]"
                   >
                     {{
-                      currentToken.params[0].max_participant_icp_e8s
-                        | bigintToFloat(8, 8)
-                        | formatNum
+                      currentToken.params[0].max_participant_icp_e8s |
+                        bigintToFloat(8, 8) |
+                        formatNum
                     }}
                   </span>
                   <span v-else>-</span>
@@ -175,9 +175,9 @@
                     v-if="currentToken.params && currentToken.params[0]"
                   >
                     {{
-                      currentToken.params[0].min_participant_icp_e8s
-                        | bigintToFloat(8, 8)
-                        | formatNum
+                      currentToken.params[0].min_participant_icp_e8s |
+                        bigintToFloat(8, 8) |
+                        formatNum
                     }}
                   </span>
                   <span v-else>-</span>
@@ -192,8 +192,8 @@
                     >
                     <span v-if="currentToken.params && currentToken.params[0]"
                       >{{
-                        currentToken.params[0].swap_due_timestamp_seconds
-                          | formatDateFromSecondUTC
+                        currentToken.params[0].swap_due_timestamp_seconds |
+                          formatDateFromSecondUTC
                       }}
                     </span>
                     <span v-else>-</span>
@@ -260,9 +260,9 @@
               v-if="currentToken.params && currentToken.params[0]"
             >
               {{
-                currentToken.params[0].sns_token_e8s
-                  | bigintToFloat(currentToken.decimals, currentToken.decimals)
-                  | formatNum
+                currentToken.params[0].sns_token_e8s |
+                  bigintToFloat(currentToken.decimals, currentToken.decimals) |
+                  formatNum
               }}
             </span>
             <span v-else>-</span>
@@ -275,9 +275,9 @@
               class="base-color-w margin-left-auto"
             >
               {{
-                currentToken.params[0].max_participant_icp_e8s
-                  | bigintToFloat(8, 8)
-                  | formatNum
+                currentToken.params[0].max_participant_icp_e8s |
+                  bigintToFloat(8, 8) |
+                  formatNum
               }}
             </span>
             <span v-else>-</span>
@@ -290,9 +290,9 @@
               class="base-color-w margin-left-auto"
             >
               {{
-                currentToken.params[0].min_participant_icp_e8s
-                  | bigintToFloat(8, 8)
-                  | formatNum
+                currentToken.params[0].min_participant_icp_e8s |
+                  bigintToFloat(8, 8) |
+                  formatNum
               }}
             </span>
             <span v-else>-</span>
@@ -310,9 +310,9 @@
       <div class="launch-pad-modal-slide-main">
         <div class="h5-show mt20 base-font-title main-color">
           {{
-            currentToken.direct_participation_icp_e8s
-              | bigintToFloat(8, 8)
-              | formatNum
+            currentToken.direct_participation_icp_e8s |
+              bigintToFloat(8, 8) |
+              formatNum
           }}
           Direct Commitment
         </div>
@@ -334,15 +334,12 @@
                   : 'translateX(-100%)'
               }`
             }"
-            class="
-              pc-show
-              launch-pad-modal-slide-cap launch-pad-modal-slide-cap-completed
-            "
+            class="pc-show launch-pad-modal-slide-cap launch-pad-modal-slide-cap-completed"
           >
             {{
-              currentToken.direct_participation_icp_e8s
-                | bigintToFloat(8, 8)
-                | formatNum
+              currentToken.direct_participation_icp_e8s |
+                bigintToFloat(8, 8) |
+                formatNum
             }}
             Direct Commitment
           </span>
@@ -355,27 +352,24 @@
             }"
             >Hard Cap
             {{
-              currentToken.params[0].max_icp_e8s
-                | bigintToFloat(8, 8)
-                | formatNum
+              currentToken.params[0].max_icp_e8s |
+                bigintToFloat(8, 8) |
+                formatNum
             }}
             ICP <i></i
           ></span>
           <span
             v-if="currentToken.params && currentToken.params[0]"
-            class="
-              pc-show
-              launch-pad-modal-slide-cap launch-pad-modal-slide-cap-soft
-            "
+            class="pc-show launch-pad-modal-slide-cap launch-pad-modal-slide-cap-soft"
             :style="{ left: `${getSoft}` }"
           >
             <span v-if="parseInt(getSoft) < 70">
               <i></i>
               Soft Cap
               {{
-                currentToken.params[0].min_icp_e8s
-                  | bigintToFloat(8, 8)
-                  | formatNum
+                currentToken.params[0].min_icp_e8s |
+                  bigintToFloat(8, 8) |
+                  formatNum
               }}
               ICP
             </span>
@@ -391,9 +385,9 @@
               <span>
                 Soft Cap
                 {{
-                  currentToken.params[0].min_icp_e8s
-                    | bigintToFloat(8, 8)
-                    | formatNum
+                  currentToken.params[0].min_icp_e8s |
+                    bigintToFloat(8, 8) |
+                    formatNum
                 }}
                 ICP
               </span>
@@ -406,19 +400,16 @@
               currentToken.params[0] &&
               parseInt(getSoft) < 55
             "
-            class="
-              h5-show
-              launch-pad-modal-slide-cap launch-pad-modal-slide-cap-soft
-            "
+            class="h5-show launch-pad-modal-slide-cap launch-pad-modal-slide-cap-soft"
             :style="{ left: `${getSoft}` }"
           >
             <i></i>
             <span>
               Soft Cap
               {{
-                currentToken.params[0].min_icp_e8s
-                  | bigintToFloat(8, 8)
-                  | formatNum
+                currentToken.params[0].min_icp_e8s |
+                  bigintToFloat(8, 8) |
+                  formatNum
               }}
               ICP
             </span>
@@ -429,10 +420,7 @@
               currentToken.params[0] &&
               parseInt(getSoft) >= 55
             "
-            class="
-              h5-show
-              launch-pad-modal-slide-cap launch-pad-modal-slide-cap-soft
-            "
+            class="h5-show launch-pad-modal-slide-cap launch-pad-modal-slide-cap-soft"
             :style="{
               right: `${100 - parseInt(getSoft) + '%'}`,
               marginRight: '-8px'
@@ -441,9 +429,9 @@
             <span>
               Soft Cap
               {{
-                currentToken.params[0].min_icp_e8s
-                  | bigintToFloat(8, 8)
-                  | formatNum
+                currentToken.params[0].min_icp_e8s |
+                  bigintToFloat(8, 8) |
+                  formatNum
               }}
               ICP
             </span>
@@ -542,8 +530,8 @@
             v-if="currentToken.params && currentToken.params[0]"
           >
             {{
-              currentToken.params[0].swap_due_timestamp_seconds
-                | formatDateFromSecondUTC
+              currentToken.params[0].swap_due_timestamp_seconds |
+                formatDateFromSecondUTC
             }}
           </span>
           <span v-else class="base-color-w">&nbsp;-</span>
@@ -657,8 +645,8 @@
             >
               [{{
                 item.data.participation[0].icp[0]
-                  .transfer_success_timestamp_seconds
-                  | formatDateFromSecondUTCM
+                  .transfer_success_timestamp_seconds |
+                  formatDateFromSecondUTCM
               }}]
             </span>
             <span class="state-info-item-scroller-main">
@@ -672,9 +660,9 @@
             </span>
             <span class="margin-left-auto">
               {{
-                item.data.participation[0].icp[0].amount_e8s
-                  | bigintToFloat(4, 8)
-                  | formatNum
+                item.data.participation[0].icp[0].amount_e8s |
+                  bigintToFloat(4, 8) |
+                  formatNum
               }}
               ICP
             </span>
@@ -701,27 +689,25 @@
           <div slot-scope="{ item }" class="state-info-item-scroller">
             <span v-show="item.data.sns[0].transfer_success_timestamp_seconds">
               [{{
-                item.data.sns[0].transfer_success_timestamp_seconds
-                  | formatDateFromSecondUTCM
+                item.data.sns[0].transfer_success_timestamp_seconds |
+                  formatDateFromSecondUTCM
               }}]
             </span>
             <span
               v-if="currentToken"
-              class="
-                state-info-item-scroller-main state-info-item-scroller-main-sns
-              "
+              class="state-info-item-scroller-main state-info-item-scroller-main-sns"
             >
               {{
-                item.data.sns[0].amount_e8s
-                  | bigintToFloat(4, currentToken.decimals)
-                  | formatNum
+                item.data.sns[0].amount_e8s |
+                  bigintToFloat(4, currentToken.decimals) |
+                  formatNum
               }}
               {{ currentToken.symbol }}
             </span>
             <span class="margin-left-auto pc-show">
               {{
-                item.data.neuron_attributes[0].dissolve_delay_seconds
-                  | filterDelay
+                item.data.neuron_attributes[0].dissolve_delay_seconds |
+                  filterDelay
               }}
               days Dissolve delay
             </span>
@@ -1079,7 +1065,8 @@ export default class extends Mixins(BalanceMixin) {
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
       const needConnectInfinity1 = await needConnectInfinity(canisterIds);
       if (
-        priList[principal] === 'Plug' &&
+        (priList[principal] === 'Plug' ||
+          priList[principal] === 'SignerPlug') &&
         flag &&
         this.$route.name === 'ICSNS-Launchpad'
       ) {
@@ -1130,7 +1117,7 @@ export default class extends Mixins(BalanceMixin) {
         this.initConnected(listDeployedSnses, loading);
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -1181,7 +1168,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async getUpcomingProposalInfo(): Promise<void> {
     const proposalId = this.$route.query.proposalId;
-    if (!proposalId) {
+    if (typeof proposalId !== 'string') {
       return;
     }
     const governanceService = new GovernanceService();
@@ -1259,10 +1246,10 @@ export default class extends Mixins(BalanceMixin) {
     const promiseAll = [];
     const governanceCanisterId = this.governanceId;
     promiseAll.push(
-      this.getSNSTokenGovernanceInfo(governanceCanisterId.toString()),
+      this.getSNSTokenGovernanceInfo(governanceCanisterId.toString(), tokenId),
       this.getCurrentTokenInfo(tokenId),
-      this.getLifecycle(swapId),
-      this.getParams(swapId),
+      this.getLifecycle(swapId, tokenId),
+      this.getParams(swapId, tokenId),
       this.listCommunityFundParticipants(swapId),
       this.getInit(swapId)
     );
@@ -1337,10 +1324,17 @@ export default class extends Mixins(BalanceMixin) {
         });
     });
   }
-  private async getParams(tokenId: string): Promise<Array<Params>> {
+  private async getParams(
+    swap: string,
+    tokenId: string
+  ): Promise<Array<Params>> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.params && info.params.length) {
+      return info.params;
+    }
     const snsSwapService = new SNSSwapService();
     console.time('getParams');
-    const res = await snsSwapService.getSaleParameters(tokenId);
+    const res = await snsSwapService.getSaleParameters(swap);
     console.log(res);
     console.time('getParams');
     if (
@@ -1353,10 +1347,18 @@ export default class extends Mixins(BalanceMixin) {
     }
     return res.params;
   }
-  private async getLifecycle(tokenId: string): Promise<Array<bigint>> {
+  private async getLifecycle(
+    swap: string,
+    tokenId: string
+  ): Promise<Array<bigint>> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    const completed = [3, 4];
+    if (info && info.lifecycle && completed.includes(Number(info.lifecycle))) {
+      return info.lifecycle;
+    }
     const snsSwapService = new SNSSwapService();
     console.time('getLifecycle');
-    const res = await snsSwapService.getLifecycle(tokenId);
+    const res = await snsSwapService.getLifecycle(swap);
     console.timeEnd('getLifecycle');
     return res.lifecycle;
   }
@@ -1369,7 +1371,9 @@ export default class extends Mixins(BalanceMixin) {
         before_proposal: [],
         limit: BigInt(100),
         // todo only Proposals related to SNS and Community Fund.
-        exclude_topic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+        exclude_topic: [
+          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18
+        ],
         // only open
         include_status: [1],
         include_all_manage_neuron_proposals: []
@@ -1715,10 +1719,20 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async getSNSTokenGovernanceInfo(
+    governance: string,
     tokenId: string
   ): Promise<GetMetadataResponse> {
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.name && info.name instanceof Array && info.name[0]) {
+      return {
+        url: info.url,
+        logo: info.logo,
+        name: info.name,
+        description: info.description
+      };
+    }
     const snsGovernanceService = new SNSGovernanceService();
-    return await snsGovernanceService.getMetadata(tokenId);
+    return await snsGovernanceService.getMetadata(governance);
   }
   private initSide(): void {
     this.title = this.currentToken.name[0];
@@ -1859,7 +1873,10 @@ export default class extends Mixins(BalanceMixin) {
       if (Number(this.currentToken.lifecycle[0]) !== 1) {
         return;
       }
-      const lifecycle = await this.getLifecycle(this.currentToken.swapId);
+      const lifecycle = await this.getLifecycle(
+        this.currentToken.swapId,
+        this.currentToken.tokenId
+      );
       // this.currentToken.lifecycle = lifecycle;
       console.log(lifecycle);
       this.$set(this.currentToken, 'lifecycle', lifecycle);
@@ -1875,7 +1892,10 @@ export default class extends Mixins(BalanceMixin) {
   private async onFinish(): Promise<void> {
     this.pendingLoading = true;
     try {
-      const lifecycle = await this.getLifecycle(this.currentToken.swapId);
+      const lifecycle = await this.getLifecycle(
+        this.currentToken.swapId,
+        this.currentToken.tokenId
+      );
       // this.currentToken.lifecycle = lifecycle;
       console.log(lifecycle);
       this.$set(this.currentToken, 'lifecycle', lifecycle);
@@ -1968,11 +1988,11 @@ export default class extends Mixins(BalanceMixin) {
     (this.$refs.transferForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           const swapCanisterAccount = principalToAccountIdentifier(
             Principal.fromText(this.currentToken.swapId),
             principalToSubAccount(Principal.fromText(this.getPrincipalId))
@@ -1994,7 +2014,7 @@ export default class extends Mixins(BalanceMixin) {
             }
             this.getRefundIcp();
             loading.close();
-            console.error(e);
+            console.log(e);
           }
           this.swapVisible = false;
         }
@@ -2090,11 +2110,11 @@ export default class extends Mixins(BalanceMixin) {
     this.getRefundIcp();
   }
   private async onRefundIcp(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const snsSwapService = new SNSSwapService();
       console.log(this.currentToken.swapId);
@@ -2118,7 +2138,7 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.error('Refund error');
     }
     loading.close();
@@ -2318,7 +2338,7 @@ td.show-pc-td {
       bottom: 0;
       width: 100%;
       text-align: center;
-      ::v-deep.el-loading-spinner {
+      ::v-deep .el-loading-spinner {
         position: static;
         margin-top: 0;
       }

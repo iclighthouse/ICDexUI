@@ -56,6 +56,7 @@ export const getTokenBalance = async (
         currentInfo.tokensBalance = {};
       }
       if (
+        subAccountId === 0 &&
         !new BigNumber(currentInfo.tokensBalance[tokenId]).eq(
           balance.toString(10)
         )

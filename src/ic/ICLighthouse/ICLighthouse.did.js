@@ -116,8 +116,18 @@ export default ({ IDL }) => {
     getMessage: IDL.Func([], [Message], ['query']),
     getMetaMask: IDL.Func([IDL.Vec(IDL.Nat8)], [IDL.Opt(MetaMask)], ['query']),
     getTokens: IDL.Func([], [IDL.Vec(TokenItem)], ['query']),
+    getTokensByaccount: IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(TokenItem)],
+      ['query']
+    ),
     getWalletCount: IDL.Func([], [IDL.Nat], ['query']),
     getWallets: IDL.Func([], [IDL.Vec(WalletItem)], ['query']),
+    getWalletsByAccount: IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(WalletItem)],
+      ['query']
+    ),
     manageAddressBook: IDL.Func(
       [IDL.Text, IDL.Text, Operation],
       [IDL.Bool],

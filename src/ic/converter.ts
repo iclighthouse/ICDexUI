@@ -135,9 +135,9 @@ const formatDateToCalendarSecond = (date: Date): string => {
   const hour = date.getUTCHours();
   const minute = date.getUTCMinutes();
   return (
-    day +
+    Appendzero(day) +
     '/' +
-    month +
+    Appendzero(month) +
     ' ' +
     year +
     ' ' +
@@ -389,7 +389,7 @@ const toPrincipalAndAccountId = (
       };
     }
   } catch (e) {
-    console.error(e);
+    console.log(e);
     return {
       principal: null,
       subaccount: null,

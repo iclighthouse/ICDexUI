@@ -110,11 +110,11 @@ export default class extends Vue {
       allowance: BigInt(1),
       spender: Principal.fromText(spender)
     };
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
 
     if (isPlug()) {
       const approve = {
@@ -209,7 +209,7 @@ export default class extends Vue {
         }
       } catch (e) {
         this.$message.error('Approve error');
-        console.error(e);
+        console.log(e);
       }
       loading.close();
     }

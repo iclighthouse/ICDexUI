@@ -3,28 +3,29 @@ import { IDL } from '@dfinity/candid';
 import { PrincipalString } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal';
 import { IC_MANAGEMENT_CANISTER_ID } from '@/ic/utils';
+import { DelegationIdentity } from '@dfinity/identity';
 
-export const buildService = <T>(
-  identity: Identity,
+export const buildService = async <T>(
+  identity: Identity | DelegationIdentity,
   IDL: IDL.InterfaceFactory,
   canisterId: PrincipalString,
   host = 'https://ic0.app/'
-): T => {
-  const agent = new HttpAgent({
+): Promise<T> => {
+  const defaultAgent = new HttpAgent({
     host: host,
     identity: identity
   });
   if (process.env.NODE_ENV !== 'production') {
-    agent.fetchRootKey().catch((err) => {
+    defaultAgent.fetchRootKey().catch((err) => {
       console.warn(
         'Unable to fetch root key. Check to ensure that your local replica is running'
       );
-      console.error(err);
+      console.log(err);
     });
   }
   if (canisterId === IC_MANAGEMENT_CANISTER_ID) {
     return Actor.createActor(IDL, {
-      agent: agent,
+      agent: defaultAgent,
       canisterId: canisterId,
       ...{
         callTransform: transform,
@@ -33,7 +34,7 @@ export const buildService = <T>(
     });
   } else {
     return Actor.createActor(IDL, {
-      agent: agent,
+      agent: defaultAgent,
       canisterId: canisterId
     });
   }

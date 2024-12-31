@@ -289,6 +289,7 @@ import { Icrc1Account, TokenInfo, TokenStd } from '@/ic/common/icType';
 import { getCompetitionsBalance, getDepositing } from '@/ic/getTokenBalance';
 import { checkAuth } from '@/ic/CheckAuth';
 import { getFee } from '@/ic/getTokenFee';
+import { toHttpRejectError } from '@/ic/httpError';
 
 const commonModule = namespace('common');
 
@@ -358,11 +359,11 @@ export default class extends Vue {
   }
   private async depositFallback(subAccountId = 0): Promise<void> {
     if (!this.modeDisabled) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       const currentICDexService = new ICDexService();
       const res = await currentICDexService.depositFallback(
         this.currentPair[0].toString(),
@@ -437,11 +438,11 @@ export default class extends Vue {
     });
   }
   private async fallback(nonce: number): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const currentICDexService = new ICDexService();
       const res = await currentICDexService.fallback(
@@ -469,8 +470,9 @@ export default class extends Vue {
       loading.close();
     } catch (e) {
       loading.close();
-      console.error(e);
-      this.$message.error(e);
+      console.log(e);
+      // this.$message.error(e);
+      this.$message.error(toHttpRejectError(e));
     }
   }
   private canFallback(balance: string, token: TokenInfo): boolean {

@@ -40,7 +40,7 @@ export default class ConnectInfinity {
           console.warn(
             'Unable to fetch root key. Check to ensure that your local replica is running'
           );
-          console.error(err);
+          console.log(err);
         });
       }
       store.commit('common/SET_IS_OPEN', true);
@@ -131,9 +131,5 @@ const getWhitelist = (): string[] => {
   return localWhitelist[principal] || plugWhitelist;
 };
 export const canRequest = async (canisterId: string): Promise<boolean> => {
-  // const connected = await (window as any).ic.plug.isConnected();
-  // return (
-  //   (isPlug() && connected && getWhitelist().includes(canisterId)) || !isPlug()
-  // );
   return (isInfinity() && getWhitelist().includes(canisterId)) || !isInfinity();
 };

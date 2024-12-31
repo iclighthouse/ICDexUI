@@ -85,8 +85,12 @@ import { Icrc1Account } from '@/ic/common/icType';
 })
 export default class extends Vue {
   $refs!: { approveForm };
-  @Prop({ type: [Number, BigInt], default: 8 })
-  decimals!: number;
+  @Prop({
+    default: 8,
+    validator: (value: any) =>
+      typeof value === 'number' || typeof value === 'bigint'
+  })
+  private decimals!: number | bigint;
   @Prop({ type: String, default: 'ICL' })
   symbol!: string;
   @Prop({ type: String, default: IC_LIGHTHOUSE_TOKEN_CANISTER_ID })
@@ -144,11 +148,11 @@ export default class extends Vue {
             .times(10 ** Number(this.decimals))
             .toString(10)
         );
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           if (this.approveMode === 'drc20') {
             const principal = localStorage.getItem('principal');

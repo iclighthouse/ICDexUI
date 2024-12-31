@@ -26,7 +26,7 @@ const ICDexRouter: RouteConfig[] = [
   },
   {
     path: '/ICDex/info',
-    name: 'Info',
+    name: 'ICDexInfo',
     component: () => import('@/views/home/ICDex/Market.vue'),
     meta: {
       title: 'Info',
@@ -39,7 +39,7 @@ const ICDexRouter: RouteConfig[] = [
   },
   {
     path: '/ICDex/pools',
-    name: 'Pools',
+    name: 'ICDexPools',
     component: () => import('@/views/home/ICDex/Pools.vue'),
     meta: {
       title: 'Pools',
@@ -54,7 +54,7 @@ const ICDexRouter: RouteConfig[] = [
   },
   {
     path: '/ICDex/pools/pool/:poolId/:type?',
-    name: 'Pool',
+    name: 'ICDexPool',
     component: () => import('@/views/home/ICDex/Pool.vue'),
     meta: {
       title: 'Pool',
@@ -99,7 +99,7 @@ const ICDexRouter: RouteConfig[] = [
   },
   {
     path: '/Mining/:type?',
-    name: 'Mining',
+    name: 'ICDexMining',
     component: () => import('@/views/home/ICDex/Mining.vue'),
     meta: {
       title: 'Mining',

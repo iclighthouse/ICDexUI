@@ -8,6 +8,7 @@ import { namespace } from 'vuex-class';
 import { LEDGER_CANISTER_ID } from '@/ic/utils';
 
 const commonModule = namespace('common');
+let num = 0;
 
 @Component({})
 export class BalanceMixin extends Vue {
@@ -25,6 +26,7 @@ export class BalanceMixin extends Vue {
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
+    num = 0;
   }
   created(): void {
     const principal = localStorage.getItem('principal');
@@ -51,7 +53,7 @@ export class BalanceMixin extends Vue {
     this.timer = null;
     this.timer = window.setInterval(() => {
       setTimeout(() => {
-        if (!this.getCheckAuth) {
+        if (this.getPrincipalId) {
           this.getBalance().then();
         }
       }, 0);

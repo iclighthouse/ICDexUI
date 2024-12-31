@@ -73,7 +73,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
-import RosettaApi, { Transaction } from '@/ic/RosettaApi.ts';
+import RosettaApi, { Transaction } from '@/ic/RosettaApi';
 import BigNumber from 'bignumber.js';
 import { formatDateFromNanosecondUTC } from '@/filters';
 const rosettaApi = new RosettaApi();
@@ -174,7 +174,7 @@ export default class extends Vue {
     this.getTransactionList();
   }
   private back(): void {
-    this.$router.replace('/account');
+    this.$router.replace('/wallet');
   }
   private async getLastBlockIndex(): Promise<void> {
     try {

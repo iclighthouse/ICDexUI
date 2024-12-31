@@ -27,12 +27,12 @@ export class ICLighthouseService {
     );
   };
   public getAddressBookItems = async (): Promise<AddressBookItem[]> => {
-    await this.check(false);
+    await this.check(false, false);
     const res = await this.service.getAddressBookItems();
     return SerializableIC(res);
   };
   public getEthConnectItems = async (): Promise<EthConnectItem[]> => {
-    await this.check(false);
+    await this.check(false, false);
     const res = await this.service.getEthConnectItems();
     return SerializableIC(res);
   };
@@ -58,8 +58,14 @@ export class ICLighthouseService {
     return await this.service.manageEthConnect(ethAddress, signCode, operation);
   };
   public getWallets = async (): Promise<ManageWalletResponse[]> => {
-    await this.check(false);
-    const res = await this.service.getWallets();
+    await this.check(false, false);
+    const principal = localStorage.getItem('principal');
+    if (!principal) {
+      return [];
+    }
+    const res = await this.service.getWalletsByAccount(
+      Principal.fromText(principal)
+    );
     return SerializableIC(res);
   };
   public manageWallet = async (
@@ -77,20 +83,26 @@ export class ICLighthouseService {
     return SerializableIC(res);
   };
   public getNotice = async (): Promise<Message> => {
-    await this.check(false);
+    await this.check(false, false);
     const res = await this.service.getMessage();
     return SerializableIC(res);
   };
   public getTokens = async (): Promise<Array<TokenItem>> => {
-    await this.check(false);
-    const res = await this.service.getTokens();
+    await this.check(false, false);
+    const principal = localStorage.getItem('principal');
+    if (!principal) {
+      return [];
+    }
+    const res = await this.service.getTokensByaccount(
+      Principal.fromText(principal)
+    );
     return SerializableIC(res);
   };
   public getMetaMask = async (
     ethAccount: string
   ): Promise<Array<MetaMaskInfo>> => {
     const account = hexToBytes(ethAccount);
-    await this.check(false);
+    await this.check(false, false);
     const res = await this.service.getMetaMask(account);
     return SerializableIC(res);
   };
@@ -111,6 +123,7 @@ export class ICLighthouseService {
     operation: Operation
   ): Promise<boolean> => {
     await this.check();
+    console.log(this.service);
     return await this.service.manageToken(
       tokenId,
       symbol,
@@ -127,7 +140,7 @@ export class ICLighthouseService {
     try {
       return await this.service.getFavorites(Principal.fromText(principalId));
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return [];
     }
   };
@@ -136,7 +149,7 @@ export class ICLighthouseService {
     try {
       return await this.service.addFavorites(pairId);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -145,7 +158,7 @@ export class ICLighthouseService {
     try {
       return await this.service.removeFavorites(pairId);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -156,7 +169,7 @@ export class ICLighthouseService {
     try {
       return await this.service.updateFavoritesListOrder(pairList);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -167,7 +180,7 @@ export class ICLighthouseService {
     try {
       return await this.service.getAccountName(account);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -176,7 +189,7 @@ export class ICLighthouseService {
     try {
       return await this.service.updateAccountlName(name);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };

@@ -92,6 +92,7 @@ import {
 } from '@/ic/converter';
 import { namespace } from 'vuex-class';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { PropType } from 'vue';
 const commonModule = namespace('common');
 
 @Component({
@@ -100,8 +101,14 @@ const commonModule = namespace('common');
 })
 export default class extends Vue {
   $refs!: { form };
-  @Prop({ type: [Number, BigInt], default: 0 })
-  decimals!: number;
+  // @Prop({ type: [Number, BigInt], default: 0 })
+  // decimals!: number;
+  @Prop({
+    default: 8,
+    validator: (value: any) =>
+      typeof value === 'number' || typeof value === 'bigint'
+  })
+  private decimals!: number | bigint;
   @Prop({ type: String, default: 'ICL' })
   symbol!: string;
   @Prop({ type: String, default: IC_LIGHTHOUSE_TOKEN_CANISTER_ID })
@@ -162,11 +169,11 @@ export default class extends Vue {
     (this.$refs.form as any).validateField('amount');
   }
   private async executeTransfer(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const principal = localStorage.getItem('principal');
       const nonceRes = await this.DRC20TokenService.txnQuery(

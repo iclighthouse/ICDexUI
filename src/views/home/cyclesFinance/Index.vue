@@ -1,25 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/cyclesfinance-1.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          v-for="(menu, index) in exchangeMenu"
-          :key="index"
-          :class="{ active: exchangeType === menu }"
-          @click="change(menu)"
-        >
-          {{ menu }}
-        </li>
-      </ul>
-      <account-info :menu-list="menuList"></account-info>
-    </div>
     <div class="cycles-finance-main container-width">
       <div class="exchange-fee-item">
         <dl>
@@ -209,7 +189,7 @@
               class="no-cycles-wallet"
             >
               You don't have a cycles wallet yet,
-              <router-link to="/account">create or bind one.</router-link>
+              <router-link to="/wallet">create or bind one.</router-link>
             </div>
             <div
               v-show="swapType === 'cyclesToIcp'"
@@ -307,7 +287,7 @@
               class="no-cycles-wallet no-cycles-wallet-cycles"
             >
               You don't have a cycles wallet yet,
-              <router-link to="/account">create or bind one.</router-link>
+              <router-link to="/wallet">create or bind one.</router-link>
             </div>
             <div
               v-show="swapType === 'icpToCycles'"
@@ -707,7 +687,7 @@
                 v-show="wallets ? !wallets.length : false"
               >
                 You don't have a cycles wallet yet,
-                <router-link to="/account">create or bind one.</router-link>
+                <router-link to="/wallet">create or bind one.</router-link>
               </div>
               <div class="exchange-swap-item-top">
                 <div class="exchange-swap-item-top-title">Cycles Wallet:</div>
@@ -796,9 +776,7 @@
                 <div>Shares</div>
               </div>
               <div
-                class="
-                  exchange-swap-item-bottom exchange-swap-item-bottom-share
-                "
+                class="exchange-swap-item-bottom exchange-swap-item-bottom-share"
               >
                 <div>1,000,000</div>
                 <div>&nbsp;Shares =&nbsp;</div>
@@ -906,7 +884,7 @@
                 v-show="wallets ? !wallets.length : false"
               >
                 You don't have a cycles wallet yet,
-                <router-link to="/account">create or bind one.</router-link>
+                <router-link to="/wallet">create or bind one.</router-link>
               </div>
               <div class="exchange-swap-item-top">Cycles Wallet:</div>
               <div class="exchange-swap-item-top">
@@ -988,10 +966,7 @@
               <div class="exchange-swap-item-bottom">
                 <!--<span>Value: {{ shareIcp }} ICP + {{ shareCycles }} TCycles</span>-->
                 <span
-                  class="
-                    exchange-swap-item-bottom-fee
-                    exchange-swap-item-bottom-fee-share
-                  "
+                  class="exchange-swap-item-bottom-fee exchange-swap-item-bottom-fee-share"
                   @click="setMaxShare"
                   >Max</span
                 >
@@ -1020,7 +995,7 @@
                 v-show="wallets ? !wallets.length : false"
               >
                 You don't have a cycles wallet yet,
-                <router-link to="/account">create or bind one.</router-link>
+                <router-link to="/wallet">create or bind one.</router-link>
               </div>
               <div class="exchange-swap-item-top">
                 Cycles Wallet:
@@ -1404,6 +1379,7 @@ import {
   currentPageConnectInfinity,
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
+import EventBus from '@/utils/Event';
 const commonModule = namespace('common');
 
 @Component({
@@ -2068,6 +2044,9 @@ export default class extends Mixins(BalanceMixin) {
     this.liquidity = await this.getLiquidity();
     console.log(this.liquidity, this.userLiquidity);
     this.getIntervalLiquidity();
+    EventBus.$on('change', (type: ExchangeType) => {
+      this.change(type);
+    });
   }
   private connectWallet(): void {
     this.$router.push({
@@ -2260,7 +2239,7 @@ export default class extends Mixins(BalanceMixin) {
           icon: 'connect-plug',
           okText: 'OK',
           onOk() {
-            that.$router.push('/account');
+            that.$router.push('/wallet');
           }
         });
       } else {
@@ -2300,11 +2279,11 @@ export default class extends Mixins(BalanceMixin) {
     return flag;
   }
   private async submitRemoveLiquidity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     const flag = await this.checkCycles(this.formCyclesWalletPrincipal);
     if (!flag) {
       loading.close();
@@ -2323,12 +2302,14 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.shareCycles).times(10 ** 12)
+              new BigNumber(this.shareCycles).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.shareIcp).times(10 ** this.decimals)
+              new BigNumber(this.shareIcp)
+                .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2456,9 +2437,9 @@ export default class extends Mixins(BalanceMixin) {
         CreditIcp = BigInt('0');
       } else {
         CreditIcp = BigInt(
-          new BigNumber(this.lpRewards.icp.toString(10)).minus(
-            this.fee * 10 ** this.decimals
-          )
+          new BigNumber(this.lpRewards.icp.toString(10))
+            .minus(this.fee * 10 ** this.decimals)
+            .toString(10)
         );
       }
       const record1 = {
@@ -2552,11 +2533,11 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async addLiquidity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const flag = await this.checkCycles(this.cyclesCanister.trim());
       if (!flag) {
@@ -2583,7 +2564,7 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             DebitRecord: BigInt(
-              new BigNumber(this.cyclesAmount).times(10 ** 12)
+              new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
@@ -2591,6 +2572,7 @@ export default class extends Mixins(BalanceMixin) {
               new BigNumber(this.depositAmount)
                 .minus(this.fee)
                 .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2615,7 +2597,9 @@ export default class extends Mixins(BalanceMixin) {
       const walletCallRequest: WalletCallRequest = {
         canister: Principal.fromText(CYCLES_FINANCE_CANISTER_ID),
         method_name: 'add',
-        cycles: BigInt(new BigNumber(this.cyclesAmount).times(10 ** 12)),
+        cycles: BigInt(
+          new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
+        ),
         args: Array.from(Buffer.from(args))
       };
       this.walletService
@@ -2707,11 +2691,11 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async cyclesToIcp(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const nonce = await this.getCount(
         Principal.fromText(this.cyclesCanister.trim())
@@ -2728,12 +2712,14 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             DebitRecord: BigInt(
-              new BigNumber(this.cyclesAmount).times(10 ** 12)
+              new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.depositAmount).times(10 ** this.decimals)
+              new BigNumber(this.depositAmount)
+                .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2757,7 +2743,9 @@ export default class extends Mixins(BalanceMixin) {
       const walletCallRequest: WalletCallRequest = {
         canister: Principal.fromText(CYCLES_FINANCE_CANISTER_ID),
         method_name: 'cyclesToIcp',
-        cycles: BigInt(new BigNumber(this.cyclesAmount).times(10 ** 12)),
+        cycles: BigInt(
+          new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
+        ),
         args: Array.from(Buffer.from(args))
       };
       this.walletService
@@ -2825,11 +2813,11 @@ export default class extends Mixins(BalanceMixin) {
     this.$message.success('Cycles to icp is pending');
   }
   private async icpToCycles(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       this.isLoading = true;
       const flag = await this.checkCycles(this.cyclesCanister.trim());
@@ -2841,7 +2829,9 @@ export default class extends Mixins(BalanceMixin) {
       // todo AccountId
       await this.getDepositAccountId();
       const icp = BigInt(
-        new BigNumber(this.depositAmount).times(10 ** this.decimals)
+        new BigNumber(this.depositAmount)
+          .times(10 ** this.decimals)
+          .toString(10)
       );
       console.log(icp);
       const blockHeight = await this.ledgerService.sendIcp(
@@ -2860,7 +2850,7 @@ export default class extends Mixins(BalanceMixin) {
         filled: {
           token0Value: {
             CreditRecord: BigInt(
-              new BigNumber(this.cyclesAmount).times(10 ** 12)
+              new BigNumber(this.cyclesAmount).times(10 ** 12).toString(10)
             )
           },
           token1Value: {
@@ -2868,6 +2858,7 @@ export default class extends Mixins(BalanceMixin) {
               new BigNumber(this.depositAmount)
                 .minus(this.fee)
                 .times(10 ** this.decimals)
+                .toString(10)
             )
           }
         },
@@ -2959,7 +2950,10 @@ export default class extends Mixins(BalanceMixin) {
       this.getCycles();
     }
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (priList[this.getPrincipalId] === 'Plug') {
+    if (
+      priList[this.getPrincipalId] === 'Plug' ||
+      priList[this.getPrincipalId] === 'SignerPlug'
+    ) {
       this.connectPlug();
     }
   }

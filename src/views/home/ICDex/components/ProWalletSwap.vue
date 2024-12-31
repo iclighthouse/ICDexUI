@@ -1,7 +1,7 @@
 <template>
   <a-modal
     v-model="visible"
-    title="Transfer"
+    :title="title"
     centered
     width="550px"
     :footer="null"
@@ -12,7 +12,7 @@
     :z-index="1400"
   >
     <div class="swap-main">
-      <div>
+      <div class="flex-center">
         <span class="swap-main-type">From</span>
         <span class="base-font-title">
           <span v-show="type === 'toPro'"
@@ -26,12 +26,12 @@
                 tokensBalanceSto
               "
               >&nbsp;({{
-                tokensBalance[tokenId]
-                  | bigintToFloat(8, tokens[tokenId].decimals)
+                tokensBalance[tokenId] |
+                  bigintToFloat(8, tokens[tokenId].decimals)
               }}
               {{ tokens[tokenId].symbol }})</span
-            ></span
-          >
+            >
+          </span>
           <span v-show="type === 'toWallet'"
             >Pro-wallet<span
               v-if="
@@ -42,12 +42,19 @@
                 tokensBalanceSto
               "
               >&nbsp;({{
-                tokensBalanceSto[tokenId]
-                  | bigintToFloat(8, tokens[tokenId].decimals)
+                tokensBalanceSto[tokenId] |
+                  bigintToFloat(8, tokens[tokenId].decimals)
               }}
               {{ tokens[tokenId].symbol }})</span
             ></span
           >
+        </span>
+        <span
+          v-show="title !== 'Transfer'"
+          @click="toTradeICL"
+          class="margin-left-auto mining-link pointer"
+        >
+          Buy
         </span>
       </div>
       <div class="swap-main-icon">
@@ -72,8 +79,8 @@
                 tokensBalanceSto
               "
               >&nbsp;({{
-                tokensBalance[tokenId]
-                  | bigintToFloat(8, tokens[tokenId].decimals)
+                tokensBalance[tokenId] |
+                  bigintToFloat(8, tokens[tokenId].decimals)
               }}
               {{ tokens[tokenId].symbol }})</span
             ></span
@@ -88,8 +95,8 @@
                 tokensBalanceSto
               "
               >&nbsp;({{
-                tokensBalanceSto[tokenId]
-                  | bigintToFloat(8, tokens[tokenId].decimals)
+                tokensBalanceSto[tokenId] |
+                  bigintToFloat(8, tokens[tokenId].decimals)
               }}
               {{ tokens[tokenId].symbol }})</span
             ></span
@@ -128,16 +135,16 @@
           <p>
             Balance:
             <span v-show="type === 'toPro'">{{
-              tokensBalance[tokenId]
-                | bigintToFloat(
+              tokensBalance[tokenId] |
+                bigintToFloat(
                   isH5 ? 8 : tokens[tokenId].decimals,
                   tokens[tokenId].decimals
                 )
             }}</span>
             <span v-show="type === 'toWallet'">
               {{
-                tokensBalanceSto[tokenId]
-                  | bigintToFloat(
+                tokensBalanceSto[tokenId] |
+                  bigintToFloat(
                     isH5 ? 8 : tokens[tokenId].decimals,
                     tokens[tokenId].decimals
                   )
@@ -148,8 +155,8 @@
           <p>
             Fee:
             {{
-              getTokenFee(tokens[tokenId])
-                | bigintToFloat(
+              getTokenFee(tokens[tokenId]) |
+                bigintToFloat(
                   tokens[tokenId].decimals,
                   tokens[tokenId].decimals
                 )
@@ -204,6 +211,7 @@ export default class extends Vue {
   private ledgerService: LedgerService | undefined;
   private DRC20TokenService: DRC20TokenService;
   private visible = false;
+  private title = 'Transfer';
   private tokenId = '';
   private type = 'toPro';
   private transferForm = {
@@ -255,11 +263,11 @@ export default class extends Vue {
     (this.$refs.transferForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             const principal = localStorage.getItem('principal');
             const standard = Object.keys(this.tokens[this.tokenId].tokenStd)[0];
@@ -428,6 +436,10 @@ export default class extends Vue {
   private getTokenFee(token: TokenInfo): string | bigint {
     return getFee(token);
   }
+  private toTradeICL(): void {
+    this.visible = false;
+    this.$emit('toTradeICL');
+  }
 }
 </script>
 
@@ -454,5 +466,11 @@ export default class extends Vue {
 }
 .transfer-balance-right {
   color: #1996c4;
+}
+.mining-link {
+  color: #51b7c3;
+  &:hover {
+    color: #1996c4 !important;
+  }
 }
 </style>

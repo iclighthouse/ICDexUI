@@ -1,11 +1,11 @@
 <template>
   <div id="app">
     <router-view class="app-main" />
-    <div v-if="$route.meta.requireAuth && getPrincipalId">
+    <div v-if="getPrincipalId">
       <a-modal
         class="verify-identity-modal"
         width="650px"
-        :zIndex="2000"
+        :zIndex="1600"
         centered
         v-model="showCheckAuthModal"
         :footer="null"
@@ -20,7 +20,12 @@
             <img src="@/assets/img/logo.png" alt="" />
             <!--<p v-if="type !== 'authClient'">Welcome back</p>-->
           </div>
-          <p v-if="type !== 'AuthClient'" class="account-list-title">
+          <p
+            v-if="
+              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+            "
+            class="account-list-title"
+          >
             Re-verify your identity
           </p>
           <a-input
@@ -30,20 +35,33 @@
           />
           <div
             class="verify-internet verify-internet-main"
-            v-if="type === 'AuthClient'"
+            v-if="
+              type === 'AuthClient' || type === 'NFID' || type === 'SignerNFID'
+            "
             @click="authClient"
           >
-            <img src="@/assets/img/dfinity.png" alt="" />Re-verify your Internet
-            identity
+            <img
+              v-show="type === 'AuthClient'"
+              src="@/assets/img/dfinity.png"
+              alt=""
+            /><img
+              v-show="type === 'NFID' || type === 'SignerNFID'"
+              src="@/assets/img/NFID.svg"
+              alt=""
+            />Re-verify your identity
           </div>
           <a-input-password
-            v-if="type !== 'AuthClient'"
+            v-if="
+              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+            "
             placeholder="input password"
             v-model="password"
           />
           <button
             type="button"
-            v-if="type !== 'AuthClient'"
+            v-if="
+              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+            "
             class="primary large-primary form-button w100"
             @click="onSubmit"
           >
@@ -185,9 +203,9 @@ import { ConnectMetaMaskMixin } from '@/mixins';
 import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
-import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { Principal } from '@dfinity/principal';
+import { getNFID, NFIDLogin, NFIDLogout } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
 
@@ -231,6 +249,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
   async mounted(): Promise<void> {
     // todo new site
+    getNFID();
     const hostname = window.location.hostname;
     this.hostname = window.location.hostname;
     console.log(window.parent.origin);
@@ -282,7 +301,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       //     });
       //   }
       // }
-      // if (e.key && e.key == 'plug' && e.newValue) {
+      // if (e.key && e.key == 'Plug' && e.newValue) {
       //   this.$router.go(0);
       // }
     });
@@ -302,6 +321,30 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       );
       tokens[sns1TokenId].fee = tokens[sns1TokenId].fee.toString();
       delete tokens[sns1TokenId].totalSupply;
+      delete tokens[sns1TokenId].logo;
+      console.log(tokens);
+      localStorage.setItem('tokens', JSON.stringify(tokens));
+    }
+    // EXE
+    const EXETokenId = 'rh2pm-ryaaa-aaaan-qeniq-cai';
+    if (tokens[EXETokenId] && tokens[EXETokenId].fee === '100000') {
+      tokens[EXETokenId] = await getTokenInfo(Principal.fromText(EXETokenId), {
+        icrc1: null
+      });
+      tokens[EXETokenId].fee = tokens[EXETokenId].fee.toString();
+      delete tokens[EXETokenId].totalSupply;
+      delete tokens[EXETokenId].logo;
+      console.log(tokens[EXETokenId]);
+      localStorage.setItem('tokens', JSON.stringify(tokens));
+    }
+    const RICHToken = '77xez-aaaaa-aaaar-qaezq-cai';
+    if (tokens[RICHToken] && tokens[RICHToken].symbol !== 'RICH') {
+      tokens[RICHToken] = await getTokenInfo(Principal.fromText(RICHToken), {
+        icrc1: null
+      });
+      tokens[RICHToken].fee = tokens[RICHToken].fee.toString();
+      delete tokens[RICHToken].totalSupply;
+      delete tokens[RICHToken].logo;
       console.log(tokens);
       localStorage.setItem('tokens', JSON.stringify(tokens));
     }
@@ -328,27 +371,45 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     Vue.prototype.$app = this;
   }
   private async logout(): Promise<void> {
-    const authClientAPi = await AuthClientAPi.create();
-    const identity = authClientAPi.tryGetIdentity();
-    if (identity) {
-      await authClientAPi.logout();
-    }
-    const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    const principal = localStorage.getItem('principal');
-    if (priList[principal] === 'Plug') {
-      if ((window as any).ic && (window as any).ic.plug) {
-        (window as any).ic.plug.disconnect();
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      const authClientAPi = await AuthClientAPi.create();
+      const identity = authClientAPi.tryGetIdentity();
+      if (identity) {
+        await authClientAPi.logout();
       }
-    }
-    if (priList[principal] === 'Infinity') {
-      if ((window as any).ic && (window as any).ic.infinityWallet) {
-        (window as any).ic.infinityWallet.disconnect();
+      const priList = JSON.parse(localStorage.getItem('priList')) || {};
+      const principal = localStorage.getItem('principal');
+      if (
+        priList[principal] === 'Plug' ||
+        priList[principal] === 'SignerPlug'
+      ) {
+        if ((window as any).ic && (window as any).ic.plug) {
+          (window as any).ic.plug.disconnect();
+        }
       }
+      if (priList[principal] === 'Infinity') {
+        if ((window as any).ic && (window as any).ic.infinityWallet) {
+          (window as any).ic.infinityWallet.disconnect();
+        }
+      }
+      if (
+        priList[principal] === 'NFID' ||
+        priList[principal] === 'SignerNFID'
+      ) {
+        await NFIDLogout();
+      }
+      localStorage.removeItem('principal');
+      this.setPrincipalId(null);
+      this.setIdentity(null);
+      this.setCheckAuth(false);
+    } catch (e) {
+      console.log(e);
     }
-    localStorage.removeItem('principal');
-    this.setPrincipalId(null);
-    this.setIdentity(null);
-    this.setCheckAuth(false);
+    loading.close();
   }
   private checkRiskWarning(): void {
     if (this.$route.fullPath.toLocaleLowerCase().includes('icdex')) {
@@ -359,13 +420,18 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
   }
   private async init(checkAuth: boolean): Promise<void> {
+    console.log(this.getPrincipalId);
+    const principal = localStorage.getItem('principal');
+    const priList = JSON.parse(localStorage.getItem('priList')) || {};
     if ((window as any).icx) {
       console.log('116:' + this.getPrincipalId);
     } else {
-      // this.principal = localStorage.getItem('principal');
-      const priList = JSON.parse(localStorage.getItem('priList')) || {};
       if (priList[this.getPrincipalId] === 'AuthClient') {
         this.type = 'AuthClient';
+      } else if (priList[this.getPrincipalId] === 'NFID') {
+        this.type = 'NFID';
+      } else if (priList[this.getPrincipalId] === 'SignerNFID') {
+        this.type = 'SignerNFID';
       } else if (
         priList[this.getPrincipalId] &&
         priList[this.getPrincipalId].includes('MetaMask')
@@ -395,46 +461,56 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
             return;
           }
         }
-      } else if (priList[this.getPrincipalId] === 'Plug') {
-        this.type = 'Plug';
-        if (this.$route.meta.requireAuth) {
-          const principal = localStorage.getItem('principal');
-          const localWhitelist =
-            JSON.parse(localStorage.getItem('whitelist')) || {};
-          const whitelist: string[] =
-            localWhitelist[principal] || plugWhitelist;
-          const connectPlug = new ConnectPlug();
-          if (
-            (window as any).ic &&
-            !(window as any).ic.plug.agent &&
-            checkAuth &&
-            !this.isInit
-          ) {
-            this.isInit = true;
-            const plugIc = (window as any).ic?.plug;
-            const plugPrincipalId = await plugIc.getPrincipal();
-            console.log(principal);
-            console.log(plugPrincipalId);
-            if (plugPrincipalId && principal !== plugPrincipalId.toString()) {
-              // eslint-disable-next-line @typescript-eslint/no-this-alias
-              const _that = this;
-              Vue.prototype.$info({
-                content: `Please check if you are logged into Plug with account ${principal}.`,
-                class: 'connect-plug',
-                icon: 'connect-plug',
-                centered: true,
-                okText: 'Confirm',
-                async onOk() {
-                  await connectPlug.connect(whitelist, false);
-                  await createPlugWhiteActor();
-                  _that.setCheckAuth(false);
-                }
-              });
-            } else {
-              await connectPlug.connect(whitelist, false);
-              await createPlugWhiteActor();
-              this.setCheckAuth(false);
-            }
+      } else if (
+        priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug'
+      ) {
+        this.type = priList[this.getPrincipalId];
+        const localWhitelist =
+          JSON.parse(localStorage.getItem('whitelist')) || {};
+        const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
+        const connectPlug = new ConnectPlug();
+        if (
+          (window as any).ic &&
+          (!(window as any).ic.plug.agent ||
+            !(window as any).ic.plug.principalId) &&
+          checkAuth &&
+          !this.isInit
+        ) {
+          this.isInit = true;
+          const plugIc = (window as any).ic?.plug;
+          const plugPrincipalId = await plugIc.getPrincipal();
+          console.log(principal);
+          console.log(plugPrincipalId);
+          if (plugPrincipalId && principal !== plugPrincipalId.toString()) {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const _that = this;
+            Vue.prototype.$info({
+              content: `Please check if you are logged into Plug with account ${principal}.`,
+              class: 'connect-plug',
+              icon: 'connect-plug',
+              centered: true,
+              okText: 'Confirm',
+              async onOk() {
+                await connectPlug.connect(
+                  whitelist,
+                  priList[this.getPrincipalId] === 'SignerPlug'
+                );
+                await createPlugWhiteActor(
+                  priList[this.getPrincipalId] === 'SignerPlug'
+                );
+                _that.setCheckAuth(false);
+              }
+            });
+          } else {
+            await connectPlug.connect(
+              whitelist,
+              priList[this.getPrincipalId] === 'SignerPlug'
+            );
+            await createPlugWhiteActor(
+              priList[this.getPrincipalId] === 'SignerPlug'
+            );
+            this.setCheckAuth(false);
           }
         }
       } else if (priList[this.getPrincipalId] === 'Infinity') {
@@ -461,8 +537,15 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         this.isInit = false;
       }
       this.isInit = false;
-      this.showCheckAuthModal =
-        checkAuth && this.type !== 'Plug' && this.type !== 'Infinity';
+      if (this.$route.meta.type && this.$route.meta.type === 'login') {
+        this.showCheckAuthModal = false;
+      } else {
+        this.showCheckAuthModal =
+          checkAuth &&
+          this.type !== 'Plug' &&
+          this.type !== 'SignerPlug' &&
+          this.type !== 'Infinity';
+      }
     }
   }
   private signInstead(): void {
@@ -481,16 +564,33 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    const authClientAPi = await AuthClientAPi.create();
-    await authClientAPi.login();
+    if (this.type === 'AuthClient') {
+      const authClientAPi = await AuthClientAPi.create();
+      await authClientAPi.login();
+    } else if (this.type === 'NFID') {
+      await NFIDLogin();
+      loading.close();
+      return;
+    } else if (this.type === 'SignerNFID') {
+      const signerAgent = await NFIDLogin(true);
+      console.log(signerAgent);
+      if (signerAgent) {
+        loading.close();
+        return;
+      }
+    }
     this.setCheckAuth(false);
     loading.close();
   }
-  private onSubmit(): void {
-    const loading = this.$loading({
-      lock: true,
-      background: 'rgba(0, 0, 0, 0.5)'
-    });
+  private async onSubmit(): Promise<void> {
+    let loading;
+    const isLoading = !!document.querySelector('.el-loading-mask');
+    if (!isLoading) {
+      loading = this.$loading({
+        lock: true,
+        background: 'rgba(0, 0, 0, 0.5)'
+      });
+    }
     setTimeout(async () => {
       try {
         let identity;
@@ -535,9 +635,13 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         localStorage.setItem('identity', localStorage.getItem('principal'));
         // sessionStorage.setItem('identity', JSON.stringify(identity));
         this.setCheckAuth(false);
-        loading.close();
+        if (!isLoading) {
+          loading.close();
+        }
       } catch (e) {
-        loading.close();
+        if (!isLoading) {
+          loading.close();
+        }
         console.log(e);
         this.$message.config({ top: '40%' });
         this.$message.error("Password doesn't match");
@@ -555,7 +659,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
   private leave(): void {
     this.showRiskWarning = false;
-    this.$router.replace('/account');
+    this.$router.replace('/wallet');
   }
 }
 </script>

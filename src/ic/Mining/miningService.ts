@@ -4,25 +4,25 @@ import Service, {
   RoundPointsForLM
 } from '@/ic/Mining/model';
 import { createService } from '@/ic/createService';
-import { MINING_CANISTER_ID } from '@/ic/utils';
 import miningIDL from './mining.did';
 import { SerializableIC } from '@/ic/converter';
 import { AccountId, Icrc1Account } from '@/ic/common/icType';
 
 export class MiningService {
-  private service: Service;
-  private check = async (renew = true, isUpdate = true): Promise<void> => {
-    this.service = await createService<Service>(
-      MINING_CANISTER_ID,
-      miningIDL,
-      renew,
-      isUpdate
-    );
+  private check = async (
+    canisterId: string,
+    renew = true,
+    isUpdate = true
+  ): Promise<Service> => {
+    return await createService<Service>(canisterId, miningIDL, renew, isUpdate);
   };
-  public getRound = async (roundId: Array<bigint> = []): Promise<RoundInfo> => {
+  public getRound = async (
+    canisterId: string,
+    roundId: Array<bigint> = []
+  ): Promise<RoundInfo> => {
     try {
-      await this.check(false, false);
-      const res = await this.service.getRound(roundId);
+      const service = await this.check(canisterId, false, false);
+      const res = await service.getRound(roundId);
       return SerializableIC(res);
     } catch (e) {
       console.log(e);
@@ -30,91 +30,101 @@ export class MiningService {
     }
   };
   public getAccelerationRate = async (
+    canisterId: string,
     accountId: AccountId
   ): Promise<string> => {
     try {
-      await this.check(false, false);
-      return await this.service.getAccelerationRate(accountId);
+      const service = await this.check(canisterId, false, false);
+      return await service.getAccelerationRate(accountId);
     } catch (e) {
       console.log(e);
       return '0';
     }
   };
   public getAccountData = async (
+    canisterId: string,
     accountId: AccountId,
     roundId: Array<bigint> = []
   ): Promise<AccountData> => {
     try {
-      await this.check(false, false);
-      return await this.service.getAccountData(roundId, accountId);
+      const service = await this.check(canisterId, false, false);
+      return await service.getAccountData(roundId, accountId);
     } catch (e) {
       console.log(e);
       return null;
     }
   };
   public getRoundPointsForLM = async (
+    canisterId: string,
     roundId: bigint,
     page: bigint
   ): Promise<RoundPointsForLM> => {
     try {
-      await this.check(false, false);
-      return await this.service.getRoundPointsForLM(roundId, page);
+      const service = await this.check(canisterId, false, false);
+      return await service.getRoundPointsForLM(roundId, page);
     } catch (e) {
       console.log(e);
       return null;
     }
   };
   public getRoundPointsForTM = async (
+    canisterId: string,
     roundId: bigint,
     page: bigint
   ): Promise<RoundPointsForLM> => {
     try {
-      await this.check(false, false);
-      return await this.service.getRoundPointsForTM(roundId, page);
+      const service = await this.check(canisterId, false, false);
+      return await service.getRoundPointsForTM(roundId, page);
     } catch (e) {
       console.log(e);
       return null;
     }
   };
   public getRoundSettlementsForLM = async (
+    canisterId: string,
     roundId: bigint,
     page: bigint
   ): Promise<RoundPointsForLM> => {
     try {
-      await this.check(false, false);
-      return await this.service.getRoundSettlementsForLM(roundId, page);
+      const service = await this.check(canisterId, false, false);
+      return await service.getRoundSettlementsForLM(roundId, page);
     } catch (e) {
       console.log(e);
       return null;
     }
   };
   public getRoundSettlementsForTM = async (
+    canisterId: string,
     roundId: bigint,
     page: bigint
   ): Promise<RoundPointsForLM> => {
     try {
-      await this.check(false, false);
-      return await this.service.getRoundSettlementsForTM(roundId, page);
+      const service = await this.check(canisterId, false, false);
+      return await service.getRoundSettlementsForTM(roundId, page);
     } catch (e) {
       console.log(e);
       return null;
     }
   };
   public getBalance = async (
+    canisterId: string,
     accountId: AccountId
   ): Promise<{ locked: bigint; available: bigint }> => {
     try {
-      await this.check(false, false);
-      return await this.service.getBalance(accountId);
+      const service = await this.check(canisterId, false, false);
+      return await service.getBalance(accountId);
     } catch (e) {
       console.log(e);
       return null;
     }
   };
-  public claim = async (account: Icrc1Account): Promise<{ Ok: bigint } | { Err: string }> => {
+  public claim = async (
+    canisterId: string,
+    account: Icrc1Account
+  ): Promise<{ Ok: bigint } | { Err: string }> => {
     try {
-      await this.check();
-      return await this.service.claim(account);
+      const service = await this.check(canisterId);
+      return await service.claim(account);
     } catch (e) {
       console.log(e);
       return null;

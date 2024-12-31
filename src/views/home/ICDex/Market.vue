@@ -1,34 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-      </ul>
-      <div class="flex-center margin-left-auto">
-        <launch :tokens="tokens" ref="launch"></launch>
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
     <div class="market-main">
       <div class="market-menu">
         <div
@@ -63,7 +34,7 @@
         <span>Total Pairs: {{ pairs.length }}</span>
         <span>Total Vol: {{ totalVol | formatNum }} USD</span>
         <span>Total TVL: {{ totalTVL | formatNum }} USD</span>
-        <span>24h Vol: {{ Vol24 | formatNum }} USD</span>
+        <span v-show="Number(Vol24)">24h Vol: {{ Vol24 | formatNum }} USD</span>
       </div>
       <div class="market-main-container">
         <div v-show="marketType === 'pairs'" class="table-main">
@@ -120,6 +91,21 @@
                           />
                           <a-icon
                             :class="{ active: sortType === '24Down' }"
+                            type="caret-down"
+                          />
+                        </span>
+                      </span>
+                    </th>
+                    <th class="text-right pointer" @click="onSort('24Vol')">
+                      <span class="sort-table-main">
+                        <span>Vol(24h)</span>
+                        <span class="sort-table">
+                          <a-icon
+                            :class="{ active: sortType === '24VolUp' }"
+                            type="caret-up"
+                          />
+                          <a-icon
+                            :class="{ active: sortType === '24VolDown' }"
                             type="caret-down"
                           />
                         </span>
@@ -191,15 +177,15 @@
                     </td>
                     <td>
                       <div>
-                        <span
-                          >Maker: <span class="table-number-color">0%</span>,
-                        </span>
-                        <span
-                          >Taker:
+                        <div>
+                          Maker: <span class="table-number-color">0%</span>,
+                        </div>
+                        <div>
+                          Taker:
                           <span class="table-number-color">{{
                             pair[1].pair.feeRate | filterBuyFee
                           }}</span>
-                        </span>
+                        </div>
                       </div>
                     </td>
                     <td align="right" style="padding: 0 10px">
@@ -214,7 +200,7 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
@@ -231,7 +217,7 @@
                               class="table-number-color"
                             >
                               ≈ ${{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
@@ -289,6 +275,43 @@
                         >{{ get24(pair[3].change24h) }}%</span
                       >
                       <span v-else>-</span>
+                    </td>
+                    <td align="right">
+                      <div class="pair-vol" v-if="pair[3]">
+                        <dl
+                          v-if="
+                            tokens && tokens[pair[1].pair.token1[0].toString()]
+                          "
+                        >
+                          <dd>
+                            <span class="table-number-color">
+                              {{
+                                times2(pair[3].vol24h.value1)
+                                  | bigintToFloat(
+                                    0,
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                            {{ pair[1].pair.token1[1] }}
+                          </dd>
+                          <dt>
+                            <span v-if="pair[3]" class="table-number-color">
+                              ≈ ${{
+                                times2(pair[3].vol24h.value1)
+                                  | filterIcpVol(
+                                    tokens[pair[1].pair.token1[0].toString()]
+                                      .decimals,
+                                    getBasePrice(pair[1].pair.token1[1])
+                                  )
+                                  | formatAmount(0)
+                              }}
+                            </span>
+                          </dt>
+                        </dl>
+                      </div>
                     </td>
                     <td align="right">
                       <span class="table-number-color">{{
@@ -384,7 +407,7 @@
                       <dd>
                         <span class="table-number-color">
                           {{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | bigintToFloat(
                                 0,
                                 tokens[pair[1].pair.token1[0].toString()]
@@ -401,7 +424,7 @@
                           class="table-number-color"
                         >
                           ≈ ${{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | filterIcpVol(
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals,
@@ -572,7 +595,7 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
@@ -589,7 +612,7 @@
                               class="table-number-color"
                             >
                               ≈ ${{
-                                pair[1].liquidity[0].vol.value1
+                                times2(pair[1].liquidity[0].vol.value1)
                                   | filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
@@ -631,7 +654,7 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                pair[3].vol24h.value1
+                                times2(pair[3].vol24h.value1)
                                   | bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
@@ -645,7 +668,7 @@
                           <dt>
                             <span v-if="pair[3]" class="table-number-color">
                               ≈ ${{
-                                pair[3].vol24h.value1
+                                times2(pair[3].vol24h.value1)
                                   | filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
@@ -768,7 +791,7 @@
                       <dd>
                         <span class="table-number-color">
                           {{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | bigintToFloat(
                                 0,
                                 tokens[pair[1].pair.token1[0].toString()]
@@ -785,7 +808,7 @@
                           class="table-number-color"
                         >
                           ≈ ${{
-                            pair[1].liquidity[0].vol.value1
+                            times2(pair[1].liquidity[0].vol.value1)
                               | filterIcpVol(
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals,
@@ -1308,7 +1331,7 @@
               style="margin-right: 10px"
               @click="searchMaker"
             >
-              Search vip-maker
+              Search <a-icon type="search" />
             </span>
             <button type="button" class="primary" @click="onBindMaker">
               Add new vip-maker with NFT
@@ -1325,25 +1348,49 @@
               :rules="queryFormRules"
               class="round-account-form"
             >
-              <a-form-model-item label="Owner" prop="owner">
-                <a-input
-                  v-model="queryForm.owner"
-                  autocomplete="off"
-                  placeholder="Owner(Principal)"
-                />
-              </a-form-model-item>
-              <a-form-model-item label="Subaccount (Hex)" prop="subaccount">
-                <a-input
-                  v-model="queryForm.subaccount"
-                  autocomplete="off"
-                  placeholder="Subaccount (optional)"
-                />
-              </a-form-model-item>
-              <a-form-model-item class="margin-left-auto">
-                <button @click="queryAccount" class="primary large-primary">
-                  Search
-                </button>
-              </a-form-model-item>
+              <div>
+                <a-form-model-item label="Owner" prop="owner">
+                  <a-input
+                    v-model="queryForm.owner"
+                    autocomplete="off"
+                    placeholder="Owner(Principal)"
+                  />
+                </a-form-model-item>
+                <a-form-model-item label="Subaccount (Hex)" prop="subaccount">
+                  <a-input
+                    v-model="queryForm.subaccount"
+                    autocomplete="off"
+                    placeholder="Subaccount (optional)"
+                  />
+                </a-form-model-item>
+              </div>
+              <div class="search-token">
+                <a-form-model-item label="Pair">
+                  <a-select
+                    allowClear
+                    v-model="queryForm.pair"
+                    style="width: 910px"
+                    placeholder="select a pair"
+                  >
+                    <a-select-option v-for="pair in makersPairs" :key="pair">
+                      <span v-if="pairToSymbol[pair]">
+                        {{ pairToSymbol[pair].pair.token0[1] }}/{{
+                          pairToSymbol[pair].pair.token1[1]
+                        }}
+                      </span>
+                    </a-select-option>
+                  </a-select>
+                </a-form-model-item>
+                <a-form-model-item class="margin-left-auto">
+                  <button
+                    style="height: 36px"
+                    @click="queryAccount"
+                    class="primary large-primary"
+                  >
+                    Search
+                  </button>
+                </a-form-model-item>
+              </div>
             </a-form-model>
           </div>
           <div class="pc-show">
@@ -2152,28 +2199,26 @@
     <a-modal
       v-model="ambassadorsvisible"
       width="650px"
-      title="About Trading Ambassador"
+      title="About Trading Ambassadors"
       centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
     >
       <p>
-        An account who has completed at least one trade automatically qualify as
-        a trading ambassador and can promote the pair by sharing the referral
-        link.
+        An account which has completed at least one trade automatically
+        qualifies as a trading ambassador and can promote the pair by sharing
+        the referral link.
       </p>
-      <p class="ambassadors-visible-title">
-        How to promote the pair to others.
-      </p>
+      <p class="ambassadors-visible-title">Promoting The Trading Pair</p>
       <p>
         You can go to the "Trading Ambassador" page of each trading pair to get
-        a referral link, send it to your friends or post it on social media.
+        a referral link to send it to your friends or post on social media.
       </p>
       <p>Note:</p>
       <p>
         (1) Each promotion is only for one trading pair, the referral link is
-        exclusive to the trading pair.
+        exclusive to that pairing.
       </p>
       <p>
         (2) Each trading account (referee) can submit one trading ambassador
@@ -2181,14 +2226,14 @@
         for the setting to take effect.
       </p>
       <p class="ambassadors-visible-title">
-        Benefits of being a trading ambassador.
+        Benefits of Being A Trading Ambassador.
       </p>
       <p>
-        The pair will count the number of accounts and the volume of trading
-        from your promotion. It is possible that there is a reward program for
-        ambassadors that comes from the project's funder or Dex platform, as
-        described on the "Trading Ambassadors" page of that trading pair. Note:
-        Not every trading pair has a reward program.
+        The pair will count the number of accounts and the volume of trades from
+        your promotion. It is possible for projects to engage in reward programs
+        to encourage these activities but these are typically funded by the
+        project’s team so not every trading pair has a reward program and its at
+        that project’s discretion if they would like to start one on ICDex.
       </p>
       <button
         type="button"
@@ -2273,25 +2318,29 @@
     <a-modal
       v-model="scorevisible"
       width="650px"
-      title="Pair scoring rule"
+      title="Pair Scoring Rules"
       centered
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
     >
       <p class="ambassadors-visible-title">
-        pair_score = score1 + score2 + score3
+        The pair score is calculated as pair_score = score1 + score2 + score3
       </p>
       <p class="ambassadors-visible-title">score1 (max 70)</p>
       <p>
-        <span class="dots"></span> (Not verified) ListingReferrer Propose: +10
-        per Sponsor.
+        <span class="dots"></span> Unverified ListingReferrer: Each sponsorship
+        from an unverified listing referrer adds +10 to the Pair Score.
       </p>
       <p>
-        <span class="dots"></span> Verified ListingReferrer Propose: +15 per
-        Sponsor.
+        <span class="dots"></span> Verified ListingReferrer: Sponsorships from
+        verified listing referrers contribute +15 to the Pair Score.
       </p>
-      <p><span class="dots"></span> Sponsored (Sponsors >= 5): +10.</p>
+      <p>
+        <span class="dots"></span> Group Sponsorship Bonus: A trading pair
+        receiving sponsorship from 5 or more sponsors gains an additional +10 to
+        its Pair Score.
+      </p>
       <p class="ambassadors-visible-title">score2 (max 20)</p>
       <p>
         <span class="dots"></span> Set a score through DAO proposal. Typically,
@@ -2410,7 +2459,13 @@ import { NFT } from '@/ic/ICDexRouter/model';
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import NftBalance from '@/views/home/ICDex/components/NFTBalance.vue';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
-import { BrokerInfo, IDOConfig, MakerInfo, TrieList_3 } from '@/ic/ICDex/model';
+import {
+  BrokerInfo,
+  IDOConfig,
+  MakerInfo,
+  Stats,
+  TrieList_3
+} from '@/ic/ICDex/model';
 import { connectIcx } from '@/ic/connectIcx';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import axios from 'axios';
@@ -2541,6 +2596,7 @@ export default class extends Vue {
   private nftBalanceListingReferrer: Array<NFT> = [];
   private nftBalancePool: Array<NFT> = [];
   private nftBalanceVip: Array<NFT> = [];
+  private makersPairs: Array<string> = [];
   private bindingMakersAll: Array<[Principal, AccountId]> = [];
   private bindingMakers: Array<[Principal, AccountId]> = [];
   private bindingMakersByNFT: {
@@ -2559,7 +2615,8 @@ export default class extends Vue {
   private showSearchAccountBroker = false;
   private queryForm = {
     owner: '',
-    subaccount: ''
+    subaccount: '',
+    pair: undefined
   };
   private validateSubaccount = (
     rule: ValidationRule,
@@ -3102,6 +3159,7 @@ export default class extends Vue {
   private async getBindingMakers(): Promise<void> {
     const makers = [];
     const pairs = [];
+
     this.bindingMakersLoad = true;
     const res = await this.ICDexRouterService.getVipMakers([]);
     console.log(res);
@@ -3130,6 +3188,7 @@ export default class extends Vue {
     }
     console.log(this.bindingMakersByNFT);
     console.log(pairs);
+    this.makersPairs = pairs;
     this.onMakerList(pairs);
     this.bindingMakersAll = makers;
     this.bindingMakers = makers;
@@ -3214,7 +3273,7 @@ export default class extends Vue {
         //
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private async NFTBalance(): Promise<void> {
@@ -3326,6 +3385,13 @@ export default class extends Vue {
         this.sortType = '24Up';
       } else {
         this.sortType = '24Down';
+      }
+    }
+    if (type === '24Vol') {
+      if (this.sortType === '24VolDown') {
+        this.sortType = '24VolUp';
+      } else {
+        this.sortType = '24VolDown';
       }
     }
     this.sort();
@@ -3479,10 +3545,74 @@ export default class extends Vue {
         }
       });
     }
+    if (this.sortType === '24VolDown') {
+      this.pairs.sort((a, b) => {
+        const token1Symbol = a[1].pair.token1[1];
+        const token1Symbol1 = b[1].pair.token1[1];
+        if (token1Symbol.toLocaleLowerCase().includes('test')) {
+          return 1;
+        }
+        if (token1Symbol1.toLocaleLowerCase().includes('test')) {
+          return -1;
+        }
+        let aPrice = this.getBasePrice(a[1].pair.token1[1]);
+        let bPrice = this.getBasePrice(b[1].pair.token1[1]);
+        const vol = this.get24Vol(
+          a[3],
+          this.tokens,
+          a[1].pair.token1[0].toString(),
+          aPrice
+        );
+        const vol1 = this.get24Vol(
+          b[3],
+          this.tokens,
+          b[1].pair.token1[0].toString(),
+          bPrice
+        );
+        if (new BigNumber(vol1).gt(vol)) {
+          return 1;
+        } else {
+          return -1;
+        }
+      });
+    }
+    if (this.sortType === '24VolUp') {
+      this.pairs.sort((a, b) => {
+        const token1Symbol = a[1].pair.token1[1];
+        const token1Symbol1 = b[1].pair.token1[1];
+        if (token1Symbol.toLocaleLowerCase().includes('test')) {
+          return 1;
+        }
+        if (token1Symbol1.toLocaleLowerCase().includes('test')) {
+          return -1;
+        }
+        let aPrice = this.getBasePrice(a[1].pair.token1[1]);
+        let bPrice = this.getBasePrice(b[1].pair.token1[1]);
+        const vol = this.get24Vol(
+          a[3],
+          this.tokens,
+          a[1].pair.token1[0].toString(),
+          aPrice
+        );
+        const vol1 = this.get24Vol(
+          b[3],
+          this.tokens,
+          b[1].pair.token1[0].toString(),
+          bPrice
+        );
+        if (new BigNumber(vol).gt(vol1)) {
+          return 1;
+        } else {
+          return -1;
+        }
+      });
+    }
   }
   private getBasePrice(tokenSymbol: string): string {
     let price = this.icpPrice;
-    if (tokenSymbol.toLocaleLowerCase().includes('btc')) {
+    if (tokenSymbol.toLocaleLowerCase().includes('icp')) {
+      price = this.icpPrice;
+    } else if (tokenSymbol.toLocaleLowerCase().includes('btc')) {
       price = this.BTCPrice;
     } else if (tokenSymbol.toLocaleLowerCase().includes('eth')) {
       price = this.ETHPrice;
@@ -3497,6 +3627,21 @@ export default class extends Vue {
       }
     }
     return price;
+  }
+  private get24Vol(
+    val: Stats,
+    tokens: { [key: string]: TokenInfo },
+    token: string,
+    icpPrice: string
+  ): string {
+    if (val) {
+      return new BigNumber(val.vol24h.value1.toString(10))
+        .div(10 ** tokens[token].decimals)
+        .times(icpPrice)
+        .decimalPlaces(0)
+        .toString(10);
+    }
+    return '0';
   }
   private getVol(
     val: PairTrieResponse,
@@ -3947,6 +4092,7 @@ export default class extends Vue {
     this.bindingMakers = this.bindingMakersAll;
     this.showSearchAccount = false;
     (this.$refs.queryForm as any).resetFields();
+    this.queryForm.pair = undefined;
     this.account = '';
   }
   private hideAccountBroker(): void {
@@ -3973,7 +4119,14 @@ export default class extends Vue {
         }
         this.account = accountId;
         this.bindingMakers = this.bindingMakersAll.filter((item) => {
-          return toHexString(new Uint8Array(item[1])) === this.account;
+          if (!this.queryForm.pair) {
+            return toHexString(new Uint8Array(item[1])) === this.account;
+          } else {
+            return (
+              item[0].toString() === this.queryForm.pair &&
+              toHexString(new Uint8Array(item[1])) === this.account
+            );
+          }
         });
       }
     });
@@ -4000,6 +4153,9 @@ export default class extends Vue {
         });
       }
     });
+  }
+  private times2(val: bigint): bigint {
+    return BigInt(new BigNumber(val.toString(10)).times(2).toString(10));
   }
 }
 </script>
@@ -4242,9 +4398,6 @@ tbody {
     }
   }
 }
-.market-main {
-  margin-top: 14px;
-}
 .market-main-container {
   padding: 0 20px;
 }
@@ -4270,6 +4423,12 @@ tbody {
     &.active {
       color: #0862bc;
     }
+  }
+}
+.search-token {
+  ::v-deep .ant-select-selection__clear {
+    background: none;
+    color: #636c73;
   }
 }
 .dots {
@@ -4389,7 +4548,11 @@ tbody {
 }
 .round-account-form {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  > div {
+    display: flex;
+    align-items: flex-end;
+  }
   input {
     width: 450px;
     margin-right: 10px;

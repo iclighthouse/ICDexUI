@@ -352,11 +352,11 @@ export default class extends Vue {
         );
       }
     });
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await Promise.all(promiseValue);
       this.$message.success('Remove Neuron Permission Success');
@@ -386,7 +386,7 @@ export default class extends Vue {
       );
       console.log(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private onAddPermission(item: neuronSystemPermissionsType): void {
@@ -398,11 +398,11 @@ export default class extends Vue {
     principalId: string,
     permissionId: number
   ): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const snsGovernanceService = new SNSGovernanceService();
       const res = await snsGovernanceService.removeNeuronPermissions(
@@ -423,7 +423,7 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.error('Remove Neuron Permission Error');
     }
     loading.close();
@@ -451,11 +451,11 @@ export default class extends Vue {
               );
               return;
             }
-            await checkAuth();
             const loading = this.$loading({
               lock: true,
               background: 'rgba(0, 0, 0, 0.5)'
             });
+            await checkAuth();
             try {
               const snsGovernanceService = new SNSGovernanceService();
               const res = await snsGovernanceService.addNeuronPermissions(
@@ -483,7 +483,7 @@ export default class extends Vue {
                 }
               }
             } catch (e) {
-              console.error(e);
+              console.log(e);
               this.$message.error('Add Neuron Permission Error');
             }
             loading.close();
@@ -502,18 +502,18 @@ export default class extends Vue {
                 }
               }
             );
-            await checkAuth();
             const loading = this.$loading({
               lock: true,
               background: 'rgba(0, 0, 0, 0.5)'
             });
+            await checkAuth();
             try {
               await Promise.all(promiseValue);
               this.$message.success('Add Neuron Permissions Success');
               this.addPermissionVisible = false;
               this.$emit('permissionsNeuronSuccess', this.SNSIndex, this.index);
             } catch (e) {
-              console.error(e);
+              console.log(e);
               this.$message.error('Add Neuron Permissions Error');
             }
             loading.close();
@@ -544,7 +544,7 @@ export default class extends Vue {
       //   }
       // }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private afterClose(): void {

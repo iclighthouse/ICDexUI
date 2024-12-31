@@ -1,31 +1,34 @@
 <template>
   <div>
-    <ul class="icsns-menu" v-if="!$route.meta.hideMenu" >
-      <li
-        v-for="menu in menuList"
-        :key="menu.path"
-        :class="{
-          active: menu.name === $route.name
-        }"
-        @click="changeMenu(menu.path)"
-      >
-        {{ menu.value }}
-      </li>
-    </ul>
-    <keep-alive>
-      <router-view v-if="$route.meta.keepAlive"></router-view>
-    </keep-alive>
-    <router-view v-if="!$route.meta.keepAlive"></router-view>
+    <div>
+      <ul class="icsns-menu" v-if="!$route.meta.hideMenu">
+        <li
+          v-for="menu in menuList"
+          :key="menu.path"
+          :class="{
+            active: menu.name === $route.name
+          }"
+          @click="changeMenu(menu.path)"
+        >
+          {{ menu.value }}
+        </li>
+      </ul>
+      <keep-alive>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { Menu } from './model';
 
 @Component({
   name: 'Index',
-  components: {}
+  components: { AccountInfo }
 })
 export default class extends Vue {
   public menuList: Menu[] = [];
@@ -35,12 +38,12 @@ export default class extends Vue {
       {
         path: '/nns/neuron',
         value: 'Neurons',
-        name: 'neuron'
+        name: 'ICP-neuron'
       },
       {
         path: '/nns/proposals',
         value: 'Proposals',
-        name: 'proposals'
+        name: 'ICP-proposals'
       }
     ];
     this.current = ['/nns/neuron'];

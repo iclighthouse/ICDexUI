@@ -334,6 +334,7 @@ import { hexToBytes } from '@/ic/converter';
 import { namespace } from 'vuex-class';
 import { removeWhitelist } from '@/ic/ConnectPlug';
 import { readState } from '@/ic/readState';
+import { isSigner } from '@/ic/isSigner';
 const commonModule = namespace('common');
 @Component({
   name: 'CyclesWallet',
@@ -542,11 +543,11 @@ export default class extends Vue {
   private async walletCall(): Promise<void> {
     this.$refs.walletCallForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           // const walletCallRequest: WalletCallRequest = {};
           // const res = await this.walletService.walletCall(
@@ -557,7 +558,9 @@ export default class extends Vue {
           const walletSendRequest: WalletCallRequest = {
             args: Array.from(Buffer.from(args)),
             cycles: BigInt(
-              new BigNumber(this.walletCallForm.cycles).times(10 ** 12)
+              new BigNumber(this.walletCallForm.cycles)
+                .times(10 ** 12)
+                .toString(10)
             ),
             method_name: this.walletCallForm.methodName,
             canister: Principal.fromText(this.walletCallForm.canister)
@@ -597,11 +600,11 @@ export default class extends Vue {
     });
   }
   private async removeController(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.walletService.removeControllers(
         this.wallet.walletId.toString(),
@@ -621,11 +624,11 @@ export default class extends Vue {
     }
   }
   private async addController(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await this.walletService.addControllers(
         this.wallet.walletId.toString(),
@@ -660,11 +663,11 @@ export default class extends Vue {
     this.removeVisible = true;
   }
   private async removeWallet(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const flag = await this.ICLighthouseService.manageWallet(
         this.wallet.walletId,
@@ -726,8 +729,10 @@ export default class extends Vue {
   private getCyclesWalletBalance(): void {
     this.timer = window.setInterval(() => {
       setTimeout(async () => {
-        if (!this.getCheckAuth) {
-          this.getWalletBalance();
+        if (this.getCheckAuth) {
+          if (this.$route.name === 'Account' && !isSigner()) {
+            this.getWalletBalance();
+          }
         }
       }, 0);
     }, 30 * 1000);
@@ -746,11 +751,11 @@ export default class extends Vue {
     await this.getEvents();
   }
   private async setDefault(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const flag = await this.ICLighthouseService.manageWallet(
         this.wallet.walletId,
@@ -794,7 +799,7 @@ export default class extends Vue {
       try {
         state = await readState(this.wallet.walletId.toString());
       } catch (err) {
-        console.error(err);
+        console.log(err);
       }
       if (!state || (state && !state.moduleHash)) {
         const flag = await this.ICLighthouseService.manageWallet(
@@ -818,11 +823,11 @@ export default class extends Vue {
   private async setWalletName(): Promise<void> {
     this.$refs.form.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           await this.walletService.setWalletName(
             this.wallet.walletId.toString(),

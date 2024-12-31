@@ -413,6 +413,7 @@ export class DRC20TokenService {
     canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
   ): Promise<TxnResult> => {
     const service = await this.check(canisterId);
+    console.log(service);
     let subAccount = [];
     if (subAccountId || subAccountId === 0) {
       subAccount = [fromSubAccountId(subAccountId)];
@@ -523,7 +524,7 @@ export class DRC20TokenService {
       );
       return SerializableIC(res);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -552,7 +553,7 @@ export class DRC20TokenService {
   public getOwner = async (
     canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
   ): Promise<CanisterId> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     return await service.ictokens_getOwner();
   };
   public changeOwner = async (

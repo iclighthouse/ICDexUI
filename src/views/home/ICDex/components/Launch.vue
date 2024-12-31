@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="pc-show" style="font-size: 14px">
     <span
       @click="showLaunch"
-      class="base-font-title pointer pc-show"
+      class="base-font-title pointer"
       style="font-size: 15px"
     >
       Token Listing
@@ -70,7 +70,7 @@
             v-model="form.token0"
             autocomplete="off"
             type="text"
-            placeholder="Base token (token0)"
+            placeholder="Base token (token0), only ICRC1 and DRC20 standards are supported."
             @change="tokenChange(form.token0)"
           />
           <div class="token-info" v-show="token0Info.name">
@@ -86,7 +86,7 @@
             v-model="form.token1"
             autocomplete="off"
             type="text"
-            placeholder="Quote token (token1)"
+            placeholder="Quote token (token1), only ICRC1 and DRC20 standards are supported."
             @change="tokenChange(form.token1)"
           />
           <div class="token-info" v-show="token1Info.name">
@@ -507,7 +507,7 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
 
 **TokenIsDecentralized**: true, // The token must be controlled by a DAO or have no controller
 
-**TokenModuleHash:** "1d20aafd24d656e9ed93 89325b4a113c5dda9bc6a 06faf13934f30beb9d2d87 e",
+**TokenModuleHash:** "1d20aafd24d656e9ed9389325b4a113c5dda9bc6a06faf13934f30beb9d2d87e",
 
 **TokenMintable:** false, // Indicates whether the token is mintable
 
@@ -696,16 +696,18 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
       const amount = new BigNumber(this.sysConfig.creatingPairFee.toString(10))
         .div(10 ** tokenInfo.decimals)
         .toString(10);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
       (this.$info as any)({
         title: 'Launch a new trading pair',
         content: `Token listing is permissionless and anyone can spend ${amount} ICL to list an ICRC1 or DRC20 token on ICDex.`,
-        class: 'connect-plug register-mining-confirm launch-info-button',
+        class: 'connect-plug register-mining-confirm',
         icon: 'connect-plug',
-        okText: 'Insufficient ICL balance',
+        okText: 'Buy ICL',
         centered: true,
         closable: true,
         onOk() {
-          //
+          that.$emit('changeLaunch', 'ICL/ICP');
         }
       });
     } else if (allowance || (allowance !== null && Number(allowance) === 0)) {
@@ -737,11 +739,11 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
       console.log(this.form);
       console.log(valid);
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const formTime: moment.Moment = this.form.time;
           const time = new BigNumber(formTime.valueOf())
@@ -862,7 +864,7 @@ To ensure your token is perceived as credible and trustworthy on ICDex, it’s e
 }
 .user-setting {
   background-color: #141b23;
-  ::v-deep.ant-dropdown-menu-item {
+  ::v-deep .ant-dropdown-menu-item {
     background-color: #141b23;
     padding: 10px 15px;
     color: #fff;

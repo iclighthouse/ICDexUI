@@ -1,195 +1,6 @@
 <template>
   <div class="base-bg">
-    <div
-      class="home-header"
-      :class="{
-        'home-header-main':
-          $route.fullPath.toLocaleLowerCase().startsWith('/icl') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/icdex') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/market') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/competitions') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/cyclesfinance') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/icswap') ||
-          $route.fullPath.toLocaleLowerCase().startsWith('/mining')
-      }"
-    >
-      <div class="home-header-main-menu">
-        <a-icon class="home-header-main-menu-left" type="double-left" />
-        <div class="home-header-main-menu-span">
-          <!--<a-icon type="double-right" />-->
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </div>
-      <div class="home-header-left">
-        <img class="home-header-logo" src="@/assets/img/logo.png" alt="logo" />
-        <!--<img
-					class="home-header-logo"
-					src="@/assets/img/icdex-2.png"
-					alt="logo"
-				/>-->
-      </div>
-      <ul>
-        <a-dropdown
-          :getPopupContainer="() => $refs.homeHeaderMain"
-          placement="bottomCenter"
-        >
-          <li
-            ref="homeHeaderMain"
-            :class="{
-              active:
-                $route.fullPath.toLocaleLowerCase().startsWith('/account') ||
-                $route.fullPath.toLocaleLowerCase().startsWith('/nns') ||
-                $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
-            }"
-          >
-            <span>ICLight</span>
-            <a-icon type="caret-down" />
-          </li>
-          <a-menu slot="overlay" class="base-bg-box home-header-menu">
-            <a-menu-item class="home-header-item">
-              <div
-                @click="changeMenu('account', '/account')"
-                :class="{
-                  active: $route.fullPath
-                    .toLocaleLowerCase()
-                    .startsWith('/account')
-                }"
-                class="home-header-item-info"
-              >
-                Wallet
-              </div>
-            </a-menu-item>
-            <a-menu-item class="home-header-item">
-              <div
-                @click="changeMenu('nns', '/nns')"
-                :class="{
-                  active: $route.fullPath.toLocaleLowerCase().startsWith('/nns')
-                }"
-                class="home-header-item-info"
-              >
-                NNS
-              </div>
-            </a-menu-item>
-            <a-menu-item class="home-header-item">
-              <div
-                @click="changeMenu('ICSNS', '/ICSNS')"
-                :class="{
-                  active: $route.fullPath
-                    .toLocaleLowerCase()
-                    .startsWith('/icsns')
-                }"
-                class="home-header-item-info"
-              >
-                SNS
-              </div>
-            </a-menu-item>
-          </a-menu>
-        </a-dropdown>
-        <!--<li
-          @click="changeMenu('ICSNS', '/ICSNS')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/icsns')
-          }"
-        >
-          <span>ICSNS</span>
-        </li>-->
-        <li
-          @click="changeMenu('ICDex', '/ICDex')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
-          }"
-        >
-          <span>ICDex</span>
-        </li>
-        <li
-          @click="changeMenu('NFT', '/NFT')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/nft')
-          }"
-        >
-          <span>NFT</span>
-        </li>
-        <li
-          @click="changeMenu('Airdrop', '/Airdrop')"
-          :class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/airdrop')
-          }"
-        >
-          <span>Airdrop</span>
-        </li>
-        <li
-          @click="changeMenu('dapps', '/dapps')"
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase().startsWith('/dapps') ||
-              $route.fullPath.toLocaleLowerCase().startsWith('/icl') ||
-              $route.fullPath
-                .toLocaleLowerCase()
-                .startsWith('/cyclesfinance') ||
-              $route.fullPath.toLocaleLowerCase().startsWith('/icswap')
-          }"
-        >
-          <span>DApps</span>
-        </li>
-        <!--<li
-					@click="changeMenu('ICDex', '/ICDex')"
-					:class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/icdex')
-          }"
-				>
-					<span>Trade</span>
-				</li>
-				<li
-					@click="changeMenu('Info', '/icdex/Info')"
-					:class="{
-            active: $route.fullPath.toLocaleLowerCase().startsWith('/market')
-          }"
-				>
-					<span>Market</span>
-				</li>-->
-        <!--<li
-          @click="changeMenu('/icl', '/icl/tradingMining')"
-          :class="{
-            active: $route.fullPath
-              .toLocaleLowerCase()
-              .startsWith('/icl/tradingmining')
-          }"
-        >
-          <span>Mining</span>
-        </li>-->
-        <li>
-          <a
-            href="https://ic.house"
-            target="_blank"
-            rel="nofollow noreferrer noopener"
-            >ICHouse</a
-          >
-        </li>
-        <li
-          v-if="
-            hostname &&
-            hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
-            hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
-          "
-          style="padding: 0 20px; font-size: 12px"
-        >
-          <a
-            :href="
-              hostHref.replace(
-                hostname,
-                'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
-              )
-            "
-            target="_blank"
-            rel="nofollow noreferrer noopener"
-            >OldVersion</a
-          >
-        </li>
-      </ul>
-      <account-info> </account-info>
-    </div>
+    <account-info> </account-info>
     <div class="home-main">
       <keep-alive>
         <router-view v-if="$route.meta.keepAlive"></router-view>
@@ -222,7 +33,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.0.7
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.2.11
             </span>
           </span>
         </span>
@@ -449,7 +260,7 @@ export default class extends Vue {
     ];
     this.icdexIcxMenu = [
       {
-        path: '/account',
+        path: '/wallet',
         value: 'ICLight Wallet'
       },
       {
@@ -492,7 +303,7 @@ export default class extends Vue {
         EventBus.$emit('initSuccess');
       }
       if (isConnect) {
-        if (this.$route.fullPath.toLocaleLowerCase().startsWith('/account')) {
+        if (this.$route.fullPath.toLocaleLowerCase().startsWith('/wallet')) {
           EventBus.$emit('initAccount');
         }
       }
@@ -516,7 +327,10 @@ export default class extends Vue {
     this.principalList = Object.keys(this.priList);
     if (
       this.priList[this.getPrincipalId] !== 'Plug' &&
-      this.priList[this.getPrincipalId] !== 'AuthClient'
+      this.priList[this.getPrincipalId] !== 'SignerPlug' &&
+      this.priList[this.getPrincipalId] !== 'AuthClient' &&
+      this.priList[this.getPrincipalId] !== 'NFID' &&
+      this.priList[this.getPrincipalId] !== 'SignerNFID'
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
@@ -598,7 +412,7 @@ export default class extends Vue {
   }
 }
 .user-setting {
-  ::v-deep.ant-dropdown-menu-item {
+  ::v-deep .ant-dropdown-menu-item {
     padding: 0;
     &:hover {
       background: rgba(255, 255, 255, 0.08);
@@ -663,100 +477,6 @@ export default class extends Vue {
 }
 .home-header-main-menu-left {
   display: none;
-}
-.home-header-main {
-  background: #2c3e54;
-  top: -50px;
-  z-index: 1000;
-  box-shadow: 0 0 1px 1px rgba(52, 69, 94, 0.4);
-  transition: all 0.5s ease-out;
-  border: none;
-  .home-header-logo {
-    height: 36px;
-  }
-  .home-header-main-menu-left {
-    position: absolute;
-    left: 15px;
-    bottom: 1px;
-    display: inline-block;
-    color: #51b7c3;
-    font-size: 12px;
-    transform: rotate(-90deg);
-  }
-  .home-header-main-menu {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 14px;
-    .home-header-main-menu-span {
-      position: absolute;
-      left: 50%;
-      bottom: 5px;
-      margin-left: -10px;
-      display: flex;
-      align-items: center;
-    }
-    span {
-      display: inline-block;
-      width: 4px;
-      height: 4px;
-      margin-right: 3px;
-      border-radius: 3px;
-      background: #51b7c3;
-    }
-  }
-  &:hover {
-    top: 0;
-    background: #1b242e;
-    border: none;
-    box-shadow: none;
-    height: 77px;
-    .home-header-logo {
-      height: 36px;
-    }
-    .home-header-main-menu {
-      visibility: hidden;
-    }
-  }
-  .up-img {
-    display: block;
-    position: absolute;
-    right: 20px;
-    top: 64px;
-    height: 22px;
-    transform: rotate(180deg);
-  }
-  .up-logo-img {
-    display: block;
-    position: absolute;
-    right: 45px;
-    top: 67px;
-    height: 16px;
-  }
-}
-.setting-content {
-  color: #8c90a1;
-  ul {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    li {
-      padding: 0 5px 10px 5px;
-      margin: 0 10px;
-      border-bottom: 2px solid transparent;
-      transition: all 0.3s;
-      cursor: pointer;
-      color: #747884;
-      &.active {
-        color: #51b7c3;
-        border-color: #51b7c3;
-      }
-      &:first-child {
-        margin-left: 0;
-      }
-    }
-  }
 }
 .tab-tip {
   width: 100%;
@@ -871,37 +591,6 @@ export default class extends Vue {
   transform-origin: left top;
   transform: scale(0.5);
   color: #646e79;
-}
-.home-header-menu {
-  display: flex;
-  flex-direction: column;
-  margin-left: 0 !important;
-}
-.home-header-item {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  color: #fff;
-  height: 50px;
-  border-bottom: 1px solid #383e4e;
-  cursor: pointer;
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #51b7c3;
-  }
-  &:last-child {
-    border-bottom: none;
-  }
-  .home-header-item-info {
-    display: inline-block;
-    text-align: center;
-    width: 100%;
-    padding: 8px 15px;
-    margin: 0;
-    &.active {
-      color: #51b7c3;
-    }
-  }
 }
 .container-width-domains {
   width: 1000px;

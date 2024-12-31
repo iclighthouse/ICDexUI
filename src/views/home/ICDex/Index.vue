@@ -1,58 +1,5 @@
 <template>
   <div class="icdex-main" :class="{ 'icdex-main-modal': showTrade }">
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-        <!--<li
-          v-if="
-            hostname &&
-            hostname !== 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app' &&
-            hostname !== 'pk6zh-iiaaa-aaaaj-ainda-cai.raw.ic0.app'
-          "
-        >
-          <a
-            :href="
-              hostHref.replace(
-                hostname,
-                'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app'
-              )
-            "
-            target="_blank"
-            rel="nofollow noreferrer noopener"
-            >OldVersion</a
-          >
-        </li>-->
-      </ul>
-      <div class="flex-center margin-left-auto">
-        <launch
-          :tokens="tokens"
-          ref="launch"
-          @launchSuccess="launchSuccess"
-          @changeLaunch="changeLaunch"
-        ></launch>
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
     <div
       class="de-swap-main"
       :class="{
@@ -75,17 +22,37 @@
               class="de-swap-list-item-search base-font-title"
             >
               <a-icon
-                :theme="
-                  currentTradeMarketSort === 'Star' ? 'filled' : 'outlined'
-                "
+                theme="filled"
                 type="star"
                 class="pointer"
                 :class="{
                   'base-font-normal': currentTradeMarketSort === 'Star'
                 }"
-                style="margin-right: 10px; font-size: 13px"
+                style="margin-right: 4px; font-size: 13px"
                 @click.stop="changeStarMenu"
               />
+              <svg
+                t="1717654043106"
+                class="icon pointer"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                p-id="4440"
+                width="36"
+                height="16"
+                style="margin-right: 5px"
+                @click.stop="changeHotMenu"
+              >
+                <path
+                  d="M423.477333 938.666667S45.045333 855.424 214.186667 442.282667c0 0 38.4 45.909333 33.12 68 0 0 30.101333-104.277333 95.072-166.570667C398.165333 290.186667 454.848 139.712 402.570667 85.333333c0 0 258.933333 54.378667 287.754666 326.378667 0 0 33.12-86.666667 101.12-95.232 0 0-20.906667 47.616 0 119.04 0 0 214.485333 367.146667-155.157333 491.242667 0 0 110.805333-125.813333-124.181333-341.717334 0 0-55.402667 115.626667-88.533334 156.373334-0.096 0.106667-92.522667 103.722667-0.096 197.248z"
+                  :fill="`${
+                    currentTradeMarketSort === 'Hot' && !isMarket
+                      ? '#ffffff'
+                      : '#adb3c4'
+                  }`"
+                  p-id="4441"
+                ></path>
+              </svg>
               <a-tooltip
                 :getPopupContainer="() => $refs.deSwapListmenu"
                 :visible="marketMenuVisible"
@@ -101,13 +68,14 @@
                       :class="{
                         active:
                           currentMarketMenu === item.value &&
-                          currentTradeMarketSort !== 'Star'
+                          currentTradeMarketSort !== 'Star' &&
+                          isMarket
                       }"
                       v-for="(item, index) in marketMenu"
                       :key="index"
                       @click.stop="changeMarketMenu(item)"
                     >
-                      <span>
+                      <span style="font-size: 13px">
                         {{ item.name }}
                       </span>
                     </div>
@@ -121,13 +89,13 @@
                     @click.stop="marketMenuVisible = true"
                     class="flex-center pointer base-font-title"
                     :class="[
-                      currentTradeMarketSort === 'Star'
-                        ? 'base-font-title'
-                        : 'base-font-normal'
+                      !isMarket ? 'base-font-title' : 'base-font-normal'
                     ]"
                   >
                     <a-icon style="font-size: 12px" type="menu" />
-                    <span style="margin: 0 2px">{{ currentMarketMenu }}</span>
+                    <span style="margin: 0 2px; font-size: 13px">{{
+                      currentMarketMenu
+                    }}</span>
                   </div>
                 </a-tooltip>
               </a-tooltip>
@@ -211,10 +179,7 @@
                 <a-icon style="color: #adb3c4" slot="prefix" type="search" />
               </a-input>
             </div>
-            <ul
-              class="trade-market-sort"
-              v-show="currentTradeMarketSort !== 'Star'"
-            >
+            <ul class="trade-market-sort" v-show="isMarket">
               <li
                 :class="[
                   currentTradeMarketSort === 'Star' && item.value === 'Star'
@@ -273,7 +238,11 @@
                 <span v-if="item.value === 'Old'">
                   {{ item.name }}
                 </span>
-                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
+                <span
+                  v-if="item.value === 'USDC' || item.value === 'USDT'"
+                  class="base-red"
+                  >TEST</span
+                >
               </li>
             </ul>
             <table>
@@ -286,7 +255,6 @@
               </thead>
               <tbody
                 class="de-swap-list-item-pair de-swap-list-item-pair-market"
-                ref="deSwapListItemPair"
                 v-if="currentTradeMarketSort"
               >
                 <tr v-if="currentTradeMarketSort === 'Third' && !showThird">
@@ -322,6 +290,7 @@
                 </tr>
                 <RecycleScroller
                   v-if="currentTradeMarketSort !== 'Star'"
+                  ref="deSwapListItemPair"
                   style="height: 336px"
                   :items="pairsScroll"
                   :item-size="50"
@@ -364,14 +333,14 @@
                               "
                             >
                               24h: ${{
-                                item.pair[2].vol24h.value1
-                                  | icpToUsdt(
+                                item.pair[2].vol24h.value1 |
+                                  icpToUsdt(
                                     currentMarketPrice,
                                     item.pair[1][0].token1[1],
                                     tokens[item.pair[1][0].token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatNum
+                                  ) |
+                                  formatNum
                               }}
                             </span>
                           </dt>
@@ -385,14 +354,14 @@
                               "
                             >
                               Total: ${{
-                                item.pair[2].totalVol.value1
-                                  | icpToUsdt(
+                                item.pair[2].totalVol.value1 |
+                                  icpToUsdt(
                                     currentMarketPrice,
                                     item.pair[1][0].token1[1],
                                     tokens[item.pair[1][0].token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatNum
+                                  ) |
+                                  formatNum
                               }}
                             </span>
                           </dd>
@@ -409,7 +378,8 @@
                             <dt
                               :class="{
                                 'usdt-test-dt':
-                                  currentTradeMarketSort === 'USDC'
+                                  currentTradeMarketSort === 'USDC' ||
+                                  currentTradeMarketSort === 'USDT'
                               }"
                             >
                               <a-tooltip placement="right">
@@ -500,8 +470,8 @@
                                 "
                               >
                                 {{
-                                  item.pair[2].price
-                                    | filterPairTokenPrice(
+                                  item.pair[2].price |
+                                    filterPairTokenPrice(
                                       tokens[
                                         item.pair[1][0].token0[0].toString()
                                       ].decimals,
@@ -542,14 +512,14 @@
                                 "
                               >
                                 {{
-                                  item.pair[2].vol24h.value1
-                                    | bigintToFloat(
+                                  item.pair[2].vol24h.value1 |
+                                    bigintToFloat(
                                       2,
                                       tokens[
                                         item.pair[1][0].token1[0].toString()
                                       ].decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dt>
@@ -565,14 +535,14 @@
                                 "
                               >
                                 {{
-                                  item.pair[2].totalVol.value1
-                                    | bigintToFloat(
+                                  item.pair[2].totalVol.value1 |
+                                    bigintToFloat(
                                       2,
                                       tokens[
                                         item.pair[1][0].token1[0].toString()
                                       ].decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dd>
@@ -635,14 +605,14 @@
                                 "
                               >
                                 24h: ${{
-                                  pair[2].vol24h.value1
-                                    | icpToUsdt(
+                                  pair[2].vol24h.value1 |
+                                    icpToUsdt(
                                       currentMarketPrice,
                                       pair[1][0].token1[1],
                                       tokens[pair[1][0].token1[0].toString()]
                                         .decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dt>
@@ -656,14 +626,14 @@
                                 "
                               >
                                 Total: ${{
-                                  pair[2].totalVol.value1
-                                    | icpToUsdt(
+                                  pair[2].totalVol.value1 |
+                                    icpToUsdt(
                                       currentMarketPrice,
                                       pair[1][0].token1[1],
                                       tokens[pair[1][0].token1[0].toString()]
                                         .decimals
-                                    )
-                                    | formatNum
+                                    ) |
+                                    formatNum
                                 }}
                               </span>
                             </dd>
@@ -684,7 +654,8 @@
                               <dt
                                 :class="{
                                   'usdt-test-dt':
-                                    currentTradeMarketSort === 'USDC'
+                                    currentTradeMarketSort === 'USDC' ||
+                                    currentTradeMarketSort === 'USDT'
                                 }"
                               >
                                 <a-tooltip placement="right">
@@ -769,8 +740,8 @@
                                   "
                                 >
                                   {{
-                                    pair[2].price
-                                      | filterPairTokenPrice(
+                                    pair[2].price |
+                                      filterPairTokenPrice(
                                         tokens[pair[1][0].token0[0].toString()]
                                           .decimals,
                                         tokens[pair[1][0].token1[0].toString()]
@@ -807,13 +778,13 @@
                                   "
                                 >
                                   {{
-                                    pair[2].vol24h.value1
-                                      | bigintToFloat(
+                                    pair[2].vol24h.value1 |
+                                      bigintToFloat(
                                         2,
                                         tokens[pair[1][0].token1[0].toString()]
                                           .decimals
-                                      )
-                                      | formatNum
+                                      ) |
+                                      formatNum
                                   }}
                                 </span>
                               </dt>
@@ -827,13 +798,13 @@
                                   "
                                 >
                                   {{
-                                    pair[2].totalVol.value1
-                                      | bigintToFloat(
+                                    pair[2].totalVol.value1 |
+                                      bigintToFloat(
                                         2,
                                         tokens[pair[1][0].token1[0].toString()]
                                           .decimals
-                                      )
-                                      | formatNum
+                                      ) |
+                                      formatNum
                                   }}
                                 </span>
                               </dd>
@@ -902,8 +873,8 @@
                           getTradeSide(item[2].token0Value) === 'Sell'
                       }"
                       >{{
-                        item[2]
-                          | filterLatestPrice(
+                        item[2] |
+                          filterLatestPrice(
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
                             tokens[currentPair[1][0].token1[0].toString()]
@@ -922,8 +893,8 @@
                         tokens[currentPair[1][0].token0[0].toString()]
                       "
                       >{{
-                        Object.values(item[2].token0Value)[0]
-                          | filterLatestAmount(
+                        Object.values(item[2].token0Value)[0] |
+                          filterLatestAmount(
                             tokenMinUnit,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -940,24 +911,37 @@
         <div class="trade-main">
           <div class="k-interval-main">
             <div class="k-interval-main-header pc-show">
-              <span
-                class="k-interval-main-header-name"
-                v-if="
-                  currentPair &&
-                  tokens &&
-                  tokens[currentPair[1][0].token0[0].toString()] &&
-                  tokens[currentPair[1][0].token1[0].toString()]
-                "
-              >
+              <span class="k-interval-main-header-name" v-if="currentPair">
                 <a-tooltip placement="top">
                   <template slot="title"
-                    >{{
-                      tokens[currentPair[1][0].token0[0].toString()].name
-                    }}({{ currentPair[1][0].token0[0].toString() }})</template
-                  >{{
-                    tokens[currentPair[1][0].token0[0].toString()].symbol
-                  }}</a-tooltip
-                >/{{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
+                    >{{ currentPair[1][0].token0[1] }}({{
+                      currentPair[1][0].token0[0].toString()
+                    }})</template
+                  >
+                  <span>
+                    <a-icon
+                      v-show="
+                        !oldPairs.includes(currentPair[0].toString()) &&
+                        currentPair[1][0].marketBoard
+                      "
+                      :theme="
+                        star.includes(currentPair[0].toString())
+                          ? 'filled'
+                          : 'outlined'
+                      "
+                      @click.stop="onStar(currentPair)"
+                      type="star"
+                      :class="{
+                        'base-font-title': !star.includes(
+                          currentPair[0].toString()
+                        )
+                      }"
+                    />
+                    {{ currentPair[1][0].token0[1] }}/{{
+                      currentPair[1][0].token1[1]
+                    }}
+                  </span></a-tooltip
+                >
                 <a-tooltip placement="top">
                   <template slot="title">
                     <div class="base-font-title">
@@ -1086,13 +1070,13 @@
                     "
                   >
                     {{
-                      currentPair[2].vol24h.value1
-                        | bigintToFloat(
+                      currentPair[2].vol24h.value1 |
+                        bigintToFloat(
                           2,
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                 </div>
@@ -1556,7 +1540,9 @@
                     <th>
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDC'
+                          'usdt-test':
+                            currentTradeMarketSort === 'USDC' ||
+                            currentTradeMarketSort === 'USDT'
                         }"
                       >
                         Price<span
@@ -1572,7 +1558,9 @@
                     <th class="text-right">
                       <div
                         :class="{
-                          'usdt-test': currentTradeMarketSort === 'USDC'
+                          'usdt-test':
+                            currentTradeMarketSort === 'USDC' ||
+                            currentTradeMarketSort === 'USDT'
                         }"
                       >
                         Quantity
@@ -1610,8 +1598,8 @@
                             getTradeSide(item[2].token0Value) === 'Sell'
                         }"
                         >{{
-                          item[2]
-                            | filterLatestPrice(
+                          item[2] |
+                            filterLatestPrice(
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals,
                               tokens[currentPair[1][0].token1[0].toString()]
@@ -1630,8 +1618,8 @@
                           tokens[currentPair[1][0].token0[0].toString()]
                         "
                         >{{
-                          Object.values(item[2].token0Value)[0]
-                            | filterLatestAmount(
+                          Object.values(item[2].token0Value)[0] |
+                            filterLatestAmount(
                               tokenMinUnit,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -1779,12 +1767,15 @@
                           .includes('usdc') ||
                         currentPair[1][0].token1[1]
                           .toLocaleLowerCase()
+                          .includes('usdt') ||
+                        currentPair[1][0].token1[1]
+                          .toLocaleLowerCase()
                           .includes('test')
                       "
-                      :to="`/account?type=mint&token=${currentPair[1][0].token1[0].toString()}`"
+                      :to="`/icRouter?type=mint&token=${currentPair[1][0].token1[0].toString()}`"
                       >{{
-                        tokensBalance[currentPair[1][0].token1[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token1[0].toString()] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals,
@@ -1792,8 +1783,8 @@
                             ),
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}<span
                         >&nbsp;{{ currentPair[1][0].token1[1] }}
                         <span
@@ -1813,12 +1804,15 @@
                         .includes('usdc') &&
                       !currentPair[1][0].token1[1]
                         .toLocaleLowerCase()
+                        .includes('usdt') &&
+                      !currentPair[1][0].token1[1]
+                        .toLocaleLowerCase()
                         .includes('test')
                     "
                   >
                     {{
-                      tokensBalance[currentPair[1][0].token1[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[currentPair[1][0].token1[0].toString()] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
@@ -1826,8 +1820,8 @@
                           ),
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token1[1] }}
                   </span>
                 </span>
@@ -1884,14 +1878,14 @@
                     "
                   >
                     {{
-                      keepingBalance[currentPair[1][0].token1[0].toString()]
-                        | filterKeepingBalance(
+                      keepingBalance[currentPair[1][0].token1[0].toString()] |
+                        filterKeepingBalance(
                           stopLimitNeed.token1,
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals,
                           8
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token1[1] }}
                   </span>
                 </a-tooltip>
@@ -1987,9 +1981,9 @@
                   <template slot="title">
                     <span v-if="currentMarketPrice['']"
                       >≈ ${{
-                        stopBuyPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        stopBuyPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2034,9 +2028,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        buyPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        buyPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2130,9 +2124,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        buyTotal
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        buyTotal |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2181,8 +2175,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | bigintToFloat(
+                        stoConfig.sloFee1 |
+                          bigintToFloat(
                             tokens[sysConfig.sysToken.toString()].decimals,
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
@@ -2194,8 +2188,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | stoUpdateFee(
+                        stoConfig.sloFee1 |
+                          stoUpdateFee(
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
                       }}
@@ -2222,7 +2216,12 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         (isIDOPaused ||
-                          (!isIDOPaused && orderType !== 'FOK'))) ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -2242,7 +2241,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -2259,7 +2260,30 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -2346,9 +2370,9 @@
                     </span>
                     <span v-show="!buyTotalMKTError"
                       >≈ ${{
-                        buyTotalMKT
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        buyTotalMKT |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2394,7 +2418,13 @@
                   <button
                     v-if="getPrincipalId && currentPair"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -2409,7 +2439,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'MKT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -2425,7 +2457,30 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -2483,13 +2538,16 @@
                           .includes('usdc') ||
                         currentPair[1][0].token0[1]
                           .toLocaleLowerCase()
+                          .includes('usdt') ||
+                        currentPair[1][0].token0[1]
+                          .toLocaleLowerCase()
                           .includes('test')
                       "
-                      :to="`/account?type=mint&token=${currentPair[1][0].token0[0].toString()}`"
+                      :to="`/icRouter?type=mint&token=${currentPair[1][0].token0[0].toString()}`"
                     >
                       {{
-                        tokensBalance[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token0[0].toString()] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals,
@@ -2497,8 +2555,8 @@
                             ),
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}<span
                         >&nbsp;{{ currentPair[1][0].token0[1] }}
                         <span
@@ -2518,12 +2576,15 @@
                         .includes('usdc') &&
                       !currentPair[1][0].token0[1]
                         .toLocaleLowerCase()
+                        .includes('usdt') &&
+                      !currentPair[1][0].token0[1]
+                        .toLocaleLowerCase()
                         .includes('test')
                     "
                   >
                     {{
-                      tokensBalance[currentPair[1][0].token0[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[currentPair[1][0].token0[0].toString()] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
@@ -2531,8 +2592,8 @@
                           ),
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token0[1] }}
                     <span
                       class="old-icl-type"
@@ -2594,14 +2655,14 @@
                     "
                   >
                     {{
-                      keepingBalance[currentPair[1][0].token0[0].toString()]
-                        | filterKeepingBalance(
+                      keepingBalance[currentPair[1][0].token0[0].toString()] |
+                        filterKeepingBalance(
                           stopLimitNeed.token0,
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals,
                           8
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}&nbsp;{{ currentPair[1][0].token0[1] }}
                   </span>
                 </a-tooltip>
@@ -2695,9 +2756,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        stopSellPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        stopSellPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2743,9 +2804,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        sellPrice
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        sellPrice |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2844,9 +2905,9 @@
                   <template slot="title">
                     <span
                       >≈ ${{
-                        sellTotal
-                          | filterBuyPrice(token0Price, currentTokenPrice)
-                          | formatNum
+                        sellTotal |
+                          filterBuyPrice(token0Price, currentTokenPrice) |
+                          formatNum
                       }}</span
                     >
                   </template>
@@ -2895,8 +2956,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | bigintToFloat(
+                        stoConfig.sloFee1 |
+                          bigintToFloat(
                             tokens[sysConfig.sysToken.toString()].decimals,
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
@@ -2906,8 +2967,8 @@
                     <span v-show="dexRole.vipMaker"> 0 </span>
                     <span v-show="!dexRole.vipMaker">
                       {{
-                        stoConfig.sloFee1
-                          | stoUpdateFee(
+                        stoConfig.sloFee1 |
+                          stoUpdateFee(
                             tokens[sysConfig.sysToken.toString()].decimals
                           )
                       }}
@@ -2935,7 +2996,12 @@
                     :disabled="
                       (pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))) ||
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -2951,7 +3017,8 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -2967,7 +3034,30 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isPaused || (!isPaused && orderType !== 'LMT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -3090,7 +3180,13 @@
                     v-if="getPrincipalId && currentPair"
                     class="sell-button w100 mt20"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -3100,7 +3196,13 @@
                     "
                     @click="onSellMKT"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -3114,7 +3216,26 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(pairInfo && pairInfo.paused) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -3217,8 +3338,10 @@
                       style="line-height: 14px"
                     >
                       {{
-                        tokensBalanceSto[currentPair[1][0].token1[0].toString()]
-                          | bigintToFloat(
+                        tokensBalanceSto[
+                          currentPair[1][0].token1[0].toString()
+                        ] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals,
@@ -3226,8 +3349,8 @@
                             ),
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       {{
                         tokens[currentPair[1][0].token1[0].toString()].symbol
@@ -3259,8 +3382,10 @@
                       style="line-height: 14px"
                     >
                       {{
-                        tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
+                        tokensBalanceSto[
+                          currentPair[1][0].token0[0].toString()
+                        ] |
+                          bigintToFloat(
                             Math.min(
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals,
@@ -3268,8 +3393,8 @@
                             ),
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       {{
                         tokens[currentPair[1][0].token0[0].toString()].symbol
@@ -3338,8 +3463,8 @@
                           {{
                             keepingBalanceSto[
                               currentPair[1][0].token1[0].toString()
-                            ]
-                              | bigintToFloat(
+                            ] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals,
@@ -3347,8 +3472,8 @@
                                 ),
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                         </span>
                         {{
@@ -3424,8 +3549,8 @@
                           {{
                             keepingBalanceSto[
                               currentPair[1][0].token0[0].toString()
-                            ]
-                              | bigintToFloat(
+                            ] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals,
@@ -3433,8 +3558,8 @@
                                 ),
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                         </span>
                         {{
@@ -3590,7 +3715,9 @@
                 <th>
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDC'
+                      'usdt-test':
+                        currentTradeMarketSort === 'USDC' ||
+                        currentTradeMarketSort === 'USDT'
                     }"
                     class="font-10"
                   >
@@ -3607,7 +3734,9 @@
                 <th class="text-right">
                   <div
                     :class="{
-                      'usdt-test': currentTradeMarketSort === 'USDC'
+                      'usdt-test':
+                        currentTradeMarketSort === 'USDC' ||
+                        currentTradeMarketSort === 'USDT'
                     }"
                     class="font-10"
                   >
@@ -3852,11 +3981,7 @@
       </div>
       <div class="swap-transfer-list">
         <div
-          class="
-            swap-transfer-list-header
-            swap-transfer-list-header-fallback
-            swap-transfer-list-header-fallback-trades
-          "
+          class="swap-transfer-list-header swap-transfer-list-header-fallback swap-transfer-list-header-fallback-trades"
         >
           <ul>
             <li
@@ -3950,9 +4075,9 @@
             "
           >
             {{
-              pendingList
-                | filterPendingToken0
-                | bigintToFloat(
+              pendingList |
+                filterPendingToken0 |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token0[0].toString()].decimals,
                     8
@@ -3971,19 +4096,19 @@
               tokens[currentPair[1][0].token0[0].toString()] &&
               tokens[currentPair[1][0].token1[0].toString()] &&
               unit &&
-              buyUnit
+              buyUnit.toString()
             "
           >
             {{
-              pendingList
-                | filterPendingToken1(
+              pendingList |
+                filterPendingToken1(
                   unit,
                   buyUnit,
                   tokenMinUnit,
                   tokens[currentPair[1][0].token0[0].toString()].decimals,
                   tokens[currentPair[1][0].token1[0].toString()].decimals
-                )
-                | bigintToFloat(
+                ) |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token1[0].toString()].decimals,
                     8
@@ -4009,8 +4134,8 @@
             "
           >
             {{
-              userLiquidity.vol.value0
-                | bigintToFloat(
+              userLiquidity.vol.value0 |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token0[0].toString()].decimals,
                     8
@@ -4030,8 +4155,8 @@
             "
           >
             {{
-              userLiquidity.vol.value1
-                | bigintToFloat(
+              userLiquidity.vol.value1 |
+                bigintToFloat(
                   Math.min(
                     tokens[currentPair[1][0].token1[0].toString()].decimals,
                     8
@@ -4115,7 +4240,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4138,7 +4263,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4164,8 +4289,8 @@
                           "
                         >
                           {{
-                            item.strategy.GridOrder.setting.spread.Geom
-                              | filterPpm
+                            item.strategy.GridOrder.setting.spread.Geom |
+                              filterPpm
                           }}
                         </span>
                         <span
@@ -4178,7 +4303,7 @@
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4213,8 +4338,8 @@
                                 .length
                             "
                             >{{
-                              item.strategy.GridOrder.setting.amount.Percent[0]
-                                | filterPpm
+                              item.strategy.GridOrder.setting.amount
+                                .Percent[0] | filterPpm
                             }}
                             <a-tooltip placement="top">
                               <template slot="title">
@@ -4238,8 +4363,8 @@
                           "
                         >
                           {{
-                            item.strategy.GridOrder.setting.amount.Token0
-                              | bigintToFloat(
+                            item.strategy.GridOrder.setting.amount.Token0 |
+                              bigintToFloat(
                                 tokenMinUnit,
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
@@ -4262,8 +4387,8 @@
                           "
                         >
                           {{
-                            item.strategy.GridOrder.setting.amount.Token1
-                              | bigintToFloat(
+                            item.strategy.GridOrder.setting.amount.Token1 |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -4278,7 +4403,7 @@
                       <div
                         v-if="
                           unit &&
-                          buyUnit &&
+                          buyUnit.toString() &&
                           currentPair &&
                           tokens &&
                           tokens[currentPair[1][0].token0[0].toString()]
@@ -4318,13 +4443,13 @@
                         Period:
                         <span>
                           {{
-                            item.strategy.IcebergOrder.setting.startingTime
-                              | formatDateToMinuteFilter
+                            item.strategy.IcebergOrder.setting.startingTime |
+                              formatDateToMinuteFilter
                           }}
                           ~
                           {{
-                            item.strategy.IcebergOrder.setting.endTime
-                              | formatDateToMinuteFilter
+                            item.strategy.IcebergOrder.setting.endTime |
+                              formatDateToMinuteFilter
                           }}
                         </span>
                       </div>
@@ -4350,7 +4475,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit
+                            tokenMinUnit.toString()
                           "
                         >
                           {{
@@ -4435,7 +4560,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4463,7 +4588,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit
+                            tokenMinUnit.toString()
                           "
                         >
                           {{
@@ -4500,13 +4625,13 @@
                         Period:
                         <span>
                           {{
-                            Object.values(item.strategy)[0].setting.startingTime
-                              | formatDateToMinuteFilter
+                            Object.values(item.strategy)[0].setting
+                              .startingTime | formatDateToMinuteFilter
                           }}
                           ~
                           {{
-                            Object.values(item.strategy)[0].setting.endTime
-                              | formatDateToMinuteFilter
+                            Object.values(item.strategy)[0].setting.endTime |
+                              formatDateToMinuteFilter
                           }}
                         </span>
                       </div>
@@ -4530,14 +4655,14 @@
                           "
                         >
                           {{
-                            item.strategy.VWAP.setting.triggerVol.Geom
-                              | filterPpm
+                            item.strategy.VWAP.setting.triggerVol.Geom |
+                              filterPpm
                           }}
                           <a-tooltip placement="top">
                             <template slot="title">
                               {{
-                                item.strategy.VWAP.setting.triggerVol.Geom
-                                  | filterPpm
+                                item.strategy.VWAP.setting.triggerVol.Geom |
+                                  filterPpm
                               }}
                               of volume in the last 24 hours.
                             </template>
@@ -4553,14 +4678,14 @@
                             tokens &&
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
                             Object.values(
                               item.strategy.VWAP.setting.triggerVol
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -4594,8 +4719,8 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit &&
-                            buyUnit &&
+                            tokenMinUnit.toString() &&
+                            buyUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting.totalLimit
                             )[0] === 'Token0'
@@ -4634,8 +4759,8 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
-                            tokenMinUnit &&
-                            buyUnit &&
+                            tokenMinUnit.toString() &&
+                            buyUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting.totalLimit
                             )[0] === 'Token1'
@@ -4644,8 +4769,8 @@
                           {{
                             Object.values(
                               Object.values(item.strategy)[0].setting.totalLimit
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -4687,7 +4812,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4719,7 +4844,7 @@
                             tokens[currentPair[1][0].token0[0].toString()] &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
                             unit &&
-                            buyUnit
+                            buyUnit.toString()
                           "
                         >
                           {{
@@ -4749,7 +4874,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token0[0].toString()] &&
-                            tokenMinUnit &&
+                            tokenMinUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting
                                 .amountPerTrigger
@@ -4777,7 +4902,7 @@
                             currentPair &&
                             tokens &&
                             tokens[currentPair[1][0].token1[0].toString()] &&
-                            buyUnit &&
+                            buyUnit.toString() &&
                             Object.keys(
                               Object.values(item.strategy)[0].setting
                                 .amountPerTrigger
@@ -4788,8 +4913,8 @@
                             Object.values(
                               Object.values(item.strategy)[0].setting
                                 .amountPerTrigger
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 buyUnit,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -5238,9 +5363,11 @@
                     Fee
                     <a-tooltip placement="top">
                       <template slot="title"
-                        >Fee includes trading fee, network gas, brokerage and
-                        maker yield, negative values indicate income.</template
-                      >
+                        >This column includes the trading fee, network fees
+                        (gas), 3rd party fees for trades performed through
+                        applications provided by 3rd parties, and VIP-Maker
+                        yield. Negative values indicate profit rather than loss.
+                      </template>
                       <a-icon class="pointer" type="question-circle" />
                     </a-tooltip>
                   </th>
@@ -5264,8 +5391,8 @@
                   <td class="swap-transfer-list-time">
                     <span v-if="item.details && item.details.length">
                       {{
-                        item.details[item.details.length - 1].time
-                          | formatDateFromNanosecondUTC
+                        item.details[item.details.length - 1].time |
+                          formatDateFromNanosecondUTC
                       }}
                     </span>
                     <span v-else>
@@ -5319,8 +5446,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -5346,8 +5473,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -5373,8 +5500,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -5400,8 +5527,8 @@
                             "
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -5441,8 +5568,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -5476,8 +5603,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -5511,8 +5638,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token0Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token0Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -5546,8 +5673,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.order.token1Value[0])[0]
-                                | bigintToFloat(
+                              Object.values(item.order.token1Value[0])[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -5632,8 +5759,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5667,8 +5794,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -5700,8 +5827,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5735,8 +5862,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -5770,8 +5897,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5797,8 +5924,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -5824,8 +5951,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token0[0].toString()
@@ -5853,8 +5980,8 @@
                               "
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     Math.min(
                                       tokens[
                                         currentPair[1][0].token1[0].toString()
@@ -5902,8 +6029,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -5942,8 +6069,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -5982,8 +6109,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token0Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6022,8 +6149,8 @@
                                 Object.values(
                                   item.details[item.details.length - 1]
                                     .token1Value
-                                )[0]
-                                  | bigintToFloat(
+                                )[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6063,8 +6190,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6098,8 +6225,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6133,8 +6260,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token0Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token0Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6168,8 +6295,8 @@
                               rel="nofollow noreferrer noopener"
                             >
                               {{
-                                Object.values(item.filled.token1Value)[0]
-                                  | bigintToFloat(
+                                Object.values(item.filled.token1Value)[0] |
+                                  bigintToFloat(
                                     4,
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6255,9 +6382,11 @@
                   Fee
                   <a-tooltip placement="top">
                     <template slot="title"
-                      >Fee includes trading fee, network gas, brokerage and
-                      maker yield, negative values indicate income.</template
-                    >
+                      >This column includes the trading fee, network fees (gas),
+                      3rd party fees for trades performed through applications
+                      provided by 3rd parties, and VIP-Maker yield. Negative
+                      values indicate profit rather than loss.
+                    </template>
                     <a-icon class="pointer" type="question-circle" />
                   </a-tooltip>
                 </th>
@@ -6278,8 +6407,8 @@
                 <td class="swap-transfer-list-time">
                   <span v-if="item.details && item.details.length">
                     {{
-                      item.details[item.details.length - 1].time
-                        | formatDateFromNanosecondUTC
+                      item.details[item.details.length - 1].time |
+                        formatDateFromNanosecondUTC
                     }}
                   </span>
                   <span v-else>
@@ -6332,8 +6461,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals,
@@ -6358,8 +6487,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals,
@@ -6384,8 +6513,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals,
@@ -6410,8 +6539,8 @@
                           "
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals,
@@ -6450,8 +6579,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
@@ -6485,8 +6614,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -6520,8 +6649,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token0Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token0Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token0[0].toString()]
                                   .decimals
@@ -6555,8 +6684,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.order.token1Value[0])[0]
-                              | bigintToFloat(
+                            Object.values(item.order.token1Value[0])[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[currentPair[1][0].token1[0].toString()]
                                   .decimals
@@ -6639,8 +6768,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6671,8 +6800,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6703,8 +6832,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6735,8 +6864,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6769,8 +6898,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6795,8 +6924,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6821,8 +6950,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token0[0].toString()
@@ -6847,8 +6976,8 @@
                             "
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   Math.min(
                                     tokens[
                                       currentPair[1][0].token1[0].toString()
@@ -6894,8 +7023,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -6932,8 +7061,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -6970,8 +7099,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token0Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -7008,8 +7137,8 @@
                               Object.values(
                                 item.details[item.details.length - 1]
                                   .token1Value
-                              )[0]
-                                | bigintToFloat(
+                              )[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -7048,8 +7177,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -7082,8 +7211,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -7116,8 +7245,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token0Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token0Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token0[0].toString()]
                                     .decimals
@@ -7150,8 +7279,8 @@
                             rel="nofollow noreferrer noopener"
                           >
                             {{
-                              Object.values(item.filled.token1Value)[0]
-                                | bigintToFloat(
+                              Object.values(item.filled.token1Value)[0] |
+                                bigintToFloat(
                                   4,
                                   tokens[currentPair[1][0].token1[0].toString()]
                                     .decimals
@@ -7650,7 +7779,7 @@
                         currentPair &&
                         tokens &&
                         tokens[currentPair[1][0].token0[0].toString()] &&
-                        tokenMinUnit
+                        tokenMinUnit.toString()
                       "
                     >
                       {{
@@ -7679,7 +7808,7 @@
                         tokens[currentPair[1][0].token0[0].toString()] &&
                         tokens[currentPair[1][0].token1[0].toString()] &&
                         buyUnit.toString() &&
-                        tokenMinUnit
+                        tokenMinUnit.toString()
                       "
                     >
                       {{
@@ -8235,7 +8364,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit
+                    tokenMinUnit.toString()
                   "
                 >
                   {{
@@ -8343,7 +8472,7 @@
                       tokens[currentPair[1][0].token0[0].toString()] &&
                       tokens[currentPair[1][0].token1[0].toString()] &&
                       buyUnit.toString() &&
-                      tokenMinUnit
+                      tokenMinUnit.toString()
                     "
                   >
                     {{
@@ -8461,8 +8590,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -8495,8 +8624,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -8529,8 +8658,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -8563,8 +8692,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -8644,8 +8773,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -8680,8 +8809,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -8716,8 +8845,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -8752,8 +8881,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -8791,8 +8920,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -8822,8 +8951,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -8853,8 +8982,8 @@
                         class="token-id-rocks"
                         rel="nofollow noreferrer noopener"
                         >{{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -8885,8 +9014,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -8916,9 +9045,11 @@
                   >Fee
                   <a-tooltip placement="top">
                     <template slot="title"
-                      >Fee includes trading fee, network gas, brokerage and
-                      maker yield, negative values indicate income.</template
-                    >
+                      >This column includes the trading fee, network fees (gas),
+                      3rd party fees for trades performed through applications
+                      provided by 3rd parties, and VIP-Maker yield. Negative
+                      values indicate profit rather than loss.
+                    </template>
                     <a-icon
                       class="pointer"
                       type="question-circle"
@@ -8963,8 +9094,8 @@
                 <span class="pending-item-right">
                   <span v-if="item.details && item.details.length">
                     {{
-                      item.details[item.details.length - 1].time
-                        | formatDateFromNanosecondUTC
+                      item.details[item.details.length - 1].time |
+                        formatDateFromNanosecondUTC
                     }}
                   </span>
                   <span v-else>
@@ -9103,13 +9234,13 @@
                 <span class="pending-item-left">Period</span>
                 <span class="pending-item-right">
                   {{
-                    Object.values(item.strategy)[0].setting.startingTime
-                      | formatDateToMinuteFilter
+                    Object.values(item.strategy)[0].setting.startingTime |
+                      formatDateToMinuteFilter
                   }}
                   ~
                   {{
-                    Object.values(item.strategy)[0].setting.endTime
-                      | formatDateToMinuteFilter
+                    Object.values(item.strategy)[0].setting.endTime |
+                      formatDateToMinuteFilter
                   }}
                 </span>
               </div>
@@ -9153,12 +9284,12 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token1[0].toString()].decimals &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                 >
                   {{
-                    Object.values(item.strategy.VWAP.setting.triggerVol)[0]
-                      | bigintToFloat(
+                    Object.values(item.strategy.VWAP.setting.triggerVol)[0] |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -9180,7 +9311,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit &&
+                    tokenMinUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.totalLimit
                     )[0] === 'Token0'
@@ -9213,7 +9344,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
-                    buyUnit &&
+                    buyUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.totalLimit
                     )[0] === 'Token1'
@@ -9222,8 +9353,8 @@
                   {{
                     Object.values(
                       Object.values(item.strategy)[0].setting.totalLimit
-                    )[0]
-                      | bigintToFloat(
+                    )[0] |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -9252,7 +9383,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit
+                    tokenMinUnit.toString()
                   "
                 >
                   {{
@@ -9301,7 +9432,7 @@
                       tokens &&
                       tokens[currentPair[1][0].token1[0].toString()].decimals &&
                       unit &&
-                      buyUnit
+                      buyUnit.toString()
                     "
                   >
                     {{
@@ -9342,7 +9473,7 @@
                     tokens[currentPair[1][0].token0[0].toString()] &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
                     unit &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                 >
                   {{
@@ -9376,7 +9507,7 @@
                     tokens[currentPair[1][0].token0[0].toString()] &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
                     unit &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                   class="pending-item-right"
                 >
@@ -9410,7 +9541,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit &&
+                    tokenMinUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.amountPerTrigger
                     )[0] === 'Token0'
@@ -9433,7 +9564,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
-                    buyUnit &&
+                    buyUnit.toString() &&
                     Object.keys(
                       Object.values(item.strategy)[0].setting.amountPerTrigger
                     )[0] === 'Token1'
@@ -9442,8 +9573,8 @@
                   {{
                     Object.values(
                       Object.values(item.strategy)[0].setting.amountPerTrigger
-                    )[0]
-                      | bigintToFloat(
+                    )[0] |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -9464,7 +9595,7 @@
                     tokens[currentPair[1][0].token0[0].toString()] &&
                     tokens[currentPair[1][0].token1[0].toString()] &&
                     unit &&
-                    buyUnit
+                    buyUnit.toString()
                   "
                 >
                   {{
@@ -9494,7 +9625,7 @@
                     currentPair &&
                     tokens &&
                     tokens[currentPair[1][0].token0[0].toString()] &&
-                    tokenMinUnit
+                    tokenMinUnit.toString()
                   "
                 >
                   {{
@@ -9523,8 +9654,8 @@
                   <span
                     v-if="item.strategy.GridOrder.setting.amount.Percent.length"
                     >{{
-                      item.strategy.GridOrder.setting.amount.Percent[0]
-                        | filterPpm
+                      item.strategy.GridOrder.setting.amount.Percent[0] |
+                        filterPpm
                     }}
                     <a-tooltip placement="top">
                       <template slot="title">
@@ -9547,8 +9678,8 @@
                   "
                 >
                   {{
-                    item.strategy.GridOrder.setting.amount.Token0
-                      | bigintToFloat(
+                    item.strategy.GridOrder.setting.amount.Token0 |
+                      bigintToFloat(
                         tokenMinUnit,
                         tokens[currentPair[1][0].token0[0].toString()].decimals
                       )
@@ -9566,8 +9697,8 @@
                   "
                 >
                   {{
-                    item.strategy.GridOrder.setting.amount.Token1
-                      | bigintToFloat(
+                    item.strategy.GridOrder.setting.amount.Token1 |
+                      bigintToFloat(
                         buyUnit,
                         tokens[currentPair[1][0].token1[0].toString()].decimals
                       )
@@ -10021,8 +10152,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -10055,8 +10186,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -10089,8 +10220,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token0Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token0Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
@@ -10123,8 +10254,8 @@
                       rel="nofollow noreferrer noopener"
                     >
                       {{
-                        Object.values(item.order.token1Value[0])[0]
-                          | bigintToFloat(
+                        Object.values(item.order.token1Value[0])[0] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
@@ -10204,8 +10335,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10240,8 +10371,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10276,8 +10407,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token0Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10312,8 +10443,8 @@
                         {{
                           Object.values(
                             item.details[item.details.length - 1].token1Value
-                          )[0]
-                            | bigintToFloat(
+                          )[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10351,8 +10482,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10382,8 +10513,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10413,8 +10544,8 @@
                         class="token-id-rocks"
                         rel="nofollow noreferrer noopener"
                         >{{
-                          Object.values(item.filled.token0Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token0Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token0[0].toString()]
                                 .decimals
@@ -10445,8 +10576,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.filled.token1Value)[0]
-                            | bigintToFloat(
+                          Object.values(item.filled.token1Value)[0] |
+                            bigintToFloat(
                               4,
                               tokens[currentPair[1][0].token1[0].toString()]
                                 .decimals
@@ -10476,9 +10607,11 @@
                   >Fee
                   <a-tooltip placement="top">
                     <template slot="title"
-                      >Fee includes trading fee, network gas, brokerage and
-                      maker yield, negative values indicate income.</template
-                    >
+                      >This column includes the trading fee, network fees (gas),
+                      3rd party fees for trades performed through applications
+                      provided by 3rd parties, and VIP-Maker yield. Negative
+                      values indicate profit rather than loss.
+                    </template>
                     <a-icon
                       class="pointer"
                       type="question-circle"
@@ -10523,8 +10656,8 @@
                 <span class="pending-item-right">
                   <span v-if="item.details && item.details.length">
                     {{
-                      item.details[item.details.length - 1].time
-                        | formatDateFromNanosecondUTC
+                      item.details[item.details.length - 1].time |
+                        formatDateFromNanosecondUTC
                     }}
                   </span>
                   <span v-else>
@@ -10644,7 +10777,11 @@
                 "
               >
                 {{ item.name }}
-                <span v-if="item.value === 'USDC'" class="base-red">TEST</span>
+                <span
+                  v-if="item.value === 'USDC' || item.value === 'USDT'"
+                  class="base-red"
+                  >TEST</span
+                >
               </span>
             </li>
           </ul>
@@ -10733,8 +10870,8 @@
                         "
                       >
                         {{
-                          pair[2].price
-                            | filterPairTokenPrice(
+                          pair[2].price |
+                            filterPairTokenPrice(
                               tokens[pair[1][0].token0[0].toString()].decimals,
                               tokens[pair[1][0].token1[0].toString()].decimals
                             )
@@ -10770,12 +10907,12 @@
                         "
                       >
                         {{
-                          pair[2].vol24h.value1
-                            | bigintToFloat(
+                          pair[2].vol24h.value1 |
+                            bigintToFloat(
                               2,
                               tokens[pair[1][0].token1[0].toString()].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                       </span>
                     </dt>
@@ -10789,12 +10926,12 @@
                         "
                       >
                         {{
-                          pair[2].totalVol.value1
-                            | bigintToFloat(
+                          pair[2].totalVol.value1 |
+                            bigintToFloat(
                               2,
                               tokens[pair[1][0].token1[0].toString()].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                       </span>
                     </dd>
@@ -10890,9 +11027,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          buyPrice
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          buyPrice |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -10989,9 +11126,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          buyTotal
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          buyTotal |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11080,9 +11217,9 @@
                       </span>
                       <span v-show="!buyTotalMKTError"
                         >≈ ${{
-                          buyTotalMKT
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          buyTotalMKT |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11141,13 +11278,13 @@
                       "
                     >
                       {{
-                        tokensBalance[currentPair[1][0].token1[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token1[0].toString()] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                     </span>
                     <span v-else>-</span>
@@ -11184,14 +11321,14 @@
                       "
                     >
                       {{
-                        keepingBalance[currentPair[1][0].token1[0].toString()]
-                          | filterKeepingBalance(
+                        keepingBalance[currentPair[1][0].token1[0].toString()] |
+                          filterKeepingBalance(
                             stopLimitNeed.token1,
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
                             4
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}&nbsp;{{ currentPair[1][0].token1[1] }}
                     </span>
                     <span
@@ -11225,7 +11362,12 @@
                       (pairInfo &&
                         pairInfo.paused &&
                         (isIDOPaused ||
-                          (!isIDOPaused && orderType !== 'FOK'))) ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11241,7 +11383,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'FOK')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -11258,7 +11402,30 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'FOK'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11289,7 +11456,13 @@
                   <button
                     v-if="getPrincipalId && currentPair"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11304,7 +11477,9 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        (isIDOPaused ||
+                          (!isIDOPaused && orderType !== 'MKT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -11320,7 +11495,30 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isIDOPaused || (!isIDOPaused && orderType !== 'MKT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11367,9 +11565,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          sellPrice
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          sellPrice |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11471,9 +11669,9 @@
                     <template slot="title">
                       <span
                         >≈ ${{
-                          sellTotal
-                            | filterBuyPrice(token0Price, currentTokenPrice)
-                            | formatNum
+                          sellTotal |
+                            filterBuyPrice(token0Price, currentTokenPrice) |
+                            formatNum
                         }}</span
                       >
                     </template>
@@ -11606,13 +11804,13 @@
                       "
                     >
                       {{
-                        tokensBalance[currentPair[1][0].token0[0].toString()]
-                          | bigintToFloat(
+                        tokensBalance[currentPair[1][0].token0[0].toString()] |
+                          bigintToFloat(
                             4,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                     </span>
                     <span v-else>-</span>
@@ -11656,14 +11854,14 @@
                       "
                     >
                       {{
-                        keepingBalance[currentPair[1][0].token0[0].toString()]
-                          | filterKeepingBalance(
+                        keepingBalance[currentPair[1][0].token0[0].toString()] |
+                          filterKeepingBalance(
                             stopLimitNeed.token0,
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
                             4
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}&nbsp;{{ currentPair[1][0].token0[1] }}
                       <span
                         class="old-icl-type"
@@ -11707,7 +11905,12 @@
                     :disabled="
                       (pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))) ||
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11723,7 +11926,8 @@
                       v-if="
                         pairInfo &&
                         pairInfo.paused &&
-                        (isPaused || (!isPaused && orderType !== 'LMT'))
+                        (isPaused || (!isPaused && orderType !== 'LMT')) &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
                       "
                     >
                       <span
@@ -11739,7 +11943,30 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(
+                          pairInfo &&
+                          pairInfo.paused &&
+                          (isPaused || (!isPaused && orderType !== 'LMT'))
+                        ) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11771,7 +11998,13 @@
                     v-if="getPrincipalId && currentPair"
                     class="sell-button w100 mt20"
                     :disabled="
-                      (pairInfo && pairInfo.paused) ||
+                      (pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        ((debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] !==
+                            getPrincipalId) ||
+                          !debugPairs[currentPair[0].toString()])) ||
                       (currentPair &&
                         prepare[currentPair[0].toString()] &&
                         (oldPairs.includes(currentPair[0].toString()) ||
@@ -11781,7 +12014,13 @@
                     "
                     @click="onSellMKT"
                   >
-                    <span v-if="pairInfo && pairInfo.paused">
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        !(debugPairs && debugPairs[currentPair[0].toString()])
+                      "
+                    >
                       <span
                         class="opening-time"
                         v-if="sysMode && sysMode.openingTime && showOpeningTime"
@@ -11795,7 +12034,26 @@
                       </span>
                       <span v-else>Paused</span>
                     </span>
-                    <span v-else>
+                    <span
+                      v-if="
+                        pairInfo &&
+                        pairInfo.paused &&
+                        debugPairs &&
+                        debugPairs[currentPair[0].toString()] &&
+                        debugPairs[currentPair[0].toString()] !== getPrincipalId
+                      "
+                    >
+                      Under maintenance
+                    </span>
+                    <span
+                      v-if="
+                        !(pairInfo && pairInfo.paused) ||
+                        (debugPairs &&
+                          debugPairs[currentPair[0].toString()] &&
+                          debugPairs[currentPair[0].toString()] ===
+                            getPrincipalId)
+                      "
+                    >
                       <span>
                         <span
                           v-show="orderLoading[currentPair[0].toString()]"
@@ -11988,11 +12246,7 @@
               </div>
               <div
                 v-if="currentSize"
-                class="
-                  order-book-tick-size order-book-tick-size-h5
-                  margin-left-auto
-                  base-font-title
-                "
+                class="order-book-tick-size order-book-tick-size-h5 margin-left-auto base-font-title"
               >
                 <a-dropdown
                   placement="bottomCenter"
@@ -12138,16 +12392,16 @@
                   "
                 >
                   {{
-                    tokensBalanceSto[currentPair[1][0].token1[0].toString()]
-                      | bigintToFloat(
+                    tokensBalanceSto[currentPair[1][0].token1[0].toString()] |
+                      bigintToFloat(
                         Math.min(
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals,
                           4
                         ),
                         tokens[currentPair[1][0].token1[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
                 </span>
@@ -12193,8 +12447,10 @@
                 >
                   <span class="base-font-title" style="font-weight: bold">
                     {{
-                      keepingBalanceSto[currentPair[1][0].token1[0].toString()]
-                        | bigintToFloat(
+                      keepingBalanceSto[
+                        currentPair[1][0].token1[0].toString()
+                      ] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
@@ -12202,8 +12458,8 @@
                           ),
                           tokens[currentPair[1][0].token1[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[currentPair[1][0].token1[0].toString()].symbol }}
@@ -12246,16 +12502,16 @@
                   "
                 >
                   {{
-                    tokensBalanceSto[currentPair[1][0].token0[0].toString()]
-                      | bigintToFloat(
+                    tokensBalanceSto[currentPair[1][0].token0[0].toString()] |
+                      bigintToFloat(
                         Math.min(
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals,
                           4
                         ),
                         tokens[currentPair[1][0].token0[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
                 </span>
@@ -12301,8 +12557,10 @@
                 >
                   <span class="base-font-title" style="font-weight: bold">
                     {{
-                      keepingBalanceSto[currentPair[1][0].token0[0].toString()]
-                        | bigintToFloat(
+                      keepingBalanceSto[
+                        currentPair[1][0].token0[0].toString()
+                      ] |
+                        bigintToFloat(
                           Math.min(
                             tokens[currentPair[1][0].token0[0].toString()]
                               .decimals,
@@ -12310,8 +12568,8 @@
                           ),
                           tokens[currentPair[1][0].token0[0].toString()]
                             .decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[currentPair[1][0].token0[0].toString()].symbol }}
@@ -12483,7 +12741,7 @@
                       tokens[currentPair[1][0].token0[0].toString()] &&
                       tokens[currentPair[1][0].token1[0].toString()] &&
                       unit &&
-                      buyUnit
+                      buyUnit.toString()
                     "
                   >
                     {{
@@ -12497,9 +12755,7 @@
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
                             buyUnit,
-                            filterSide(item[1].orderPrice) === 'Buy'
-                              ? 'bid'
-                              : 'ask'
+                            item.side === 'Buy' ? 'bid' : 'ask'
                           )
                     }}
                   </span>
@@ -12554,9 +12810,7 @@
                             tokens[currentPair[1][0].token1[0].toString()]
                               .decimals,
                             buyUnit,
-                            filterSide(item[1].orderPrice) === 'Buy'
-                              ? 'bid'
-                              : 'ask'
+                            item.side === 'Buy' ? 'bid' : 'ask'
                           ),
                           filterAmount(
                             item.orderPrice,
@@ -12644,7 +12898,7 @@
               <span
                 v-if="
                   unit &&
-                  buyUnit &&
+                  buyUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()] &&
@@ -12666,7 +12920,7 @@
             <td>
               <span
                 v-if="
-                  tokenMinUnit &&
+                  tokenMinUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()]
@@ -12703,7 +12957,7 @@
               <span
                 v-if="
                   unit &&
-                  buyUnit &&
+                  buyUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()] &&
@@ -12725,7 +12979,7 @@
             <td>
               <span
                 v-if="
-                  tokenMinUnit &&
+                  tokenMinUnit.toString() &&
                   tokens &&
                   currentPair &&
                   tokens[currentPair[1][0].token0[0].toString()]
@@ -12763,6 +13017,7 @@
       v-if="currentPair"
       :current-pair="currentPair"
       :keeping-balance="keepingBalance"
+      :tokens-balance="tokensBalance"
       :tokens-balance-sto="tokensBalanceSto"
       :keeping-balance-sto="keepingBalanceSto"
       :buy-unit="buyUnit"
@@ -12778,6 +13033,8 @@
       @proOrderDepositKeepingBalance="proOrderDepositKeepingBalance"
       @gridTransferToken="gridTransferToken"
       @gridDepositKeepingBalance="gridDepositKeepingBalance"
+      @transferICLToPro="transferICLToPro"
+      @toTradeICL="toTradeICL"
     ></pro-order>
     <pro-wallet-swap
       v-if="currentPair"
@@ -12817,7 +13074,6 @@ import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { AstroXUserService } from '@/ic/MEAccount/Service';
 import { Principal } from '@dfinity/principal';
 import BigNumber from 'bignumber.js';
-import { ICSwapRouterService } from '@/ic/ICSwapRouter/ICSwapRouterService';
 import { DexNameType, PairTokenStdMenu } from '@/views/home/ICSwap/model';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import {
@@ -12883,7 +13139,6 @@ import {
   principalToAccountIdentifier,
   toHexString
 } from '@/ic/converter';
-import { LedgerService } from '@/ic/ledger/ledgerService';
 import { ApproveError, TxReceiptErr } from '@/ic/DRC20Token/model';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { Chart, dispose, init } from 'klinecharts';
@@ -12949,6 +13204,7 @@ let ICRC2Token = [
   OCToken
 ];
 let timer = null;
+let hotSort = 0;
 
 @Component({
   name: 'Index',
@@ -12999,6 +13255,8 @@ let timer = null;
           token1.toLocaleLowerCase().includes('test'))
       ) {
         price = currentMarketPrice['usdc'];
+      } else if (token1 && token1.toLocaleLowerCase().includes('usdt')) {
+        price = currentMarketPrice['usdt'];
       } else if (token1 && token1.toLocaleLowerCase().includes('btc')) {
         price = currentMarketPrice['btc'];
       } else if (token1 && token1.toLocaleLowerCase().includes('eth')) {
@@ -13283,11 +13541,9 @@ export default class extends Vue {
   private step = 0;
   private icpUnit = 4;
   private unit: bigint = null;
-  private iCSwapRouterService: ICSwapRouterService;
   private ICSwapRouterFiduciaryService: ICSwapRouterFiduciaryService;
   private currentICDexService: ICDexService;
   private astroXUserService: AstroXUserService;
-  private ledgerService: LedgerService | undefined;
   private ICDexRouterService: ICDexRouterService = null;
   private ICLighthouseService: ICLighthouseService = null;
   private NftService: NftService = null;
@@ -13332,7 +13588,8 @@ export default class extends Vue {
     }
   ];
   private currentMarketPrice: { [key: string]: string } = {
-    usdc: '1'
+    usdc: '1',
+    usdt: '1'
   };
   private orderTypeEnum = OrderTypeEnum;
   private orderType: OrderTypeMenu | 'Pro' | 'Stop-limit' = OrderTypeEnum.LMT;
@@ -13566,7 +13823,8 @@ export default class extends Vue {
     'scjza-fiaaa-aaaak-ac2kq-cai',
     'ig3ej-haaaa-aaaak-adrva-cai',
     'oru4a-nqaaa-aaaak-acufa-cai',
-    '5t3ek-haaaa-aaaar-qadia-cai'
+    '5t3ek-haaaa-aaaar-qadia-cai',
+    '7aehk-pyaaa-aaaar-qadgq-cai'
   ];
   private dragPair: DePairs = null;
   private prePairs: Array<string> = [];
@@ -13579,6 +13837,12 @@ export default class extends Vue {
       Hot: []
     },
     ICP: {
+      Main: [],
+      Second: [],
+      Third: [],
+      Hot: []
+    },
+    USDT: {
       Main: [],
       Second: [],
       Third: [],
@@ -13642,6 +13906,10 @@ export default class extends Vue {
       value: 'ICP'
     },
     {
+      name: 'USDT',
+      value: 'USDT'
+    },
+    {
       name: 'USDC',
       value: 'USDC'
     },
@@ -13654,6 +13922,7 @@ export default class extends Vue {
   private selectMarket = false;
   private marketMenuVisible = false;
   private swapConfig: SwapConfig = null;
+  private debugPairs: { [key: string]: string } = {};
   private currentTradeMarketSort: string = null;
   private pairSearch = '';
   private showThird = true;
@@ -13684,6 +13953,7 @@ export default class extends Vue {
     ghostClass: 'ghost'
   };
   private pairsScroll = [];
+  private isMarket = false;
   @Watch('buyTotal')
   private onBuyTotalChange() {
     if (Number(this.buyTotal)) {
@@ -14077,12 +14347,16 @@ export default class extends Vue {
       await initIcx();
       this.pushUser();
     }
+    EventBus.$on('changeLaunch', () => {
+      this.getDexPairs('icdex');
+    });
+    EventBus.$on('launchSuccess', () => {
+      this.getDexPairs('icdex');
+    });
     if (this.$route.params.token0 && this.$route.params.token1) {
       document.title = `${this.$route.params.token0}/${this.$route.params.token1} - ICDex (Orderbook Dex)`;
     }
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    this.ledgerService = new LedgerService();
-    this.iCSwapRouterService = new ICSwapRouterService();
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.currentICDexService = new ICDexService();
     this.ICDexRouterService = new ICDexRouterService();
@@ -14092,7 +14366,6 @@ export default class extends Vue {
     const width = document.documentElement.clientWidth;
     this.isH5 = width <= 768;
     try {
-      this.getSysConfig();
       this.getDexPairs('icdex').then(() => {
         // const tour = localStorage.getItem('confirmOldTrade');
         // if (!tour) {
@@ -14101,6 +14374,8 @@ export default class extends Vue {
         //   });
         // }
       });
+      this.getSysConfig();
+      this.getDebugPairs();
       this.getIcpPrice();
       this.initFallbackInfo();
       // this.principal = principal;
@@ -14111,7 +14386,7 @@ export default class extends Vue {
         this.getNTFs();
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     // this.steps = [
     //   {
@@ -14129,12 +14404,17 @@ export default class extends Vue {
     };
   }
   private getBasePrice(tokenSymbol: string): string {
-    let price = this.currentMarketPrice['usdc'];
+    let price = this.currentMarketPrice['usdt'];
     if (
       tokenSymbol.toLocaleLowerCase().includes('icp') &&
       this.currentMarketPrice['icp']
     ) {
       price = this.currentMarketPrice['icp'];
+    } else if (
+      tokenSymbol.toLocaleLowerCase().includes('usdc') &&
+      this.currentMarketPrice['usdc']
+    ) {
+      price = this.currentMarketPrice['usdc'];
     } else if (
       tokenSymbol.toLocaleLowerCase().includes('btc') &&
       this.currentMarketPrice['btc']
@@ -14720,7 +15000,7 @@ export default class extends Vue {
     try {
       dispose('kInterval-chart');
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private changeKIntervalList(kInterval): void {
@@ -14786,7 +15066,9 @@ export default class extends Vue {
     window.clearInterval(this.timerQuotes);
     this.timerQuotes = null;
     this.timerQuotes = setTimeout(async () => {
-      await this.getQuotes(swapId);
+      if (this.$route.name === 'ICDex') {
+        await this.getQuotes(swapId);
+      }
     }, 5 * 1000);
   }
   private splitData(rawData: Array<KBar>): KLData[] {
@@ -14874,7 +15156,13 @@ export default class extends Vue {
     }
   }
   private init24(data: KBar[]): void {
-    if (data && data.length) {
+    if (
+      this.tokens &&
+      this.tokens[this.currentPair[1][0].token0[0].toString()] &&
+      this.tokens[this.currentPair[1][0].token1[0].toString()] &&
+      data &&
+      data.length
+    ) {
       const currentData = data[0];
       const token0Decimals =
         this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
@@ -15085,7 +15373,9 @@ export default class extends Vue {
       this.currentTradeMenuPro = 'pending';
       this.getPendingListPro();
       this.proTimer = window.setInterval(() => {
-        this.getPendingListPro(false);
+        if (this.$route.name === 'ICDex') {
+          this.getPendingListPro(false);
+        }
       }, 10 * 1000);
       this.getProOrders(this.currentPair[0].toString(), this.getPrincipalId);
       const address = principalToAccountIdentifier(
@@ -15106,15 +15396,19 @@ export default class extends Vue {
     this.clearIntervalPro();
     if (value === 'orders') {
       this.proTimer = window.setInterval(() => {
-        this.getProOrders(
-          this.currentPair[0].toString(),
-          this.getPrincipalId,
-          false
-        );
+        if (this.$route.name === 'ICDex') {
+          this.getProOrders(
+            this.currentPair[0].toString(),
+            this.getPrincipalId,
+            false
+          );
+        }
       }, 10 * 1000);
     } else if (value === 'pending') {
       this.proTimer = window.setInterval(() => {
-        this.getPendingListPro(false);
+        if (this.$route.name === 'ICDex') {
+          this.getPendingListPro(false);
+        }
       }, 10 * 1000);
     } else if (value === 'history') {
       const address = principalToAccountIdentifier(
@@ -15122,7 +15416,14 @@ export default class extends Vue {
         new Uint8Array(fromSubAccountId(ProSubaccountId))
       );
       this.proTimer = window.setInterval(() => {
-        this.getTradeList(this.currentPair[0].toString(), address, true, false);
+        if (this.$route.name === 'ICDex') {
+          this.getTradeList(
+            this.currentPair[0].toString(),
+            address,
+            true,
+            false
+          );
+        }
       }, 10 * 1000);
     }
   }
@@ -15349,7 +15650,12 @@ export default class extends Vue {
       .minus(60 * 60 * 1000)
       .times(1000000)
       .lte(order.time.toString(10));
-    if (less1H && !order.filled.length && !this.dexRole.vipMaker) {
+    if (
+      less1H &&
+      !order.filled.length &&
+      this.dexRole &&
+      !this.dexRole.vipMaker
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       const side = this.filterSide(order.orderPrice);
@@ -15897,11 +16203,23 @@ export default class extends Vue {
     this.proPendingOrdersModel = true;
   }
   private async onCancel(order: TradingOrder, isPro: boolean): Promise<void> {
-    await checkAuth();
+    if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
+      this.debugPairs &&
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
+    ) {
+      this.$message.error('This pair is under maintenance, try again later.');
+      return;
+    }
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     this.cancelId = order.txid;
     console.log(order.txid, isPro);
     this.currentICDexService
@@ -15915,7 +16233,7 @@ export default class extends Vue {
           toHexString(new Uint8Array(this.cancelId)) ===
           toHexString(new Uint8Array(order.txid))
         ) {
-          this.getIntervalPrice(6);
+          this.getAccountInitIntervalPrice(6);
           this.cancelId = null;
           loading.close();
           if (isPro) {
@@ -15930,7 +16248,8 @@ export default class extends Vue {
       .catch((e) => {
         console.log(e);
         loading.close();
-        this.$message.success('Cancel Error');
+        this.$message.error(toHttpRejectError(e));
+        // this.$message.error('Cancel Error');
       });
   }
   private getStatusByTxid(txid: Array<number>, loading, isPro: boolean): void {
@@ -16329,11 +16648,11 @@ export default class extends Vue {
       }
       if (this.isTodo) {
         if (this.time !== 6) {
-          this.getIntervalPrice(6);
+          this.getAccountInitIntervalPrice(6);
         }
       } else {
         if (this.time !== 10) {
-          this.getIntervalPrice();
+          this.getAccountInitIntervalPrice();
         }
       }
       this.TTRun();
@@ -16541,7 +16860,15 @@ export default class extends Vue {
     }
   }
   private async onSellMKT(): Promise<void> {
-    if (this.pairInfo && this.pairInfo.paused) {
+    if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
+      this.debugPairs &&
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
+    ) {
       this.$message.warning('Trading pair has been paused.');
       return;
     }
@@ -16826,7 +17153,7 @@ export default class extends Vue {
           }
         } catch (e) {
           this.showPrepareOrder = false;
-          console.error(e);
+          console.log(e);
           this.preparedLoading = false;
         }
       }
@@ -17134,7 +17461,8 @@ export default class extends Vue {
         .catch((e) => {
           console.log(e);
           this.initPending(currentPair, prepare, address);
-          this.$message.error('Order fail');
+          this.$message.error(toHttpRejectError(e));
+          // this.$message.error('Order fail');
         })
         .finally(() => {
           if (this.currentTradeMarketSort === 'Hot') {
@@ -17161,7 +17489,7 @@ export default class extends Vue {
       this.executionQueue(currentPair, address);
       this.setStatusTrading(currentPair[0].toString(), prepare[2]);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
-      this.getIntervalPrice(6);
+      this.getAccountInitIntervalPrice(6);
     } catch (e) {
       console.log(e);
       this.initPending(currentPair, prepare, address);
@@ -17426,9 +17754,10 @@ export default class extends Vue {
           );
         })
         .catch((e) => {
-          console.error(e);
+          console.log(e);
           this.initPending(currentPair, prepare, address);
-          this.$message.error('Order fail');
+          this.$message.error(toHttpRejectError(e));
+          // this.$message.error('Order fail');
         })
         .finally(() => {
           if (this.currentTradeMarketSort === 'Hot') {
@@ -17454,7 +17783,7 @@ export default class extends Vue {
       }, 3000);
       this.executionQueue(currentPair, address);
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
-      this.getIntervalPrice(6);
+      this.getAccountInitIntervalPrice(6);
     } catch (e) {
       console.log(e);
       this.initPending(currentPair, prepare, address);
@@ -17690,7 +18019,12 @@ export default class extends Vue {
     if (
       this.pairInfo &&
       this.pairInfo.paused &&
-      (this.isPaused || (!this.isPaused && this.orderType !== 'LMT'))
+      (this.isPaused || (!this.isPaused && this.orderType !== 'LMT')) &&
+      this.debugPairs &&
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -17799,6 +18133,13 @@ export default class extends Vue {
         .times(2);
       if (new BigNumber(this.sellTotal).lt(min)) {
         this.$message.error(`Total cannot be less than ${min}`);
+        return;
+      }
+      const fee = new BigNumber(getFee(this.tokens[token0Id]).toString(10))
+        .div(10 ** this.tokens[token0Id].decimals)
+        .times(2);
+      if (new BigNumber(fee).gte(this.sellAmount)) {
+        this.$message.error(`Quantity must be more than ${fee}`);
         return;
       }
       const amount = BigInt(
@@ -17923,6 +18264,15 @@ export default class extends Vue {
       this.getDepositBalance();
     }
   }
+  private transferICLToPro(): void {
+    const tokenInfo: SwapTokenInfo = [
+      Principal.fromText(IC_LIGHTHOUSE_TOKEN_CANISTER_ID),
+      'ICL',
+      { icrc1: null }
+    ];
+    this.getTokenBalance(tokenInfo);
+    this.getTokenBalanceSto(tokenInfo);
+  }
   private proWalletSwapSuccess(): void {
     const token0Info = this.currentPair[1][0].token0;
     const token1Info = this.currentPair[1][0].token1;
@@ -17930,6 +18280,12 @@ export default class extends Vue {
     this.getTokenBalance(token1Info);
     this.getTokenBalanceSto(token0Info);
     this.getTokenBalanceSto(token1Info);
+    if (
+      token0Info[0].toString() !== IC_LIGHTHOUSE_TOKEN_CANISTER_ID &&
+      token1Info[0].toString() !== IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+    ) {
+      this.transferICLToPro();
+    }
   }
   private gridDepositKeepingBalance(isToken0: boolean): void {
     if (isToken0) {
@@ -18258,7 +18614,8 @@ export default class extends Vue {
   }
   private async getKeepingBalance(pair: DePairs): Promise<KeepingBalance> {
     const res = await this.currentICDexService.accountBalance(
-      pair[0].toString()
+      pair[0].toString(),
+      0
     );
     if (res && res.pairId === this.currentPair[0].toString()) {
       return res.keepingBalance;
@@ -18463,7 +18820,15 @@ export default class extends Vue {
     console.timeEnd('deposit');
   }
   private async onBuyMKT(): Promise<void> {
-    if (this.pairInfo && this.pairInfo.paused) {
+    if (
+      this.pairInfo &&
+      this.pairInfo.paused &&
+      this.debugPairs &&
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
+    ) {
       this.$message.warning('Trading pair has been paused.');
       return;
     }
@@ -18533,7 +18898,12 @@ export default class extends Vue {
       this.pairInfo &&
       this.pairInfo.paused &&
       (this.isIDOPaused ||
-        (!this.isIDOPaused && this.orderType !== OrderTypeEnum.FOK))
+        (!this.isIDOPaused && this.orderType !== OrderTypeEnum.FOK)) &&
+      this.debugPairs &&
+      ((this.debugPairs[this.currentPair[0].toString()] &&
+        this.debugPairs[this.currentPair[0].toString()] !==
+          this.getPrincipalId) ||
+        !this.debugPairs[this.currentPair[0].toString()])
     ) {
       this.$message.warning('Trading pair has been paused.');
       return;
@@ -18618,6 +18988,20 @@ export default class extends Vue {
         .times(2);
       if (new BigNumber(this.buyTotal).lt(min)) {
         this.$message.error(`Total cannot be less than ${min}`);
+        return;
+      }
+      const fee = new BigNumber(
+        getFee(
+          this.tokens[this.currentPair[1][0].token0[0].toString()]
+        ).toString(10)
+      )
+        .div(
+          10 **
+            this.tokens[this.currentPair[1][0].token0[0].toString()].decimals
+        )
+        .times(2);
+      if (new BigNumber(fee).gte(this.buyAmount)) {
+        this.$message.error(`Quantity must be more than ${fee}`);
         return;
       }
       const token0Info =
@@ -18786,7 +19170,7 @@ export default class extends Vue {
           owner: currentPair[0],
           subaccount: []
         },
-        BigInt(approve)
+        BigInt(approve.toString(10))
       );
     }
     return true;
@@ -19405,12 +19789,13 @@ export default class extends Vue {
   }
   private async initPairsPrice(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 40;
+    const MAX_CONCURRENCY = 20;
     const pairs = [
       { type: 'Main', value: this.allPairs.Markets.Main },
       { type: 'Second', value: this.allPairs.Markets.Second },
       { type: 'Third', value: this.allPairs.Markets.Third }
     ];
+    const a = new Date().getTime();
     for (let i = 0; i < pairs.length; i++) {
       for (let j = 0; j < pairs[i].value.length; j++) {
         promiseAllValue.push(
@@ -19435,6 +19820,7 @@ export default class extends Vue {
         }
       }
     }
+    console.log(new Date().getTime() - a);
     const allPairs = []
       .concat(this.allPairs.Markets.Main)
       .concat(this.allPairs.Markets.Second)
@@ -19460,17 +19846,16 @@ export default class extends Vue {
     if (this.currentMarketMenu !== 'FAVORITES') {
       this.tradePairs.Hot = this.allPairs[this.currentMarketMenu].Hot;
       this.sortHot();
+      this.scrollTop();
     }
     console.log(this.tradePairs);
   }
   private sortHot(): void {
-    console.log('sortHot');
-    console.log(this.tradePairs);
     this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
-      if (b[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+      if (b[1][0].token1[1].toLocaleLowerCase().includes('test') || !b[2]) {
         return -1;
       }
-      if (a[1][0].token1[1].toLocaleLowerCase().includes('test')) {
+      if (a[1][0].token1[1].toLocaleLowerCase().includes('test') || !a[2]) {
         return 1;
       }
       const basePrice = this.getBasePrice(a[1][0].token1[1]);
@@ -19506,12 +19891,11 @@ export default class extends Vue {
       });
       this.pairsScroll = res;
     }
-    this.scrollTop();
     console.log(this.currentPairIndex);
   }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
-    const MAX_CONCURRENCY = 200;
+    const MAX_CONCURRENCY = 20;
     let pairs = this.tradePairs[this.currentTradeMarketSort];
     if (this.pairSearch) {
       pairs = this.pairs;
@@ -19522,58 +19906,60 @@ export default class extends Vue {
         this.getLiquidity(pairs[i][0].toString(), i, currentTradeMarketSort)
       );
       if (promiseAllValue.length === MAX_CONCURRENCY) {
+        console.log(i);
         await Promise.all(promiseAllValue);
+        if (this.currentTradeMarketSort === 'Hot') {
+          this.sortHot();
+        }
         promiseAllValue = [];
       }
       if (i === pairs.length - 1 && promiseAllValue.length) {
+        console.log(i);
         await Promise.all(promiseAllValue);
+        if (this.currentTradeMarketSort === 'Hot') {
+          this.sortHot();
+        }
         promiseAllValue = [];
       }
     }
-    if (this.currentTradeMarketSort === 'Hot') {
-      const prePair = this.currentPair;
-      this.sortHot();
-      if (
-        this.currentPair[3] === 'Hot' &&
-        this.tradePairs.Hot[this.currentPairIndex] &&
-        prePair[1][0].canisterId.toString() !==
-          this.tradePairs.Hot[this.currentPairIndex][1][0].canisterId.toString()
-      ) {
-        this.tradePairs.Hot.some((pair, index) => {
-          if (
-            pair[1][0].canisterId.toString() ===
-            prePair[1][0].canisterId.toString()
-          ) {
-            if (
-              this.currentPair[3] === 'Hot' &&
-              this.currentTradeMarketSort === 'Hot'
-            ) {
-              console.log(index);
-              this.currentPairIndex = index;
-            }
-            return true;
-          }
-        });
-      }
-    }
+    // if (this.currentTradeMarketSort === 'Hot') {
+    //   const prePair = this.currentPair;
+    //   // this.sortHot();
+    //   if (
+    //     this.currentPair[3] === 'Hot' &&
+    //     this.tradePairs.Hot[this.currentPairIndex] &&
+    //     prePair[1][0].canisterId.toString() !==
+    //       this.tradePairs.Hot[this.currentPairIndex][1][0].canisterId.toString()
+    //   ) {
+    //     this.tradePairs.Hot.some((pair, index) => {
+    //       if (
+    //         pair[1][0].canisterId.toString() ===
+    //         prePair[1][0].canisterId.toString()
+    //       ) {
+    //         if (
+    //           this.currentPair[3] === 'Hot' &&
+    //           this.currentTradeMarketSort === 'Hot'
+    //         ) {
+    //           console.log(index);
+    //           this.currentPairIndex = index;
+    //         }
+    //         return true;
+    //       }
+    //     });
+    //   }
+    // }
   }
   private initIntervalPrice(): void {
     try {
+      if (this.$route.name !== 'ICDex') {
+        return;
+      }
       this.getIcpPrice();
-      this.getAllLiquidity();
       if (this.getPrincipalId) {
         this.getUserLiquidity(this.currentPair[0].toString());
-        if (this.getPrincipalId) {
-          this.getPending(this.currentPair[0].toString());
-          this.getTradeList(
-            this.currentPair[0].toString(),
-            this.getPrincipalId
-          );
-          this.getStopOrders(
-            this.currentPair[0].toString(),
-            this.getPrincipalId
-          );
-        }
+        this.getPending(this.currentPair[0].toString());
+        this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId);
+        this.getStopOrders(this.currentPair[0].toString(), this.getPrincipalId);
         if (
           !this.isTodo &&
           this.time !== 6 &&
@@ -19592,50 +19978,71 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
-  private getIntervalPrice(time = 10): void {
+  private getAccountInitIntervalPrice(time = 10): void {
+    console.log(time);
+    this.time = time;
+    // this.initIntervalPrice();
+    window.clearInterval(this.timer);
+    this.timer = null;
+    this.timer = window.setInterval(async () => {
+      if (!this.getCheckAuth) {
+        setTimeout(async () => {
+          if (this.$route.name === 'ICDex') {
+            console.log(time);
+            this.initIntervalPrice();
+          }
+        }, 0);
+      }
+    }, time * 1000);
+  }
+  private async getIntervalPrice(): Promise<void> {
     try {
-      this.time = time;
-      this.initIntervalPrice();
-      this.getLevel100(this.currentPair[0].toString());
-      this.latestFilled(this.currentPair[0].toString());
-      window.clearInterval(this.timer);
-      this.timer = null;
+      await this.getLiquidity(
+        this.currentPair[0].toString(),
+        this.currentPairIndex,
+        this.currentTradeMarketSort
+      );
+      await Promise.all([
+        this.getLevel100(this.currentPair[0].toString()),
+        this.latestFilled(this.currentPair[0].toString()),
+        this.initIntervalPrice(),
+        this.getAllLiquidity()
+      ]);
+      this.getAccountInitIntervalPrice();
       window.clearInterval(this.timerOrderBook);
       this.timerOrderBook = null;
       window.clearInterval(this.timerAccount);
       this.timerAccount = null;
-      this.timer = window.setInterval(async () => {
-        if (!this.getCheckAuth) {
-          setTimeout(async () => {
-            this.initIntervalPrice();
-          }, 0);
-        }
-      }, time * 1000);
       this.timerOrderBook = window.setInterval(() => {
         if (!this.getCheckAuth) {
           setTimeout(() => {
-            this.getLiquidity(
-              this.currentPair[0].toString(),
-              this.currentPairIndex,
-              this.currentTradeMarketSort
-            );
-            this.getLevel100(this.currentPair[0].toString());
-            this.latestFilled(this.currentPair[0].toString());
+            if (this.$route.name === 'ICDex') {
+              this.getLiquidity(
+                this.currentPair[0].toString(),
+                this.currentPairIndex,
+                this.currentTradeMarketSort
+              );
+              this.getLevel100(this.currentPair[0].toString());
+              this.latestFilled(this.currentPair[0].toString());
+            }
           }, 0);
         }
       }, 1.5 * 1000);
       this.timerAccount = window.setInterval(async () => {
         if (!this.getCheckAuth) {
           setTimeout(async () => {
-            this.InitTxAccount(this.currentPair[0].toString());
+            if (this.$route.name === 'ICDex') {
+              this.InitTxAccount(this.currentPair[0].toString());
+              this.getAllLiquidity();
+            }
           }, 0);
         }
-      }, 15 * 1000);
+      }, 60 * 1000);
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private async getAllowance(currentPair: DePairs): Promise<void> {
@@ -19725,14 +20132,25 @@ export default class extends Vue {
   private async getTokens(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.getTokens(['icdex']);
     let canisterIds: Array<string> = [];
+    this.tradePairs.Hot.forEach((pair) => {
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
+    });
     this.tradePairs.Main.forEach((pair) => {
-      canisterIds.push(pair[0].toString());
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
     });
     this.tradePairs.Second.forEach((pair) => {
-      canisterIds.push(pair[0].toString());
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
     });
     this.tradePairs.Third.forEach((pair) => {
-      canisterIds.push(pair[0].toString());
+      if (!canisterIds.includes(pair[0].toString())) {
+        canisterIds.push(pair[0].toString());
+      }
     });
     // this.tradePairs.ICP.forEach((pair) => {
     //   canisterIds.push(pair[0].toString());
@@ -19769,7 +20187,8 @@ export default class extends Vue {
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const needConnectInfinity1 = await needConnectInfinity(canisterIds);
     if (
-      priList[this.getPrincipalId] === 'Plug' &&
+      (priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug') &&
       flag &&
       this.$route.name === 'ICDex'
     ) {
@@ -19803,7 +20222,6 @@ export default class extends Vue {
                 }
               }
               _that.addToken(res);
-              _that.initDex();
             }
           });
         }
@@ -19843,7 +20261,6 @@ export default class extends Vue {
                 }
               }
               _that.addToken(res);
-              _that.initDex();
             }
           });
         }
@@ -19880,7 +20297,6 @@ export default class extends Vue {
           }
         }
         this.addToken(res);
-        this.initDex();
       }
     }
   }
@@ -19899,7 +20315,29 @@ export default class extends Vue {
       );
     }
   }
+  private toTradeICL(): void {
+    (this.$refs as any).proOrder.visibleProOrder = false;
+    console.log((this.$refs as any).proOrder.visibleProOrder);
+    const token0 = this.currentPair[1][0].token0[0].toString();
+    const token1 = this.currentPair[1][0].token1[0].toString();
+    if (
+      token0 === IC_LIGHTHOUSE_TOKEN_CANISTER_ID &&
+      token1 === LEDGER_CANISTER_ID
+    ) {
+      return;
+    }
+    this.$router.push('/ICDex/ICL/ICP').then(() => {
+      this.orderType = 'LMT';
+      this.getDexPairs('icdex');
+    });
+  }
   private changeLaunch(pair: string): void {
+    const pairs = pair.split('\\');
+    const token0 = this.currentPair[1][0].token0[0].toString();
+    const token1 = this.currentPair[1][0].token1[0].toString();
+    if (token0 === pairs[0] && token1 === pairs[1]) {
+      return;
+    }
     this.$router.push(`/ICDex/${pair}`).then(() => {
       this.getDexPairs('icdex');
     });
@@ -19910,13 +20348,39 @@ export default class extends Vue {
     });
   }
   private changeStarMenu(): void {
+    this.isMarket = false;
     this.currentTradeMarketSort = 'Star';
     this.tradePairs = Object.assign(
       { Star: this.tradePairs.Star, Search: [] },
       this.allPairs.Markets
     );
   }
+  private changeHotMenu(): void {
+    this.isMarket = false;
+    this.currentTradeMarketSort = 'Hot';
+    this.tradePairs = Object.assign(
+      { Star: this.tradePairs.Star, Search: [] },
+      this.allPairs.Markets
+    );
+    const now = new Date().getTime();
+    if (now - hotSort > 5 * 60 * 1000) {
+      hotSort = now;
+      console.log(hotSort);
+      this.getAllLiquidity();
+    }
+    const res = [];
+    this.pairs = this.tradePairs[this.currentTradeMarketSort];
+    console.log(this.tradePairs);
+    this.tradePairs[this.currentTradeMarketSort].forEach((pair) => {
+      res.push({
+        id: pair[1][0].canisterId.toString(),
+        pair: pair
+      });
+    });
+    this.pairsScroll = res;
+  }
   private changeMarketMenu(val): void {
+    this.isMarket = true;
     this.currentMarketMenu = val.value;
     this.currentTradeMarketSort = 'Hot';
     this.tradePairs = Object.assign(
@@ -20086,7 +20550,7 @@ export default class extends Vue {
           }
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
       if (!this.isToSetReferrer) {
         this.toSetReferrer();
@@ -20095,7 +20559,7 @@ export default class extends Vue {
       this.stoConfig = null;
       this.getStoConfig();
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private initPrice(): void {
@@ -20277,7 +20741,9 @@ export default class extends Vue {
         }
       }
     }
-    localStorage.setItem('star', JSON.stringify(this.star));
+    if (!this.getPrincipalId) {
+      localStorage.setItem('star', JSON.stringify(this.star));
+    }
   }
   private async getFavorites(): Promise<Array<string>> {
     const res = await this.ICLighthouseService.getFavorites(
@@ -20311,16 +20777,16 @@ export default class extends Vue {
         }
         console.log(favorites);
         this.star = [].concat(favorites);
-        for (let i = 0; i < star.length; i++) {
-          if (
-            !favorites.includes(star[i]) &&
-            star[i] !== '5t3ek-haaaa-aaaar-qadia-cai'
-          ) {
-            this.star.push(star[i]);
-            this.addFavorites(Principal.fromText(star[i]));
-          }
-        }
-        localStorage.setItem('star', JSON.stringify(this.star));
+        // for (let i = 0; i < star.length; i++) {
+        //   if (
+        //     !favorites.includes(star[i]) &&
+        //     star[i] !== '5t3ek-haaaa-aaaar-qadia-cai'
+        //   ) {
+        //     this.star.push(star[i]);
+        //     this.addFavorites(Principal.fromText(star[i]));
+        //   }
+        // }
+        // localStorage.setItem('star', JSON.stringify(this.star));
       } else {
         this.star = star;
       }
@@ -20387,6 +20853,15 @@ export default class extends Vue {
     console.log(this.tradePairs);
     console.log(this.pairs);
   }
+  private async getDebugPairs(): Promise<void> {
+    const res = await this.ICSwapRouterFiduciaryService.debugPairs();
+    if (res && res.length) {
+      res.forEach((item) => {
+        this.$set(this.debugPairs, item.pair.toString(), item.dev.toString());
+      });
+    }
+    console.log(this.debugPairs);
+  }
   private async getDexPairs(dexName: DexNameType): Promise<void> {
     try {
       this.ICSwapRouterFiduciaryService.getConfig().then((config) => {
@@ -20406,6 +20881,12 @@ export default class extends Vue {
           Hot: []
         },
         ICP: {
+          Main: [],
+          Second: [],
+          Third: [],
+          Hot: []
+        },
+        USDT: {
           Main: [],
           Second: [],
           Third: [],
@@ -20496,6 +20977,9 @@ export default class extends Vue {
           } else if (token1Symbol.includes('usdc')) {
             this.allPairs.USDC[pairStage].push(currentPair);
             this.allPairs.USDC.Hot.push(hotPair);
+          } else if (token1Symbol.includes('usdt')) {
+            this.allPairs.USDT[pairStage].push(currentPair);
+            this.allPairs.USDT.Hot.push(hotPair);
           } else {
             this.allPairs.OTHER[pairStage].push(currentPair);
             this.allPairs.OTHER.Hot.push(hotPair);
@@ -20545,7 +21029,7 @@ export default class extends Vue {
                 const res = await this.currentICDexService.info(token1);
                 console.log(res);
                 if (res) {
-                  this.tradePairs.Third.push([
+                  this.allPairs.Markets.Hot.push([
                     Principal.fromText(token1),
                     [
                       {
@@ -20557,16 +21041,16 @@ export default class extends Vue {
                         token0: res.pairInfo.token0,
                         token1: res.pairInfo.token1,
                         dexName: res.pairInfo.name,
+                        marketBoard: { STAGE0: null },
                         canisterId: Principal.fromText(token1)
                       },
                       BigInt(0)
                     ],
                     null,
-                    'Old'
+                    'Hot'
                   ]);
                   currentPairId = token1;
                   currentStage = 'STAGE0';
-                  token1Symbol = res.pairInfo.token1[1].toLocaleLowerCase();
                 }
               } catch (e) {
                 console.log(e);
@@ -20748,23 +21232,34 @@ export default class extends Vue {
           );
         }, 20);
       }
-      this.initPairsPrice();
-      this.getRole(this.currentPair);
-      this.setReferral();
-      this.getMakerRebate();
-      this.getAllowance(this.currentPair);
-      this.initAccount();
-      this.getStoConfig();
-      this.$nextTick(() => {
+      this.$nextTick(async () => {
         try {
           dispose('kInterval-chart');
         } catch (e) {
-          console.error(e);
+          console.log(e);
         }
         this.resetChart();
-        this.scrollTop();
+        if (this.$route.name !== 'ICDex') {
+          return;
+        }
+        await Promise.all([
+          this.initDex(),
+          this.getRole(this.currentPair),
+          this.setReferral(),
+          this.getMakerRebate(),
+          this.initAccount(),
+          this.getStoConfig()
+        ]);
+        this.initPairsPrice().then(() => {
+          this.getTokens();
+        });
       });
-      this.getTokens();
+      // this.getRole(this.currentPair);
+      // // this.getAllowance(this.currentPair);
+      // this.setReferral();
+      // this.getMakerRebate();
+      // this.initAccount();
+      // this.getStoConfig();
       console.log(this.prePairs);
       console.log(this.pairs);
       console.log(this.tradePairs);
@@ -20775,13 +21270,17 @@ export default class extends Vue {
   }
   private scrollTop(): void {
     this.$nextTick(() => {
-      if (this.$refs.deSwapListItemPair) {
-        const height = (this.$refs.deSwapListItemPair as any).clientHeight;
+      if (
+        this.$refs.deSwapListItemPair &&
+        (this.$refs.deSwapListItemPair as any).$el
+      ) {
+        console.dir(this.$refs.deSwapListItemPair);
+        const height = (this.$refs.deSwapListItemPair as any).$el.clientHeight;
         let top = (this.currentPairIndex + 1) * 50 - height;
         if (top < 0) {
           top = 0;
         }
-        (this.$refs.deSwapListItemPair as any).scrollTop = top;
+        (this.$refs.deSwapListItemPair as any).$el.scrollTop = top;
       }
     });
   }
@@ -20871,24 +21370,27 @@ export default class extends Vue {
   private async initDex(): Promise<void> {
     const token0Info = this.currentPair[1][0].token0;
     const token1Info = this.currentPair[1][0].token1;
-    this.getTokenBalance(token0Info);
-    this.getTokenBalance(token1Info);
-    this.getTokenBalanceSto(token0Info);
-    this.getTokenBalanceSto(token1Info);
-    this.getLevel100(this.currentPair[0].toString(), 'init').then(() => {
-      this.getQuotes(this.currentPair[0].toString(), true);
-      this.initPrice();
-    });
-    this.getConfig();
+    await Promise.all([
+      // this.getTokenBalance(token0Info),
+      // this.getTokenBalance(token1Info),
+      // this.getTokenBalanceSto(token0Info),
+      // this.getTokenBalanceSto(token1Info),
+      this.getLevel100(this.currentPair[0].toString(), 'init')
+    ]);
+    this.initPrice();
+    await Promise.all([
+      this.getQuotes(this.currentPair[0].toString(), true),
+      this.getConfig()
+    ]);
     if (this.getPrincipalId) {
-      this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId);
-      this.getPending(this.currentPair[0].toString(), true);
-      this.getTotalPending();
-      this.getPairInfo(this.currentPair);
-      this.getUserLiquidity(this.currentPair[0].toString());
+      await Promise.all([
+        // this.getTradeList(this.currentPair[0].toString(), this.getPrincipalId),
+        // this.getPending(this.currentPair[0].toString(), true),
+        this.getTotalPending(),
+        this.getPairInfo(this.currentPair)
+        // this.getUserLiquidity(this.currentPair[0].toString())
+      ]);
     }
-    this.latestFilled(this.currentPair[0].toString());
-    this.getIntervalPrice();
     try {
       if (this.getPrincipalId) {
         const currentPairId = this.currentPair[0].toString();
@@ -20899,8 +21401,9 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
+    await this.getIntervalPrice();
     if (!this.isToSetReferrer) {
       this.toSetReferrer();
     }
@@ -20914,6 +21417,9 @@ export default class extends Vue {
       tokensId.push(item.canisterId.toString());
     });
     for (let i = 0; i < res.length; i++) {
+      if (this.$route.name !== 'ICDex') {
+        return;
+      }
       const tokenId = res[i][0].toString();
       if (tokenId !== LEDGER_CANISTER_ID && !tokensId.includes(tokenId)) {
         console.log(tokenId);
@@ -21059,6 +21565,9 @@ export default class extends Vue {
     currentTradeMarketSort: string,
     pairs?: Array<DePairs>
   ): Promise<void> {
+    if (this.$route.name !== 'ICDex') {
+      return;
+    }
     // const liquidity = await currentICDexService.liquidity(swapId);
     try {
       const res = await this.currentICDexService.stats(swapId);
@@ -21189,7 +21698,11 @@ export default class extends Vue {
     const res = await this.currentICDexService.level100(swapId);
     if (res.pairId === this.currentPair[0].toString()) {
       this.level100 = res.levelResponse;
-      if (this.unit !== this.level100[0]) {
+      if (
+        this.tokens &&
+        this.tokens[this.currentPair[1][0].token0[0].toString()] &&
+        this.unit !== this.level100[0]
+      ) {
         this.unit = this.level100[0];
         console.log(this.unit);
         this.unitSize = new BigNumber(this.unit.toString(10))
@@ -21245,26 +21758,31 @@ export default class extends Vue {
   private filterLevel100(): void {
     if (this.level100[1] && this.currentSize) {
       // const tokenUnitDecimals = this.level100[0].toString().length - 1;
-      const token1Decimals =
-        this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
-      const token0Decimals =
-        this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
-      this.tickAsk = this.mergeQuantity(
-        this.level100[1].ask,
-        token1Decimals,
-        token0Decimals,
-        this.level100[0].toString(),
-        -this.currentSize.symbol,
-        'ask'
-      );
-      this.tickBid = this.mergeQuantity(
-        this.level100[1].bid,
-        token1Decimals,
-        token0Decimals,
-        this.level100[0].toString(),
-        -this.currentSize.symbol,
-        'bid'
-      );
+      if (
+        this.tokens[this.currentPair[1][0].token1[0].toString()] &&
+        this.tokens[this.currentPair[1][0].token0[0].toString()]
+      ) {
+        const token1Decimals =
+          this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
+        const token0Decimals =
+          this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
+        this.tickAsk = this.mergeQuantity(
+          this.level100[1].ask,
+          token1Decimals,
+          token0Decimals,
+          this.level100[0].toString(),
+          -this.currentSize.symbol,
+          'ask'
+        );
+        this.tickBid = this.mergeQuantity(
+          this.level100[1].bid,
+          token1Decimals,
+          token0Decimals,
+          this.level100[0].toString(),
+          -this.currentSize.symbol,
+          'bid'
+        );
+      }
     }
   }
   private mergeQuantity(
@@ -22012,7 +22530,9 @@ export default class extends Vue {
       favoritesList.push(item[1][0].canisterId);
       star.push(item[1][0].canisterId.toString());
     });
-    localStorage.setItem('star', JSON.stringify(star));
+    if (!this.getPrincipalId) {
+      localStorage.setItem('star', JSON.stringify(star));
+    }
     console.log(star);
     await this.ICLighthouseService.updateFavoritesListOrder(favoritesList);
   }
@@ -22630,7 +23150,7 @@ export default class extends Vue {
         display: none;
       }*/
       &.de-swap-list-item-pair-trade {
-        height: 180px;
+        height: 206px;
         overflow-y: scroll;
         transform: translateZ(0);
         -webkit-overflow-scrolling: touch;

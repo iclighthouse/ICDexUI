@@ -32,8 +32,8 @@
             >
             (#NEPTUNE, #URANUS or #SATURN) holders are required to burn
             {{
-              sysConfig.creatingMakerFee
-                | bigintToFloat(
+              sysConfig.creatingMakerFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -50,8 +50,8 @@
           >
             2. Non-above NFT holders are required to burn
             {{
-              createFee
-                | bigintToFloat(
+              createFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -70,8 +70,8 @@
           >
             1. ICLighthouse Planet NFT (any card) holders are required to burn
             {{
-              sysConfig.creatingMakerFee
-                | bigintToFloat(
+              sysConfig.creatingMakerFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -88,8 +88,8 @@
           >
             2. Non-NFT holders are required to burn
             {{
-              createPrivateFee
-                | bigintToFloat(
+              createPrivateFee |
+                bigintToFloat(
                   tokens[sysConfig.sysToken.toString()].decimals,
                   tokens[sysConfig.sysToken.toString()].decimals
                 )
@@ -98,10 +98,9 @@
           </p>
         </div>
         <div v-if="type === 'BecomeVipMaker'">
-          You grant vip-maker status to an account through ICLighthouse NEPTUNE
-          NFT, then the account will have Maker rebate (rebate = 90%), and if
-          the account is an OAMM Pool, it will be eligible to create and update
-          grid orders without ICL fees.
+          Users can grant VIP-Maker status to accounts using an ICLighthouse
+          NEPTUNE NFT. This will grant the account a Maker rebate. This rebate
+          gives the VIP-Maker 90% of the taker’s trading fee.
         </div>
         <div v-if="type === 'mining'" class="base-font-title">
           <div>
@@ -311,8 +310,8 @@
               >
                 (Fee:
                 {{
-                  sysConfig.creatingMakerFee
-                    | bigintToFloat(
+                  sysConfig.creatingMakerFee |
+                    bigintToFloat(
                       tokens[sysConfig.sysToken.toString()].decimals,
                       tokens[sysConfig.sysToken.toString()].decimals
                     )
@@ -338,8 +337,8 @@
               >
                 (Fee:
                 {{
-                  createFee
-                    | bigintToFloat(
+                  createFee |
+                    bigintToFloat(
                       tokens[sysConfig.sysToken.toString()].decimals,
                       tokens[sysConfig.sysToken.toString()].decimals
                     )
@@ -356,8 +355,8 @@
               >
                 (Fee:
                 {{
-                  createPrivateFee
-                    | bigintToFloat(
+                  createPrivateFee |
+                    bigintToFloat(
                       tokens[sysConfig.sysToken.toString()].decimals,
                       tokens[sysConfig.sysToken.toString()].decimals
                     )
@@ -1068,15 +1067,19 @@ export default class extends Vue {
     }
     if (new BigNumber(await this.getIclBalance()).lt(fee)) {
       loading.close();
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
       (this.$info as any)({
+        title: 'Insufficient ICL balance',
         content: `Insufficient balance. A minimum of ${fee} ${tokenInfo.symbol} is required to create a MM Pool.`,
-        class: 'connect-plug register-mining-confirm launch-info-button',
+        class: 'connect-plug register-mining-confirm',
         icon: 'connect-plug',
-        okText: 'Insufficient ICL balance',
+        okText: 'Buy ICL',
         closable: true,
         centered: true,
         onOk() {
-          //
+          that.$router.push('/ICDex/ICL/ICP');
+          that.visible = false;
         }
       });
     } else if (allowance || (allowance !== null && Number(allowance) === 0)) {
@@ -1120,11 +1123,11 @@ export default class extends Vue {
       .toString(10);
   }
   private async toBind(pair: Principal): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     const principalAndAccountId = toPrincipalAndAccountId(
       this.bindMakerForm.account
     );
@@ -1182,11 +1185,11 @@ export default class extends Vue {
       console.log(valid);
       if (valid) {
         console.log(this.pairsMaker[this.createMakerPoolForm.pair][1]);
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         const token1Id =
           this.pairsMaker[
             this.createMakerPoolForm.pair
@@ -1272,7 +1275,11 @@ export default class extends Vue {
             ]);
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const _that = this;
-            if (priList[this.getPrincipalId] === 'Plug' && flag) {
+            if (
+              (priList[this.getPrincipalId] === 'Plug' ||
+                priList[this.getPrincipalId] === 'SignerPlug') &&
+              flag
+            ) {
               const connectPlug = new ConnectPlug();
               this.$info({
                 content: 'Maker need to be connected to the plug.',
@@ -1363,11 +1370,11 @@ export default class extends Vue {
       allowance: BigInt(1),
       spender: Principal.fromText(spender)
     };
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
 
     if (isPlug()) {
       const approve = {
@@ -1444,7 +1451,7 @@ export default class extends Vue {
         }
       } catch (e) {
         this.$message.error('Approve error');
-        console.error(e);
+        console.log(e);
         loading.close();
       }
     }

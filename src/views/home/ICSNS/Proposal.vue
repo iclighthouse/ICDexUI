@@ -318,8 +318,8 @@
                 A critical proposal is immediately adopted or rejected if,
                 before the voting period ends, more than {{ votingAbsolute }} of
                 the total voting power votes Yes, or at least
-                {{ votingLeast }} votes No, respectively (indicated by
-                <a-icon type="caret-down" />).
+                {{ Math.floor(100 - parseFloat(votingAbsolute)) }}% votes No,
+                respectively (indicated by <a-icon type="caret-down" />).
               </span>
             </div>
             <div>
@@ -549,6 +549,7 @@ export default class extends Vue {
   private hasPath = '';
   private votingLeast = '3%';
   private votingAbsolute = '50%';
+  private timer = null;
   get votingYes(): string {
     if (this.proposal) {
       const total = this.proposal.latest_tally[0].total;
@@ -608,6 +609,10 @@ export default class extends Vue {
     this.hasPath = from;
     next();
   }
+  beforeDestroy(): void {
+    window.clearTimeout(this.timer);
+    this.timer = null;
+  }
   async mounted(): Promise<void> {
     this.SNSWasmService = new SNSWasmService();
     const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
@@ -640,7 +645,7 @@ export default class extends Vue {
       });
     }
   }
-  private async registerVote(neuronId: string): Promise<void> {
+  private async registerVote(neuronId: string): Promise<string> {
     try {
       const snsGovernanceService = new SNSGovernanceService();
       const res = await snsGovernanceService.vote(
@@ -654,12 +659,16 @@ export default class extends Vue {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
           const err = Object.values(res.command[0])[0] as GovernanceError;
-          console.error(err.error_message);
+          console.log(err.error_message);
+          if (!err.error_message.includes('Neuron already voted on proposal')) {
+            return `NeuronId: ${neuronId}, ${err.error_message}`;
+          }
           // this.$message.error(err.error_message);
         } else {
           //
         }
       } else {
+        return 'Vote Error';
         // this.$message.error('Vote Error');
       }
     } catch (e) {
@@ -667,32 +676,47 @@ export default class extends Vue {
     }
   }
   private async onVote(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const MAX_COCURRENCY = 40;
       let promiseValue = [];
+      let res = [];
       for (let i = 0; i < this.checked.length; i++) {
         promiseValue.push(this.registerVote(this.checked[i]));
         if (promiseValue.length === MAX_COCURRENCY) {
           console.log(i);
-          await Promise.all(promiseValue);
+          res.push(await Promise.all(promiseValue));
           promiseValue = [];
         }
         if (i === this.checked.length - 1 && promiseValue.length) {
           console.log(i);
-          await Promise.all(promiseValue);
+          res.push(await Promise.all(promiseValue));
         }
       }
       console.log(this.checked);
+      console.log(res);
       this.voteVisible = false;
       await this.getProposal(this.governanceId);
       this.SNSNeurons = this.filterNeuron(this.allSNSNeurons);
       this.canVoteNeurons = this.filterCanVoteNeuron(this.allSNSNeurons);
-      this.$message.success('Vote Success');
+      if (res && res.length) {
+        let flagIndex = 0;
+        const flag = res[0].some((item, index) => {
+          flagIndex = index;
+          return !!item;
+        });
+        if (flag) {
+          this.$message.error(res[0][flagIndex]);
+        } else {
+          this.$message.success('Vote Success');
+        }
+      } else {
+        this.$message.success('Vote Success');
+      }
     } catch (e) {
       console.log(e);
       this.$message.error('Vote Error');
@@ -757,11 +781,11 @@ export default class extends Vue {
         const total = val.latest_tally[0].total;
         const yes = val.latest_tally[0].yes;
         const no = val.latest_tally[0].no;
-        // at least 3% of the total voting power
+        // at least votingLeast of the total voting power
         if (
           (new BigNumber(yes.toString()).gt(no.toString(10)) &&
             new BigNumber(total.toString())
-              .times(3 / 100)
+              .times(parseInt(this.votingLeast) / 100)
               .lt(yes.toString())) ||
           new BigNumber(yes.toString()).times(2).gt(total.toString(10))
         ) {
@@ -800,7 +824,8 @@ export default class extends Vue {
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
       const needConnectInfinity1 = await needConnectInfinity(canisterIds);
       if (
-        priList[principal] === 'Plug' &&
+        (priList[principal] === 'Plug' ||
+          priList[principal] === 'SignerPlug') &&
         flag &&
         this.$route.name === 'ICSNS-Proposals'
       ) {
@@ -851,7 +876,7 @@ export default class extends Vue {
         this.initConnected(listDeployedSnses, loading);
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -881,7 +906,7 @@ export default class extends Vue {
     console.log(governanceId);
     this.governanceId = governanceId;
     const res = await Promise.all([
-      this.getNervousSystemParameters(governanceId),
+      this.getNervousSystemParameters(governanceId, tokenId),
       this.getCurrentTokenInfo(tokenId),
       this.getProposal(governanceId),
       this.getNeurons(governanceId, 100, [])
@@ -902,15 +927,21 @@ export default class extends Vue {
     }
   }
   private async getNervousSystemParameters(
-    governanceId: string
+    governanceId: string,
+    tokenId: string
   ): Promise<void> {
-    const snsGovernanceService = new SNSGovernanceService();
-    try {
-      this.nervousSystemParameters =
-        await snsGovernanceService.getNervousSystemParameters(governanceId);
-      console.log(this.nervousSystemParameters);
-    } catch (e) {
-      return null;
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    if (info && info.nervousSystemParameters) {
+      this.nervousSystemParameters = info.nervousSystemParameters;
+    } else {
+      const snsGovernanceService = new SNSGovernanceService();
+      try {
+        this.nervousSystemParameters =
+          await snsGovernanceService.getNervousSystemParameters(governanceId);
+        console.log(this.nervousSystemParameters);
+      } catch (e) {
+        return null;
+      }
     }
   }
   private async getProposal(governanceId: string): Promise<void> {
@@ -1004,6 +1035,15 @@ export default class extends Vue {
       }
     } catch (e) {
       console.log(e);
+    }
+    const now = new Date().getTime();
+    console.log(now, this.deadline);
+    if (now < this.deadline) {
+      window.clearTimeout(this.timer);
+      this.timer = window.setTimeout(() => {
+        console.log('setTimeout');
+        this.getProposal(governanceId);
+      }, 60 * 1000);
     }
     if (
       this.proposal &&

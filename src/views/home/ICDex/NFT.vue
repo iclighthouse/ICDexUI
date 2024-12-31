@@ -1,376 +1,377 @@
 <template>
   <div>
-    <div class="nft-main container-width">
-      <div class="w100" style="margin: 30px 0 20px; font-size: 16px">
-        <a
-          href="https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai"
-          target="_blank"
-          rel="nofollow noreferrer noopener"
-          class="link"
-          >ICLighthouse Planet NFT</a
-        >
-      </div>
-      <table>
-        <thead>
-          <tr align="left">
-            <th>NFT</th>
-            <th>Planet</th>
-            <th>Number</th>
-            <th style="width: 40%">Scenarios for use</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/0.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F0.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Neptune Card</td>
-            <td>5</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 3,000 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div><span class="dots"></span> Create OAMMs at a discount</div>
-              <div style="font-weight: bold" class="base-font-title">
-                <span class="dots"></span> Can grant 5 vip-makers
-              </div>
-            </td>
-          </tr>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/5.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F5.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Uranus Card</td>
-            <td>10</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 3,000 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div><span class="dots"></span> Create OAMMs at a discount</div>
-              <div style="font-weight: bold" class="base-font-title">
-                <span class="dots"></span> Listing referrer identity
-              </div>
-            </td>
-          </tr>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/15.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F15.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Saturn Card</td>
-            <td>100</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 2,500 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div><span class="dots"></span> Create OAMMs at a discount</div>
-            </td>
-          </tr>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/126.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F126.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Jupiter Card</td>
-            <td>200</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 2,100 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div>
-                <span class="dots"></span> Create private OAMMs at a discount
-              </div>
-            </td>
-          </tr>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/346.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F346.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Mars Card</td>
-            <td>300</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 1,800 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div>
-                <span class="dots"></span> Create private OAMMs at a discount
-              </div>
-            </td>
-          </tr>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/870.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F870.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Earth Card</td>
-            <td>400</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 1,500 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div>
-                <span class="dots"></span> Create private OAMMs at a discount
-              </div>
-            </td>
-          </tr>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/1361.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F1361.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Venus Card</td>
-            <td>500</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 1,200 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div>
-                <span class="dots"></span> Create private OAMMs at a discount
-              </div>
-            </td>
-          </tr>
-          <tr align="left">
-            <td>
-              <div class="nft-img">
-                <img
-                  src="https://cdn.yumi.io/file/1886.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F1886.png&width=800"
-                  alt=""
-                />
-              </div>
-            </td>
-            <td>Mercury Card</td>
-            <td>507</td>
-            <td>
-              <div><span class="dots"></span> Airdrop 1,000 ICL</div>
-              <div><span class="dots"></span> Prioritize new features</div>
-              <div><span class="dots"></span> Mining Acceleration</div>
-              <div>
-                <span class="dots"></span> Create private OAMMs at a discount
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div v-if="getPrincipalId" class="container-width">
-      <div class="base-color-w mt20" style="font-size: 16px">
-        Your NFTs in wallet
-      </div>
-      <a-spin :spinning="nftSpinning">
-        <div class="wallet-item-table wallet-item-table-nft">
-          <ul class="nft-main">
-            <li
-              v-for="(ext, index) in tokensExt.slice(
-                extPage * extPageNum,
-                (extPage + 1) * extPageNum
-              )"
-              :key="index"
-            >
-              <div style="padding-top: 10px">
-                <a
-                  :href="`https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai/${ext[0]}`"
-                  rel="nofollow noreferrer noopener"
-                  target="_blank"
-                  ><img :src="getExtInfo(ext[2]).thumb" alt=""
-                /></a>
-              </div>
-              <div class="ext-info">{{ getExtInfo(ext[2]).name }}</div>
-              <div class="ext-transfer" @click="showTransferToken(ext[0])">
-                <button type="button">Transfer</button>
-              </div>
-              <div class="ext-transfer" @click="depositToICDexRouter(ext[0])">
-                <button type="button">Deposit to ICDexRouter</button>
-              </div>
-              <div
-                v-show="
-                  getExtInfo(ext[2]).name.toLocaleLowerCase() === 'uranus'
-                "
-                class="ext-transfer"
-                @click="depositToDexAggregator(ext[0])"
-              >
-                <button type="button">Deposit to DexAggregator</button>
-              </div>
-            </li>
-          </ul>
-          <div class="no-nft-data" v-show="!nftSpinning && !tokensExt.length">
-            You have no NFTs right now
-          </div>
-          <div class="nft-main-pagination">
-            <a-pagination
-              v-if="tokensExt.length > extPageNum"
-              class="pagination"
-              :defaultPageSize="extPageNum"
-              :current="extPage + 1"
-              :total="tokensExt.length"
-              @change="pageChange"
-            />
-          </div>
-        </div>
-      </a-spin>
-    </div>
-    <div v-if="getPrincipalId" class="container-width">
-      <div class="base-color-w mt20" style="font-size: 16px">
-        Your NFTs in ICDexRouter
-      </div>
-      <a-spin :spinning="nftICDexRouterSpinning">
-        <div class="wallet-item-table wallet-item-table-nft">
-          <ul class="nft-main">
-            <li
-              v-for="(ext, index) in nftICDexRouter.slice(
-                page * pageNum,
-                (page + 1) * pageNum
-              )"
-              :key="index"
-            >
-              <div style="padding-top: 10px" class="nft-img">
-                <img :src="getImg(ext[3])" alt="" />
-              </div>
-              <div class="ext-info">{{ Object.keys(ext[3])[0] }} CARD</div>
-              <div class="ext-transfer" @click.stop="onWithdraw(ext)">
-                Withdraw
-              </div>
-            </li>
-          </ul>
-          <div
-            class="no-nft-data"
-            v-show="!nftICDexRouterSpinning && !nftICDexRouter.length"
+    <div>
+      <div class="nft-main container-width">
+        <div class="w100" style="margin: 30px 0 20px; font-size: 16px">
+          <a
+            href="https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai"
+            target="_blank"
+            rel="nofollow noreferrer noopener"
+            class="link"
+            >ICLighthouse Planet NFT</a
           >
-            No Deposited NFT
-          </div>
-          <div class="nft-main-pagination">
-            <a-pagination
-              v-if="nftICDexRouter.length > pageNum"
-              class="pagination"
-              :defaultPageSize="pageNum"
-              :current="page + 1"
-              :total="nftICDexRouter.length"
-              @change="pageChangeDeposited"
-            />
-          </div>
         </div>
-      </a-spin>
-    </div>
-    <div v-if="getPrincipalId" class="container-width">
-      <div class="base-color-w mt20" style="font-size: 16px">
-        Your NFTs in DexAggregator
+        <table>
+          <thead>
+            <tr align="left">
+              <th>NFT</th>
+              <th>Planet</th>
+              <th>Number</th>
+              <th style="width: 40%">Scenarios for use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/0.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F0.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Neptune Card</td>
+              <td>5</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 3,000 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div><span class="dots"></span> Create OAMMs at a discount</div>
+                <div style="font-weight: bold" class="base-font-title">
+                  <span class="dots"></span> Can grant 5 vip-makers
+                </div>
+              </td>
+            </tr>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/5.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F5.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Uranus Card</td>
+              <td>10</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 3,000 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div><span class="dots"></span> Create OAMMs at a discount</div>
+                <div style="font-weight: bold" class="base-font-title">
+                  <span class="dots"></span> Listing referrer identity
+                </div>
+              </td>
+            </tr>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/15.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F15.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Saturn Card</td>
+              <td>100</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 2,500 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div><span class="dots"></span> Create OAMMs at a discount</div>
+              </td>
+            </tr>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/126.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F126.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Jupiter Card</td>
+              <td>200</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 2,100 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div>
+                  <span class="dots"></span> Create private OAMMs at a discount
+                </div>
+              </td>
+            </tr>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/346.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F346.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Mars Card</td>
+              <td>300</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 1,800 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div>
+                  <span class="dots"></span> Create private OAMMs at a discount
+                </div>
+              </td>
+            </tr>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/870.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F870.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Earth Card</td>
+              <td>400</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 1,500 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div>
+                  <span class="dots"></span> Create private OAMMs at a discount
+                </div>
+              </td>
+            </tr>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/1361.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F1361.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Venus Card</td>
+              <td>500</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 1,200 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div>
+                  <span class="dots"></span> Create private OAMMs at a discount
+                </div>
+              </td>
+            </tr>
+            <tr align="left">
+              <td>
+                <div class="nft-img">
+                  <img
+                    src="https://cdn.yumi.io/file/1886.png?&url=https%3A%2F%2Fpgi7h-uqaaa-aaaao-ae6ha-cai.raw.ic0.app%2Ffile%2F1886.png&width=800"
+                    alt=""
+                  />
+                </div>
+              </td>
+              <td>Mercury Card</td>
+              <td>507</td>
+              <td>
+                <div><span class="dots"></span> Airdrop 1,000 ICL</div>
+                <div><span class="dots"></span> Prioritize new features</div>
+                <div><span class="dots"></span> Mining Acceleration</div>
+                <div>
+                  <span class="dots"></span> Create private OAMMs at a discount
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <a-spin :spinning="nftDexAggregatorSpinning">
-        <div class="wallet-item-table wallet-item-table-nft">
-          <ul class="nft-main">
-            <li
-              v-for="(ext, index) in nftDexAggregator.slice(
-                pageDexAggregator * pageNumDexAggregator,
-                (pageDexAggregator + 1) * pageNumDexAggregator
-              )"
-              :key="index"
-            >
-              <div class="nft-img">
-                <img :src="getImg(ext[3])" alt="" />
-              </div>
-              <div class="ext-info">{{ Object.keys(ext[3])[0] }} CARD</div>
-              <div
-                class="ext-transfer"
-                @click.stop="onWithdrawDexAggregator(ext)"
-              >
-                Withdraw
-              </div>
-            </li>
-          </ul>
-          <div
-            class="no-nft-data"
-            v-show="!nftDexAggregatorSpinning && !nftDexAggregator.length"
-          >
-            No Deposited NFT
-          </div>
-          <div class="nft-main-pagination">
-            <a-pagination
-              v-if="nftDexAggregator.length > pageNumDexAggregator"
-              class="pagination"
-              :defaultPageSize="pageNumDexAggregator"
-              :current="pageDexAggregator + 1"
-              :total="nftDexAggregator.length"
-              @change="pageChangeDepositedDexAggregator"
-            />
-          </div>
+      <div v-if="getPrincipalId" class="container-width">
+        <div class="base-color-w mt20" style="font-size: 16px">
+          Your NFTs in wallet
         </div>
-      </a-spin>
-    </div>
-    <a-modal
-      v-model="visibleTransferNFT"
-      centered
-      title="Transfer NFT"
-      width="550px"
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-      class="manage-wallet-modal"
-      :after-close="afterNftClose"
-    >
-      <div>
-        <a-form-model
-          ref="transferNFTForm"
-          :model="transferNFTForm"
-          :rules="transferNFTFormRules"
-        >
-          <a-form-model-item label="To" prop="to">
-            <a-input
-              v-model="transferNFTForm.to"
-              autocomplete="off"
-              placeholder="Principal Or Account Id"
-            />
-            <div class="base-font">
-              Beware, not all wallets support all NFT.
+        <a-spin :spinning="nftSpinning">
+          <div class="wallet-item-table wallet-item-table-nft">
+            <ul class="nft-main">
+              <li
+                v-for="(ext, index) in tokensExt.slice(
+                  extPage * extPageNum,
+                  (extPage + 1) * extPageNum
+                )"
+                :key="index"
+              >
+                <div style="padding-top: 10px">
+                  <a
+                    :href="`https://yuku.app/market/goncb-kqaaa-aaaap-aakpa-cai/${ext[0]}`"
+                    rel="nofollow noreferrer noopener"
+                    target="_blank"
+                    ><img :src="getExtInfo(ext[2]).thumb" alt=""
+                  /></a>
+                </div>
+                <div class="ext-info">{{ getExtInfo(ext[2]).name }}</div>
+                <div class="ext-transfer" @click="showTransferToken(ext[0])">
+                  <button type="button">Transfer</button>
+                </div>
+                <div class="ext-transfer" @click="depositToICDexRouter(ext[0])">
+                  <button type="button">Deposit to ICDexRouter</button>
+                </div>
+                <div
+                  v-show="
+                    getExtInfo(ext[2]).name.toLocaleLowerCase() === 'uranus'
+                  "
+                  class="ext-transfer"
+                  @click="depositToDexAggregator(ext[0])"
+                >
+                  <button type="button">Deposit to DexAggregator</button>
+                </div>
+              </li>
+            </ul>
+            <div class="no-nft-data" v-show="!nftSpinning && !tokensExt.length">
+              You have no NFTs right now
             </div>
-          </a-form-model-item>
-          <a-form-model-item>
-            <button
-              type="button"
-              class="transfer-submit large-primary primary mt20 w100"
-              @click="transferNFT"
-            >
-              Transfer
-            </button>
-          </a-form-model-item>
-        </a-form-model>
+            <div class="nft-main-pagination">
+              <a-pagination
+                v-if="tokensExt.length > extPageNum"
+                class="pagination"
+                :defaultPageSize="extPageNum"
+                :current="extPage + 1"
+                :total="tokensExt.length"
+                @change="pageChange"
+              />
+            </div>
+          </div>
+        </a-spin>
       </div>
-    </a-modal>
+      <div v-if="getPrincipalId" class="container-width">
+        <div class="base-color-w mt20" style="font-size: 16px">
+          Your NFTs in ICDexRouter
+        </div>
+        <a-spin :spinning="nftICDexRouterSpinning">
+          <div class="wallet-item-table wallet-item-table-nft">
+            <ul class="nft-main">
+              <li
+                v-for="(ext, index) in nftICDexRouter.slice(
+                  page * pageNum,
+                  (page + 1) * pageNum
+                )"
+                :key="index"
+              >
+                <div style="padding-top: 10px" class="nft-img">
+                  <img :src="getImg(ext[3])" alt="" />
+                </div>
+                <div class="ext-info">{{ Object.keys(ext[3])[0] }} CARD</div>
+                <div class="ext-transfer" @click.stop="onWithdraw(ext)">
+                  Withdraw
+                </div>
+              </li>
+            </ul>
+            <div
+              class="no-nft-data"
+              v-show="!nftICDexRouterSpinning && !nftICDexRouter.length"
+            >
+              No Deposited NFT
+            </div>
+            <div class="nft-main-pagination">
+              <a-pagination
+                v-if="nftICDexRouter.length > pageNum"
+                class="pagination"
+                :defaultPageSize="pageNum"
+                :current="page + 1"
+                :total="nftICDexRouter.length"
+                @change="pageChangeDeposited"
+              />
+            </div>
+          </div>
+        </a-spin>
+      </div>
+      <div v-if="getPrincipalId" class="container-width">
+        <div class="base-color-w mt20" style="font-size: 16px">
+          Your NFTs in DexAggregator
+        </div>
+        <a-spin :spinning="nftDexAggregatorSpinning">
+          <div class="wallet-item-table wallet-item-table-nft">
+            <ul class="nft-main">
+              <li
+                v-for="(ext, index) in nftDexAggregator.slice(
+                  pageDexAggregator * pageNumDexAggregator,
+                  (pageDexAggregator + 1) * pageNumDexAggregator
+                )"
+                :key="index"
+              >
+                <div class="nft-img">
+                  <img :src="getImg(ext[3])" alt="" />
+                </div>
+                <div class="ext-info">{{ Object.keys(ext[3])[0] }} CARD</div>
+                <div
+                  class="ext-transfer"
+                  @click.stop="onWithdrawDexAggregator(ext)"
+                >
+                  Withdraw
+                </div>
+              </li>
+            </ul>
+            <div
+              class="no-nft-data"
+              v-show="!nftDexAggregatorSpinning && !nftDexAggregator.length"
+            >
+              No Deposited NFT
+            </div>
+            <div class="nft-main-pagination">
+              <a-pagination
+                v-if="nftDexAggregator.length > pageNumDexAggregator"
+                class="pagination"
+                :defaultPageSize="pageNumDexAggregator"
+                :current="pageDexAggregator + 1"
+                :total="nftDexAggregator.length"
+                @change="pageChangeDepositedDexAggregator"
+              />
+            </div>
+          </div>
+        </a-spin>
+      </div>
+      <a-modal
+        v-model="visibleTransferNFT"
+        centered
+        title="Transfer NFT"
+        width="550px"
+        :footer="null"
+        :keyboard="false"
+        :maskClosable="false"
+        class="manage-wallet-modal"
+        :after-close="afterNftClose"
+      >
+        <div>
+          <a-form-model
+            ref="transferNFTForm"
+            :model="transferNFTForm"
+            :rules="transferNFTFormRules"
+          >
+            <a-form-model-item label="To" prop="to">
+              <a-input
+                v-model="transferNFTForm.to"
+                autocomplete="off"
+                placeholder="Principal Or Account Id"
+              />
+              <div class="base-font">
+                Beware, not all wallets support all NFT.
+              </div>
+            </a-form-model-item>
+            <a-form-model-item>
+              <button
+                type="button"
+                class="transfer-submit large-primary primary mt20 w100"
+                @click="transferNFT"
+              >
+                Transfer
+              </button>
+            </a-form-model-item>
+          </a-form-model>
+        </div>
+      </a-modal>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { Menu } from '@/components/menu/model';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { namespace } from 'vuex-class';
@@ -384,6 +385,7 @@ import {
   User
 } from '@/ic/nft/model';
 import {
+  fromSubAccountId,
   getTokenIdentifier,
   principalToAccountIdentifier
 } from '@/ic/converter';
@@ -513,7 +515,7 @@ export default class extends Vue {
         this.tokensExt = [];
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     this.nftSpinning = false;
   }
@@ -555,8 +557,7 @@ export default class extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     this.$confirm({
-      content:
-        'Withdrawing this NFT may disable the function it is linked to.',
+      content: 'Withdrawing this NFT may disable the function it is linked to.',
       class: 'connect-plug',
       icon: 'connect-plug',
       centered: true,
@@ -640,22 +641,23 @@ export default class extends Vue {
       allowance: BigInt(1),
       spender: Principal.fromText(spender)
     };
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.NftService.approve(approveRequest);
       if (res) {
         this.depositDexAggregator(loading, NFTIndex);
       } else {
+        console.log(res);
         this.$message.error('Approve error');
         loading.close();
       }
     } catch (e) {
       this.$message.error('Approve error');
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -676,12 +678,11 @@ export default class extends Vue {
   }
   private async depositToICDexRouter(NFTIndex: bigint): Promise<void> {
     const token = getTokenIdentifier(NFT_CANISTER_ID, Number(NFTIndex));
-    const spender = IC_DEX_ROUTER_CANISTER_ID;
     const approveRequest: ApproveRequest = {
       token: token,
       subaccount: [],
       allowance: BigInt(1),
-      spender: Principal.fromText(spender)
+      spender: Principal.fromText(IC_DEX_ROUTER_CANISTER_ID)
     };
     const loading = this.$loading({
       lock: true,
@@ -689,15 +690,17 @@ export default class extends Vue {
     });
     try {
       const res = await this.NftService.approve(approveRequest);
+      console.log(res);
       if (res) {
         this.deposit(loading, NFTIndex);
       } else {
+        console.log(res);
         this.$message.error('Approve error');
         loading.close();
       }
     } catch (e) {
       this.$message.error('Approve error');
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -733,11 +736,11 @@ export default class extends Vue {
   private async transferNFT(): Promise<void> {
     (this.$refs.transferNFTForm as any).validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           let to: User;
           let notify: boolean;
@@ -807,7 +810,7 @@ export default class extends Vue {
           }
         } catch (e) {
           loading.close();
-          console.error(e);
+          console.log(e);
         }
       }
     });

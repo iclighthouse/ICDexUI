@@ -1,5 +1,5 @@
 // Read from state to verify data integrity
-import { HttpAgent, Certificate, Cbor } from '@dfinity/agent';
+import { HttpAgent, Certificate, Cbor, LookupResult, LookupStatus } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { PrincipalString } from '@/ic/common/icType';
 import { toHexString } from '@/ic/converter';
@@ -13,6 +13,7 @@ export const readState = async (
 ): Promise<void | {
   controllers: Array<PrincipalString>;
   moduleHash: string;
+  did: string
 }> => {
   const canisterBuffer = new DataView(
     Principal.from(canisterId).toUint8Array().buffer
@@ -40,7 +41,8 @@ export const readState = async (
     console.warn('read_state:', error);
     return {
       controllers: [],
-      moduleHash: '-'
+      moduleHash: '-',
+      did: ''
     };
   }
   console.log(res);
@@ -57,7 +59,14 @@ export const readState = async (
   let candid = '';
   try {
     const certControllers = cert.lookup(pathControllers);
-    controllers = (Cbor.decode(certControllers) as Array<Buffer>).map(
+    if (certControllers.status !== LookupStatus.Found) {
+      return null;
+    }
+    if (!(certControllers.value instanceof ArrayBuffer)) {
+      console.log('Module hash value is not an ArrayBuffer');
+      return null;
+    }
+    controllers = (Cbor.decode(certControllers.value) as Array<Buffer>).map(
       (buf: Buffer) => Principal.fromUint8Array(buf).toText()
     );
   } catch (e) {
@@ -65,8 +74,15 @@ export const readState = async (
     controllers = [];
   }
   try {
-    const certHash = cert.lookup(pathHash);
-    moduleHash = [...new Uint8Array(certHash)]
+    const certHash: LookupResult = cert.lookup(pathHash);
+    if (certHash.status !== LookupStatus.Found) {
+      return null;
+    }
+    if (!(certHash.value instanceof ArrayBuffer)) {
+      console.log('Module hash value is not an ArrayBuffer');
+      return null;
+    }
+    moduleHash = [...new Uint8Array(certHash.value)]
       .map((x) => x.toString(16).padStart(2, '0'))
       .join('');
   } catch (e) {
@@ -74,8 +90,16 @@ export const readState = async (
     moduleHash = '-';
   }
   try {
-    const certCandid = cert.lookup(pathCandid);
+    const certCandid: LookupResult = cert.lookup(pathCandid);
+    if (certCandid.status !== LookupStatus.Found) {
+      return null;
+    }
+    if (!(certCandid.value instanceof ArrayBuffer)) {
+      console.log('Module hash value is not an ArrayBuffer');
+      return null;
+    }
     // console.log(Buffer.from(certCandid).toString('utf-8'));
+    candid = Buffer.from(certCandid.value).toString('utf-8');
   } catch (e) {
     console.log(e);
     candid = '';
@@ -84,7 +108,8 @@ export const readState = async (
   console.log(moduleHash);
   return {
     controllers: controllers,
-    moduleHash: moduleHash
+    moduleHash: moduleHash,
+    did: candid
   };
   // const cert: Certificate = new Certificate(res, agent);
   // if (await cert.verify()) {

@@ -54,18 +54,26 @@
             :key="index"
             @click="jumpProposal(item)"
           >
-            <div class="proposals-list-item-header">
+            <div
+              class="proposals-list-item-header"
+              style="align-items: center; margin-bottom: 10px"
+            >
+              <span class="base-font-title"
+                >ID: {{ item.id[0].id.toString(10) }}</span
+              >
+              <span
+                class="proposals-list-item-header-status margin-left-auto"
+                :class="getStatus(item)"
+              >
+                {{ getStatus(item) }}
+              </span>
+            </div>
+            <div>
               <span class="proposals-list-item-title">
                 <span class="base-color-w">
                   {{ item.proposal[0].title[0] }}
                 </span>
                 <!--{{ item.proposal[0].action | filterAction }}-->
-              </span>
-              <span
-                class="proposals-list-item-header-status"
-                :class="getStatus(item)"
-              >
-                {{ getStatus(item) }}
               </span>
             </div>
             <!--<div class="proposals-list-item-type base-font-title">
@@ -411,7 +419,7 @@ export default class extends Vue {
         exclude_topic: excludeType,
         include_status: this.proposalStatusFilter,
         include_reward_status: include_reward_status,
-        include_all_manage_neuron_proposals: []
+        include_all_manage_neuron_proposals: [true]
       };
       console.log(request);
       const res = await this.governanceService.listProposals(request);
@@ -537,7 +545,7 @@ export default class extends Vue {
   bottom: 0;
   width: 100%;
   text-align: center;
-  ::v-deep.el-loading-spinner {
+  ::v-deep .el-loading-spinner {
     position: static;
     margin-top: 0;
   }
@@ -703,6 +711,7 @@ export default class extends Vue {
   margin-bottom: 10px;
   word-break: break-word;
   line-height: 18px;
+  max-height: 54px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;

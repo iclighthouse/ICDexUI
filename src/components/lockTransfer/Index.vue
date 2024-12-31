@@ -77,6 +77,7 @@ import BigNumber from 'bignumber.js';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { hexToBytes } from '@/ic/converter';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
+import { PropType } from 'vue';
 
 @Component({
   name: 'Index',
@@ -84,8 +85,14 @@ import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 })
 export default class extends Vue {
   $refs!: { form };
-  @Prop({ type: [Number, BigInt], default: 0 })
-  decimals!: number;
+  // @Prop({ type: [Number, BigInt], default: 0 })
+  // decimals!: number;
+  @Prop({
+    default: 8,
+    validator: (value: any) =>
+      typeof value === 'number' || typeof value === 'bigint'
+  })
+  private decimals!: number | bigint;
   @Prop({ type: String, default: 'ICL' })
   symbol!: string;
   @Prop({ type: String, default: IC_LIGHTHOUSE_TOKEN_CANISTER_ID })
@@ -167,11 +174,11 @@ export default class extends Vue {
             .times(10 ** Number(this.decimals))
             .toString(10)
         );
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const principal = localStorage.getItem('principal');
           const nonceRes = await this.DRC20TokenService.txnQuery(
@@ -193,7 +200,9 @@ export default class extends Vue {
           if (this.form.decider) {
             decider = [this.form.decider];
           }
-          const timeout = BigInt(new BigNumber(this.form.timeout).times(60));
+          const timeout = BigInt(
+            new BigNumber(this.form.timeout).times(60).toString(10)
+          );
           const res = await this.DRC20TokenService.lockTransfer(
             this.form.to,
             amount,

@@ -1,34 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.path.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-      </ul>
-      <div class="flex-center margin-left-auto">
-        <launch :tokens="tokens" ref="launch"></launch>
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
     <div class="market-main container-width">
       <ul class="pools-menu">
         <li
@@ -61,42 +32,46 @@
                         style="font-size: 16px; margin-bottom: 10px"
                         class="base-font-title base-color-w"
                       >
-                        LPs yield
+                        LP Yield
                       </div>
                       <div style="margin-bottom: 10px" class="base-font-title">
                         <span v-show="currentPoolsMenu === 'public'">
                           LPs may benefit from adding liquidity to the liquidity
-                          pool, but it is risky and does not result in a stable
-                          gain or may result in a loss. Possible gains include:
+                          pool, but similar to providing liquidity on any
+                          platform it can be risky and does not result in a
+                          stable gain or may even result in a loss. Possible
+                          gains include:
                         </span>
                         <span v-show="currentPoolsMenu === 'private'">
-                          Private OAMM LPs yield similar benefits to public
+                          Private OAMM LP Yield similar benefits to public
                           OAMMs, but do not participate in liquidity
                           mining.Possible gains include:
                         </span>
                       </div>
                       <div style="margin-bottom: 10px">
                         <span class="dots"></span> Grid spread gain: ICDexMaker
-                        opens a grid strategy in the trading pair, there exists
-                        a spread between every two grids, if the price shows
-                        upward and downward fluctuations, ICDexMaker can get the
-                        grid spread gain. However, if the price fluctuates in
-                        one direction, the number of ICDexMaker's one token will
-                        become more and the number of the other token will
-                        become less, and it will not get the spread gain.
-                        Therefore, the amount of grid spread gain is related to
-                        the volatility of the trading pair.
+                        employs a grid strategy in the associated trading pair.
+                        Using this strategy there exists a spread between every
+                        two grids and if the price shows upward and downward
+                        fluctuations, ICDexMaker aims to capitalize and profit
+                        from it. However, if the price fluctuates heavily in one
+                        direction, the number of tokens in ICDexMaker will
+                        become increasingly more of one token and less of the
+                        other token and therefore it will be able to capitalize
+                        on the spread between its orders. Due to this, the
+                        amount of grid spread gain is related to the volatility
+                        of the trading pair.
                       </div>
                       <div style="margin-bottom: 10px">
                         <span class="dots"></span> Vip-maker rebate: When
-                        ICDexMaker has the role of vip-maker, it can get the
-                        trading fee rebate, and this part of the gain will be
-                        added to the liquidity pool.
+                        ICDexMaker has the role of vip-maker, it qualifies for a
+                        trading fee rebate, and the gain from this will be added
+                        to the liquidity pool.
                       </div>
                       <div style="margin-bottom: 10px">
                         <span class="dots"></span> Withdrawal fee on removal of
-                        liquidity: When an LP withdraws liquidity, he will be
-                        charged a withdrawal fee to be added to the liquidity
+                        liquidity: When an LP withdraws liquidity, they are
+                        charged a withdrawal fee which is added to the liquidity
                         pool.
                       </div>
                       <div
@@ -105,10 +80,11 @@
                       >
                         <span class="dots"></span> Liquidity mining/airdrop:
                         this is a contingent benefit, ICDexMaker itself does not
-                        provide liquidity mining or token airdrop, which
-                        requires LPs to pay attention to the Dex platform side
-                        or the project side of the liquidity mining or airdrop
-                        activity announcement.
+                        provide liquidity mining or token airdrops, this
+                        requires Liquidity Providers to pay attention to the
+                        announcements and news regarding these events published
+                        by the ICLighthouse team or the associated project’s
+                        team.
                       </div>
                     </div>
                   </template>
@@ -116,7 +92,7 @@
                     style="margin-left: 10px; font-size: 12px"
                     class="base-font-title pc-show"
                   >
-                    LPs yield <a-icon type="question-circle" />
+                    LP Yield <a-icon type="question-circle" />
                   </span>
                 </a-tooltip>
               </span>
@@ -130,6 +106,8 @@
                   border: none;
                 "
                 class="margin-left-auto trading-mining"
+                ref="miningInfo"
+                @init="initMining"
               ></mining-info>
             </span>
             <span
@@ -151,51 +129,53 @@
                       style="font-size: 16px"
                       class="base-font-title base-color-w"
                     >
-                      LPs yield
+                      LP Yield
                     </div>
                     <div class="base-font-title">
                       LPs may benefit from adding liquidity to the liquidity
-                      pool, but it is risky and does not result in a stable gain
-                      or may result in a loss. Possible gains include:
+                      pool, but similar to providing liquidity on any platform
+                      it can be risky and does not result in a stable gain or
+                      may even result in a loss. Possible gains include:
                     </div>
                     <div>
                       <span class="dots"></span> Grid spread gain: ICDexMaker
-                      opens a grid strategy in the trading pair, there exists a
-                      spread between every two grids, if the price shows upward
-                      and downward fluctuations, ICDexMaker can get the grid
-                      spread gain. However, if the price fluctuates in one
-                      direction, the number of ICDexMaker's one token will
-                      become more and the number of the other token will become
-                      less, and it will not get the spread gain. Therefore, the
-                      amount of grid spread gain is related to the volatility of
-                      the trading pair.
+                      employs a grid strategy in the associated trading pair.
+                      Using this strategy there exists a spread between every
+                      two grids and if the price shows upward and downward
+                      fluctuations, ICDexMaker aims to capitalize and profit
+                      from it. However, if the price fluctuates heavily in one
+                      direction, the number of tokens in ICDexMaker will become
+                      increasingly more of one token and less of the other token
+                      and therefore it will be able to capitalize on the spread
+                      between its orders. Due to this, the amount of grid spread
+                      gain is related to the volatility of the trading pair.
                     </div>
                     <div>
                       <span class="dots"></span> Vip-maker rebate: When
-                      ICDexMaker has the role of vip-maker, it can get the
-                      trading fee rebate, and this part of the gain will be
-                      added to the liquidity pool.
+                      ICDexMaker has the role of vip-maker, it qualifies for a
+                      trading fee rebate, and the gain from this will be added
+                      to the liquidity pool.
                     </div>
                     <div>
                       <span class="dots"></span> Withdrawal fee on removal of
-                      liquidity: When an LP withdraws liquidity, he will be
-                      charged a withdrawal fee to be added to the liquidity
+                      liquidity: When an LP withdraws liquidity, they are
+                      charged a withdrawal fee which is added to the liquidity
                       pool.
                     </div>
                     <div>
                       <span class="dots"></span> Liquidity mining/airdrop: this
                       is a contingent benefit, ICDexMaker itself does not
-                      provide liquidity mining or token airdrop, which requires
-                      LPs to pay attention to the Dex platform side or the
-                      project side of the liquidity mining or airdrop activity
-                      announcement.
+                      provide liquidity mining or token airdrops, this requires
+                      Liquidity Providers to pay attention to the announcements
+                      and news regarding these events published by the
+                      ICLighthouse team or the associated project’s team.
                     </div>
                   </template>
                   <span
                     style="margin-left: 10px; font-size: 12px"
                     class="base-font-title pc-show"
                   >
-                    LPs yield <a-icon type="question-circle" />
+                    LP Yield <a-icon type="question-circle" />
                   </span>
                 </a-tooltip>
               </span>
@@ -234,7 +214,386 @@
           </div>
         </div>
         <div v-show="currentPoolsMenu === 'public'">
-          <ul v-if="!poolLoad && poolsLoad.length > 0" class="pool-main mt20">
+          <div
+            class="list-table-main mt20 text-right"
+            style="margin-bottom: 10px"
+          >
+            <img
+              @click="isList = !isList"
+              v-show="isList"
+              src="@/assets/img/list.svg"
+              alt=""
+            />
+            <img
+              @click="isList = !isList"
+              v-show="!isList"
+              src="@/assets/img/table.svg"
+              alt=""
+            />
+          </div>
+          <a-spin
+            :spinning="
+              !poolLoad &&
+              !pools.length &&
+              !poolsHold.length &&
+              poolsLoad.length > 0
+            "
+            v-show="!isList"
+          >
+            <table class="pools-table">
+              <thead>
+                <tr>
+                  <th>Pool Name</th>
+                  <th>Pair</th>
+                  <th>NAV</th>
+                  <th class="text-right pointer" @click="onSort('balance')">
+                    <span class="sort-table-main">
+                      <span>Pool Balance&nbsp;</span>
+                      <span class="sort-table">
+                        <a-icon
+                          :class="{ active: sortType === 'balanceUp' }"
+                          type="caret-up"
+                        />
+                        <a-icon
+                          :class="{ active: sortType === 'balanceDown' }"
+                          type="caret-down"
+                        />
+                      </span>
+                    </span>
+                  </th>
+                  <th>Total Shares</th>
+                  <th class="text-right pointer" @click="onSort('apy')">
+                    <span class="sort-table-main">
+                      <span>7d APY&nbsp;</span>
+                      <span class="sort-table">
+                        <a-icon
+                          :class="{ active: sortType === 'apyUp' }"
+                          type="caret-up"
+                        />
+                        <a-icon
+                          :class="{ active: sortType === 'apyDown' }"
+                          type="caret-down"
+                        />
+                      </span>
+                    </span>
+                  </th>
+                  <th>Your Shares</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(item, index) in poolsTable.slice(
+                    (page - 1) * 20,
+                    page * 20
+                  )"
+                  :key="index"
+                  :class="{
+                    'base-font':
+                      tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        .toLocaleLowerCase()
+                        .includes('test') ||
+                      tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        .toLocaleLowerCase()
+                        .includes('test')
+                  }"
+                >
+                  <td @click="jumpPool(item[1])">
+                    <span
+                      v-if="item[2]"
+                      class="base-font-title pointer link"
+                      style="
+                        margin-left: 5px;
+                        font-size: 13px;
+                        font-weight: bold;
+                      "
+                    >
+                      {{ item[2].name | ellipsisAccount(20) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div
+                      v-if="
+                        item[2] &&
+                        tokens[item[2].pairInfo.token0[0].toString()] &&
+                        tokens[item[2].pairInfo.token1[0].toString()]
+                      "
+                      class="pool-pair-img"
+                    >
+                      <span class="img-content">
+                        <img
+                          v-if="
+                            tokens[item[2].pairInfo.token0[0].toString()].logo
+                          "
+                          :src="
+                            tokens[item[2].pairInfo.token0[0].toString()].logo
+                          "
+                          alt=""
+                        />
+                        <span v-else>
+                          {{
+                            tokens[item[2].pairInfo.token0[0].toString()].symbol
+                              .slice(0, 1)
+                              .toLocaleUpperCase()
+                          }}
+                        </span>
+                      </span>
+                      <span class="img-content">
+                        <img
+                          v-if="
+                            tokens[item[2].pairInfo.token1[0].toString()].logo
+                          "
+                          :src="
+                            tokens[item[2].pairInfo.token1[0].toString()].logo
+                          "
+                          alt=""
+                        />
+                        <span v-else>
+                          {{
+                            tokens[item[2].pairInfo.token1[0].toString()].symbol
+                              .slice(0, 1)
+                              .toLocaleUpperCase()
+                          }}
+                        </span>
+                      </span>
+                      <span
+                        @click.stop="
+                          jump(
+                            `/ICDex/${
+                              tokens[item[2].pairInfo.token0[0].toString()]
+                                .symbol
+                            }/${
+                              tokens[item[2].pairInfo.token1[0].toString()]
+                                .symbol
+                            }`
+                          )
+                        "
+                        class="pc-show link"
+                        style="margin-left: 5px"
+                      >
+                        {{
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        }}/{{
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        }}
+                      </span>
+                      <mining-info
+                        :current-pair-id="
+                          item[2].pairInfo.pairPrincipal.toString()
+                        "
+                        :current-round-pool="currentRound"
+                        :mining-pairs-pool="miningPairs"
+                        type="poolTable"
+                        style="
+                          display: inline-block;
+                          margin-left: 8px;
+                          border: none;
+                        "
+                        class="margin-left-auto trading-mining"
+                      ></mining-info>
+                    </div>
+                  </td>
+                  <td>
+                    <div v-if="item[2] && item[3]">
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares">
+                          0
+                        </span>
+                        <span v-else>
+                          {{
+                            item[3].latestUnitNetValue.token0 |
+                              bigintToFloat(
+                                8,
+                                tokens[item[2].pairInfo.token0[0].toString()]
+                                  .decimals
+                              )
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        }}
+                      </div>
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares">
+                          0
+                        </span>
+                        <span v-else>
+                          {{
+                            item[3].latestUnitNetValue.token1 |
+                              bigintToFloat(
+                                8,
+                                tokens[item[2].pairInfo.token1[0].toString()]
+                                  .decimals
+                              )
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        }}
+                      </div>
+                    </div>
+                    <span v-else> - </span>
+                  </td>
+                  <td>
+                    <div v-if="item[2] && item[3]">
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares"
+                          >0</span
+                        >
+                        <span v-else>
+                          {{
+                            item[3].poolBalance.balance0 |
+                              bigintToFloat(
+                                Math.min(
+                                  tokens[item[2].pairInfo.token0[0].toString()]
+                                    .decimals,
+                                  4
+                                ),
+                                tokens[item[2].pairInfo.token0[0].toString()]
+                                  .decimals
+                              ) |
+                              formatNum
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                        }}
+                      </div>
+                      <div>
+                        <span v-if="item[2].initialized && !item[3].poolShares"
+                          >0</span
+                        >
+                        <span v-else>
+                          {{
+                            item[3].poolBalance.balance1 |
+                              bigintToFloat(
+                                Math.min(
+                                  tokens[item[2].pairInfo.token1[0].toString()]
+                                    .decimals,
+                                  4
+                                ),
+                                tokens[item[2].pairInfo.token1[0].toString()]
+                                  .decimals
+                              ) |
+                              formatNum
+                          }}
+                        </span>
+                        {{
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                        }}
+                      </div>
+                    </div>
+                    <span v-else>-</span>
+                  </td>
+                  <td>
+                    <span v-if="item[3] && item[2]">
+                      {{
+                        item[3].poolShares |
+                          bigintToFloat(0, item[2].shareDecimals) |
+                          formatNum
+                      }}
+                    </span>
+                    <span v-else>-</span>
+                  </td>
+                  <td>
+                    <span v-if="item[3] && item[3].apy7d.apy">
+                      {{ item[3].apy7d.apy[0] | filterBuyFee }}
+                    </span>
+                    <span v-else>-</span>
+                  </td>
+                  <td>
+                    <div
+                      v-if="item[4] && item[4][0] && item[2]"
+                      class="base-font-title"
+                      :class="{
+                        'base-font':
+                          tokens[item[2].pairInfo.token0[0].toString()].symbol
+                            .toLocaleLowerCase()
+                            .includes('test') ||
+                          tokens[item[2].pairInfo.token1[0].toString()].symbol
+                            .toLocaleLowerCase()
+                            .includes('test')
+                      }"
+                    >
+                      {{
+                        item[4][0] |
+                          bigintToFloat(2, item[2].shareDecimals) |
+                          formatNum
+                      }}
+                      <div v-if="item[3]">
+                        ({{ item[4][0] | filterRatio(item[3].poolShares) }})
+                      </div>
+                    </div>
+                    <div v-else>
+                      <span v-if="getPrincipalId"
+                        >0
+                        <div>(0.0%)</div></span
+                      >
+                      <span v-else>-</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      v-show="item[2] && item[2].initialized"
+                      @click.stop="
+                        jump(
+                          `/ICDex/pools/pool/${item[1][0][0].toString()}/Add`
+                        )
+                      "
+                      :disabled="!item[3]"
+                      class="pointer main-color"
+                    >
+                      Add
+                    </span>
+                    <span
+                      v-show="item[2] && item[2].initialized"
+                      @click.stop="
+                        jump(
+                          `/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`
+                        )
+                      "
+                      style="margin-left: 10px"
+                      :disabled="!item[3]"
+                      class="pointer main-color"
+                    >
+                      Remove
+                    </span>
+                    <span
+                      v-show="item[2] && !item[2].initialized"
+                      class="primary"
+                      @click.stop="
+                        jump(
+                          `/ICDex/pools/pool/${item[1][0][0].toString()}/Add`
+                        )
+                      "
+                      style="margin-left: 10px"
+                      :disabled="!item[3] || !isCreator(item[1])"
+                    >
+                      -
+                      <!--Activate by the creator adding the 1st liquidity-->
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="!poolLoad && !poolsLoad.length && isList">
+                  <td colspan="8">No Pools</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="nft-main-pagination mt20 flex-center">
+              <a-pagination
+                class="pagination"
+                v-show="poolsTable.length > 20"
+                :current="page"
+                :defaultPageSize="20"
+                :total="poolsTable.length"
+                @change="changePoolsTable"
+              />
+            </div>
+          </a-spin>
+          <ul
+            v-if="!poolLoad && poolsLoad.length > 0 && isList"
+            class="pool-main mt20"
+          >
             <li
               v-for="(item, index) in poolsHold"
               :key="index"
@@ -310,22 +669,44 @@
                     <span class="vip-maker-pool"></span>
                   </a-tooltip>
                 </span>
-                <span
-                  v-if="item[5] && !item[5].vipMaker"
-                  class="margin-left-auto main-color"
-                  @click.stop="
-                    onBindMaker(
-                      item[2].pairInfo.pairPrincipal.toString(),
-                      item[1][0][0].toString(),
-                      index,
-                      true
-                    )
-                  "
+                <a-tooltip
+                  overlayClassName="become-vip-tooltip"
+                  placement="top"
                 >
-                  Become a Vip-Maker
-                </span>
+                  <template slot="title">
+                    <div class="become-vip">
+                      <div>
+                        This OAMM Pool doesn't get a maker rebate because it
+                        doesn't have vip-maker status.
+                      </div>
+                      <button
+                        class="primary"
+                        @click.stop="
+                          onBindMaker(
+                            item[2].pairInfo.pairPrincipal.toString(),
+                            item[1][0][0].toString(),
+                            index,
+                            true,
+                            $event
+                          )
+                        "
+                      >
+                        Apply for vip-maker status
+                      </button>
+                    </div>
+                  </template>
+                  <span
+                    v-if="item[5] && !item[5].vipMaker"
+                    class="margin-left-auto"
+                    @click.stop.prevent
+                  >
+                    <span class="vip-maker-pool vip-maker-pool-n"></span>
+                  </span>
+                </a-tooltip>
                 <mining-info
                   :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
+                  :current-round-pool="currentRound"
+                  :mining-pairs-pool="miningPairs"
                   type="pool"
                   style="display: inline-block; margin-left: 8px; border: none"
                   class="margin-left-auto trading-mining"
@@ -345,8 +726,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token0
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token0 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
                         )
@@ -359,8 +740,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token1
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token1 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
                         )
@@ -387,16 +768,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance0
-                        | bigintToFloat(
+                      item[3].poolBalance.balance0 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token0[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
@@ -406,16 +787,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance1
-                        | bigintToFloat(
+                      item[3].poolBalance.balance1 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token1[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
@@ -425,12 +806,12 @@
               <div>
                 <span>Total Shares: </span>
                 <span class="base-font-title" v-if="item[3] && item[2]">{{
-                  item[3].poolShares
-                    | bigintToFloat(
+                  item[3].poolShares |
+                    bigintToFloat(
                       item[2].shareDecimals,
                       item[2].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
                 <span v-else>-</span>
               </div>
@@ -438,66 +819,36 @@
                 <span>Your Shares: </span>
                 <span class="base-font-title">
                   {{
-                    item[4][0]
-                      | bigintToFloat(
+                    item[4][0] |
+                      bigintToFloat(
                         item[2].shareDecimals,
                         item[2].shareDecimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </span>
+                <img
+                  @click.stop="getAccountEvents(item)"
+                  src="@/assets/img/history.png"
+                  alt=""
+                  style="width: 14px; vertical-align: middle; margin-top: -2px"
+                />
               </div>
               <div class="pool-apy">
-                <span>APY (Estimated):</span>
-              </div>
-              <div class="pool-apy base-font-title">
-                <span class="pool-apy-item">
+                <span>APY (Estimated): </span>
+                <span class="base-font-title">
                   <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
+                    v-if="item[3] && item[3].apy24h.apy && item[3].apy7d.apy"
                   >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token1 | filterBuyFee }}(24-Hour APY)
-                    </span>
-                  </span>
-                  <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
-                  >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token1 | filterBuyFee }}(7-Day
-                      APY)
-                    </span>
+                    {{ item[3].apy24h.apy[0] | filterBuyFee }} (24H APY),
+                    {{ item[3].apy7d.apy[0] | filterBuyFee }} (7D APY)
                   </span>
                   <span v-else>-</span>
                 </span>
               </div>
               <div class="flex-center mt20 pool-bottom">
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
@@ -507,6 +858,7 @@
                   Add
                 </button>
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`)
@@ -515,6 +867,17 @@
                   :disabled="!item[3]"
                 >
                   Remove
+                </button>
+                <button
+                  v-show="item[2] && !item[2].initialized"
+                  class="primary"
+                  @click.stop="
+                    jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
+                  "
+                  style="width: 160px; height: 48px; line-height: 1.4"
+                  :disabled="!item[3] || !isCreator(item[1])"
+                >
+                  Activate by the creator adding the 1st liquidity
                 </button>
                 <div class="margin-left-auto">
                   <span
@@ -585,7 +948,10 @@
               />
             </li>
           </ul>
-          <ul v-if="pools.length" class="pool-main pool-main-remaining">
+          <ul
+            v-if="isList && pools.length"
+            class="pool-main pool-main-remaining"
+          >
             <li
               v-for="(item, index) in pools.slice(
                 0,
@@ -664,22 +1030,44 @@
                     <span class="vip-maker-pool"></span>
                   </a-tooltip>
                 </span>
-                <span
-                  v-if="item[5] && !item[5].vipMaker && getPrincipalId"
-                  class="margin-left-auto main-color"
-                  @click.stop="
-                    onBindMaker(
-                      item[2].pairInfo.pairPrincipal.toString(),
-                      item[1][0][0].toString(),
-                      index,
-                      false
-                    )
-                  "
+                <a-tooltip
+                  overlayClassName="become-vip-tooltip"
+                  placement="top"
                 >
-                  Become a Vip-Maker
-                </span>
+                  <template slot="title">
+                    <div class="become-vip">
+                      <div>
+                        This OAMM Pool doesn't get a maker rebate because it
+                        doesn't have vip-maker status.
+                      </div>
+                      <button
+                        class="primary"
+                        @click.stop="
+                          onBindMaker(
+                            item[2].pairInfo.pairPrincipal.toString(),
+                            item[1][0][0].toString(),
+                            index,
+                            true,
+                            $event
+                          )
+                        "
+                      >
+                        Apply for vip-maker status
+                      </button>
+                    </div>
+                  </template>
+                  <span
+                    v-if="item[5] && !item[5].vipMaker && getPrincipalId"
+                    class="margin-left-auto"
+                    @click.stop.prevent
+                  >
+                    <span class="vip-maker-pool vip-maker-pool-n"></span>
+                  </span>
+                </a-tooltip>
                 <mining-info
                   :current-pair-id="item[2].pairInfo.pairPrincipal.toString()"
+                  :current-round-pool="currentRound"
+                  :mining-pairs-pool="miningPairs"
                   type="pool"
                   style="display: inline-block; margin-left: 8px; border: none"
                   class="margin-left-auto trading-mining"
@@ -695,8 +1083,8 @@
                 <span>NAV: </span>
                 <span class="base-font-title" v-if="item[3]">
                   {{
-                    item[3].latestUnitNetValue.token0
-                      | bigintToFloat(
+                    item[3].latestUnitNetValue.token0 |
+                      bigintToFloat(
                         8,
                         tokens[item[2].pairInfo.token0[0].toString()].decimals
                       )
@@ -704,8 +1092,8 @@
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
                   {{
-                    item[3].latestUnitNetValue.token1
-                      | bigintToFloat(
+                    item[3].latestUnitNetValue.token1 |
+                      bigintToFloat(
                         8,
                         tokens[item[2].pairInfo.token1[0].toString()].decimals
                       )
@@ -727,30 +1115,30 @@
                 <span> Pool Balance: </span>
                 <span class="base-font-title" v-if="item[3]">
                   {{
-                    item[3].poolBalance.balance0
-                      | bigintToFloat(
+                    item[3].poolBalance.balance0 |
+                      bigintToFloat(
                         Math.min(
                           tokens[item[2].pairInfo.token0[0].toString()]
                             .decimals,
                           8
                         ),
                         tokens[item[2].pairInfo.token0[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
                   +
                   {{
-                    item[3].poolBalance.balance1
-                      | bigintToFloat(
+                    item[3].poolBalance.balance1 |
+                      bigintToFloat(
                         Math.min(
                           tokens[item[2].pairInfo.token1[0].toString()]
                             .decimals,
                           8
                         ),
                         tokens[item[2].pairInfo.token1[0].toString()].decimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
                 </span>
@@ -759,12 +1147,12 @@
               <div>
                 <span>Total Shares: </span>
                 <span class="base-font-title" v-if="item[3] && item[2]">{{
-                  item[3].poolShares
-                    | bigintToFloat(
+                  item[3].poolShares |
+                    bigintToFloat(
                       item[2].shareDecimals,
                       item[2].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
                 <span v-else>-</span>
               </div>
@@ -772,66 +1160,30 @@
                 <span>Your Shares: </span>
                 <span class="base-font-title">
                   {{
-                    item[4][0]
-                      | bigintToFloat(
+                    item[4][0] |
+                      bigintToFloat(
                         item[2].shareDecimals,
                         item[2].shareDecimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </span>
               </div>
               <div class="pool-apy">
-                <span>APY (Estimated):</span>
-              </div>
-              <div class="pool-apy base-font-title">
-                <span class="pool-apy-item">
+                <span>APY (Estimated): </span>
+                <span class="base-font-title">
                   <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
+                    v-if="item[3] && item[3].apy24h.apy && item[3].apy7d.apy"
                   >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token1 | filterBuyFee }}(24-Hour APY)
-                    </span>
-                  </span>
-                  <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
-                  >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token1 | filterBuyFee }}(7-Day
-                      APY)
-                    </span>
+                    {{ item[3].apy24h.apy[0] | filterBuyFee }} (24H APY),
+                    {{ item[3].apy7d.apy[0] | filterBuyFee }} (7D APY)
                   </span>
                   <span v-else>-</span>
                 </span>
               </div>
               <div class="flex-center mt20 pool-bottom">
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
@@ -841,6 +1193,7 @@
                   Add
                 </button>
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Remove`)
@@ -849,6 +1202,17 @@
                   :disabled="!item[3]"
                 >
                   Remove
+                </button>
+                <button
+                  v-show="item[2] && !item[2].initialized"
+                  class="primary"
+                  @click.stop="
+                    jump(`/ICDex/pools/pool/${item[1][0][0].toString()}/Add`)
+                  "
+                  style="width: 160px; height: 48px; line-height: 1.4"
+                  :disabled="!item[3] || !isCreator(item[1])"
+                >
+                  Activate by the creator adding the 1st liquidity
                 </button>
                 <div class="margin-left-auto">
                   <span
@@ -884,14 +1248,14 @@
             </li>
           </ul>
           <div
-            v-if="!poolLoad && !poolsLoad.length"
+            v-if="!poolLoad && !poolsLoad.length && isList"
             class="base-color-w"
             style="text-align: center; margin-top: 100px; font-size: 16px"
           >
             No Pools
           </div>
           <div
-            v-show="!morePools && pools.length && pools.length > 6"
+            v-show="!morePools && pools.length && pools.length > 6 && isList"
             class="main-color pointer"
             style="margin: 25px 0 10px; font-size: 16px; text-align: center"
             @click="morePools = true"
@@ -976,20 +1340,40 @@
                     <span class="vip-maker-pool"></span>
                   </a-tooltip>
                 </span>
-                <span
-                  v-if="item[5] && !item[5].vipMaker"
-                  class="margin-left-auto main-color"
-                  @click.stop="
-                    onBindMaker(
-                      item[2].pairInfo.pairPrincipal.toString(),
-                      item[1][0][0].toString(),
-                      index,
-                      false
-                    )
-                  "
+                <a-tooltip
+                  overlayClassName="become-vip-tooltip"
+                  placement="top"
                 >
-                  Become a Vip-Maker
-                </span>
+                  <template slot="title">
+                    <div class="become-vip">
+                      <div>
+                        This OAMM Pool doesn't get a maker rebate because it
+                        doesn't have vip-maker status.
+                      </div>
+                      <button
+                        class="primary"
+                        @click.stop="
+                          onBindMaker(
+                            item[2].pairInfo.pairPrincipal.toString(),
+                            item[1][0][0].toString(),
+                            index,
+                            true,
+                            $event
+                          )
+                        "
+                      >
+                        Apply for vip-maker status
+                      </button>
+                    </div>
+                  </template>
+                  <span
+                    v-if="item[5] && !item[5].vipMaker"
+                    class="margin-left-auto"
+                    @click.stop.prevent
+                  >
+                    <span class="vip-maker-pool vip-maker-pool-n"></span>
+                  </span>
+                </a-tooltip>
               </div>
               <div
                 v-if="
@@ -1005,8 +1389,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token0
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token0 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
                         )
@@ -1019,8 +1403,8 @@
                   >
                   <span v-else>
                     {{
-                      item[3].latestUnitNetValue.token1
-                        | bigintToFloat(
+                      item[3].latestUnitNetValue.token1 |
+                        bigintToFloat(
                           8,
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
                         )
@@ -1047,16 +1431,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance0
-                        | bigintToFloat(
+                      item[3].poolBalance.balance0 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token0[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token0[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token0[0].toString()].symbol }}
@@ -1066,16 +1450,16 @@
                   >
                   <span v-else>
                     {{
-                      item[3].poolBalance.balance1
-                        | bigintToFloat(
+                      item[3].poolBalance.balance1 |
+                        bigintToFloat(
                           Math.min(
                             tokens[item[2].pairInfo.token1[0].toString()]
                               .decimals,
                             8
                           ),
                           tokens[item[2].pairInfo.token1[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </span>
                   {{ tokens[item[2].pairInfo.token1[0].toString()].symbol }}
@@ -1085,12 +1469,12 @@
               <div>
                 <span>Total Shares: </span>
                 <span class="base-font-title" v-if="item[3] && item[2]">{{
-                  item[3].poolShares
-                    | bigintToFloat(
+                  item[3].poolShares |
+                    bigintToFloat(
                       item[2].shareDecimals,
                       item[2].shareDecimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
                 <span v-else>-</span>
               </div>
@@ -1098,66 +1482,30 @@
                 <span>Your Shares: </span>
                 <span class="base-font-title">
                   {{
-                    item[4][0]
-                      | bigintToFloat(
+                    item[4][0] |
+                      bigintToFloat(
                         item[2].shareDecimals,
                         item[2].shareDecimals
-                      )
-                      | formatNum
+                      ) |
+                      formatNum
                   }}
                 </span>
               </div>
               <div class="pool-apy">
-                <span>APY (Estimated):</span>
-              </div>
-              <div class="pool-apy base-font-title">
-                <span class="pool-apy-item">
+                <span>APY (Estimated): </span>
+                <span class="base-font-title">
                   <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
+                    v-if="item[3] && item[3].apy24h.apy && item[3].apy7d.apy"
                   >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based:
-                      {{ item[3].apy24h.token1 | filterBuyFee }}(24-Hour APY)
-                    </span>
-                  </span>
-                  <span
-                    v-if="
-                      item[3] &&
-                      item[2] &&
-                      tokens[item[2].pairInfo.token0[0].toString()] &&
-                      tokens[item[2].pairInfo.token1[0].toString()]
-                    "
-                  >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token0[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token0 | filterBuyFee }},</span
-                    >
-                    <span>
-                      {{
-                        tokens[item[2].pairInfo.token1[0].toString()].symbol
-                      }}-based: {{ item[3].apy7d.token1 | filterBuyFee }}(7-Day
-                      APY)
-                    </span>
+                    {{ item[3].apy24h.apy[0] | filterBuyFee }} (24H APY),
+                    {{ item[3].apy7d.apy[0] | filterBuyFee }} (7D APY)
                   </span>
                   <span v-else>-</span>
                 </span>
               </div>
               <div class="flex-center mt20 pool-bottom">
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(
@@ -1169,6 +1517,7 @@
                   Add
                 </button>
                 <button
+                  v-show="item[2] && item[2].initialized"
                   class="primary"
                   @click.stop="
                     jump(
@@ -1179,6 +1528,19 @@
                   :disabled="!item[3]"
                 >
                   Remove
+                </button>
+                <button
+                  v-show="item[2] && !item[2].initialized"
+                  class="primary"
+                  @click.stop="
+                    jump(
+                      `/ICDex/pools/pool/${item[1][0][0].toString()}/Add?private`
+                    )
+                  "
+                  style="width: 160px; height: 48px; line-height: 1.4"
+                  :disabled="!item[3] || !isCreator(item[1])"
+                >
+                  Activate by the creator adding the 1st liquidity
                 </button>
                 <div class="margin-left-auto">
                   <span
@@ -1351,8 +1713,8 @@
                         "
                       >
                         {{
-                          item.strategy.GridOrder.setting.amount.Percent[0]
-                            | filterPpm
+                          item.strategy.GridOrder.setting.amount.Percent[0] |
+                            filterPpm
                         }}
                       </span>
                       <span
@@ -1361,8 +1723,8 @@
                         "
                       >
                         {{
-                          item.strategy.GridOrder.setting.ppmFactor[0]
-                            | filterPpm
+                          item.strategy.GridOrder.setting.ppmFactor[0] |
+                            filterPpm
                         }}
                       </span>
                       <a-tooltip placement="top">
@@ -1386,8 +1748,8 @@
                     "
                   >
                     {{
-                      item.strategy.GridOrder.setting.amount.Token0
-                        | bigintToFloat(
+                      item.strategy.GridOrder.setting.amount.Token0 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token0[0].toString()]
@@ -1411,8 +1773,8 @@
                     "
                   >
                     {{
-                      item.strategy.GridOrder.setting.amount.Token1
-                        | bigintToFloat(
+                      item.strategy.GridOrder.setting.amount.Token1 |
+                        bigintToFloat(
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[currentPool[2].pairInfo.token1[0].toString()]
@@ -1634,8 +1996,8 @@
               <td>
                 <span v-if="item.details && item.details.length">
                   {{
-                    item.details[item.details.length - 1].time
-                      | formatDateFromNanosecondUTC
+                    item.details[item.details.length - 1].time |
+                      formatDateFromNanosecondUTC
                   }}
                 </span>
                 <span v-else>
@@ -1689,8 +2051,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -1720,8 +2082,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -1750,8 +2112,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -1781,8 +2143,8 @@
                         "
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               Math.min(
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -1825,8 +2187,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token0[0].toString()
@@ -1862,8 +2224,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token1[0].toString()
@@ -1900,8 +2262,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token0Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token0Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token0[0].toString()
@@ -1937,8 +2299,8 @@
                         rel="nofollow noreferrer noopener"
                       >
                         {{
-                          Object.values(item.order.token1Value[0])[0]
-                            | bigintToFloat(
+                          Object.values(item.order.token1Value[0])[0] |
+                            bigintToFloat(
                               4,
                               tokens[
                                 currentPool[2].pairInfo.token1[0].toString()
@@ -2030,8 +2392,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2064,8 +2426,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2095,8 +2457,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2129,8 +2491,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2165,8 +2527,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2193,8 +2555,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2220,8 +2582,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token0[0].toString()
@@ -2250,8 +2612,8 @@
                           "
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 Math.min(
                                   tokens[
                                     currentPool[2].pairInfo.token1[0].toString()
@@ -2297,8 +2659,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2338,8 +2700,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2376,8 +2738,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token0Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2417,8 +2779,8 @@
                           {{
                             Object.values(
                               item.details[item.details.length - 1].token1Value
-                            )[0]
-                              | bigintToFloat(
+                            )[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2460,8 +2822,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2498,8 +2860,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2535,8 +2897,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token0Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token0Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token0[0].toString()
@@ -2573,8 +2935,8 @@
                           rel="nofollow noreferrer noopener"
                         >
                           {{
-                            Object.values(item.filled.token1Value)[0]
-                              | bigintToFloat(
+                            Object.values(item.filled.token1Value)[0] |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   currentPool[2].pairInfo.token1[0].toString()
@@ -2688,6 +3050,305 @@
         </div>
       </a-spin>
     </a-modal>
+    <a-modal
+      v-model="accountEventsVisible"
+      width="90%"
+      title="Pool Events"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="delete-modal"
+    >
+      <a-spin :spinning="accountEventsSpinning">
+        <table class="ant-table-tbody mt20">
+          <thead>
+            <tr>
+              <th>Index</th>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Event</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(item, index) in accountEvents.slice(
+                (currentAccountEventPage - 1) * 100,
+                currentAccountEventPage * 100
+              )"
+              :key="index"
+            >
+              <td>{{ (currentAccountEventPage - 1) * 100 + index + 1 }}</td>
+              <td style="white-space: nowrap">
+                {{ item[1] | formatDateFromSecondUTC }}
+              </td>
+              <td>{{ Object.keys(item[0])[0] }}</td>
+              <td>
+                <div
+                  v-if="
+                    tokens &&
+                    tokens[currentPool[2].pairInfo.token0[0].toString()] &&
+                    tokens[currentPool[2].pairInfo.token1[0].toString()]
+                  "
+                >
+                  <div v-if="Object.keys(item[0])[0] === 'add'">
+                    <div v-if="Object.keys(item[0].add)[0] === 'ok'">
+                      {{
+                        item[0].add.ok.token0 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token0[0].toString()]
+                          .symbol
+                      }}
+                      +
+                      {{
+                        item[0].add.ok.token1 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token1[0].toString()]
+                          .symbol
+                      }}
+                      ->
+                      {{
+                        item[0].add.ok.shares |
+                          bigintToFloat(
+                            currentPool[2].shareDecimals,
+                            currentPool[2].shareDecimals
+                          ) |
+                          formatNum
+                      }}
+                      Shares
+                    </div>
+                    <div
+                      class="base-red"
+                      v-if="Object.keys(item[0].add)[0] === 'err'"
+                    >
+                      Error:
+                      {{
+                        item[0].add.err.depositToken0 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token0[0].toString()]
+                          .symbol
+                      }}
+                      +
+                      {{
+                        item[0].add.err.depositToken1 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token1[0].toString()]
+                          .symbol
+                      }}
+                    </div>
+                  </div>
+                  <div v-if="Object.keys(item[0])[0] === 'remove'">
+                    <div v-if="Object.keys(item[0].remove)[0] === 'ok'">
+                      {{
+                        item[0].remove.ok.shares |
+                          bigintToFloat(
+                            currentPool[2].shareDecimals,
+                            currentPool[2].shareDecimals
+                          ) |
+                          formatNum
+                      }}
+                      Shares ->
+                      {{
+                        item[0].remove.ok.token0 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token0[0].toString()]
+                          .symbol
+                      }}
+                      +
+                      {{
+                        item[0].remove.ok.token1 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token1[0].toString()]
+                          .symbol
+                      }}
+                    </div>
+                    <div
+                      class="base-red"
+                      v-if="Object.keys(item[0].remove)[0] === 'err'"
+                    >
+                      Error:
+                      {{
+                        item[0].remove.err.addPoolToken0 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token0[0].toString()]
+                          .symbol
+                      }}
+                      +
+                      {{
+                        item[0].remove.err.addPoolToken1 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token1[0].toString()]
+                          .symbol
+                      }}
+                    </div>
+                  </div>
+                  <div v-if="Object.keys(item[0])[0] === 'withdraw'">
+                    {{
+                      item[0].withdraw.token0 |
+                        bigintToFloat(
+                          tokens[currentPool[2].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[currentPool[2].pairInfo.token0[0].toString()]
+                            .decimals
+                        )
+                    }}
+                    {{
+                      tokens[currentPool[2].pairInfo.token0[0].toString()]
+                        .symbol
+                    }}
+                    +
+                    {{
+                      item[0].withdraw.token1 |
+                        bigintToFloat(
+                          tokens[currentPool[2].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[currentPool[2].pairInfo.token1[0].toString()]
+                            .decimals
+                        )
+                    }}
+                    {{
+                      tokens[currentPool[2].pairInfo.token1[0].toString()]
+                        .symbol
+                    }}
+                  </div>
+                  <div v-if="Object.keys(item[0])[0] === 'fallback'">
+                    {{
+                      item[0].fallback.token0 |
+                        bigintToFloat(
+                          tokens[currentPool[2].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[currentPool[2].pairInfo.token0[0].toString()]
+                            .decimals
+                        )
+                    }}
+                    {{
+                      tokens[currentPool[2].pairInfo.token0[0].toString()]
+                        .symbol
+                    }}
+                    +
+                    {{
+                      item[0].fallback.token1 |
+                        bigintToFloat(
+                          tokens[currentPool[2].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[currentPool[2].pairInfo.token1[0].toString()]
+                            .decimals
+                        )
+                    }}
+                    {{
+                      tokens[currentPool[2].pairInfo.token1[0].toString()]
+                        .symbol
+                    }}
+                  </div>
+                  <div v-if="Object.keys(item[0])[0] === 'deposit'">
+                    <span v-show="item[0].deposit.token0">
+                      {{
+                        item[0].deposit.token0 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token0[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token0[0].toString()]
+                          .symbol
+                      }}
+                    </span>
+                    <span
+                      v-show="item[0].deposit.token0 && item[0].deposit.token1"
+                      >+</span
+                    >
+                    <span v-show="item[0].deposit.token1">
+                      {{
+                        item[0].deposit.token1 |
+                          bigintToFloat(
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals,
+                            tokens[currentPool[2].pairInfo.token1[0].toString()]
+                              .decimals
+                          )
+                      }}
+                      {{
+                        tokens[currentPool[2].pairInfo.token1[0].toString()]
+                          .symbol
+                      }}
+                    </span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="nft-main-pagination mt20 flex-center">
+          <a-pagination
+            class="pagination"
+            v-show="accountEvents.length > 100"
+            :current="currentAccountEventPage"
+            :defaultPageSize="100"
+            :total="accountEvents.length"
+            @change="changeAccountEvents"
+          />
+        </div>
+      </a-spin>
+    </a-modal>
     <nft-balance
       ref="nftBalance"
       :nft-balance="nftBalance"
@@ -2719,6 +3380,7 @@ import { NftService } from '@/ic/nft/Service';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { NFT } from '@/ic/ICDexRouter/model';
 import {
+  hexToBytes,
   principalToAccount,
   principalToAccountIdentifier,
   toHexString
@@ -2726,7 +3388,7 @@ import {
 import { makerPoolService } from '@/ic/makerPool/makerPoolService';
 import { namespace } from 'vuex-class';
 import NftBalance from '@/views/home/ICDex/components/NFTBalance.vue';
-import { PairTrie, PairTrieResponse } from '@/ic/ICSwapRouter/model';
+import { PairsData, PairTrie, PairTrieResponse } from '@/ic/ICSwapRouter/model';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { Menu } from '@/components/menu/model';
 import BigNumber from 'bignumber.js';
@@ -2751,6 +3413,7 @@ import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { checkAuth } from '@/ic/CheckAuth';
+import { RoundInfo } from '@/ic/Mining/model';
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
@@ -2787,6 +3450,15 @@ let loading;
           : value && value._isPrincipal
           ? value.toString()
           : value
+      );
+    },
+    filterRatio(val: bigint, total: bigint): string {
+      return (
+        new BigNumber(val.toString(10))
+          .div(total.toString(10))
+          .times(100)
+          .decimalPlaces(3)
+          .toString(10) + '%'
       );
     }
   }
@@ -2834,6 +3506,10 @@ export default class extends Vue {
   private poolsHold: Array<Pool> = [];
   private pools: Array<Pool> = [];
   private poolsPri: Array<Pool> = [];
+  private poolsTable: Array<Pool> = [];
+  private sortType = '';
+  private page = 1;
+  private isList = false;
   private nfts: TokensExt = [];
   private nftBalancePool: Array<NFT> = [];
   private nftBalanceVip: Array<NFT> = [];
@@ -2878,6 +3554,12 @@ export default class extends Vue {
   private eventSpinning = false;
   private eventsTotal = 0;
   private currentEventPage = 1;
+  private accountEventsVisible = false;
+  private accountEventsSpinning = false;
+  private accountEvents: Array<[PoolEvent, Time]> = [];
+  private currentAccountEventPage = 1;
+  private miningPairs: Array<PairsData> = [];
+  private currentRound: RoundInfo = null;
   activated(): void {
     const poolId = this.$route.query.id;
     if (
@@ -2905,6 +3587,7 @@ export default class extends Vue {
               this.$set(this.poolsLoad[i], 4, res);
               const poolsHold = [];
               const pools = [];
+              const poolsTable = [];
               this.poolsLoad.forEach((item) => {
                 if (
                   item &&
@@ -2912,6 +3595,11 @@ export default class extends Vue {
                     !item[2].initialized ||
                     (item[3] && item[3].poolShares))
                 ) {
+                  if (item[2].pairInfo.token0[0].toString() === ICLToken) {
+                    poolsTable.unshift(item);
+                  } else {
+                    poolsTable.push(item);
+                  }
                   if (item[4] && item[4][0]) {
                     if (item[2].pairInfo.token0[0].toString() === ICLToken) {
                       poolsHold.unshift(item);
@@ -2929,6 +3617,7 @@ export default class extends Vue {
               });
               this.poolsHold = poolsHold;
               this.pools = pools;
+              this.poolsTable = poolsTable;
               this.initSort();
             });
           break;
@@ -2965,6 +3654,7 @@ export default class extends Vue {
     this.poolsHold = [];
     this.poolsLoad = [];
     this.poolsPri = [];
+    this.poolsTable = [];
     if (!this.listDeployedSnses.length) {
       this.listDeployedSnses = await this.SNSWasmService.listDeployedSnses();
     }
@@ -2988,6 +3678,10 @@ export default class extends Vue {
       this.pairPools = '';
     }
   }
+  private initMining(miningPairs, currentRound): void {
+    this.miningPairs = miningPairs;
+    this.currentRound = currentRound;
+  }
   deactivated(): void {
     console.log('deactivated');
     // this.clearTimeout();
@@ -3003,6 +3697,26 @@ export default class extends Vue {
       this.timer[i] = null;
     }
   }
+  private async getAccountEvents(item: Pool): Promise<void> {
+    const poolId = item[1][0][0].toString();
+    this.currentAccountEventPage = 1;
+    this.currentPool = item;
+    this.accountEventsVisible = true;
+    this.accountEventsSpinning = true;
+    const accountId = hexToBytes(
+      principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
+    );
+    const accountEvents = await this.makerPoolService.get_account_events(
+      poolId,
+      accountId
+    );
+    const accountTypes = ['withdraw', 'fallback', 'deposit', 'add', 'remove'];
+    this.accountEvents = accountEvents.filter((item) => {
+      const type = Object.keys(item[0])[0];
+      return accountTypes.includes(type);
+    });
+    this.accountEventsSpinning = false;
+  }
   private changeMenu(value: string): void {
     this.currentPoolsMenu = value;
   }
@@ -3010,8 +3724,14 @@ export default class extends Vue {
     this.currentEventPage = page;
     this.getEvents(this.currentPool[1][0][0].toString());
   }
+  private changeAccountEvents(page): void {
+    this.currentAccountEventPage = page;
+  }
   private changeHistory(page): void {
     this.currentHistoryPage = page;
+  }
+  private changePoolsTable(page): void {
+    this.page = page;
   }
   private async getTradeList(swapId: string, account: string): Promise<void> {
     this.poolRecord = [];
@@ -3300,7 +4020,7 @@ export default class extends Vue {
         this.nfts = tokensExt;
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private async NFTBalance(): Promise<void> {
@@ -3397,7 +4117,11 @@ export default class extends Vue {
     // }
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const needConnectInfinity1 = await needConnectInfinity(canisterIds);
-    if (priList[principal] === 'Plug' && flag && this.$route.name === 'Pools') {
+    if (
+      (priList[principal] === 'Plug' || priList[principal] === 'SignerPlug') &&
+      flag &&
+      this.$route.name === 'Pools'
+    ) {
       // this.loading.close();
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
@@ -3496,6 +4220,11 @@ export default class extends Vue {
         item &&
         (!item[3] || !item[2].initialized || (item[3] && item[3].poolShares))
       ) {
+        if (item[2].pairInfo.token0[0].toString() === ICLToken) {
+          this.poolsTable.unshift(item);
+        } else {
+          this.poolsTable.push(item);
+        }
         if (item[4] && item[4][0]) {
           if (item[2].pairInfo.token0[0].toString() === ICLToken) {
             this.poolsHold.unshift(item);
@@ -3610,22 +4339,151 @@ export default class extends Vue {
       }, 5 * 1000);
     }
   }
+  private onSort(type: string): void {
+    this.page = 1;
+    if (type === 'balance') {
+      if (this.sortType === 'balanceDown') {
+        this.sortType = 'balanceUp';
+      } else {
+        this.sortType = 'balanceDown';
+      }
+    }
+    if (type === 'apy') {
+      if (this.sortType === 'apyDown') {
+        this.sortType = 'apyUp';
+      } else {
+        this.sortType = 'apyDown';
+      }
+    }
+    this.sort();
+  }
+  private sort(): void {
+    if (this.sortType === 'balanceDown') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
+        const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
+        let balance0 = new BigNumber(0);
+        let balance1 = new BigNumber(0);
+        if (a[3] && a[3].poolBalance && b[3] && b[3].poolBalance) {
+          balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
+            .times(price0)
+            .div(
+              10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals
+            );
+          balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
+            .times(price1)
+            .div(
+              10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals
+            );
+        }
+        if (balance0.gt(balance1)) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+    if (this.sortType === 'balanceUp') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
+        const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
+        let balance0 = new BigNumber(0);
+        let balance1 = new BigNumber(0);
+        if (a[3] && a[3].poolBalance && b[3] && b[3].poolBalance) {
+          balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
+            .times(price0)
+            .div(
+              10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals
+            );
+          balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
+            .times(price1)
+            .div(
+              10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals
+            );
+        }
+        if (balance0.lt(balance1)) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+    if (this.sortType === 'apyDown') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        if (new BigNumber(a[3].apy7d.apy[0]).gt(b[3].apy7d.apy[0])) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+    if (this.sortType === 'apyUp') {
+      this.poolsTable.sort((a, b) => {
+        const token1Symbol = a[2].pairInfo.token1[1];
+        const token1Symbol1 = b[2].pairInfo.token1[1];
+        if (
+          token1Symbol.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return 1;
+        }
+        if (
+          token1Symbol1.toLocaleLowerCase().includes('test') ||
+          !a[2].initialized
+        ) {
+          return -1;
+        }
+        if (new BigNumber(a[3].apy7d.apy[0]).lt(b[3].apy7d.apy[0])) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    }
+  }
   private initSort(): void {
-    // this.poolsHold.sort((a, b) => {
-    //   const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
-    //   const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
-    //   const balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
-    //     .times(price0)
-    //     .div(10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals);
-    //   const balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
-    //     .times(price1)
-    //     .div(10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals);
-    //   if (balance0.gt(balance1)) {
-    //     return -1;
-    //   } else {
-    //     return 1;
-    //   }
-    // });
     let ICLPool = [];
     let lIndex = null;
     this.pools.some((item, index) => {
@@ -3661,6 +4519,34 @@ export default class extends Vue {
       }
     });
     this.pools = ICLPool.concat(pools);
+    this.poolsTable.sort((a, b) => {
+      if (b[2].pairInfo.token0[0].toString() === ICLToken) {
+        console.log('b');
+        return 1;
+      }
+      if (a[2].pairInfo.token0[0].toString() === ICLToken) {
+        console.log('a');
+        return -1;
+      }
+      const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
+      const price1 = this.getBasePrice(b[2].pairInfo.token1[1]);
+      let balance0 = new BigNumber(0);
+      let balance1 = new BigNumber(0);
+      if (a[3] && a[3].poolBalance && b[3] && b[3].poolBalance) {
+        balance0 = new BigNumber(a[3].poolBalance.balance1.toString(10))
+          .times(price0)
+          .div(10 ** this.tokens[a[2].pairInfo.token1[0].toString()].decimals);
+        balance1 = new BigNumber(b[3].poolBalance.balance1.toString(10))
+          .times(price1)
+          .div(10 ** this.tokens[b[2].pairInfo.token1[0].toString()].decimals);
+      }
+      if (balance0.gt(balance1)) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    console.log(this.poolsTable);
   }
   private getBasePrice(tokenSymbol: string): string {
     let price = this.icpPrice;
@@ -3675,6 +4561,9 @@ export default class extends Vue {
       tokenSymbol.toLocaleLowerCase().includes('usdc')
     ) {
       price = '1';
+    }
+    if (tokenSymbol.toLocaleLowerCase().includes('test')) {
+      price = '0';
     }
     return price;
   }
@@ -3731,6 +4620,7 @@ export default class extends Vue {
     this.poolsHold = [];
     this.poolsLoad = [];
     this.poolsPri = [];
+    this.poolsTable = [];
     this.getPools([], 1);
   }
   private onCreatePool(): void {
@@ -3751,8 +4641,13 @@ export default class extends Vue {
     pair?: string,
     pool?: string,
     index?: number,
-    isHold = false
+    isHold?: boolean,
+    event?
   ): void {
+    const current =
+      event.target.parentElement.parentElement.parentElement.parentElement;
+    const mouseoutEvent = new MouseEvent('mouseleave');
+    current.dispatchEvent(mouseoutEvent);
     this.isBecomeMaker = true;
     if (pair) {
       this.becomeMakerIndex = index;
@@ -3895,7 +4790,15 @@ export default class extends Vue {
   top: 14px;
 }
 .market-main {
+  width: 1100px;
   margin-top: 100px;
+}
+.list-table-main {
+  img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
 }
 .pool-main {
   display: flex;
@@ -3920,9 +4823,9 @@ export default class extends Vue {
     display: flex;
     flex-direction: column;
     position: relative;
-    width: 490px;
+    width: 510px;
     line-height: 1.8;
-    padding: 16px 16px 76px 16px;
+    padding: 20px 20px 76px 20px;
     margin-top: 15px;
     background: #131920;
     color: #8c98a5;
@@ -3946,8 +4849,6 @@ export default class extends Vue {
     bottom: 16px;
   }
   .pool-apy {
-    display: flex;
-    justify-content: flex-start;
     margin-top: 5px;
     .pool-apy-item {
       display: flex;
@@ -3969,6 +4870,18 @@ export default class extends Vue {
   border-radius: 10px;
   background: #21c77d;
   color: #fff;
+  &.vip-maker-pool-n {
+    background: #adb3c4;
+  }
+}
+.become-vip {
+  padding: 15px 16px;
+  font-size: 14px;
+  color: #adb3c4;
+  button {
+    width: 180px;
+    margin-top: 20px;
+  }
 }
 .pool-pair-img {
   display: flex;
@@ -4103,11 +5016,53 @@ export default class extends Vue {
     }
   }
 }
+.pools-table {
+  min-height: 200px;
+  line-height: 1.8;
+  th {
+    background: #11171d !important;
+  }
+  td {
+    padding: 15px 5px;
+  }
+  tbody {
+    tr {
+      border-bottom: 1px solid #212b35;
+      font-size: 12px;
+    }
+  }
+  a {
+    color: #1996c4;
+  }
+}
+.sort-table-main {
+  display: flex;
+  align-items: center;
+}
+.sort-table {
+  display: flex;
+  flex-direction: column;
+  margin-left: 5px;
+  margin-top: -5px;
+  i {
+    font-size: 12px;
+    height: 8px;
+    color: #646e79;
+    &.active {
+      color: #0862bc;
+    }
+  }
+}
 </style>
 <style lang="scss">
 .yield-tooltip {
   .ant-tooltip-inner {
     padding: 0;
+  }
+}
+.become-vip-tooltip {
+  &.ant-tooltip {
+    max-width: 370px;
   }
 }
 </style>

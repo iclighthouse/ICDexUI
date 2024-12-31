@@ -191,11 +191,11 @@ export default class extends Vue {
     const actionInput = this.initBlobParams(parse);
     console.log(actionInput);
     console.log(this.summary);
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const proposal: Proposal = {
         title: [this.title],
@@ -277,6 +277,8 @@ export default class extends Vue {
   private async getNeurons(): Promise<void> {
     const neuronIdList = await this.governanceService.getNeuronIds();
     const res = await this.governanceService.listNeurons({
+      include_public_neurons_in_full_neurons: [false],
+      include_empty_neurons_readable_by_caller: [false],
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });

@@ -45,6 +45,20 @@
                 <!--<dd></dd>-->
               </dl>
             </div>
+            <div class="connect-list-item pc-show" @click="connect('NFID')">
+              <span><img src="@/assets/img/NFID.svg" alt="" /></span>
+              <dl>
+                <dt>Connect NFID Wallet</dt>
+                <!--<dd></dd>-->
+              </dl>
+            </div>
+            <!--<div class="connect-list-item pc-show" @click="connect('Signer')">
+              <span><img src="@/assets/img/contract.png" alt="" /></span>
+              <dl>
+                <dt>Connect Signers Wallet</dt>
+                &lt;!&ndash;<dd></dd>&ndash;&gt;
+              </dl>
+            </div>-->
             <!--<div class="connect-list-item pc-show" @click="connect('Infinity')">
               <span><img src="@/assets/img/infinity.png" alt="" /></span>
               <dl>
@@ -119,7 +133,7 @@
     <a-modal
       v-model="comingVisible"
       centered
-      width="400px"
+      width="500px"
       :footer="null"
       :keyboard="false"
       :maskClosable="false"
@@ -135,6 +149,38 @@
         >
           Confirm
         </button>
+      </div>
+    </a-modal>
+    <a-modal
+      v-model="signerVisible"
+      centered
+      width="460px"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="delete-modal"
+    >
+      <div
+        class="font-bold mt20 base-font-title"
+        style="margin-bottom: 10px; font-size: 18px"
+      >
+        Connect wallet
+      </div>
+      <div>
+        <div class="connect-list-item pc-show" @click="connect('SignerPlug')">
+          <span><img src="@/assets/img/plug.png" alt="" /></span>
+          <dl>
+            <dt>Connect Plug Wallet</dt>
+            <!--<dd></dd>-->
+          </dl>
+        </div>
+        <div class="connect-list-item pc-show" @click="connect('SignerNFID')">
+          <span><img src="@/assets/img/NFID.svg" alt="" /></span>
+          <dl>
+            <dt>Connect NFID Wallet</dt>
+            <!--<dd></dd>-->
+          </dl>
+        </div>
       </div>
     </a-modal>
     <a-modal
@@ -216,6 +262,7 @@ import { namespace } from 'vuex-class';
 import { ConnectMetaMaskMixin } from '@/mixins';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
+import { NFIDLogin } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 @Component({
   name: 'Index',
@@ -233,6 +280,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   private plugVisible = false;
   private InfinityVisible = false;
   private hostname = '';
+  private signerVisible = false;
   created(): void {
     this.hostname = window.location.hostname;
   }
@@ -253,8 +301,11 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.type = 'Existing';
   }
   public async connect(type: LoginType): Promise<void> {
+    console.log(type);
     this.setCheckAuth(false);
-    if (type === 'InternetIdentitiy') {
+    if (type === 'Signer') {
+      this.signerVisible = true;
+    } else if (type === 'InternetIdentitiy') {
       this.connectSpinning = true;
       const authClientAPi = await AuthClientAPi.create();
       await authClientAPi.login();
@@ -271,12 +322,20 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } else if (type === 'MetaMask') {
       this.connectSpinning = true;
       this.connectMetaMask();
-    } else if (type === 'Plug') {
+    } else if (type === 'Plug' || type === 'SignerPlug') {
       const hasPlug = this.checkPlug();
       if (!hasPlug) {
         this.plugVisible = true;
       } else {
-        this.connectSpinning = true;
+        let loading;
+        if (type === 'SignerPlug') {
+          loading = this.$loading({
+            lock: true,
+            background: 'rgba(0, 0, 0, 0.5)'
+          });
+        } else {
+          this.connectSpinning = true;
+        }
         // const principal = localStorage.getItem('principal');
         // const localWhitelist =
         //   JSON.parse(localStorage.getItem('whitelist')) || {};
@@ -288,11 +347,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           (window as any).ic.plug &&
           (window as any).ic.plug.agent
         ) {
-          (window as any).ic.plug.disconnect();
+          await (window as any).ic.plug.disconnect();
         }
-        const isConnect = await connectPlug.connect(whitelist);
+        const isConnect = await connectPlug.connect(
+          whitelist,
+          type === 'SignerPlug'
+        );
         if (isConnect) {
-          await createPlugWhiteActor();
+          await createPlugWhiteActor(type === 'SignerPlug');
           if (this.$route.query.redirect) {
             this.$router.push(this.$route.query.redirect as any).catch(() => {
               return;
@@ -303,7 +365,11 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
             });
           }
         }
-        this.connectSpinning = false;
+        if (type === 'SignerPlug') {
+          loading.close();
+        } else {
+          this.connectSpinning = false;
+        }
       }
     } else if (type === 'Infinity') {
       const hasInfinity = this.checkInfinity();
@@ -339,6 +405,38 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } else if (type === 'HardwareWallet') {
       this.modalType = type;
       this.comingVisible = true;
+    } else if (type === 'NFID') {
+      this.connectSpinning = true;
+      await NFIDLogin();
+      if (this.$route.query.redirect) {
+        this.$router.push(this.$route.query.redirect as any).catch(() => {
+          return;
+        });
+      } else {
+        this.$router.push('/ICDex').catch(() => {
+          return;
+        });
+      }
+    } else if (type === 'SignerNFID') {
+      const loading = this.$loading({
+        lock: true,
+        background: 'rgba(0, 0, 0, 0.5)'
+      });
+      const signerAgent = await NFIDLogin(true);
+      console.log(signerAgent);
+      loading.close();
+      this.signerVisible = false;
+      if (signerAgent) {
+        if (this.$route.query.redirect) {
+          this.$router.push(this.$route.query.redirect as any).catch(() => {
+            return;
+          });
+        } else {
+          this.$router.push('/ICDex').catch(() => {
+            return;
+          });
+        }
+      }
     }
   }
   private loginByExists(): void {

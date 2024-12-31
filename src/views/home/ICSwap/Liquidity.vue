@@ -464,7 +464,7 @@ export default class extends Vue {
           this.onGetPairs();
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
       // loading.close();
     }

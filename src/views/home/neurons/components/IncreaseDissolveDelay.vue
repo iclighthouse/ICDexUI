@@ -389,11 +389,11 @@ export default class extends Vue {
     this.dissolveDelayInput = this.dissolveDelay.toString(10);
   }
   private async updateDelay(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const dissolveDelay = new BigNumber(this.dissolveDelay)
         .minus(this.defaultValue)
@@ -407,7 +407,7 @@ export default class extends Vue {
       this.$message.success('Increase Dissolve Delay Success');
       this.$emit('increaseDissolveDelaySuccess');
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
   }

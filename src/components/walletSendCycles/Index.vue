@@ -177,11 +177,11 @@ export default class extends Vue {
   private sendCycles(): void {
     this.$refs.sendCyclesForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           if (this.type === 'sendCyclesToken') {
             const args = IDL.encode(
@@ -191,7 +191,9 @@ export default class extends Vue {
             const walletSendRequest: WalletCallRequest = {
               args: Array.from(Buffer.from(args)),
               cycles: BigInt(
-                new BigNumber(this.sendCyclesForm.cycles).times(10 ** 12)
+                new BigNumber(this.sendCyclesForm.cycles)
+                  .times(10 ** 12)
+                  .toString(10)
               ),
               method_name: 'cyclesReceive',
               canister: Principal.fromText(this.sendCyclesForm.to)
@@ -217,7 +219,9 @@ export default class extends Vue {
             const walletSendRequest: WalletSendRequest = {
               canister: Principal.fromText(this.sendCyclesForm.to),
               amount: BigInt(
-                new BigNumber(this.sendCyclesForm.cycles).times(10 ** 12)
+                new BigNumber(this.sendCyclesForm.cycles)
+                  .times(10 ** 12)
+                  .toString(10)
               )
             };
             const res = await this.walletService.walletSend(

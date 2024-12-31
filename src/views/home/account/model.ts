@@ -1,7 +1,16 @@
 import { TokenItem } from '@/ic/ICLighthouse/model';
 import { Txid } from '@/ic/ICLighthouseToken/model';
-import { IcTokenInfo, TxIndex, TxStatus, Wei } from '@/ic/ckETHMinter/model';
+import {
+  IcTokenInfo,
+  RetrieveEthStatus,
+  TxIndex,
+  TxStatus,
+  Wei,
+  WithdrawErc20Response
+} from '@/ic/ckETHMinter/model';
 import { Time } from '@/ic/common/icType';
+import { CK_BTC_CANISTER_ID } from '@/ic/utils';
+import { RetrieveBtcStatus } from '@/ic/ckbtcMinter/model';
 
 export type SettingType = 'Modify' | 'Update';
 export interface AddTokenItem extends TokenItem {
@@ -73,8 +82,7 @@ export const networkIds = {
   '-1': 'IC Network',
   '0': 'Bitcoin',
   '1': 'Ethereum Mainnet',
-  '2': 'Goerli'
-  // '3': 'Sepolia'
+  '2': 'Sepolia'
 };
 export const networkList = [
   {
@@ -94,15 +102,11 @@ export const networkList = [
   },
   {
     id: '2',
-    name: 'Goerli Testnet',
-    logo: require('@/assets/img/goerlieth.svg')
+    name: 'Sepolia Testnet',
+    logo: require('@/assets/img/seth.svg')
   }
-  // {
-  //   id: '3',
-  //   name: 'Sepolia Testnet',
-  //   logo: require('@/assets/img/seth.svg')
-  // }
 ];
+
 export interface ICNetworkTokensInterface {
   id: string;
   networkId: string;
@@ -128,7 +132,7 @@ export const networkTokens: Array<ICNetworkTokensInterface> = [
     networkToIcId: '0',
     symbol: 'ckBTC',
     name: 'ckBTC',
-    tokenId: 'mxzaz-hqaaa-aaaar-qaada-cai',
+    tokenId: CK_BTC_CANISTER_ID,
     icTokenInfo: null,
     logo: require('@/assets/img/ckBTC.svg')
   },
@@ -154,7 +158,9 @@ export type ActiveType =
   | 'dexMint'
   | 'dexRetrieve'
   | 'mintCKETH'
-  | 'retrieveCKETH';
+  | 'retrieveCKETH'
+  | 'mintCKBTC'
+  | 'BTCRetrieve';
 export interface Active {
   claim?: Array<ClaimActive>; // method2 claim step1
   claim2?: Array<ClaimActive>; // method2 claim step2
@@ -164,21 +170,110 @@ export interface Active {
   retrieve2?: [TxIndex, TxStatus, Time]; // retrieve step2
   mintCKETH?: Array<ClaimActive>; // ckETH mint
   retrieveCKETH?: Array<RetrieveActive>; // ckETH retrieve
+  CKETHResponse?: Array<| ClaimCKETHActiveResponse
+    | RetrieveActiveResponse
+    | MintCKBTCResponse
+    | RetrieveCKBTCResponse>;
 }
 export interface RetrieveActive {
   tokenId: string;
   amount: string;
+  status?: RetrieveEthStatus;
+  time?: string;
 }
 export interface MintActive {
   tokenId: string;
   amount: string;
+  time?: string;
 }
 export interface ClaimActive {
   tokenId: string;
   txHash: string;
+  time?: string;
 }
 export interface ClaimCKETHActive {
   amount: string;
   txHash: string;
   tokenId: string;
+  blockNumber: string;
+  time?: string;
+}
+export interface ClaimCKETHActiveResponse {
+  amount: string;
+  txHash: string;
+  tokenId: string;
+  blockNumber: string;
+  type: string;
+  time?: string;
+}
+export interface RetrieveActiveResponse {
+  tokenId: string;
+  amount: string;
+  status?: RetrieveEthStatus;
+  type: string;
+  time?: string;
+}
+export interface RetrieveCKBTCResponse {
+  blockIndex: string;
+  status: RetrieveBtcStatus;
+  time: string;
+  BTCBlock?: number;
+  type: string;
+}
+export interface MintCKBTCResponse {
+  txid: string;
+  version: number;
+  locktime: number;
+  vin: Array<{
+    txid: string;
+    vout: number;
+    prevout: {
+      scriptpubkey: string;
+      scriptpubkey_asm: string;
+      scriptpubkey_type: string;
+      scriptpubkey_address: string;
+      valuecommitment: string;
+      assetcommitment: string;
+    };
+    scriptsig: string;
+    scriptsig_asm: string;
+    witness: [string, string];
+    is_coinbase: boolean;
+    sequence: number;
+    is_pegin: boolean;
+    issuance: {
+      asset_id: string;
+      is_reissuance: boolean;
+      contract_hash: string;
+      asset_entropy: string;
+      assetamountcommitment: string;
+      tokenamountcommitment: string;
+    };
+  }>;
+  vout: Array<| {
+    scriptpubkey: string;
+    scriptpubkey_asm: string;
+    scriptpubkey_type: string;
+    scriptpubkey_address: string;
+    valuecommitment: string;
+    assetcommitment: string;
+  }
+    | {
+    scriptpubkey: string;
+    scriptpubkey_asm: string;
+    scriptpubkey_type: string;
+    value: number;
+    asset: string;
+  }>;
+  size: number;
+  weight: number;
+  fee: number;
+  status: {
+    confirmed: boolean;
+    block_height: number;
+    block_hash: string;
+    block_time: number;
+  };
+  type: string;
+  time: string;
 }

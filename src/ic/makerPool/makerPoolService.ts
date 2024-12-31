@@ -1,4 +1,5 @@
 import Service, {
+  PoolEvent,
   PoolInfo,
   PoolStats,
   ShareWeighted,
@@ -7,9 +8,14 @@ import Service, {
 } from '@/ic/makerPool/model';
 import makerPoolIDL from './makerPool.did';
 import { createService } from '@/ic/createService';
-import { Icrc1Account } from '@/ic/common/icType';
+import { Icrc1Account, Time } from '@/ic/common/icType';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
+import {
+  TOPoolResponse,
+  TTErrorsResponse,
+  TTsResponse
+} from '@/ic/ICDex/model';
 
 export class makerPoolService {
   public stats2 = async (canisterId: string): Promise<PoolStats> => {
@@ -184,5 +190,93 @@ export class makerPoolService {
       subAccount = [fromSubAccountId(subAccountId)];
     }
     return await service.fallback(subAccount);
+  };
+  public ictc_getTOCount = async (canisterId: string): Promise<bigint> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      false,
+      false
+    );
+    try {
+      const res = await service.ictc_getTOCount();
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTTs = async (
+    canisterId: string,
+    page: bigint,
+    size: bigint
+  ): Promise<TTsResponse> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      false,
+      false
+    );
+    try {
+      const res = await service.ictc_getTTs(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTTErrors = async (
+    canisterId: string,
+    page: bigint,
+    size: bigint
+  ): Promise<TTErrorsResponse> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      false,
+      false
+    );
+    try {
+      const res = await service.ictc_getTTErrors(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTOPool = async (
+    canisterId: string
+  ): Promise<TOPoolResponse> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      false,
+      false
+    );
+    try {
+      const res = await service.ictc_getTOPool();
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public get_account_events = async (
+    canisterId: string,
+    accountId: Array<number>
+  ): Promise<Array<[PoolEvent, Time]>> => {
+    const service = await createService<Service>(
+      canisterId,
+      makerPoolIDL,
+      false,
+      false
+    );
+    try {
+      const res = await service.get_account_events(accountId);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   };
 }

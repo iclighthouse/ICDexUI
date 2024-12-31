@@ -31,10 +31,13 @@ import Service, {
   STOrder,
   StoSetting,
   SysMode,
+  TOPoolResponse,
   TradingResult,
   TrieList,
   TrieList_3,
   TrieList_5,
+  TTErrorsResponse,
+  TTsResponse,
   TxAccount,
   TxnRecord,
   UpdateStopLossOrderConfig
@@ -267,7 +270,7 @@ export class ICDexService {
     };
   };
   public ictc_TTRun = async (canisterId: string): Promise<bigint> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     return await service.ictc_runTT();
   };
   public getConfig = async (
@@ -306,7 +309,7 @@ export class ICDexService {
         dexInfo: SerializableIC(res)
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -409,7 +412,7 @@ export class ICDexService {
   public ta_description = async (
     canisterId: string
   ): Promise<{ pairId: string; ta_description: string }> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     const res = await service.ta_description();
     return {
       pairId: canisterId,
@@ -420,7 +423,7 @@ export class ICDexService {
     canisterId: string,
     address: Address
   ): Promise<{ pairId: string; referrer: Array<[Address, boolean]> }> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     if (validatePrincipal(address)) {
       address = principalToAccountIdentifier(Principal.fromText(address));
     }
@@ -434,7 +437,7 @@ export class ICDexService {
     canisterId: string,
     round: Array<Round> = []
   ): Promise<{ pairId: string; compRoundResponse: CompRoundResponse }> => {
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     const res = await service.comp_round(round);
     return {
       pairId: canisterId,
@@ -449,7 +452,7 @@ export class ICDexService {
     if (!address) {
       return null;
     }
-    const service = await this.check(canisterId, false);
+    const service = await this.check(canisterId, false, false);
     if (validatePrincipal(address)) {
       address = principalToAccountIdentifier(Principal.fromText(address));
     }
@@ -577,7 +580,7 @@ export class ICDexService {
         openingTime: res.openingTime
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -603,7 +606,7 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -619,7 +622,7 @@ export class ICDexService {
         accountSetting: SerializableIC(res)
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -637,7 +640,7 @@ export class ICDexService {
       }
       return await service.accountConfig(mode, keeping, subAccount);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -666,7 +669,7 @@ export class ICDexService {
       }
       return await service.depositFallback(subAccount);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -681,6 +684,7 @@ export class ICDexService {
     if (subAccountId) {
       subAccount = [fromSubAccountId(subAccountId)];
     }
+    console.log(service);
     return await service.withdraw(token0Amount, token1Amount, subAccount);
   };
   public getRole = async (
@@ -695,7 +699,7 @@ export class ICDexService {
         dexRole: SerializableIC(res)
       };
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -745,7 +749,7 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -858,7 +862,7 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       return null;
     }
   };
@@ -940,6 +944,56 @@ export class ICDexService {
     const service = await this.check(canisterId, false, false);
     try {
       const res = await service.brokerList(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTOCount = async (canisterId: string): Promise<bigint> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.ictc_getTOCount();
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTTs = async (
+    canisterId: string,
+    page: bigint,
+    size: bigint
+  ): Promise<TTsResponse> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.ictc_getTTs(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTTErrors = async (
+    canisterId: string,
+    page: bigint,
+    size: bigint
+  ): Promise<TTErrorsResponse> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.ictc_getTTErrors(page, size);
+      return SerializableIC(res);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+  public ictc_getTOPool = async (
+    canisterId: string
+  ): Promise<TOPoolResponse> => {
+    const service = await this.check(canisterId);
+    try {
+      const res = await service.ictc_getTOPool();
       return SerializableIC(res);
     } catch (e) {
       console.log(e);

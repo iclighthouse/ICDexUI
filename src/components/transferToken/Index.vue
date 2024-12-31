@@ -136,6 +136,7 @@ import store from '@/store';
 import { isInfinity } from '@/ic/isInfinity';
 import { validateAccount } from '@/ic/utils';
 import { DePairs } from '@/views/home/ICDex/model';
+import { getFee } from '@/ic/getTokenFee';
 
 const OGYTokenId = 'jwcfb-hyaaa-aaaaj-aac4q-cai';
 const ProSubaccountId = 1;
@@ -314,7 +315,13 @@ export default class extends Vue {
   }
   private async getGas(): Promise<void> {
     let fee;
-    if (this.currentToken.standard === TokenStandard.DRC20) {
+    const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
+    if (
+      tokens[this.currentToken.canisterId.toString()] &&
+      tokens[this.currentToken.canisterId.toString()].fee
+    ) {
+      fee = getFee(tokens[this.currentToken.canisterId.toString()]);
+    } else if (this.currentToken.standard === TokenStandard.DRC20) {
       try {
         this.gas = await this.DRC20TokenService.gas(
           this.currentToken.canisterId.toString()
@@ -377,11 +384,11 @@ export default class extends Vue {
     (this.$refs.transferForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             let amount = BigInt(
               new BigNumber(10)
@@ -640,10 +647,12 @@ export default class extends Vue {
                     this.subaccountId
                   );
                 } else {
-                  const err = Object.keys(
-                    (res as { Err: IcrcTransferError }).Err
-                  )[0];
-                  this.$message.error(err);
+                  const err = (res as { Err: IcrcTransferError }).Err;
+                  this.$message.error(
+                    JSON.stringify(err, (key, value) =>
+                      typeof value === 'bigint' ? value.toString(10) : value
+                    )
+                  );
                 }
               } else {
                 if (
@@ -705,6 +714,7 @@ export default class extends Vue {
               loading.close();
             }
           } catch (e) {
+            console.log(e);
             loading.close();
             this.$message.error('Transfer fail');
           }

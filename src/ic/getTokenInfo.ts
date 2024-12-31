@@ -48,7 +48,13 @@ export const getTokenInfo = async (
     tokenInfo = await getDip20TokenInfo(tokenId.toString(), tokenInfo);
   }
   const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-  if (!tokens[tokenId.toString()]) {
+  if (
+    !tokens[tokenId.toString()] ||
+    (tokens[tokenId.toString()] &&
+      (tokens[tokenId.toString()].name !== tokenInfo.name ||
+        tokens[tokenId.toString()].symbol !== tokenInfo.symbol ||
+        tokens[tokenId.toString()].fee !== tokenInfo.fee))
+  ) {
     tokens[tokenId.toString()] = {
       name: tokenInfo.name,
       decimals: tokenInfo.decimals,

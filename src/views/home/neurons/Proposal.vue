@@ -589,7 +589,7 @@ export default class extends Vue {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
           const err = Object.values(res.command[0])[0] as GovernanceError;
-          console.error(err.error_message);
+          console.log(err.error_message);
         } else {
           //
         }
@@ -601,11 +601,11 @@ export default class extends Vue {
     }
   }
   private async onVote(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const MAX_COCURRENCY = 40;
       let promiseValue = [];
@@ -707,6 +707,8 @@ export default class extends Vue {
       neuronIdList.push(item.id[0].id);
     });
     const res = await this.governanceService.listNeurons({
+      include_public_neurons_in_full_neurons: [false],
+      include_empty_neurons_readable_by_caller: [false],
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });

@@ -205,7 +205,7 @@ export class PairsMixin extends Vue {
           icon: 'connect-plug',
           okText: 'OK',
           onOk() {
-            that.$router.push('/account');
+            that.$router.push('/wallet');
           }
         });
       } else {
@@ -300,11 +300,11 @@ export class PairsMixin extends Vue {
   }
   public async fallback(): Promise<void> {
     const currentICSwapService = new ICSwapService();
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       setTimeout(async () => {
         if (this.swapId === CYCLES_FINANCE_CANISTER_ID) {
@@ -326,21 +326,21 @@ export class PairsMixin extends Vue {
       }, 3 * 1000);
     } catch (e) {
       loading.close();
-      console.error(e);
+      console.log(e);
     }
   }
   public async withdrawBalance(): Promise<void> {
     const currentICSwapService = new ICSwapService();
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await currentICSwapService.withdraw(this.swapId, [this.autoWithdraw]);
       this.$message.success('Withdraw Success');
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
     this.getTokenBalance(
@@ -574,7 +574,7 @@ export class PairsMixin extends Vue {
       //   this.wallets[0].walletId.toString();
       // this.getCycles();
     }
-    if (priList[principal] === 'Plug') {
+    if (priList[principal] === 'Plug' || priList[principal] === 'SignerPlug') {
       this.connectPlug();
     }
   }
@@ -843,7 +843,7 @@ export class PairsMixin extends Vue {
       }
       this.depositing[this.depositAccountId][tokenId] = balance;
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     this.refreshDepositBalanceLoading[tokenId] = false;
     this.$forceUpdate();
@@ -1224,7 +1224,8 @@ export class PairsMixin extends Vue {
         const priList = JSON.parse(localStorage.getItem('priList')) || {};
         const connectInfinity = await needConnectInfinity([this.swapId]);
         if (
-          priList[principal] === 'Plug' &&
+          (priList[principal] === 'Plug' ||
+            priList[principal] === 'SignerPlug') &&
           flag &&
           this.$route.name === 'ICSwap'
         ) {

@@ -49,8 +49,8 @@
               </td>
               <td class="total-supply">
                 {{
-                  token.totalSupply
-                    | bigintToFloat(
+                  token.totalSupply |
+                    bigintToFloat(
                       Number(token.decimals),
                       Number(token.decimals)
                     )
@@ -992,7 +992,9 @@ export default class extends Mixins(BalanceMixin) {
     console.log(res);
     const remaining = res.reduce((remaining, item) => {
       return BigInt(
-        new BigNumber(remaining.toString(10)).plus(item.remaining.toString(10))
+        new BigNumber(remaining.toString(10))
+          .plus(item.remaining.toString(10))
+          .toString(10)
       );
     }, BigInt('0'));
     console.log(remaining);
@@ -1012,11 +1014,11 @@ export default class extends Mixins(BalanceMixin) {
   private createToken(): void {
     this.$refs.createTokenForm.validate(async (valid: any) => {
       if (valid) {
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         const principal = localStorage.getItem('principal');
         console.log(this.createTokenForm);
         const fee = BigInt(
@@ -1126,11 +1128,11 @@ export default class extends Mixins(BalanceMixin) {
     this.currentTokenIndex = index;
   }
   private async deleteToken(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.ICTokenService.deleteToken(
         this.currentToken.tokenId
@@ -1224,11 +1226,11 @@ export default class extends Mixins(BalanceMixin) {
     target.value = '';
   }
   private async updateMetadata(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.DRC20TokenService.setMetadata(
         this.currentMetadata,
@@ -1289,11 +1291,11 @@ export default class extends Mixins(BalanceMixin) {
   private async updateControllers(
     controllers: Array<Principal>
   ): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const request: UpdateSettingsRequest = {
         canister_id: this.currentToken.tokenId,
@@ -1323,11 +1325,11 @@ export default class extends Mixins(BalanceMixin) {
   private async modifyControllers(
     controllers: Array<Principal>
   ): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.ICTokenService.modifyControllers(
         this.currentToken.tokenId,
@@ -1386,7 +1388,11 @@ export default class extends Mixins(BalanceMixin) {
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const flag = needConnectPlug([tokenId]);
     const connectInfinity = await needConnectInfinity([tokenId]);
-    if (priList[this.getPrincipalId] === 'Plug' && flag) {
+    if (
+      (priList[this.getPrincipalId] === 'Plug' ||
+        priList[this.getPrincipalId] === 'SignerPlug') &&
+      flag
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       this.$info({
@@ -1555,11 +1561,11 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async updateOwner(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = this.DRC20TokenService.changeOwner(
         Principal.fromText(this.owner),
@@ -1577,11 +1583,11 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async modifyOwner(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.ICTokenService.modifyOwner(
         this.currentToken.tokenId,
@@ -1617,7 +1623,7 @@ export default class extends Mixins(BalanceMixin) {
         });
         this.$message.success('Success');
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Error');
       }
       loading.close();

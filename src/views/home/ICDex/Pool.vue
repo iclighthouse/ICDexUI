@@ -1,35 +1,5 @@
 <template>
   <div>
-    <div class="home-header">
-      <div class="home-header-left">
-        <img
-          class="home-header-logo"
-          src="@/assets/img/icdex-2.png"
-          alt="logo"
-        />
-      </div>
-      <ul>
-        <li
-          :class="{
-            active:
-              $route.fullPath.toLocaleLowerCase() ===
-                menu.path.toLocaleLowerCase() ||
-              (menu.value === 'Trade' && $route.name === 'ICDex') ||
-              (menu.value === 'Pools' && $route.name === 'Pool')
-          }"
-          v-for="(menu, index) in menuList"
-          :key="index"
-        >
-          <router-link :to="menu.path">{{ menu.value }}</router-link>
-        </li>
-      </ul>
-      <div class="flex-center margin-left-auto">
-        <launch :tokens="tokens" ref="launch"></launch>
-        <div class="home-header-right-info">
-          <account-info :menu-list="menuList"></account-info>
-        </div>
-      </div>
-    </div>
     <div class="pool-info container-width">
       <div class="proposal-main-title">
         <a-icon class="back-arrow" type="arrow-left" @click="back" />
@@ -56,9 +26,15 @@
               tokens[pool[1].pairInfo.token1[0].toString()].symbol
             }}
           </router-link>
+          <span
+            v-if="getPrincipalId"
+            class="margin-left-auto pointer main-color"
+            style="margin-right: 10px"
+            @click="onGetEvents"
+            >Activities</span
+          >
           <button
             v-if="getPrincipalId"
-            class="margin-left-auto"
             type="button"
             :class="{ primary: type === 'Add' }"
             @click="changeType('Add')"
@@ -112,12 +88,12 @@
               <span v-if="pool[1].initialized && !pool[2].poolShares">0</span>
               <span v-else>
                 {{
-                  pool[2].latestUnitNetValue.token0
-                    | bigintToFloat(
+                  pool[2].latestUnitNetValue.token0 |
+                    bigintToFloat(
                       tokens[pool[1].pairInfo.token0[0].toString()].decimals,
                       tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -127,12 +103,12 @@
               <span v-if="pool[1].initialized && !pool[2].poolShares">0</span>
               <span v-else>
                 {{
-                  pool[2].latestUnitNetValue.token1
-                    | bigintToFloat(
+                  pool[2].latestUnitNetValue.token1 |
+                    bigintToFloat(
                       tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                       tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -152,20 +128,34 @@
               tokens[pool[1].pairInfo.token1[0].toString()]
             "
           >
-            <span> Pool Balance: </span>
-            <span v-if="pool[2]" class="base-color-w">
+            <span>
+              Total Shares:
+              <span v-if="pool[2] && pool[1]" class="base-color-w">
+                {{
+                  pool[2].poolShares |
+                    bigintToFloat(
+                      pool[1].shareDecimals,
+                      pool[1].shareDecimals
+                    ) |
+                    formatNum
+                }}
+              </span>
+              <span v-if="!pool[2] && isBusy" class="loading-spinner"> </span>
+              <span v-if="!pool[2] && !isBusy">-</span>
+            </span>
+            <span v-if="pool[2]" style="margin-top: 5px">
               <span v-if="pool[1].initialized && !pool[2].poolShares"> 0 </span>
               <span v-else>
                 {{
-                  pool[2].poolBalance.balance0
-                    | bigintToFloat(
+                  pool[2].poolBalance.balance0 |
+                    bigintToFloat(
                       Math.min(
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals,
                         8
                       ),
                       tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
@@ -175,94 +165,99 @@
               <span v-if="pool[1].initialized && !pool[2].poolShares"> 0 </span>
               <span v-else>
                 {{
-                  pool[2].poolBalance.balance1
-                    | bigintToFloat(
+                  pool[2].poolBalance.balance1 |
+                    bigintToFloat(
                       Math.min(
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                         8
                       ),
                       tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="font12">
                 {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
               </span>
             </span>
-            <span v-if="!pool[2] && isBusy" class="loading-spinner"> </span>
-            <span v-if="!pool[2] && !isBusy">-</span>
           </div>
         </div>
-        <div class="pool-item-l pool-item-l-shares">
-          <div>
-            <span>Total Shares: </span>
-            <span v-if="pool[2] && pool[1]" class="base-color-w">
-              {{
-                pool[2].poolShares
-                  | bigintToFloat(pool[1].shareDecimals, pool[1].shareDecimals)
-                  | formatNum
-              }}
+        <div class="pool-item-l">
+          <div
+            class="pool-item-l-net"
+            v-if="
+              getPrincipalId &&
+              pool[1] &&
+              tokens[pool[1].pairInfo.token0[0].toString()] &&
+              tokens[pool[1].pairInfo.token1[0].toString()]
+            "
+          >
+            <span
+              >Your Shares:
+              <span v-if="pool[3] && pool[1]" class="base-color-w">
+                {{
+                  pool[3][0] |
+                    bigintToFloat(
+                      pool[1].shareDecimals,
+                      pool[1].shareDecimals
+                    ) |
+                    formatNum
+                }}
+              </span>
+              <span
+                v-if="!pool[3] && !pool[1] && isBusy"
+                class="loading-spinner"
+              >
+              </span>
+              <span v-if="!pool[3] && !pool[1] && !isBusy">-</span>
             </span>
-            <span v-if="!pool[2] && !pool[1] && isBusy" class="loading-spinner">
+            <span v-if="pool[2] && pool[3]" style="margin-top: 5px">
+              <span v-if="pool[1].initialized && !pool[3][0]"> 0 </span>
+              <span v-else>
+                {{
+                  pool[2].poolBalance.balance0 |
+                    filterSharesBalance(pool[2].poolShares, pool[3][0]) |
+                    bigintToFloat(
+                      Math.min(
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals,
+                        8
+                      ),
+                      tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                    ) |
+                    formatNum
+                }}
+              </span>
+              <span class="font12">
+                {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+              </span>
+              +
+              <span v-if="pool[1].initialized && !pool[3][0]"> 0 </span>
+              <span v-else>
+                {{
+                  pool[2].poolBalance.balance1 |
+                    filterSharesBalance(pool[2].poolShares, pool[3][0]) |
+                    bigintToFloat(
+                      Math.min(
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                        8
+                      ),
+                      tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                    ) |
+                    formatNum
+                }}
+              </span>
+              <span class="font12">
+                {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+              </span>
             </span>
-            <span v-if="!pool[2] && !pool[1] && !isBusy">-</span>
-          </div>
-          <div v-if="getPrincipalId">
-            <span>Your Shares: </span>
-            <span v-if="pool[3] && pool[1]" class="base-color-w">
-              {{
-                pool[3][0]
-                  | bigintToFloat(pool[1].shareDecimals, pool[1].shareDecimals)
-                  | formatNum
-              }}
-            </span>
-            <span v-if="!pool[3] && !pool[1] && isBusy" class="loading-spinner">
-            </span>
-            <span v-if="!pool[3] && !pool[1] && !isBusy">-</span>
           </div>
         </div>
         <div class="pool-apy">
           <span>APY (Estimated):&nbsp;&nbsp;</span>
           <span class="pool-apy-item base-font-title">
-            <span
-              v-if="
-                pool[2] &&
-                pool[1] &&
-                tokens[pool[1].pairInfo.token0[0].toString()] &&
-                tokens[pool[1].pairInfo.token1[0].toString()]
-              "
-            >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token0[0].toString()].symbol
-                }}-based {{ pool[2].apy24h.token0 | filterAPY }},</span
-              >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token1[0].toString()].symbol
-                }}-based {{ pool[2].apy24h.token1 | filterAPY }}(24-Hour
-                APY)</span
-              >
-            </span>
-            <span
-              v-if="
-                pool[2] &&
-                pool[1] &&
-                tokens[pool[1].pairInfo.token0[0].toString()] &&
-                tokens[pool[1].pairInfo.token1[0].toString()]
-              "
-            >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token0[0].toString()].symbol
-                }}-based {{ pool[2].apy7d.token0 | filterAPY }},</span
-              >
-              <span
-                >{{
-                  tokens[pool[1].pairInfo.token1[0].toString()].symbol
-                }}-based {{ pool[2].apy7d.token1 | filterAPY }}(7-Day APY)</span
-              >
+            <span v-if="pool[2] && pool[2].apy24h.apy && pool[2].apy7d.apy">
+              {{ pool[2].apy24h.apy[0] | filterAPY }} (24H APY),
+              {{ pool[2].apy7d.apy[0] | filterAPY }} (7D APY)
             </span>
             <span v-if="!pool[2] && !pool[1] && isBusy" class="loading-spinner">
             </span>
@@ -293,12 +288,12 @@
                 {{ pool[1].volFactor.toString(10) }}.
               </template>
               {{
-                pool[1].poolThreshold
-                  | bigintToFloat(
+                pool[1].poolThreshold |
+                  bigintToFloat(
                     tokens[pool[1].pairInfo.token1[0].toString()].decimals,
                     tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                  )
-                  | formatNum
+                  ) |
+                  formatNum
               }}
               {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
             </a-tooltip>
@@ -323,12 +318,12 @@
             available
             <span class="base-green">
               {{
-                getVolAvailable(pool, volUsed)
-                  | bigintToFloat(
+                getVolAvailable(pool, volUsed) |
+                  bigintToFloat(
                     8,
                     tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                  )
-                  | formatNum
+                  ) |
+                  formatNum
               }}
             </span>
             {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}</span
@@ -719,22 +714,22 @@
                 <a-tooltip placement="bottom">
                   <template slot="title">
                     <span>{{
-                      tokensBalance[pool[1].pairInfo.token0[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[pool[1].pairInfo.token0[0].toString()] |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token0[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}</span>
                   </template>
                   {{
-                    tokensBalance[pool[1].pairInfo.token0[0].toString()]
-                      | bigintToFloat(
+                    tokensBalance[pool[1].pairInfo.token0[0].toString()] |
+                      bigintToFloat(
                         8,
                         tokens[pool[1].pairInfo.token0[0].toString()].decimals
-                      )
-                      | formatAmount(8)
+                      ) |
+                      formatAmount(8)
                   }}
                 </a-tooltip>
                 {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
@@ -837,22 +832,22 @@
                 <a-tooltip placement="bottom">
                   <template slot="title">
                     <span>{{
-                      tokensBalance[pool[1].pairInfo.token1[0].toString()]
-                        | bigintToFloat(
+                      tokensBalance[pool[1].pairInfo.token1[0].toString()] |
+                        bigintToFloat(
                           tokens[pool[1].pairInfo.token1[0].toString()]
                             .decimals,
                           tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}</span>
                   </template>
                   {{
-                    tokensBalance[pool[1].pairInfo.token1[0].toString()]
-                      | bigintToFloat(
+                    tokensBalance[pool[1].pairInfo.token1[0].toString()] |
+                      bigintToFloat(
                         8,
                         tokens[pool[1].pairInfo.token1[0].toString()].decimals
-                      )
-                      | formatAmount(8)
+                      ) |
+                      formatAmount(8)
                   }}
                 </a-tooltip>
                 {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
@@ -897,18 +892,14 @@
             >
               <span>{{ buttonName }}</span>
             </button>
-            <span
-              style="
-                position: relative;
-                right: -100%;
-                top: -28px;
-                margin-left: 5px;
-              "
+            <div
               v-if="getPrincipalId && canFallback"
-              class="pointer base-font-title"
+              class="pointer base-font-title text-center"
+              style="margin: 15px 0"
               @click="fallback"
-              >Fallback</span
             >
+              Fallback
+            </div>
             <button
               v-if="!getPrincipalId"
               class="primary large-primary w100"
@@ -950,6 +941,245 @@
         </div>
       </div>
     </div>
+    <a-modal
+      v-model="eventVisible"
+      width="90%"
+      title="Activities"
+      centered
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      class="delete-modal"
+    >
+      <table class="ant-table-tbody mt20">
+        <thead>
+          <tr>
+            <th>Index</th>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Event</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(item, index) in events.slice(
+              (currentEventPage - 1) * 100,
+              currentEventPage * 100
+            )"
+            :key="index"
+          >
+            <td>{{ (currentEventPage - 1) * 100 + index + 1 }}</td>
+            <td style="white-space: nowrap">
+              {{ item[1] | formatDateFromSecondUTC }}
+            </td>
+            <td>{{ Object.keys(item[0])[0] }}</td>
+            <td>
+              <div
+                v-if="
+                  pool &&
+                  pool[1] &&
+                  tokens &&
+                  tokens[pool[1].pairInfo.token0[0].toString()] &&
+                  tokens[pool[1].pairInfo.token1[0].toString()]
+                "
+              >
+                <div v-if="Object.keys(item[0])[0] === 'add'">
+                  <div v-if="Object.keys(item[0].add)[0] === 'ok'">
+                    {{
+                      item[0].add.ok.token0 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].add.ok.token1 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                    ->
+                    {{
+                      item[0].add.ok.shares |
+                        bigintToFloat(
+                          pool[1].shareDecimals,
+                          pool[1].shareDecimals
+                        ) |
+                        formatNum
+                    }}
+                    Shares
+                  </div>
+                  <div
+                    class="base-red"
+                    v-if="Object.keys(item[0].add)[0] === 'err'"
+                  >
+                    Error:
+                    {{
+                      item[0].add.err.depositToken0 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].add.err.depositToken1 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </div>
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'remove'">
+                  <div v-if="Object.keys(item[0].remove)[0] === 'ok'">
+                    {{
+                      item[0].remove.ok.shares |
+                        bigintToFloat(
+                          pool[1].shareDecimals,
+                          pool[1].shareDecimals
+                        ) |
+                        formatNum
+                    }}
+                    Shares ->
+                    {{
+                      item[0].remove.ok.token0 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].remove.ok.token1 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </div>
+                  <div
+                    class="base-red"
+                    v-if="Object.keys(item[0].remove)[0] === 'err'"
+                  >
+                    Error:
+                    {{
+                      item[0].remove.err.addPoolToken0 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                    +
+                    {{
+                      item[0].remove.err.addPoolToken1 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </div>
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'withdraw'">
+                  {{
+                    item[0].withdraw.token0 |
+                      bigintToFloat(
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  +
+                  {{
+                    item[0].withdraw.token1 |
+                      bigintToFloat(
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'fallback'">
+                  {{
+                    item[0].fallback.token0 |
+                      bigintToFloat(
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  +
+                  {{
+                    item[0].fallback.token1 |
+                      bigintToFloat(
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals,
+                        tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                      )
+                  }}
+                  {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                </div>
+                <div v-if="Object.keys(item[0])[0] === 'deposit'">
+                  <span v-show="item[0].deposit.token0">
+                    {{
+                      item[0].deposit.token0 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token0[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token0[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token0[0].toString()].symbol }}
+                  </span>
+                  <span
+                    v-show="item[0].deposit.token0 && item[0].deposit.token1"
+                    >+</span
+                  >
+                  <span v-show="item[0].deposit.token1">
+                    {{
+                      item[0].deposit.token1 |
+                        bigintToFloat(
+                          tokens[pool[1].pairInfo.token1[0].toString()]
+                            .decimals,
+                          tokens[pool[1].pairInfo.token1[0].toString()].decimals
+                        )
+                    }}
+                    {{ tokens[pool[1].pairInfo.token1[0].toString()].symbol }}
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="nft-main-pagination mt20 flex-center">
+        <a-pagination
+          class="pagination"
+          v-show="events.length > 100"
+          :current="currentEventPage"
+          :defaultPageSize="100"
+          :total="events.length"
+          @change="changeEvents"
+        />
+      </div>
+    </a-modal>
     <transfer-token
       ref="transferToken"
       :current-token="currentToken"
@@ -973,9 +1203,10 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Menu } from '@/components/menu/model';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
-import { Icrc1Account, TokenInfo, TokenStd } from '@/ic/common/icType';
+import { Icrc1Account, Time, TokenInfo, TokenStd } from '@/ic/common/icType';
 import {
   MakerConfigure,
+  PoolEvent,
   PoolInfo,
   PoolStats,
   ShareWeighted
@@ -991,12 +1222,19 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { LedgerService } from '@/ic/ledger/ledgerService';
 import { toHttpRejectError } from '@/ic/httpError';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
-import { principalToAccountIdentifier, toHexString } from '@/ic/converter';
+import {
+  hexToBytes,
+  principalToAccountIdentifier,
+  toHexString
+} from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import { DexRole, PairInfo, StoSetting } from '@/ic/ICDex/model';
 import { getTokenLogo } from '@/ic/getTokenLogo';
-import { ApproveError } from '@/ic/DRC20Token/model';
-import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
+import { ApproveArgs, ApproveError } from '@/ic/DRC20Token/model';
+import {
+  getSubAccountArray,
+  IC_LIGHTHOUSE_TOKEN_CANISTER_ID
+} from '@/ic/utils';
 import TransferToken from '@/components/transferToken/Index.vue';
 import { AddTokenItem, AddTokenItemClass } from '@/views/home/account/model';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
@@ -1019,6 +1257,9 @@ import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
 import { checkAuth } from '@/ic/CheckAuth';
+import { isPlug } from '@/ic/isPlug';
+import drc20TokenIDL from '@/ic/DRC20Token/DRC20Token.did';
+import { isSigner } from '@/ic/isSigner';
 
 const commonModule = namespace('common');
 
@@ -1039,6 +1280,30 @@ const commonModule = namespace('common');
         );
       }
       return '';
+    },
+    filterJson(val): string {
+      return JSON.stringify(val, (key, value) =>
+        value instanceof Array && value.length >= 16 // todo 16
+          ? toHexString(new Uint8Array(value))
+          : typeof value === 'bigint'
+          ? value.toString()
+          : value && value._isPrincipal
+          ? value.toString()
+          : value
+      );
+    },
+    filterSharesBalance(
+      totalBalance: bigint,
+      totalShares: bigint,
+      shares: bigint
+    ): string {
+      if (totalShares) {
+        return new BigNumber(shares.toString(10))
+          .times(totalBalance.toString(10))
+          .div(totalShares.toString(10))
+          .toString(10);
+      }
+      return '0';
     }
   }
 })
@@ -1123,6 +1388,10 @@ export default class extends Vue {
   private makerConfigure: MakerConfigure = {};
   private SNSWasmService: SNSWasmService = null;
   private listDeployedSnses: Array<DeployedSns> = [];
+  private eventVisible = false;
+  private currentEventPage = 1;
+  private events: Array<[PoolEvent, Time]> = [];
+  private plugBatch = true;
 
   get buttonDisabledRemove(): boolean {
     let flag = false;
@@ -1371,6 +1640,7 @@ export default class extends Vue {
       this.getUnitNetValues();
       this.getTokensExt();
       this.NFTBalance();
+      this.getEvents(this.$route.params.poolId);
     }
     this.getPairs();
   }
@@ -1418,7 +1688,10 @@ export default class extends Vue {
     const connectInfinity = await needConnectInfinity(ids);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (priList[principal] === 'Plug' && flag) {
+    if (
+      (priList[principal] === 'Plug' || priList[principal] === 'SignerPlug') &&
+      flag
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const _that = this;
       this.$info({
@@ -1459,6 +1732,27 @@ export default class extends Vue {
       }
     }
   }
+  private onGetEvents(): void {
+    this.eventVisible = true;
+    // this.getEvents(this.$route.params.poolId);
+  }
+  private async getEvents(pool: string): Promise<void> {
+    console.log(pool);
+    const accountId = hexToBytes(
+      principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
+    );
+    const res = await this.makerPoolService.get_account_events(pool, accountId);
+    const accountTypes = ['fallback', 'add', 'remove'];
+    this.events = res.filter((item) => {
+      const type = Object.keys(item[0])[0];
+      if (type === 'fallback') {
+        if (!item[0]['fallback'].token0 && !item[0]['fallback'].token0) {
+          return false;
+        }
+      }
+      return accountTypes.includes(type);
+    });
+  }
   private async NFTBalance(): Promise<void> {
     this.nftBalance = await this.ICDexRouterService.NFTBalance(
       this.getPrincipalId
@@ -1480,7 +1774,7 @@ export default class extends Vue {
         this.nfts = [];
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
   private async getRole(pair: string, pool: string): Promise<void> {
@@ -1594,6 +1888,7 @@ export default class extends Vue {
       }
       this.getPoolInfo(poolId);
     }
+    this.getEvents(this.$route.params.poolId);
     this.getPoolICLBalance(poolId);
     loading.close();
   }
@@ -1646,6 +1941,7 @@ export default class extends Vue {
       .plus(this.token1fee)
       .times(10 ** this.tokens[token1Id].decimals)
       .toString(10);
+    this.plugBatch = true;
     if (
       token1StdString.toLocaleLowerCase() === 'drc20' ||
       token1StdString.toLocaleLowerCase() === 'icrc2'
@@ -1658,61 +1954,361 @@ export default class extends Vue {
     }
     console.time();
     let promiseValue = [];
+    let batchTransactions = [];
     if (
       token0StdString.toLocaleLowerCase() === 'drc20' ||
       token0StdString.toLocaleLowerCase() === 'icrc2'
     ) {
-      promiseValue.push(
-        this.approve(token0Id, token0StdString, BigInt(needTransferToken0))
-      );
+      const poolId = this.$route.params.poolId;
+      if (!isSigner() && isPlug()) {
+        if (token0StdString.toLocaleLowerCase() === 'drc20') {
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token0Id,
+            methodName: 'drc20_approve',
+            args: [poolId, BigInt(needTransferToken0), [], [], []],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+        if (token0StdString.toLocaleLowerCase() === 'icrc2') {
+          const approveArgs: ApproveArgs = {
+            fee: [],
+            memo: [],
+            from_subaccount: [],
+            created_at_time: [],
+            amount: BigInt(needTransferToken0),
+            expected_allowance: [],
+            expires_at: [],
+            spender: {
+              owner: Principal.fromText(poolId),
+              subaccount: []
+            }
+          };
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token0Id,
+            methodName: 'icrc2_approve',
+            args: [approveArgs],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+      } else {
+        if (isSigner()) {
+          const res = await this.approve(
+            token0Id,
+            token0StdString,
+            BigInt(needTransferToken0)
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.approve(token0Id, token0StdString, BigInt(needTransferToken0))
+          );
+        }
+      }
     } else if (token0StdString.toLocaleLowerCase() === 'icrc1') {
-      promiseValue.push(
-        this.transferIcrc1(
-          token0Id,
-          BigInt(needTransferToken0),
-          this.depositAccount[0]
-        )
-      );
+      if (!isSigner() && isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken0)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token0Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        if (isSigner()) {
+          const res = await this.transferIcrc1(
+            token0Id,
+            BigInt(needTransferToken0),
+            this.depositAccount[0]
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.transferIcrc1(
+              token0Id,
+              BigInt(needTransferToken0),
+              this.depositAccount[0]
+            )
+          );
+        }
+      }
     } else if (token0StdString.toLocaleLowerCase() === 'icp') {
-      promiseValue.push(
-        this.ledgerService.sendIcp(
-          new BigNumber(needTransferToken0)
-            .div(10 ** this.tokens[token0Id].decimals)
-            .toString(10),
-          this.depositAccount[1]
-        )
-      );
+      if (!isSigner() && isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken0)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token0Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        if (isSigner()) {
+          const res = await this.ledgerService.sendIcp(
+            new BigNumber(needTransferToken0)
+              .div(10 ** this.tokens[token0Id].decimals)
+              .toString(10),
+            this.depositAccount[1]
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.ledgerService.sendIcp(
+              new BigNumber(needTransferToken0)
+                .div(10 ** this.tokens[token0Id].decimals)
+                .toString(10),
+              this.depositAccount[1]
+            )
+          );
+        }
+      }
     }
+    console.log(batchTransactions);
     if (
       token1StdString.toLocaleLowerCase() === 'drc20' ||
       token1StdString.toLocaleLowerCase() === 'icrc2'
     ) {
-      promiseValue.push(
-        this.approve(token1Id, token1StdString, BigInt(needTransferToken1))
-      );
+      if (!isSigner() && isPlug()) {
+        if (token1StdString.toLocaleLowerCase() === 'drc20') {
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token1Id,
+            methodName: 'drc20_approve',
+            args: [poolId, BigInt(needTransferToken1), [], [], []],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+        if (token1StdString.toLocaleLowerCase() === 'icrc2') {
+          const approveArgs: ApproveArgs = {
+            fee: [],
+            memo: [],
+            from_subaccount: [],
+            created_at_time: [],
+            amount: BigInt(needTransferToken1),
+            expected_allowance: [],
+            expires_at: [],
+            spender: {
+              owner: Principal.fromText(poolId),
+              subaccount: []
+            }
+          };
+          const approve = {
+            idl: drc20TokenIDL,
+            canisterId: token1Id,
+            methodName: 'icrc2_approve',
+            args: [approveArgs],
+            onSuccess: async () => {
+              console.log('successfully');
+            },
+            onFail: (res) => {
+              this.plugBatch = false;
+              console.log('error', res);
+            }
+          };
+          batchTransactions.push(approve);
+        }
+      } else {
+        if (isSigner()) {
+          const res = await this.approve(
+            token1Id,
+            token1StdString,
+            BigInt(needTransferToken1)
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.approve(token1Id, token1StdString, BigInt(needTransferToken1))
+          );
+        }
+      }
     } else if (token1StdString.toLocaleLowerCase() === 'icrc1') {
-      promiseValue.push(
-        this.transferIcrc1(
-          token1Id,
-          BigInt(needTransferToken1),
-          this.depositAccount[0]
-        )
-      );
+      if (!isSigner() && isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken1)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token1Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        if (isSigner()) {
+          const res = await this.transferIcrc1(
+            token1Id,
+            BigInt(needTransferToken1),
+            this.depositAccount[0]
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.transferIcrc1(
+              token1Id,
+              BigInt(needTransferToken1),
+              this.depositAccount[0]
+            )
+          );
+        }
+      }
     } else if (token1StdString.toLocaleLowerCase() === 'icp') {
-      promiseValue.push(
-        this.ledgerService.sendIcp(
-          new BigNumber(needTransferToken1)
-            .div(10 ** this.tokens[token1Id].decimals)
-            .toString(10),
-          this.depositAccount[1]
-        )
-      );
+      if (!isSigner() && isPlug()) {
+        const transferArgs = {
+          to: this.depositAccount[0],
+          fee: [],
+          memo: [],
+          from_subaccount: [],
+          created_at_time: [],
+          amount: BigInt(needTransferToken1)
+        };
+        const transfer = {
+          idl: drc20TokenIDL,
+          canisterId: token1Id,
+          methodName: 'icrc1_transfer',
+          args: [transferArgs],
+          onSuccess: async () => {
+            console.log('successfully');
+          },
+          onFail: (res) => {
+            this.plugBatch = false;
+            console.log('error', res);
+          }
+        };
+        batchTransactions.push(transfer);
+      } else {
+        if (isSigner()) {
+          const res = await this.ledgerService.sendIcp(
+            new BigNumber(needTransferToken1)
+              .div(10 ** this.tokens[token1Id].decimals)
+              .toString(10),
+            this.depositAccount[1]
+          );
+          if (!res) {
+            this.$message.error('Error');
+            loading.close();
+            return;
+          }
+        } else {
+          promiseValue.push(
+            this.ledgerService.sendIcp(
+              new BigNumber(needTransferToken1)
+                .div(10 ** this.tokens[token1Id].decimals)
+                .toString(10),
+              this.depositAccount[1]
+            )
+          );
+        }
+      }
     }
-    const res = await Promise.all(promiseValue);
-    if (res && (!res[0] || !res[1])) {
-      this.$message.error('Error');
-      loading.close();
-      return;
+    console.log(promiseValue);
+    console.log(batchTransactions);
+    if (isPlug()) {
+      try {
+        const plugIc = (window as any).ic.plug;
+        await plugIc.batchTransactions(batchTransactions);
+        console.log(this.plugBatch);
+        if (!this.plugBatch) {
+          loading.close();
+          this.$message.error('Approve error');
+          return;
+        }
+      } catch (e) {
+        console.log(e);
+        loading.close();
+        this.$message.error('Approve error');
+        return;
+      }
+    } else if (!isSigner()) {
+      const res = await Promise.all(promiseValue);
+      console.log(res);
+      if (res && (!res[0] || !res[1])) {
+        this.$message.error('Error');
+        loading.close();
+        return;
+      }
     }
     loading.setText(
       'step2: Adding liquidity.\n(It could take a minute. You can leave this page and the result will be updated soon.)'
@@ -1759,6 +2355,7 @@ export default class extends Vue {
         flag = true;
         this.getDepositAccountBalance();
         this.getPoolICLBalance(poolId);
+        this.getEvents(this.$route.params.poolId);
         loading.close();
       });
     window.setTimeout(() => {
@@ -1802,6 +2399,7 @@ export default class extends Vue {
   ): Promise<boolean> {
     const currentDrc20Token = new DRC20TokenService();
     const res = await currentDrc20Token.icrc1Transfer(tokenId, amount, to);
+    console.log(res);
     if (res) {
       return Object.keys(res)[0] !== 'Err';
     }
@@ -2423,10 +3021,13 @@ export default class extends Vue {
       }
       this.getDepositAccountBalance();
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.error(e);
     }
     loading.close();
+  }
+  private changeEvents(page): void {
+    this.currentEventPage = page;
   }
 }
 </script>

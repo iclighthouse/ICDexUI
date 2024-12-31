@@ -55,7 +55,7 @@
           <tr>
             <td class="pl-30">
               Go to
-              <router-link to="/account">ICLight wallet</router-link> to create
+              <router-link to="/wallet">ICLight wallet</router-link> to create
               a cycles wallet and get 5 ICL reward.
             </td>
             <td class="pr-30">

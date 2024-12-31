@@ -63,6 +63,7 @@ import { namespace } from 'vuex-class';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Liquidity } from '@/ic/cyclesFinance/model';
 const commonModule = namespace('common');
+let num = 0;
 
 @Component({
   name: 'CreateWallet',
@@ -184,13 +185,19 @@ export default class extends Vue {
     }
     return name;
   }
+  beforeDestroy(): void {
+    num = 0;
+  }
   created(): void {
     this.cyclesMintingService = new CyclesMintingService();
     this.ICLighthouseService = new ICLighthouseService();
     this.walletService = new WalletService();
     this.ledgerService = new LedgerService();
     this.cyclesFinanceService = new CyclesFinanceService();
-    this.getConfig();
+    if (num === 0) {
+      ++num;
+      this.getConfig();
+    }
     // this.getIcpToCyclesConversionRate();
   }
   private init(): void {
@@ -312,7 +319,7 @@ export default class extends Vue {
           const principal = localStorage.getItem('principal');
           if (this.walletId) {
             const walletRequest: CreateCanisterArgs = {
-              cycles: BigInt(new BigNumber(0.2).times(10 ** 12)),
+              cycles: BigInt(new BigNumber(0.2).times(10 ** 12).toString(10)),
               settings: {
                 controller: [Principal.fromText(principal)],
                 controllers: [],
@@ -333,7 +340,9 @@ export default class extends Vue {
             );
             console.log(blockHeight);
             const icp = BigInt(
-              new BigNumber(this.createdIcp).times(10 ** this.decimals)
+              new BigNumber(this.createdIcp)
+                .times(10 ** this.decimals)
+                .toString(10)
             );
             const nonce = await this.getCount(Principal.fromText(principal));
             const res = await this.cyclesFinanceService.icpToCycles(

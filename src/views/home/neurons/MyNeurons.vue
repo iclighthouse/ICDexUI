@@ -682,7 +682,10 @@ export default class extends Mixins(BalanceMixin) {
   private canSpawnNeuron(neuron: Neuron): boolean {
     const maturity_e8s_equivalent = neuron.maturity_e8s_equivalent;
     // 1/95
-    return new BigNumber(maturity_e8s_equivalent.toString(10)).lt(105263158);
+    return (
+      new BigNumber(maturity_e8s_equivalent.toString(10)).lt(105263158) ||
+      !!neuron.spawn_at_timestamp_seconds.length
+    );
   }
   private canDisburseMaturity(neuron: Neuron): boolean {
     const maturity_e8s_equivalent = neuron.maturity_e8s_equivalent;
@@ -930,6 +933,8 @@ export default class extends Mixins(BalanceMixin) {
   public async getNeuronIds(): Promise<void> {
     const neuronIdList = await this.governanceService.getNeuronIds();
     const res = await this.governanceService.listNeurons({
+      include_public_neurons_in_full_neurons: [false],
+      include_empty_neurons_readable_by_caller: [false],
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });
@@ -939,9 +944,13 @@ export default class extends Mixins(BalanceMixin) {
         .filter((neuron) => {
           const staked_maturity_e8s_equivalent =
             neuron.staked_maturity_e8s_equivalent[0] || BigInt(0);
+          const maturity_e8s_equivalent =
+            neuron.maturity_e8s_equivalent || BigInt(0);
           const balance = new BigNumber(
             neuron.cached_neuron_stake_e8s.toString(10)
-          ).plus(staked_maturity_e8s_equivalent.toString(10));
+          )
+            .plus(staked_maturity_e8s_equivalent.toString(10))
+            .plus(maturity_e8s_equivalent.toString(10));
           return !(
             balance.lte(0) &&
             new BigNumber(neuron.neuron_fees_e8s.toString(10)).lte(0)
@@ -966,11 +975,11 @@ export default class extends Mixins(BalanceMixin) {
     this.stakeMaturityValue = 0;
   }
   private async stakeMaturity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     const neuronId = this.neuronList[this.neuronIndex].id[0].id;
     try {
       await this.governanceService.stakeMaturity(

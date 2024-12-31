@@ -118,16 +118,16 @@
             </div>
             <div class="open-main-left-item-current" v-if="price && collateral">
               ${{
-                price[0][1][Number(this.collateral[2].mktSid)].data[1]
-                  | bigintToFloat(
+                price[0][1][Number(this.collateral[2].mktSid)].data[1] |
+                  bigintToFloat(
                     Number(
                       price[0][1][Number(this.collateral[2].mktSid)].decimals
                     ),
                     Number(
                       price[0][1][Number(this.collateral[2].mktSid)].decimals
                     )
-                  )
-                  | formatNum
+                  ) |
+                  formatNum
               }}
             </div>
           </div>
@@ -138,9 +138,9 @@
             </div>
             <div v-if="price && collateral" class="open-main-left-item-current">
               ${{
-                currentDepositAmount
-                  | filterPrice(price[0][1][Number(this.collateral[2].mktSid)])
-                  | formatNum
+                currentDepositAmount |
+                  filterPrice(price[0][1][Number(this.collateral[2].mktSid)]) |
+                  formatNum
               }}
             </div>
             <div
@@ -151,11 +151,11 @@
             >
               <span v-if="price && collateral">
                 ${{
-                  depositAmount
-                    | filterPrice(
+                  depositAmount |
+                    filterPrice(
                       price[0][1][Number(this.collateral[2].mktSid)]
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
                 after
               </span>
@@ -187,9 +187,9 @@
               <div class="open-main-left-item-current">
                 <span v-if="tokenInfo"
                   >{{
-                    cAvailableWithdrawCollateral
-                      | formatNegativeNumber
-                      | formatAmount(tokenInfo.decimals)
+                    cAvailableWithdrawCollateral |
+                      formatNegativeNumber |
+                      formatAmount(tokenInfo.decimals)
                   }}
                   {{ tokenInfo.symbol }}</span
                 >
@@ -203,9 +203,9 @@
                 class="open-main-left-item-after"
               >
                 <span v-if="tokenInfo">{{
-                  availableWithdrawCollateral
-                    | formatNegativeNumber
-                    | formatAmount(tokenInfo.decimals)
+                  availableWithdrawCollateral |
+                    formatNegativeNumber |
+                    formatAmount(tokenInfo.decimals)
                 }}</span>
                 {{ tokenInfo.symbol }} after
               </div>
@@ -214,9 +214,9 @@
               <div>Available to Generate</div>
               <div class="open-main-left-item-current">
                 {{
-                  cGenerateDusd
-                    | formatNegativeNumber
-                    | formatAmount(dusdDecimal)
+                  cGenerateDusd |
+                    formatNegativeNumber |
+                    formatAmount(dusdDecimal)
                 }}
                 DUSD
               </div>
@@ -229,9 +229,9 @@
                 class="open-main-left-item-after"
               >
                 {{
-                  generateDusd
-                    | formatNegativeNumber
-                    | formatAmount(dusdDecimal)
+                  generateDusd |
+                    formatNegativeNumber |
+                    formatAmount(dusdDecimal)
                 }}
                 DUSD after
               </div>
@@ -359,8 +359,8 @@
               <span
                 v-if="tokenInfo && tokensBalance && tokensBalance[tokenId]"
                 >{{
-                  tokensBalance[tokenId]
-                    | bigintToFloat(tokenInfo.decimals, tokenInfo.decimals)
+                  tokensBalance[tokenId] |
+                    bigintToFloat(tokenInfo.decimals, tokenInfo.decimals)
                 }}</span
               >
               <span v-else>-</span>
@@ -373,9 +373,9 @@
             >
               Max:
               <span v-if="tokenInfo">{{
-                cAvailableWithdrawCollateral
-                  | formatNegativeNumber
-                  | formatAmount(tokenInfo.decimals)
+                cAvailableWithdrawCollateral |
+                  formatNegativeNumber |
+                  formatAmount(tokenInfo.decimals)
               }}</span>
               <span v-if="tokenInfo"> {{ tokenInfo.symbol }}</span>
             </div>
@@ -415,8 +415,8 @@
             <div v-show="operateType === 'payback'">
               Balance:
               <span v-if="tokensBalance">{{
-                tokensBalance['2l63q-hyaaa-aaaak-aaosa-cai']
-                  | bigintToFloat(dusdDecimal, dusdDecimal)
+                tokensBalance['2l63q-hyaaa-aaaak-aaosa-cai'] |
+                  bigintToFloat(dusdDecimal, dusdDecimal)
               }}</span>
               <span v-else>-</span>
               <span> DUSD</span>
@@ -443,8 +443,8 @@
                     ICL<span v-if="tokensBalance"
                       >(Bal:
                       {{
-                        tokensBalance['2x2bb-qyaaa-aaaak-aaoqa-cai']
-                          | bigintToFloat(8, 8)
+                        tokensBalance['2x2bb-qyaaa-aaaak-aaoqa-cai'] |
+                          bigintToFloat(8, 8)
                       }}
                       ICL)</span
                     >
@@ -558,30 +558,30 @@
                 ><a-tooltip placement="top">
                   <template slot="title">
                     <span v-if="tokenInfo">{{
-                      cAvailableWithdrawCollateral
-                        | formatNegativeNumber
-                        | formatAmount(tokenInfo.decimals)
+                      cAvailableWithdrawCollateral |
+                        formatNegativeNumber |
+                        formatAmount(tokenInfo.decimals)
                     }}</span>
                   </template>
                   {{
-                    cAvailableWithdrawCollateral
-                      | formatNegativeNumber
-                      | formatAmount(4)
+                    cAvailableWithdrawCollateral |
+                      formatNegativeNumber |
+                      formatAmount(4)
                   }}
                 </a-tooltip>
                 <span v-if="tokenInfo"> {{ tokenInfo.symbol }}</span
                 ><a-icon type="arrow-right" /><a-tooltip placement="top">
                   <template slot="title">
                     <span v-if="tokenInfo">{{
-                      availableWithdrawCollateral
-                        | formatNegativeNumber
-                        | formatAmount(tokenInfo.decimals)
+                      availableWithdrawCollateral |
+                        formatNegativeNumber |
+                        formatAmount(tokenInfo.decimals)
                     }}</span>
                   </template>
                   {{
-                    availableWithdrawCollateral
-                      | formatNegativeNumber
-                      | formatAmount(4)
+                    availableWithdrawCollateral |
+                      formatNegativeNumber |
+                      formatAmount(4)
                   }}
                 </a-tooltip>
                 <span v-if="tokenInfo"> {{ tokenInfo.symbol }}</span></span
@@ -595,9 +595,9 @@
                 ><a-tooltip placement="top">
                   <template slot="title">
                     <span>{{
-                      cGenerateDusd
-                        | formatNegativeNumber
-                        | formatAmount(dusdDecimal)
+                      cGenerateDusd |
+                        formatNegativeNumber |
+                        formatAmount(dusdDecimal)
                     }}</span>
                   </template>
                   {{ cGenerateDusd | formatNegativeNumber | formatAmount(4) }}
@@ -605,9 +605,9 @@
                 DUSD<a-icon type="arrow-right" /><a-tooltip placement="top">
                   <template slot="title">
                     <span>{{
-                      generateDusd
-                        | formatNegativeNumber
-                        | formatAmount(dusdDecimal)
+                      generateDusd |
+                        formatNegativeNumber |
+                        formatAmount(dusdDecimal)
                     }}</span>
                   </template>
                   {{ generateDusd | formatNegativeNumber | formatAmount(4) }}
@@ -1349,9 +1349,9 @@ export default class extends Vue {
     });
     try {
       const amount = BigInt(
-        new BigNumber(this.depositAmountInput).times(
-          10 ** this.tokenInfo.decimals
-        )
+        new BigNumber(this.depositAmountInput)
+          .times(10 ** this.tokenInfo.decimals)
+          .toString(10)
       );
       console.log(amount);
       const canOpen = await this.approve(
@@ -1396,9 +1396,9 @@ export default class extends Vue {
     });
     try {
       const amount = BigInt(
-        new BigNumber(this.depositAmountInput).times(
-          10 ** this.tokenInfo.decimals
-        )
+        new BigNumber(this.depositAmountInput)
+          .times(10 ** this.tokenInfo.decimals)
+          .toString(10)
       );
       console.log(amount);
       const canOpen = await this.approve(
@@ -1438,9 +1438,9 @@ export default class extends Vue {
     });
     try {
       const amount = BigInt(
-        new BigNumber(this.depositAmountInput).times(
-          10 ** this.tokenInfo.decimals
-        )
+        new BigNumber(this.depositAmountInput)
+          .times(10 ** this.tokenInfo.decimals)
+          .toString(10)
       );
       console.log(amount);
       const shares = BigInt(
@@ -1448,6 +1448,7 @@ export default class extends Vue {
           .div(this.currentCollaterals[0][1].toString(10))
           .times(this.currentCollaterals[0][2].toString(10))
           .decimalPlaces(0, 1)
+          .toString(10)
       );
       console.log(this.currentCollaterals[0], shares);
       const res = await this.ICStableService.remove(BigInt(this.dpId), [
@@ -1481,7 +1482,9 @@ export default class extends Vue {
     });
     try {
       const amount = BigInt(
-        new BigNumber(this.dusdAmountInput).times(10 ** this.dusdDecimal)
+        new BigNumber(this.dusdAmountInput)
+          .times(10 ** this.dusdDecimal)
+          .toString(10)
       );
       const res = await this.ICStableService.generate(BigInt(this.dpId), [
         amount

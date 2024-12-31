@@ -111,18 +111,18 @@
             <a-tooltip placement="bottom">
               <template slot="title">
                 <span>{{
-                  tokensBalance[tokenSwapFrom[0].toString()]
-                    | bigintToFloat(
+                  tokensBalance[tokenSwapFrom[0].toString()] |
+                    bigintToFloat(
                       tokenSwapFrom[3].decimals,
                       tokenSwapFrom[3].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
               </template>
               {{
-                tokensBalance[tokenSwapFrom[0].toString()]
-                  | bigintToFloat(4, tokenSwapFrom[3].decimals)
-                  | formatAmount(4)
+                tokensBalance[tokenSwapFrom[0].toString()] |
+                  bigintToFloat(4, tokenSwapFrom[3].decimals) |
+                  formatAmount(4)
               }}
             </a-tooltip>
             {{ tokenSwapFrom[1] }}
@@ -193,18 +193,20 @@
                 <a-tooltip placement="bottom">
                   <template slot="title">
                     {{
-                      depositing[depositAccountId][tokenSwapFrom[0].toString()]
-                        | bigintToFloat(
+                      depositing[depositAccountId][
+                        tokenSwapFrom[0].toString()
+                      ] |
+                        bigintToFloat(
                           tokenSwapFrom[3].decimals,
                           tokenSwapFrom[3].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </template>
                   {{
-                    depositing[depositAccountId][tokenSwapFrom[0].toString()]
-                      | bigintToFloat(4, tokenSwapFrom[3].decimals)
-                      | formatAmount(4)
+                    depositing[depositAccountId][tokenSwapFrom[0].toString()] |
+                      bigintToFloat(4, tokenSwapFrom[3].decimals) |
+                      formatAmount(4)
                   }}
                 </a-tooltip>
                 {{ tokenSwapFrom[1] }}
@@ -366,18 +368,18 @@
             <a-tooltip placement="bottom">
               <template slot="title">
                 <span>{{
-                  tokensBalance[tokenSwapTo[0].toString()]
-                    | bigintToFloat(
+                  tokensBalance[tokenSwapTo[0].toString()] |
+                    bigintToFloat(
                       tokenSwapTo[3].decimals,
                       tokenSwapTo[3].decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}</span>
               </template>
               {{
-                tokensBalance[tokenSwapTo[0].toString()]
-                  | bigintToFloat(4, tokenSwapTo[3].decimals)
-                  | formatAmount(4)
+                tokensBalance[tokenSwapTo[0].toString()] |
+                  bigintToFloat(4, tokenSwapTo[3].decimals) |
+                  formatAmount(4)
               }}
             </a-tooltip>
             {{ tokenSwapTo[1] }}
@@ -448,18 +450,18 @@
                 <a-tooltip placement="bottom">
                   <template slot="title">
                     {{
-                      depositing[depositAccountId][tokenSwapTo[0].toString()]
-                        | bigintToFloat(
+                      depositing[depositAccountId][tokenSwapTo[0].toString()] |
+                        bigintToFloat(
                           tokenSwapTo[3].decimals,
                           tokenSwapTo[3].decimals
-                        )
-                        | formatNum
+                        ) |
+                        formatNum
                     }}
                   </template>
                   {{
-                    depositing[depositAccountId][tokenSwapTo[0].toString()]
-                      | bigintToFloat(4, tokenSwapTo[3].decimals)
-                      | formatAmount(4)
+                    depositing[depositAccountId][tokenSwapTo[0].toString()] |
+                      bigintToFloat(4, tokenSwapTo[3].decimals) |
+                      formatAmount(4)
                   }}
                 </a-tooltip>
                 {{ tokenSwapTo[1] }}
@@ -584,8 +586,8 @@
               <div class="flex">
                 <div>
                   {{
-                    (liquidity && liquidity.unitValue[0])
-                      | bigintToFloat(
+                    (liquidity && liquidity.unitValue[0]) |
+                      bigintToFloat(
                         tokens[getTokenId(dexInfo.token0[0])].decimals,
                         tokens[getTokenId(dexInfo.token0[0])].decimals
                       )
@@ -594,8 +596,8 @@
                 &nbsp;{{ tokens[getTokenId(dexInfo.token0[0])].symbol }} +&nbsp;
                 <div>
                   {{
-                    (liquidity && liquidity.unitValue[1])
-                      | bigintToFloat(
+                    (liquidity && liquidity.unitValue[1]) |
+                      bigintToFloat(
                         tokens[getTokenId(dexInfo.token1[0])].decimals,
                         tokens[getTokenId(dexInfo.token1[0])].decimals
                       )
@@ -607,8 +609,8 @@
             <div class="flex">
               <div>
                 {{
-                  (liquidity && liquidity.unitValue[0])
-                    | bigintToFloat(
+                  (liquidity && liquidity.unitValue[0]) |
+                    bigintToFloat(
                       4,
                       tokens[getTokenId(dexInfo.token0[0])].decimals
                     )
@@ -617,8 +619,8 @@
               &nbsp;{{ tokens[getTokenId(dexInfo.token0[0])].symbol }} +&nbsp;
               <div>
                 {{
-                  (liquidity && liquidity.unitValue[1])
-                    | bigintToFloat(
+                  (liquidity && liquidity.unitValue[1]) |
+                    bigintToFloat(
                       4,
                       tokens[getTokenId(dexInfo.token1[0])].decimals
                     )
@@ -720,13 +722,13 @@
                 <a-tooltip placement="bottom">
                   <template slot="title">
                     <span>{{
-                      tokensBalance[token[0].toString()]
-                        | bigintToFloat(token[3].decimals, token[3].decimals)
+                      tokensBalance[token[0].toString()] |
+                        bigintToFloat(token[3].decimals, token[3].decimals)
                     }}</span>
                   </template>
                   <span class="select-token-balance">{{
-                    tokensBalance[token[0].toString()]
-                      | bigintToFloat(4, token[3].decimals)
+                    tokensBalance[token[0].toString()] |
+                      bigintToFloat(4, token[3].decimals)
                   }}</span>
                 </a-tooltip>
               </li>
@@ -1486,7 +1488,7 @@ export default class extends Mixins(PairsMixin) {
       const walletCallRequest: WalletCallRequest = {
         canister: Principal.fromText(CYCLES_FINANCE_CANISTER_ID),
         method_name: 'add',
-        cycles: BigInt(new BigNumber(cycles).times(10 ** 12)),
+        cycles: BigInt(new BigNumber(cycles).times(10 ** 12).toString(10)),
         args: Array.from(Buffer.from(args))
       };
       this.walletService

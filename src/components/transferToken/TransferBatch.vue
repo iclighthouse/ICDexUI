@@ -295,11 +295,11 @@ export default class extends Vue {
       !this.toError &&
       !this.amountError
     ) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       try {
         const account = this.transferForm.to.split(/[(\r\n)\r\n]+/);
         const amount = this.transferForm.amount.split(/[(\r\n)\r\n]+/);

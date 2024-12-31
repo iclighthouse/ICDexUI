@@ -737,7 +737,7 @@ export default class extends Vue {
             .toString(10);
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
     }
     return volume;
@@ -753,11 +753,11 @@ export default class extends Vue {
   }
 
   private async onClaim(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const res = await this.tradingMiningService.tmClaim();
       console.log(res);
@@ -765,18 +765,18 @@ export default class extends Vue {
       this.getTmNFTBalance();
       this.getStatus();
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.success('Claim error');
     }
     loading.close();
   }
 
   private async onWithdraw(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       await this.tradingMiningService.tmNFTWithdraw();
       this.$message.success('Withdraw success');
@@ -787,7 +787,7 @@ export default class extends Vue {
         this.getTokensExt();
       }, 10 * 1000);
     } catch (e) {
-      console.error(e);
+      console.log(e);
       this.$message.success('Withdraw error');
     }
     loading.close();
@@ -795,11 +795,11 @@ export default class extends Vue {
 
   private async tmRegister(): Promise<void> {
     if (this.getPrincipalId) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       try {
         const nftId = localStorage.getItem('approveNft');
         const res = await this.tradingMiningService.tmRegister(
@@ -815,7 +815,7 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();
@@ -823,11 +823,11 @@ export default class extends Vue {
   }
   private async register1(): Promise<void> {
     if (this.getPrincipalId) {
-      await checkAuth();
       const loading = this.$loading({
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
+      await checkAuth();
       try {
         const res = await this.tradingMiningService.tmRegister2();
         console.log(res);
@@ -838,7 +838,7 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.error(e);
+        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();

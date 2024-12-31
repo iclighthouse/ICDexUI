@@ -94,7 +94,7 @@ export class ConnectMetaMaskMixin extends Vue {
         }
         await this.sign(account);
       } catch (error) {
-        console.error(error);
+        console.log(error);
         this.connectSpinning = false;
       }
     }

@@ -1,30 +1,38 @@
 <template>
   <div>
-    <ul v-if="!$route.meta.hideMenu" class="icsns-menu">
-      <li
-        v-for="menu in ICSNSMenu"
-        :key="menu.name"
-        :class="{
-          active: menu.name === $route.name
-        }"
-        @click="changeMenu(menu)"
-      >
-        {{ menu.value }}
-      </li>
-    </ul>
-    <keep-alive>
-      <router-view v-if="$route.meta.keepAlive"></router-view>
-    </keep-alive>
-    <router-view v-if="!$route.meta.keepAlive"></router-view>
+    <!--<div class="home-header" style="margin-top: 14px">
+      <div class="home-header-left">
+        <span class="home-header-title">SNS</span>
+      </div>
+    </div>-->
+    <div>
+      <ul v-if="!$route.meta.hideMenu" class="icsns-menu">
+        <li
+          v-for="menu in ICSNSMenu"
+          :key="menu.name"
+          :class="{
+            active: menu.name === $route.name
+          }"
+          @click="changeMenu(menu)"
+        >
+          {{ menu.value }}
+        </li>
+      </ul>
+      <keep-alive>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import AccountInfo from '@/views/home/components/AccountInfo.vue';
 
 @Component({
   name: 'Index',
-  components: {}
+  components: { AccountInfo }
 })
 export default class extends Vue {
   private ICSNSMenu = [

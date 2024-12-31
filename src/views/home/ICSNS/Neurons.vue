@@ -1390,11 +1390,11 @@ export default class extends Vue {
     (this.$refs.splitForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             const amount = BigInt(
               new BigNumber(this.splitForm.amount)
@@ -1434,7 +1434,7 @@ export default class extends Vue {
               this.$message.error('Split Neuron Error');
             }
           } catch (e) {
-            console.error(e);
+            console.log(e);
           }
           loading.close();
         }
@@ -1555,7 +1555,7 @@ export default class extends Vue {
           })
           .catch((err) => {
             loading.close();
-            console.error(err);
+            console.log(err);
             that.$message.error('Start Dissolving Error');
           });
       }
@@ -1922,11 +1922,11 @@ export default class extends Vue {
     (this.$refs.stakeNeuronForm as Vue & { validate: any }).validate(
       async (valid: any) => {
         if (valid) {
-          await checkAuth();
           const loading = this.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
           });
+          await checkAuth();
           try {
             const amount = BigInt(
               new BigNumber(this.stakeNeuronForm.amount)
@@ -2047,19 +2047,30 @@ export default class extends Vue {
   }
   private async getNervousSystemParameters(
     governanceId: string,
-    index: number
+    ledger: string,
+    index: number,
+    isInit = false
   ): Promise<void> {
-    const snsGovernanceService = new SNSGovernanceService();
-    try {
-      const res = await snsGovernanceService.getNervousSystemParameters(
-        governanceId
+    const info = JSON.parse(localStorage.getItem(`${ledger}-SNS`)) || {};
+    if (!isInit && info && info.nervousSystemParameters) {
+      this.$set(
+        this.SNSNeuronsList[index],
+        'nervousSystemParameters',
+        info.nervousSystemParameters
       );
-      console.log(governanceId);
-      console.log(res);
-      this.$set(this.SNSNeuronsList[index], 'nervousSystemParameters', res);
-      console.log(this.SNSNeuronsList);
-    } catch (e) {
-      return null;
+    } else {
+      const snsGovernanceService = new SNSGovernanceService();
+      try {
+        const res = await snsGovernanceService.getNervousSystemParameters(
+          governanceId
+        );
+        console.log(governanceId);
+        console.log(res);
+        this.$set(this.SNSNeuronsList[index], 'nervousSystemParameters', res);
+        console.log(this.SNSNeuronsList);
+      } catch (e) {
+        return null;
+      }
     }
   }
   private initStakeNeuron(neuron: SNSNeuronsInfo): void {
@@ -2094,11 +2105,11 @@ export default class extends Vue {
     this.splitVisible = true;
   }
   private async stakeMaturity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const neuronInfo = this.SNSNeuronsList[this.currentNeuronInfoIndex];
       const snsGovernanceService = new SNSGovernanceService();
@@ -2139,11 +2150,11 @@ export default class extends Vue {
     }
   }
   private async onChangeAutoStakeMaturity(): Promise<void> {
-    await checkAuth();
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
+    await checkAuth();
     try {
       const neuronInfo = this.SNSNeuronsList[this.currentNeuronInfoIndex];
       const snsGovernanceService = new SNSGovernanceService();
@@ -2238,7 +2249,7 @@ export default class extends Vue {
         this.$message.error('Disburse Maturity Error');
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
   }
@@ -2305,7 +2316,7 @@ export default class extends Vue {
         this.$message.error('Disburse Neuron Error');
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
     loading.close();
   }
@@ -2344,7 +2355,8 @@ export default class extends Vue {
       const priList = JSON.parse(localStorage.getItem('priList')) || {};
       const needConnectInfinity1 = await needConnectInfinity(canisterIds);
       if (
-        priList[principal] === 'Plug' &&
+        (priList[principal] === 'Plug' ||
+          priList[principal] === 'SignerPlug') &&
         flag &&
         this.$route.name === 'ICSNS-Neurons'
       ) {
@@ -2395,7 +2407,7 @@ export default class extends Vue {
         this.initConnected(this.deployedSnses);
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       loading.close();
     }
   }
@@ -2421,6 +2433,51 @@ export default class extends Vue {
         this.currentNeuronInfoIndex
       );
       console.log(this.SNSNeuronsList);
+      let deployedSns: DeployedSns;
+      this.deployedSnses.some((item) => {
+        if (
+          item.ledger_canister_id[0].toString() ===
+          this.SNSNeuronsList[this.currentNeuronInfoIndex].SNSNeuronOfId
+        ) {
+          deployedSns = item;
+          return true;
+        }
+      });
+      const promiseAll = [];
+      promiseAll.push(
+        this.getCurrentTokenInfo(deployedSns, index, true),
+        this.getNervousSystemParameters(
+          deployedSns.governance_canister_id[0].toString(),
+          deployedSns.ledger_canister_id[0].toString(),
+          index,
+          true
+        ),
+        this.getLifecycle(deployedSns, index, true)
+      );
+      Promise.all(promiseAll).then(() => {
+        const SNSToken = this.SNSNeuronsList[this.currentNeuronInfoIndex];
+        if (
+          SNSToken.lifecycle &&
+          SNSToken.lifecycle.length &&
+          Number(SNSToken.lifecycle[0]) !== 4
+        ) {
+          const sns =
+            JSON.parse(localStorage.getItem(`${SNSToken.SNSNeuronOfId}-SNS`)) ||
+            {};
+          localStorage.setItem(
+            `${SNSToken.SNSNeuronOfId}-SNS`,
+            JSON.stringify(
+              Object.assign({}, sns, {
+                lifecycle: SNSToken.lifecycle,
+                nervousSystemParameters: SNSToken.nervousSystemParameters
+              }),
+              (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+            )
+          );
+          return true;
+        }
+      });
     } catch (e) {
       console.log(e);
     }
@@ -2435,6 +2492,11 @@ export default class extends Vue {
     const MAX_COCURRENCY = 40;
     let snsTokensAll = [];
     let snsTokens = [];
+    const localReject: Array<string> =
+      JSON.parse(localStorage.getItem('rejectSNSTokens')) || [];
+    listDeployedSnses = listDeployedSnses.filter((item) => {
+      return !localReject.includes(item.ledger_canister_id[0].toString());
+    });
     listDeployedSnses.forEach((item, index) => {
       const SNSNeuronOfId = item.ledger_canister_id[0].toString();
       const SNSNeuronOfGovernanceId = item.governance_canister_id[0].toString();
@@ -2462,17 +2524,23 @@ export default class extends Vue {
         }
       }
     });
+    const localToken = localStorage.getItem('ICSNSToken');
     let index = 0;
     for (let i = 0; i < snsTokensAll.length; i++) {
       const promiseAll = [];
       for (let j = 0; j < snsTokensAll[i].length; j++) {
+        const isInit =
+          localToken ===
+          listDeployedSnses[index].ledger_canister_id[0].toString();
         promiseAll.push(
-          this.getCurrentTokenInfo(listDeployedSnses[index], index),
+          this.getCurrentTokenInfo(listDeployedSnses[index], index, isInit),
           this.getNervousSystemParameters(
             listDeployedSnses[index].governance_canister_id[0].toString(),
-            index
+            listDeployedSnses[index].ledger_canister_id[0].toString(),
+            index,
+            isInit
           ),
-          this.getLifecycle(listDeployedSnses[index], index)
+          this.getLifecycle(listDeployedSnses[index], index, isInit)
         );
         index++;
       }
@@ -2481,14 +2549,41 @@ export default class extends Vue {
     loading.close();
     this.SNSNeuronsList = this.SNSNeuronsList.filter(
       (SNSToken: SNSNeuronsInfo) => {
-        return (
+        if (
           (SNSToken.lifecycle &&
             SNSToken.lifecycle.length &&
-            Number(SNSToken.lifecycle[0]) !== 4) ||
-          SNSToken.lifecycle.length === 0
-        );
+            Number(SNSToken.lifecycle[0]) == 4) ||
+          (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
+        ) {
+          if (!localReject.includes(SNSToken.SNSNeuronOfId)) {
+            localReject.push(SNSToken.SNSNeuronOfId);
+          }
+        }
+        if (
+          SNSToken.lifecycle &&
+          SNSToken.lifecycle.length &&
+          Number(SNSToken.lifecycle[0]) !== 4
+        ) {
+          const sns =
+            JSON.parse(localStorage.getItem(`${SNSToken.SNSNeuronOfId}-SNS`)) ||
+            {};
+          localStorage.setItem(
+            `${SNSToken.SNSNeuronOfId}-SNS`,
+            JSON.stringify(
+              Object.assign({}, sns, {
+                lifecycle: SNSToken.lifecycle,
+                nervousSystemParameters: SNSToken.nervousSystemParameters
+              }),
+              (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+            )
+          );
+          return true;
+        }
       }
     );
+    console.log(this.SNSNeuronsList);
+    localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     let tokenId = this.$route.query.id as string;
     if (tokenId) {
       localStorage.setItem('ICSNSToken', tokenId);
@@ -2572,19 +2667,33 @@ export default class extends Vue {
   }
   private async getLifecycle(
     deployedSns: DeployedSns,
-    index: number
+    index: number,
+    isInit = false
   ): Promise<void> {
     const swapId = deployedSns.swap_canister_id[0].toString();
-    const snsSwapService = new SNSSwapService();
-    const res = await snsSwapService.getLifecycle(swapId);
-    this.$set(this.SNSNeuronsList[index], 'lifecycle', res.lifecycle);
+    const tokenId = deployedSns.ledger_canister_id[0].toString();
+    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+    const completed = [3, 4];
+    if (
+      !isInit &&
+      info &&
+      info.lifecycle &&
+      completed.includes(Number(info.lifecycle))
+    ) {
+      this.$set(this.SNSNeuronsList[index], 'lifecycle', info.lifecycle);
+    } else {
+      const snsSwapService = new SNSSwapService();
+      const res = await snsSwapService.getLifecycle(swapId);
+      this.$set(this.SNSNeuronsList[index], 'lifecycle', res.lifecycle);
+    }
   }
   private async getCurrentTokenInfo(
     deployedSns: DeployedSns,
-    index: number
+    index: number,
+    isInit = false
   ): Promise<void> {
     const tokenId = deployedSns.ledger_canister_id[0];
-    if (!this.tokens[tokenId.toString()]) {
+    if (isInit || !this.tokens[tokenId.toString()]) {
       const res = await getTokenInfo(tokenId, { icrc1: null });
       this.$set(this.SNSNeuronsList[index], 'SNSNeuronOfSNSTokenInfo', res);
     } else {

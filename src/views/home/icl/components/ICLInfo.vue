@@ -263,11 +263,11 @@ export default class extends Vue {
             .times(10 ** this.decimals)
             .toString(10)
         );
-        await checkAuth();
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
         });
+        await checkAuth();
         try {
           const res = await this.DRC20TokenService.icrc2_approve(
             IC_LIGHTHOUSE_TOKEN_CANISTER_ID,

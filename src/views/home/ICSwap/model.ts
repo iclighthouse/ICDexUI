@@ -8,25 +8,20 @@ import {
 import { DexName, SwapCanister, SwapPair, SwapPairInfo } from '@/ic/ICSwapRouter/model';
 import { Liquidity } from '@/ic/cyclesFinance/model';
 import { TokenLiquidity } from '@/ic/ICSwap/model';
-
 export enum SwapMenu {
   // Wrap = 'Wrap',
   Swap = 'Swap',
   Liquidity = 'Liquidity'
 }
 export type SwapType = keyof typeof SwapMenu;
-
 export enum LiquidityType {
   Add = 'Add',
   Remove = 'Remove',
   Claim = 'Claim'
 }
-
 export type SwapTokenInfo = [TokenId, TokenSymbol, TokenStd, TokenInfo];
-
 export type SelectTokenType = 'from' | 'to';
 export type CurrentSwapType = 'positive' | 'reverse';
-
 export enum PairTokenStdMenu {
   dip20 = 'dip20',
   drc20 = 'drc20',
@@ -35,7 +30,6 @@ export enum PairTokenStdMenu {
   icp = 'icp'
 }
 export type PairTokenStd = keyof typeof PairTokenStdMenu;
-
 export enum SwappingPairEnum {
   'cyclesfinance',
   'drc20', // All drc20
@@ -44,15 +38,12 @@ export enum SwappingPairEnum {
   'icrc2',
   'icp'
 }
-
 export enum DexNameEnum {
   icswap = 'icswap',
   icdex = 'icdex',
   cyclesfinance = 'cyclesfinance'
 }
-
 export type DexNameType = keyof typeof DexNameEnum;
-
 export type Pool = [
   SwapCanister,
   [SwapPairInfo, bigint],
@@ -79,7 +70,6 @@ export type SwapCanisterId = string;
 export type LocalTokenId = string;
 export type totalLiquidity = Liquidity | TokenLiquidity;
 export type UserLiquidity = Liquidity | TokenLiquidity;
-
 export interface WrapInfo {
   logo: string;
   name: string;

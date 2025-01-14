@@ -46,5 +46,4 @@ const neuronRouter: RouteConfig[] = [
     ]
   }
 ];
-
 export default neuronRouter;

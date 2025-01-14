@@ -5,7 +5,6 @@ import { Txid, Time, Icrc1Account, AccountId, Gas } from '@/ic/common/icType';
 import { TxnRecordStatus } from '@/ic/cyclesFinance/model';
 import { SwapTokenInfo } from '@/ic/ICSwapRouter/model';
 import exp from 'constants';
-
 export type LevelResponse = [unitSize, OrderBook];
 export type unitSize = bigint;
 export interface OrderBook {
@@ -843,7 +842,6 @@ export type Status__1 =
   | { Doing: null }
   | { Unknown: null };
 export type TOPoolResponse = Array<[bigint, [] | [Order]]>;
-
 export default interface Service {
   liquidity(address: Array<Address>): Promise<TokenLiquidity>;
   level10(): Promise<LevelResponse>;

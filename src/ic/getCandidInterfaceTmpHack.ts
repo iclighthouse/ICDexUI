@@ -2,16 +2,13 @@ import { IDL } from '@dfinity/candid';
 import { Actor, QueryResponseReplied, HttpAgent } from '@dfinity/agent';
 import { DIDGenerateService } from '@/ic/DIDGenerate/DIDGenerateService';
 import { readState } from '@/ic/readState';
-
 const didGenerateService = new DIDGenerateService();
-
 export const getCandidInterfaceTmpHack = async (
   canisterId: string
 ): Promise<{ [key: string]: IDL.FuncClass }> => {
   return new Promise((resolve, reject) => {
     readState(canisterId)
       .then((res) => {
-        console.log(res);
         if (res && res.did) {
           const agent = new HttpAgent({
             host: 'https://ic0.app/',

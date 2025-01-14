@@ -83,7 +83,6 @@ export class Token {
   public owner: PrincipalString = null;
   public maxSupply: bigint = null;
 }
-
 export default interface Service {
   create(request: InitArgs, subaccount: Array<Array<number>>): Promise<[Principal]>;
   getTokenList(size: number, page: number): Promise<Array<TokenItem>>;

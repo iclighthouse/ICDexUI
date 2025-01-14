@@ -48,7 +48,6 @@ import {
 } from '@/ic/ConnectInfinity';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 const commonModule = namespace('common');
-
 @Component({
   components: {
     TopUp
@@ -127,7 +126,6 @@ export class PairsMixin extends Vue {
       this.$route.params.tokenFromId
     );
     const tokenToId = icpOrCyclesToSwapTokenId(this.$route.params.tokenToId);
-    console.log(tokenFromId, tokenToId);
     if (!tokenFromId) {
       this.tokenSwapFrom = [
         Principal.fromText(LEDGER_CANISTER_ID),
@@ -147,7 +145,6 @@ export class PairsMixin extends Vue {
     this.init().then(() => {
       //
     });
-    console.log('created');
     this.getTokensBalanceInterval();
     this.getWallets().then(() => {
       //
@@ -183,7 +180,6 @@ export class PairsMixin extends Vue {
           cycles = status.cycles;
         }
       } catch (e) {
-        console.log(e);
       }
     }
     if (!cycles) {
@@ -191,11 +187,9 @@ export class PairsMixin extends Vue {
       try {
         state = await readState(this.cyclesCanister.trim());
       } catch (e) {
-        console.log(e);
       }
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
-      console.log(state);
       if (!state || (state && !state.moduleHash)) {
         flag = false;
         this.$info({
@@ -326,7 +320,6 @@ export class PairsMixin extends Vue {
       }, 3 * 1000);
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   public async withdrawBalance(): Promise<void> {
@@ -340,7 +333,6 @@ export class PairsMixin extends Vue {
       await currentICSwapService.withdraw(this.swapId, [this.autoWithdraw]);
       this.$message.success('Withdraw Success');
     } catch (e) {
-      console.log(e);
     }
     loading.close();
     this.getTokenBalance(
@@ -423,7 +415,6 @@ export class PairsMixin extends Vue {
         max = new BigNumber(max).plus(depositAmount);
       }
     }
-    console.log(max.toString(10));
     return max;
   }
   public setMax(token: SwapTokenInfo, type: string): void {
@@ -465,8 +456,6 @@ export class PairsMixin extends Vue {
         );
       }
     }
-
-    console.log(this.depositAccount);
   }
   public async transferIcrc1(
     tokenId: string,
@@ -536,7 +525,6 @@ export class PairsMixin extends Vue {
         }
       } catch (e) {
         this.freezingThreshold = '0';
-        console.log(e);
         return '-';
       }
       // this.buttonLoading = false;
@@ -708,7 +696,6 @@ export class PairsMixin extends Vue {
       }
     }
     if (tokenFromId && tokenToId) {
-      console.log('getRouter');
       await this.getRouter();
       // const loading = this.$loading({
       //   lock: true,
@@ -719,7 +706,7 @@ export class PairsMixin extends Vue {
       //     await this.initAddLiquidity();
       //   }
       // } catch (e) {
-      //   console.log(e);
+      //   
       // }
       // loading.close();
     }
@@ -754,11 +741,9 @@ export class PairsMixin extends Vue {
         this.getAutoWithdrawal(this.swapId)
       );
       const promiseAll = await Promise.all(promiseAllValue);
-      console.log('setCurrentPool');
       this.getPairBalance();
       this.getCurrentDepositing();
       this.liquidity = promiseAll[0];
-      console.log(this.liquidity);
       this.swapDecimals = this.currentPool[4];
       this.$forceUpdate();
     } else {
@@ -780,7 +765,6 @@ export class PairsMixin extends Vue {
         ];
         this.tokenSwapTo = null;
       } else {
-        console.log('setCurrentPool');
         this.$emit('setCurrentPool', this.swapId, this.currentRoute);
       }
     }
@@ -804,7 +788,6 @@ export class PairsMixin extends Vue {
       this.getPairBalance();
       this.getCurrentDepositing();
     } catch (e) {
-      console.log(e);
     }
     // loading.close();
   }
@@ -822,14 +805,12 @@ export class PairsMixin extends Vue {
       }
     }
   }
-
   public async refreshDepositingBalance(
     tokenStd: TokenStd,
     tokenId: string
   ): Promise<void> {
     this.$set(this.refreshDepositBalanceLoading, tokenId, true);
     try {
-      console.log(this.depositAccountId);
       const std = Object.keys(tokenStd)[0].toLocaleLowerCase();
       let balance: string;
       if (std === 'icp') {
@@ -843,12 +824,10 @@ export class PairsMixin extends Vue {
       }
       this.depositing[this.depositAccountId][tokenId] = balance;
     } catch (e) {
-      console.log(e);
     }
     this.refreshDepositBalanceLoading[tokenId] = false;
     this.$forceUpdate();
   }
-
   /**
    * change pair and then get current depositing
    */
@@ -861,7 +840,6 @@ export class PairsMixin extends Vue {
     )[0].toLocaleLowerCase();
     let token0Id: string;
     let token1Id: string;
-    console.log(this.dexInfo);
     if (this.swapId === CYCLES_FINANCE_CANISTER_ID) {
       const balanceRes = await this.ledgerService.getBalances({
         account: this.depositAccountId
@@ -986,7 +964,6 @@ export class PairsMixin extends Vue {
         });
       }
     } catch (e) {
-      console.log(e);
     }
     this.tokenListLoading = false;
   }
@@ -1002,7 +979,6 @@ export class PairsMixin extends Vue {
       currentICSwapService
         .balance(this.swapId, principal)
         .then((balance) => {
-          console.log(balance);
           this.accountBalance = balance;
         })
         .finally(() => {
@@ -1057,7 +1033,6 @@ export class PairsMixin extends Vue {
         this.$set(this.tokensBalance, tokenId, tokenBalance);
       }
     } catch (e) {
-      console.log(e);
       this.$set(this.tokensBalanceLoading, tokenId, false);
     }
   }
@@ -1069,14 +1044,12 @@ export class PairsMixin extends Vue {
       const currentICSwapService = new ICSwapService();
       this.config = await currentICSwapService.getConfig(swapId);
     }
-    console.log(this.config);
   }
   public async getAutoWithdrawal(swapId: string): Promise<void> {
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       this.autoWithdraw = true;
     } else {
       const principal = localStorage.getItem('principal');
-      console.log(principal);
       const currentICSwapService = new ICSwapService();
       if (principal) {
         this.autoWithdraw = await currentICSwapService.autoWithdrawal(
@@ -1085,7 +1058,6 @@ export class PairsMixin extends Vue {
         );
       }
     }
-    console.log(this.autoWithdraw);
   }
   public async getDexInfo(swapId: string): Promise<void> {
     const currentICSwapService = new ICSwapService();
@@ -1130,7 +1102,6 @@ export class PairsMixin extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     return flag;
   }
@@ -1146,7 +1117,6 @@ export class PairsMixin extends Vue {
     this.accountBalance = null;
     this.depositing = null;
     try {
-      console.time();
       if (this.tokenSwapFrom && this.tokenSwapTo) {
         const res = await this.ICSwapRouterFiduciaryService.route(
           this.tokenSwapFrom[0],
@@ -1323,7 +1293,6 @@ export class PairsMixin extends Vue {
           this.routerLoading = false;
         }
       }
-      console.timeEnd();
       // this.routerLoading = false;
     } catch (e) {
       this.routerLoading = false;

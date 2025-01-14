@@ -1,6 +1,6 @@
 import Service, {
   icBTCEvents,
-  MinterInfo,
+  MinterInfoBTC,
   RetrieveBtcArgs,
   RetrieveBtcRes,
   RetrieveBtcStatus,
@@ -15,7 +15,6 @@ import {
   principalToAccountIdentifier,
   SerializableIC
 } from '@/ic/converter';
-
 import { Icrc1Account } from '@/ic/common/icType';
 import {
   CK_BTC_MINTER_CANISTER_ID,
@@ -23,7 +22,6 @@ import {
 } from '@/ic/utils';
 import { Principal } from '@dfinity/principal';
 import { createService } from '@/ic/createService';
-
 export class ckBTCMinterService {
   private check = async (
     type: string,
@@ -161,7 +159,7 @@ export class ckBTCMinterService {
     const service = await this.check(type);
     return await service.batch_send(request);
   };
-  public info = async (type: string): Promise<MinterInfo> => {
+  public info = async (type: string): Promise<MinterInfoBTC> => {
     const service = await this.check(type, false, false);
     return await service.get_minter_info();
   };
@@ -182,7 +180,6 @@ export class ckBTCMinterService {
       const res = await service.estimate_withdrawal_fee(request);
       return res.bitcoin_fee;
     } catch (e) {
-      console.log(e);
     }
   };
   public get_events = async (
@@ -191,12 +188,10 @@ export class ckBTCMinterService {
     size: [bigint]
   ): Promise<icBTCEvents> => {
     const service = await this.check(type, false, false);
-    console.log(service);
     try {
       const res = await service.get_events(page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
     }
   };
 }

@@ -1,5 +1,4 @@
 import { Principal } from '@dfinity/principal';
-
 export interface AddressBookItem {
   address: string;
   encrypt: string;
@@ -82,7 +81,6 @@ export interface MetaMaskInfo {
   account: string;
   mnemonic: Array<string>;
 }
-
 export default interface Service {
   getAddressBookItems: () => Promise<AddressBookItem[]>;
   getEthConnectItems: () => Promise<EthConnectItem[]>;

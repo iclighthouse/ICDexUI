@@ -15,7 +15,6 @@
     ></add-liquidity>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import AddLiquidity from '@/views/home/ICSwap/components/AddLiquidity.vue';
@@ -34,7 +33,6 @@ import { CYCLES_FINANCE_CANISTER_ID } from '@/ic/utils';
 import { CyclesFinanceService } from '@/ic/cyclesFinance/cyclesFinanceService';
 import { ICSwapService } from '@/ic/ICSwap/ICSwapService';
 import { toLocalPool } from '@/ic/icSwapUtils';
-
 @Component({
   name: 'Add',
   components: {
@@ -70,7 +68,6 @@ export default class extends Vue {
         this.getLiquidity(currentRouteId, principal)
       );
       const res = await Promise.all(promiseAllValue);
-      console.log(res, currentRoute);
       const pool: Pool = [...currentRoute[0], res[0], res[1], swapDecimals];
       localPoos.push(toLocalPool(pool));
       const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -104,7 +101,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .back-icon {
   position: absolute;

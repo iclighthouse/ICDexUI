@@ -137,7 +137,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -246,7 +245,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .ic-swap-yield {
   margin-bottom: 20px;

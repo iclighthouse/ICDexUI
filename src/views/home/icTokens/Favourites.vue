@@ -186,7 +186,6 @@
     </a-spin>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import { ICTokenService } from '@/ic/ICTokens/ICTokenService';
@@ -224,7 +223,6 @@ export default class extends Mixins(TokenInfoMixin) {
         this.getTokenInfo(this.tokenList[i]);
       }
     }
-    console.log(this.tokenList);
     this.tableSpinning = false;
   }
   private async cancelStar(tokenItem: Token, index: number): Promise<void> {
@@ -244,7 +242,6 @@ export default class extends Mixins(TokenInfoMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .metadata-item {
   display: inline-block;

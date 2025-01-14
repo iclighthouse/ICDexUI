@@ -28,7 +28,6 @@ import { NeuronId } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal/lib/cjs';
 import { SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class GovernanceService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -274,7 +273,6 @@ export class GovernanceService {
       const res = await this.service.list_neurons(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -285,7 +283,6 @@ export class GovernanceService {
         const res = await this.service.get_network_economics_parameters();
         return SerializableIC(res);
       } catch (e) {
-        console.log(e);
       }
       return null;
     };
@@ -293,7 +290,6 @@ export class GovernanceService {
     neuronId: bigint,
     percentageToStake = BigInt(100)
   ): Promise<StakeMaturityResponse> => {
-    console.log(neuronId, percentageToStake);
     return new Promise((resolve, reject) => {
       this.check().then(() => {
         const request: ManageNeuron = {
@@ -307,7 +303,6 @@ export class GovernanceService {
           ],
           neuron_id_or_subaccount: []
         };
-        console.log(request);
         this.service.manage_neuron(request).then((response) => {
           const command = response.command[0];
           if ((command as { Error: GovernanceError }).Error) {
@@ -357,7 +352,6 @@ export class GovernanceService {
       const res = await this.service.list_known_neurons();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -382,7 +376,6 @@ export class GovernanceService {
       };
       return await this.service.manage_neuron(request);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -412,7 +405,6 @@ export class GovernanceService {
       const res = await this.service.manage_neuron(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -442,7 +434,6 @@ export class GovernanceService {
       const res = await this.service.manage_neuron(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -468,7 +459,6 @@ export class GovernanceService {
       const res = await this.service.manage_neuron(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -490,7 +480,6 @@ export class GovernanceService {
       const res = await this.service.manage_neuron(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

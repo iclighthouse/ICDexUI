@@ -736,7 +736,6 @@
     </div>-->
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { Menu } from '@/components/menu/model';
@@ -757,9 +756,7 @@ import { principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Competitions',
   components: {
@@ -861,7 +858,6 @@ export default class extends Vue {
     const res = await this.ICSwapRouterFiduciaryService.getDexCompetition(
       this.round
     );
-    console.log(this.round, res);
     if (res && res.length) {
       this.dexCompetitionResponse = res[0];
       this.dexCompetitionResponse.pairs.forEach((item) => {
@@ -903,7 +899,6 @@ export default class extends Vue {
           this.updateTime = Number(updateTime);
         }
       }
-      console.log(res);
     }
   }
   private changeMenu(menu: string): void {
@@ -1008,7 +1003,6 @@ export default class extends Vue {
       [this.page.current],
       [this.page.pageSize]
     );
-    console.log(res);
     if (res) {
       if (res.data && res.data.length < this.page.pageSize) {
         this.loadMore = false;
@@ -1142,14 +1136,12 @@ export default class extends Vue {
       return;
     }
     if (!this.busy) {
-      console.log('handleInfiniteOnLoad');
       this.busy = true;
       this.getCompetitions();
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .home-header {
   top: 14px;

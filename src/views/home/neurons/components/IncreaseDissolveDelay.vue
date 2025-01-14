@@ -104,20 +104,16 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
 import { checkAuth } from '@/ic/CheckAuth';
 import { Neuron } from '@/ic/governance/model';
 import { GovernanceService } from '@/ic/governance/governanceService';
-
 const dayjs = require('dayjs');
-
 const year = 365.25;
 const SECONDS_IN_YEAR = ((4 * 365 + 1) * (60 * 60 * 24)) / 4;
 const SECONDS_IN_EIGHT_YEARS = SECONDS_IN_YEAR * 8;
-
 @Component({
   name: 'IncreaseDissolveDelay',
   components: {}
@@ -331,7 +327,6 @@ export default class extends Vue {
   private init(neuronsList: Array<Neuron>, index: number): void {
     this.index = index;
     const neuron = neuronsList[index];
-    console.log(neuron.dissolve_state[0]);
     this.visible = true;
     this.neuron = neuron;
     const staked_maturity_e8s_equivalent =
@@ -363,7 +358,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(this.defaultValue);
   }
   private getMinLocked(): void {
     this.minLocked = '6 months';
@@ -407,7 +401,6 @@ export default class extends Vue {
       this.$message.success('Increase Dissolve Delay Success');
       this.$emit('increaseDissolveDelaySuccess');
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -416,7 +409,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .dissolve-delay-item {
   display: flex;

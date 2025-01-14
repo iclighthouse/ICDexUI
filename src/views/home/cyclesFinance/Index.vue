@@ -1319,7 +1319,6 @@
     ></top-up>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins, Watch } from 'vue-property-decorator';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
@@ -1381,7 +1380,6 @@ import {
 } from '@/ic/ConnectInfinity';
 import EventBus from '@/utils/Event';
 const commonModule = namespace('common');
-
 @Component({
   name: 'Index',
   components: {
@@ -1890,7 +1888,6 @@ export default class extends Mixins(BalanceMixin) {
         Number(this.cyclesAmount) &&
         this.cyclesCanister
       ) {
-        console.log(this.cycles.toString(), this.freezingThreshold);
         let yourCycles;
         if (this.cycles === '-') {
           yourCycles = '0';
@@ -2042,7 +2039,6 @@ export default class extends Mixins(BalanceMixin) {
       );
     }
     this.liquidity = await this.getLiquidity();
-    console.log(this.liquidity, this.userLiquidity);
     this.getIntervalLiquidity();
     EventBus.$on('change', (type: ExchangeType) => {
       this.change(type);
@@ -2067,7 +2063,6 @@ export default class extends Mixins(BalanceMixin) {
       this.getIcpBalance();
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   private ConfirmOtherCycles(): void {
@@ -2217,7 +2212,6 @@ export default class extends Mixins(BalanceMixin) {
           cycles = status.cycles;
         }
       } catch (e) {
-        console.log(e);
       }
     }
     if (!cycles) {
@@ -2225,11 +2219,9 @@ export default class extends Mixins(BalanceMixin) {
       try {
         state = await readState(this.cyclesCanister.trim());
       } catch (e) {
-        console.log(e);
       }
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
-      console.log(state);
       if (!state || (state && !state.moduleHash)) {
         flag = false;
         this.$info({
@@ -2364,7 +2356,6 @@ export default class extends Mixins(BalanceMixin) {
           this.liquidity = await this.getLiquidity();
         })
         .catch((e) => {
-          console.log(e);
           this.getDepositBalance();
           // const index = this.recordList.findIndex(
           //   (item) =>
@@ -2391,7 +2382,6 @@ export default class extends Mixins(BalanceMixin) {
       this.isLoading = false;
       loading.close();
       this.$message.error(e.message);
-      console.log(e);
     }
   }
   private onAddLiquidity(): void {
@@ -2499,7 +2489,6 @@ export default class extends Mixins(BalanceMixin) {
         })
         .catch((e) => {
           this.getDepositBalance();
-          console.log(e);
           // const index = this.recordList.findIndex(
           //   (item) =>
           //     item.nonce === nonce &&
@@ -2529,7 +2518,6 @@ export default class extends Mixins(BalanceMixin) {
       if (loading) {
         this.$message.error(e.message);
       }
-      console.log(e);
     }
   }
   private async addLiquidity(): Promise<void> {
@@ -2549,7 +2537,6 @@ export default class extends Mixins(BalanceMixin) {
         this.depositAccountId
       );
       this.isLoading = true;
-      console.log(blockHeight);
       const nonce = await this.getCount(
         Principal.fromText(this.cyclesCanister.trim())
       );
@@ -2605,7 +2592,6 @@ export default class extends Mixins(BalanceMixin) {
       this.walletService
         .walletCall(walletCallRequest, this.cyclesCanister.trim())
         .then(async (res) => {
-          console.log(res);
           loading.close();
           if ((res as { Ok: { return: Array<number> } }).Ok) {
             this.getIcpBalance();
@@ -2677,7 +2663,6 @@ export default class extends Mixins(BalanceMixin) {
         principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
       ]);
     } catch (e) {
-      console.log(e);
     }
     this.recordSpinning = false;
   }
@@ -2751,13 +2736,11 @@ export default class extends Mixins(BalanceMixin) {
       this.walletService
         .walletCall(walletCallRequest, this.cyclesCanister.trim())
         .then(async (res) => {
-          console.log(res);
           if ((res as { Ok: { return: Array<number> } }).Ok) {
             this.getIcpBalance();
             this.getDepositBalance();
             this.getCycles();
             const record = await this.cyclesFinanceService.txnRecord(txid);
-            console.log(record);
             // const index = this.recordList.findIndex(
             //   (item) =>
             //     item.nonce === nonce &&
@@ -2833,12 +2816,10 @@ export default class extends Mixins(BalanceMixin) {
           .times(10 ** this.decimals)
           .toString(10)
       );
-      console.log(icp);
       const blockHeight = await this.ledgerService.sendIcp(
         this.depositAmount.toString(),
         this.depositAccountId
       );
-      console.log(blockHeight);
       const nonce = await this.getCount(
         Principal.fromText(this.getPrincipalId)
       );
@@ -2876,7 +2857,6 @@ export default class extends Mixins(BalanceMixin) {
           nonce
         ])
         .then(async (res) => {
-          console.log(res);
           this.getIcpBalance();
           this.getDepositBalance();
           this.getCycles();
@@ -2928,7 +2908,6 @@ export default class extends Mixins(BalanceMixin) {
       this.getDepositBalance();
       this.isLoading = false;
       loading.close();
-      console.log(e);
       // this.$message.error(e.message);
     }
   }
@@ -3054,7 +3033,6 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private getSlippage(cycles: BigNumber, icp: BigNumber): void {
-    console.log(cycles.toString(), icp.toString());
     const rate = new BigNumber(this.liquidity.cycles.toString(10)).div(
       this.liquidity.icpE8s.toString(10)
     );
@@ -3068,7 +3046,6 @@ export default class extends Mixins(BalanceMixin) {
         .div(100)
         .toString(10)
     );
-    console.log(rate.toString(), newRate.toString(), this.slippage);
   }
   private async depositAmountChange(): Promise<void> {
     try {
@@ -3166,7 +3143,6 @@ export default class extends Mixins(BalanceMixin) {
         this.cyclesAmount = '';
       }
     } catch (e) {
-      console.log(e);
     }
     // this.buttonLoading = false;
   }
@@ -3260,7 +3236,6 @@ export default class extends Mixins(BalanceMixin) {
         this.depositAmount = '';
       }
     } catch (e) {
-      console.log(e);
     }
     // this.buttonLoading = false;
   }
@@ -3350,7 +3325,6 @@ export default class extends Mixins(BalanceMixin) {
       } catch (e) {
         this.cycles = '-';
         this.freezingThreshold = '0';
-        console.log(e);
       }
       // this.buttonLoading = false;
     } else {
@@ -3385,13 +3359,11 @@ export default class extends Mixins(BalanceMixin) {
         this.depositBalance = '-';
       }
     } catch (e) {
-      console.log(e);
     }
     this.refreshDepositBalanceLoading = false;
   }
 }
 </script>
-
 <style scoped lang="scss">
 .cycles-finance-main {
   margin-top: 40px;
@@ -3637,7 +3609,6 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
 }
-
 .exchange-swap-item-bottom {
   display: flex;
   align-items: center;

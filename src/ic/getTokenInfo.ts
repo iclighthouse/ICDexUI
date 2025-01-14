@@ -2,6 +2,7 @@ import { Metadata, TokenId, TokenInfo, TokenStd } from '@/ic/common/icType';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { CYCLES_FINANCE_CANISTER_ID, LEDGER_CANISTER_ID } from '@/ic/utils';
 import { IcrcValue } from '@/ic/DRC20Token/model';
+import { getFee } from '@/ic/getTokenFee';
 const DRC20Token = new DRC20TokenService();
 export const getTokenInfo = async (
   tokenId: TokenId,
@@ -53,7 +54,8 @@ export const getTokenInfo = async (
     (tokens[tokenId.toString()] &&
       (tokens[tokenId.toString()].name !== tokenInfo.name ||
         tokens[tokenId.toString()].symbol !== tokenInfo.symbol ||
-        tokens[tokenId.toString()].fee !== tokenInfo.fee))
+        tokens[tokenId.toString()].decimals !== tokenInfo.decimals ||
+        tokens[tokenId.toString()].fee !== getFee(tokenInfo).toString(10)))
   ) {
     tokens[tokenId.toString()] = {
       name: tokenInfo.name,
@@ -61,7 +63,7 @@ export const getTokenInfo = async (
       symbol: tokenInfo.symbol,
       price: '',
       tokenStd: tokenInfo.tokenStd,
-      fee: tokenInfo.fee
+      fee: getFee(tokenInfo).toString(10)
     };
     localStorage.setItem(
       'tokens',

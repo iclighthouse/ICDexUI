@@ -305,7 +305,7 @@
             <img src="@/assets/img/wallet.svg" class="wallet-icon" alt="" />
           </router-link>
         </div>
-        <a-dropdown placement="bottomRight" v-if="getPrincipalId && !isIcx">
+        <a-dropdown placement="bottomRight" v-if="getPrincipalId">
           <div class="user-menu">
             <a-icon class="user-icon" type="user" />
             <img class="current-account-min" :src="accountImg" alt="account" />
@@ -423,7 +423,6 @@
           <img
             v-if="
               getPrincipalId &&
-              !isIcx &&
               !$route.fullPath.toLocaleLowerCase().startsWith('/wallet')
             "
             src="@/assets/img/wallet.svg"
@@ -431,14 +430,6 @@
             alt=""
           />
         </router-link>
-        <div v-if="isIcx && getPrincipalId" class="current-account-h5 h5-show">
-          <img :src="accountImg" alt="account" />
-          <copy-account
-            :account="getPrincipalId"
-            :show-copy="false"
-            copy-text="Principal ID"
-          ></copy-account>
-        </div>
         <a-dropdown
           v-if="getPrincipalId && !menuList.length"
           placement="bottomRight"
@@ -631,7 +622,7 @@
           </a-menu>
         </a-dropdown>
         <a-dropdown
-          v-if="getPrincipalId && menuList.length && !isIcx"
+          v-if="getPrincipalId && menuList.length"
           placement="bottomRight"
         >
           <a-icon class="base-font-normal h5-menu" type="menu" />
@@ -1512,7 +1503,6 @@
     </div>-->
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { principalToAccountIdentifier } from '@/ic/converter';
@@ -1536,10 +1526,8 @@ import {
   LiquidityType
 } from '@/views/home/cyclesFinance/model';
 import { NFIDLogout } from '@/ic/NFIDAuth';
-
 const commonModule = namespace('common');
 const KeyEncoder = require('key-encoder').default;
-
 @Component({
   name: 'AccountInfo',
   components: {
@@ -1635,7 +1623,6 @@ export default class extends Vue {
     this.isIcx = !!(window as any).icx;
   }
   created(): void {
-    console.log('AccountInfo');
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     this.setMenuList();
     this.ICLighthouseService = new ICLighthouseService();
@@ -1646,7 +1633,6 @@ export default class extends Vue {
     }, 30 * 1000);
   }
   private setMenuList(): void {
-    console.log(this.$route);
     this.menuList = [];
     if (
       this.$route.meta &&
@@ -1746,7 +1732,6 @@ export default class extends Vue {
     this.principalList.forEach((principal) => {
       this.getCAccountName(principal);
     });
-    console.log(this.principalList);
     if (
       this.priList[this.getPrincipalId] !== 'Plug' &&
       this.priList[this.getPrincipalId] !== 'SignerPlug' &&
@@ -1761,7 +1746,6 @@ export default class extends Vue {
       if (typeof encryptSeedPhrase === 'string') {
         encryptSeedPhrase = JSON.parse(encryptSeedPhrase);
       }
-      console.log(encryptSeedPhrase);
       if (!encryptSeedPhrase) {
         this.activeKey = 0;
       }
@@ -1850,7 +1834,6 @@ export default class extends Vue {
         await NFIDLogout();
       }
     } catch (e) {
-      console.log(e);
     }
     localStorage.setItem('principal', principal);
     this.setPrincipalId(principal);
@@ -1925,7 +1908,6 @@ export default class extends Vue {
         loading.close();
       } catch (e) {
         loading.close();
-        console.log(e);
         this.$message.config({ top: '40%' });
         this.$message.error("Password doesn't match");
       }
@@ -1943,7 +1925,6 @@ export default class extends Vue {
         const encryptIdentity = JSON.parse(
           JSON.parse(localStorage.getItem('priList'))[this.getPrincipalId]
         );
-        console.log(encryptIdentity);
         let salt = 'ICLightHouse';
         let data = encryptIdentity;
         if (encryptIdentity.salt) {
@@ -1954,7 +1935,6 @@ export default class extends Vue {
         loading.close();
       } catch (e) {
         loading.close();
-        console.log(e);
         this.$message.config({ top: '40%' });
         this.$message.error("Password doesn't match");
         return;
@@ -2020,7 +2000,6 @@ export default class extends Vue {
       this.setCheckAuth(false);
       this.setIdentity(null);
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -2086,7 +2065,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .user-setting-account {
   max-height: calc(100vh - 64px);

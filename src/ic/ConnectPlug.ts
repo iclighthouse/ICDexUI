@@ -12,7 +12,6 @@ import { SignerAgent } from '@slide-computer/signer-agent';
 import { Principal } from '@dfinity/principal';
 import { PermissionState } from '@slide-computer/signer/lib/cjs/icrc25';
 import { SignerPermissionScope } from '@slide-computer/signer/lib/cjs/signer';
-
 let signerAgent: SignerAgent<Signer> | null = null;
 export default class ConnectPlug {
   public connect = async (
@@ -57,29 +56,24 @@ export default class ConnectPlug {
       //     whitelist: whitelist
       //   });
       // }
-      console.log(host);
-      console.log(whitelist);
       const res = await (window as any).ic.plug.requestConnect({
         host: host,
         whitelist: whitelist
       });
-      console.log(res);
       if (process.env.NODE_ENV !== 'production') {
         // plugIc.plug.agent.fetchRootKey().catch((err) => {
         //   console.warn(
         //     'Unable to fetch root key. Check to ensure that your local replica is running'
         //   );
-        //   console.log(err);
+        //   
         // });
       }
       store.commit('common/SET_IS_OPEN', true);
-      console.log(isSigner);
       await this.setLocalStorage(whitelist, isSigner);
       await this.connectSignerPlug();
       loading && loading.text && loading.close();
       return true;
     } catch (e) {
-      console.log(e);
       loading && loading.text && loading.close();
       return false;
     }
@@ -114,11 +108,9 @@ export default class ConnectPlug {
       whitelist[principalId.toString()] = newWhitelist;
       localStorage.setItem('whitelist', JSON.stringify(whitelist));
     }
-    console.log(principalId.toString());
     localStorage.setItem('principal', principalId.toString());
     store.commit('common/SET_PRINCIPAL_ID', principalId.toString());
     const principalList = JSON.parse(localStorage.getItem('priList')) || {};
-    console.log(isSigner);
     if (isSigner) {
       principalList[principalId.toString()] = 'SignerPlug';
     } else {

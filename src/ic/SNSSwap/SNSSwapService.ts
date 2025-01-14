@@ -22,7 +22,6 @@ import SNSSwap1IDL from './SNSSwap1.did';
 import { GetStateResponse } from '@/ic/SNSSwap/model';
 import { SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class SNSSwapService {
   private check = async (
     canisterId: string,
@@ -111,7 +110,6 @@ export class SNSSwapService {
       const res = await service.get_lifecycle({});
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return { lifecycle: null };
     }
   };
@@ -123,7 +121,6 @@ export class SNSSwapService {
       const res = await service.get_sale_parameters({});
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return { params: null };
     }
   };
@@ -136,7 +133,6 @@ export class SNSSwapService {
       const res = await service.list_community_fund_participants(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return { cf_participants: null };
     }
   };
@@ -149,7 +145,6 @@ export class SNSSwapService {
       const res = await service.list_direct_participants(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return { participants: null };
     }
   };
@@ -162,7 +157,6 @@ export class SNSSwapService {
       const res = await service.list_sns_neuron_recipes(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return { sns_neuron_recipes: null };
     }
   };
@@ -172,7 +166,6 @@ export class SNSSwapService {
       const res = await service.get_init({});
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

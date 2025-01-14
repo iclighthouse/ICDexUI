@@ -2,7 +2,6 @@ import Service from '@/ic/DIDGenerate/model';
 import DIDGenerateIDL from './DIDGenerate.did';
 import { buildService } from '@/ic/Service';
 import { DID_CANISTER_ID } from '@/ic/utils';
-
 export class DIDGenerateService {
   private service: Service;
   // constructor () {
@@ -19,7 +18,6 @@ export class DIDGenerateService {
       await this.check();
       return await this.service.binding(prog, lang);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -28,7 +26,6 @@ export class DIDGenerateService {
       await this.check();
       return await this.service.did_to_js(prog);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

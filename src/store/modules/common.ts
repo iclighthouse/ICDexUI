@@ -2,7 +2,6 @@ import { Identity } from '@dfinity/agent';
 import { AstroXWebViewHandler } from '@astrox/sdk-webview';
 import { RootState } from '@/store';
 import { Module } from 'vuex';
-
 export interface State {
   showCheckAuth: boolean;
   identity: Identity | null;
@@ -50,7 +49,7 @@ const common: Module<State, RootState> = {
     SET_EXPIRE_SESSION_TIMEOUT: (state: State): void => {
       const ONE_MINUTE_MILLIS = 60 * 1000;
       const nowTimestamp = new Date().getTime();
-      // console.log(nowTimestamp, 120 * ONE_MINUTE_MILLIS);
+      // 
       state.expireSessionTimeout = nowTimestamp + 120 * ONE_MINUTE_MILLIS;
     },
     SET_PRINCIPAL_ID: (state: State, principalId: string): void => {

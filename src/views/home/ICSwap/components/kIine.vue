@@ -27,7 +27,6 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -40,7 +39,6 @@ import { DexInfo, TokenStd } from '@/ic/ICSwap/model';
 import { Principal } from '@dfinity/principal';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { KLData } from '@/views/home/ICDex/model';
-
 @Component({
   name: 'kLine',
   components: {}
@@ -107,11 +105,9 @@ export default class extends Vue {
       );
       if (KIntervals.paidId === this.swapId) {
         this.KIntervals = KIntervals.quotes.slice().reverse();
-        console.log(this.KIntervals);
         this.initEcharts();
       }
     } catch (e) {
-      console.log(e);
     }
     this.chartSpinning = false;
   }
@@ -270,7 +266,7 @@ export default class extends Vue {
     //     key: 'token1Vol'
     //   })
     // ];
-    // console.log(this.kLineChart.getTechnicalIndicatorTemplate(''));
+    // 
     this.kLineChart.addTechnicalIndicatorTemplate(
       Object.assign(VOLInfo, {
         calcParams: [],
@@ -340,7 +336,6 @@ export default class extends Vue {
         }
       });
     }
-    console.log(this.swapId);
     const type = Object.keys(this.dexInfo.mmType)[0];
     let unitSize;
     let buyUnit;
@@ -497,7 +492,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .k-interval-time {
   display: flex;

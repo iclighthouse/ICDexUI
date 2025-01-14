@@ -16,7 +16,6 @@ import { Address } from '@/ic/DRC20Token/model';
 import { principalToAccountIdentifier, SerializableIC } from '@/ic/converter';
 import { TokenIdentifier } from '@/ic/nft/model';
 import { createService } from '@/ic/createService';
-
 export class IcMiningService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {

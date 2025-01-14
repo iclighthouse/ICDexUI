@@ -10,7 +10,6 @@ import Service, {
 import { createService } from '@/ic/createService';
 import IDL from '@/ic/ckETHMinter/ckETHMinterDfi.did';
 import { SerializableIC } from '@/ic/converter';
-
 export class ckETHMinterDfiService {
   private check = async (
     canisterId: string,
@@ -26,7 +25,6 @@ export class ckETHMinterDfiService {
     try {
       return await service.smart_contract_address();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -45,7 +43,6 @@ export class ckETHMinterDfiService {
       });
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -57,7 +54,6 @@ export class ckETHMinterDfiService {
     try {
       return await service.withdraw_eth(withdrawalArg);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -69,7 +65,6 @@ export class ckETHMinterDfiService {
     try {
       return await service.retrieve_eth_status(blockIndex);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -81,7 +76,6 @@ export class ckETHMinterDfiService {
       const res = await service.get_minter_info();
       return res as MinterInfoDFI;
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -93,7 +87,6 @@ export class ckETHMinterDfiService {
     try {
       return await service.withdraw_erc20(WithdrawErc20Arg);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

@@ -56,14 +56,12 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import ConfirmPassword from '@/views/login/components/ConfirmPassword.vue';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
 import { Identity } from '@dfinity/agent';
-
 const ethers = require('ethers');
 const EC = require('elliptic').ec;
 const KeyEncoder = require('key-encoder').default;
@@ -76,7 +74,6 @@ const {
   key_to_pub_key,
   seed_from_pem
 } = require('@dfinity/rosetta-client');
-
 @Component({
   name: 'ExistingWallet',
   components: {
@@ -148,7 +145,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .mnemonic-wrap {
   width: 100%;

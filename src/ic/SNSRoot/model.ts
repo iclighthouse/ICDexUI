@@ -1,5 +1,4 @@
 import { Principal } from '@dfinity/principal';
-
 export interface ListSnsCanistersResponse {
   root: [] | [Principal];
   swap: [] | [Principal];

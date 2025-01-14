@@ -4,7 +4,6 @@ import { StableToken, StableTokenInfo } from '@/ic/ICStable/model';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { getTokenLogo } from '@/ic/getTokenLogo';
 import { DUSD_CANISTER_ID } from '@/ic/utils';
-
 @Component({})
 export class StableTokensMixin extends Vue {
   public ICStableService: ICStableService;
@@ -20,7 +19,6 @@ export class StableTokensMixin extends Vue {
   }
   private async getTokens(): Promise<void> {
     const tokens = await this.ICStableService.tokens();
-    console.log(tokens);
     this.stableTokens = tokens.filter((item) => {
       return item[0].toString() !== DUSD_CANISTER_ID;
     });
@@ -29,7 +27,6 @@ export class StableTokensMixin extends Vue {
       return item[0].toString() === '2q3hv-5aaaa-aaaak-aaoqq-cai';
     });
     this.depositAmountsInput[this.collateralTokens[0][0].toString()] = '';
-    console.log(tokens);
     const DRC20Token = new DRC20TokenService();
     const localTokens = JSON.parse(localStorage.getItem('tokens')) || {};
     for (let i = 0; i < tokens.length; i++) {

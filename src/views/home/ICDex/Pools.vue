@@ -3362,7 +3362,6 @@
     ></nft-balance>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { Pool } from '@/views/home/ICDex/model';
@@ -3418,9 +3417,7 @@ const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
 const ICLToken = 'hhaaz-2aaaa-aaaaq-aacla-cai';
-
 let loading;
-
 @Component({
   name: 'Pools',
   components: { NftBalance, AccountInfo, Launch, MiningInfo },
@@ -3683,16 +3680,13 @@ export default class extends Vue {
     this.currentRound = currentRound;
   }
   deactivated(): void {
-    console.log('deactivated');
     // this.clearTimeout();
   }
   beforeDestroy(): void {
-    console.log('beforeDestroy');
     this.clearTimeout();
   }
   private clearTimeout(): void {
     for (let i in this.timer) {
-      console.log(this.timer, i);
       window.clearTimeout(this.timer[Number(i)]);
       this.timer[i] = null;
     }
@@ -3773,14 +3767,12 @@ export default class extends Vue {
     await this.getEvents(currentPool[1][0][0].toString());
   }
   private async getEvents(pool: string): Promise<void> {
-    console.log(pool, this.currentEventPage);
     this.eventSpinning = true;
     const res = await this.makerPoolService.get_events(
       pool,
       [BigInt(this.currentEventPage)],
       [BigInt(10)]
     );
-    console.log(res);
     if (res && res.data) {
       this.events = res.data;
       if (!this.eventsTotal) {
@@ -3798,7 +3790,6 @@ export default class extends Vue {
       currentPool[2].pairInfo.pairPrincipal.toString(),
       currentPool[1][0][0].toString()
     );
-    console.log(this.poolRecord);
     this.historySpinning = false;
   }
   private async showGrid(
@@ -3806,7 +3797,6 @@ export default class extends Vue {
     pair: string,
     item: Array<Array<bigint>>
   ): Promise<void> {
-    console.log(item);
     this.currentPool = currentPool;
     this.poolGrids = [];
     this.gridVisible = true;
@@ -3886,7 +3876,6 @@ export default class extends Vue {
       }
     });
     this.gridSpinning = false;
-    console.log(this.poolGrids);
   }
   private async getProOrder(pair: string, id: bigint): Promise<STOrder> {
     const res = await this.ICDexService.sto_getStratOrder(pair, id);
@@ -3962,7 +3951,6 @@ export default class extends Vue {
         );
       }
     });
-    console.log(this.tokens);
   }
   private async getIcrcMetadata(token: {
     id: Principal;
@@ -3984,7 +3972,6 @@ export default class extends Vue {
       if (SNSGovernance) {
         const snsGovernanceService = new SNSGovernanceService();
         const metadata = await snsGovernanceService.getMetadata(SNSGovernance);
-        console.log(metadata);
         if (metadata && metadata.logo && metadata.logo.length) {
           logo = metadata.logo[0];
         }
@@ -3994,7 +3981,6 @@ export default class extends Vue {
   }
   private async getPairs(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
-    console.log(res);
     if (res && res.data && res.data.length) {
       this.pairsMaker = res.data.sort((a, b) => {
         return a[1].pair.token0[1].localeCompare(b[1].pair.token0[1]);
@@ -4002,7 +3988,6 @@ export default class extends Vue {
       res.data.forEach((item) => {
         this.pairToSymbol[item[0].toString()] = item[1];
       });
-      console.log(this.tokens);
     } else {
       this.pairsMaker = [];
     }
@@ -4016,11 +4001,9 @@ export default class extends Vue {
             ok: TokensExt;
           }
         ).ok;
-        console.log(tokensExt);
         this.nfts = tokensExt;
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async NFTBalance(): Promise<void> {
@@ -4038,8 +4021,6 @@ export default class extends Vue {
       const type = Object.keys(item[3])[0];
       return vipMakerNFT.includes(type);
     });
-    console.log(this.nftBalancePool);
-    console.log(this.nftBalanceVip);
   }
   private async getPools(
     pools: Array<[Principal, Array<[Principal, AccountId]>]>,
@@ -4061,7 +4042,6 @@ export default class extends Vue {
       [BigInt(page)],
       [BigInt(100)]
     );
-    console.log(res);
     if (res && res.data && res.data.length) {
       pools = pools.concat(res.data);
     } else {
@@ -4081,12 +4061,10 @@ export default class extends Vue {
             [],
             []
           );
-        console.log(privateMakers);
         if (privateMakers && privateMakers.data && privateMakers.data.length) {
           privatePools = privateMakers.data;
         }
       }
-      console.log(privatePools);
       loading && loading.close();
       this.poolLoad = false;
       const canisterIds: Array<string> = [];
@@ -4108,7 +4086,6 @@ export default class extends Vue {
     }
   }
   private async needConnect(canisterIds: Array<string>): Promise<void> {
-    console.log(canisterIds);
     await checkAuth();
     const flag = needConnectPlug(canisterIds);
     const principal = localStorage.getItem('principal');
@@ -4191,7 +4168,6 @@ export default class extends Vue {
           await Promise.all(promiseAll);
           promiseAll = [];
         }
-        console.log(i, promiseAll);
       }
       if (i === this.poolsLoad.length - 1 && promiseAll.length) {
         await Promise.all(promiseAll);
@@ -4240,14 +4216,12 @@ export default class extends Vue {
         }
       }
     });
-    console.log(this.poolsLoad);
     const fetchRes = await fetch(
       'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/2'
     );
     if (fetchRes && fetchRes.status === 200) {
       const icpRes = await fetchRes.json();
       this.icpPrice = (icpRes as any).success[0].rate;
-      console.log(this.icpPrice);
     }
     const BTCfetchRes = await fetch(
       'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12'
@@ -4255,7 +4229,6 @@ export default class extends Vue {
     if (BTCfetchRes && BTCfetchRes.status === 200) {
       const BTCRes = await BTCfetchRes.json();
       this.BTCPrice = (BTCRes as any).success[0].rate;
-      console.log(this.BTCPrice);
     }
     const ETHfetchRes = await fetch(
       'https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16'
@@ -4263,7 +4236,6 @@ export default class extends Vue {
     if (ETHfetchRes && ETHfetchRes.status === 200) {
       const ETHRes = await ETHfetchRes.json();
       this.ETHPrice = (ETHRes as any).success[0].rate;
-      console.log(this.ETHPrice);
     }
     this.initSort();
     promiseAll = [];
@@ -4281,7 +4253,6 @@ export default class extends Vue {
           await Promise.all(promiseAll);
           promiseAll = [];
         }
-        console.log(i, promiseAll);
       }
       if (i === this.poolsPri.length - 1 && promiseAll.length) {
         await Promise.all(promiseAll);
@@ -4494,7 +4465,6 @@ export default class extends Vue {
         return true;
       }
     });
-    console.log(lIndex);
     let pools = [];
     if (lIndex !== null) {
       pools = this.pools.slice(lIndex);
@@ -4521,11 +4491,9 @@ export default class extends Vue {
     this.pools = ICLPool.concat(pools);
     this.poolsTable.sort((a, b) => {
       if (b[2].pairInfo.token0[0].toString() === ICLToken) {
-        console.log('b');
         return 1;
       }
       if (a[2].pairInfo.token0[0].toString() === ICLToken) {
-        console.log('a');
         return -1;
       }
       const price0 = this.getBasePrice(a[2].pairInfo.token1[1]);
@@ -4546,7 +4514,6 @@ export default class extends Vue {
         return 1;
       }
     });
-    console.log(this.poolsTable);
   }
   private getBasePrice(tokenSymbol: string): string {
     let price = this.icpPrice;
@@ -4784,7 +4751,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .home-header {
   top: 14px;
@@ -4961,7 +4927,6 @@ export default class extends Vue {
 .ask-price {
   color: #d13651;
 }
-
 .bid-price {
   color: #21c77d;
 }
@@ -4972,7 +4937,6 @@ export default class extends Vue {
   &.ask-price {
     color: #d13651 !important;
   }
-
   &.bid-price {
     color: #21c77d !important;
   }

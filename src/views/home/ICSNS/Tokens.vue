@@ -87,7 +87,6 @@
     ></transfer-token>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { Identity } from '@dfinity/agent';
@@ -114,9 +113,7 @@ import {
 } from '@/ic/ConnectInfinity';
 import { SNSSwapService } from '@/ic/SNSSwap/SNSSwapService';
 import { checkAuth } from '@/ic/CheckAuth';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Tokens',
   components: {
@@ -177,7 +174,6 @@ export default class extends Vue {
     try {
       this.getICRCBalance(this.currentIndex);
     } catch (e) {
-      console.log(e);
     }
   }
   private async getICRCBalance(index: number): Promise<void> {
@@ -273,7 +269,6 @@ export default class extends Vue {
         this.initConnected(listDeployedSnses);
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -303,7 +298,6 @@ export default class extends Vue {
         promiseAll = [];
       }
     }
-    console.log(new Date().getTime() - a);
     this.SNSTokens = snsTokens.filter((SNSToken: SNSToken) => {
       if (
         (SNSToken.lifecycle &&
@@ -462,7 +456,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .sns-token-list {
   display: flex;

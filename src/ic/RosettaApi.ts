@@ -3,13 +3,10 @@
  * @copyright Copyright (c) 2018-2021 Dylan Miller and dfinityexplorer contributors
  * @license MIT License
  */
-
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { TransactionsResponse } from './common/transaction';
-
 const JSONbig = require('json-bigint');
-
 /**
  * Types of Rosetta API errors.
  */
@@ -18,7 +15,6 @@ export const RosettaErrorType = Object.freeze({
   Timeout: 1,
   NetworkError: 2
 });
-
 /**
  * Describes the cause of a Rosetta API error.
  */
@@ -44,29 +40,19 @@ export class RosettaError extends Error {
     }
   }
 }
-
 /**
  * Contains information about a transaction.
  */
 export class Transaction {
   public blockIndex: number;
-
   public hash: string;
-
   public timestamp: bigint;
-
   public type: string;
-
   public status: string;
-
   public account1Address: string;
-
   public amount: BigNumber;
-
   public account2Address: string;
-
   public fee: BigNumber;
-
   public memo: BigNumber;
   /**
    * Create a Transaction.
@@ -107,13 +93,11 @@ export class Transaction {
     this.memo = new BigNumber(rosettaTransaction.metadata.memo);
   }
 }
-
 /**
  * Manages Rosetta API calls.
  */
 export default class RosettaApi {
   public axios: any;
-
   public networkIdentifier: any;
   /**
    * Create a RosettaApi.
@@ -126,7 +110,6 @@ export default class RosettaApi {
       transformResponse: (data: any) => JSONbig.parse(data),
       headers: { 'Content-Type': 'application/json;charset=utf-8' }
     });
-
     this.networkIdentifier = this.networksList().then((res) =>
       res.network_identifiers.find(
         (networkIdentifier: any) =>
@@ -134,7 +117,6 @@ export default class RosettaApi {
       )
     );
   }
-
   /**
    * Return the ICP account balance of the specified account.
    * @param {string} accountAddress The account address to get the ICP balance of.
@@ -146,14 +128,13 @@ export default class RosettaApi {
       const response = await this.accountBalanceByAddress(accountAddress);
       return new BigNumber(response.balances[0].value);
     } catch (error) {
-      //console.log(error);
+      //
       return new RosettaError(
         error.message,
         axios.isAxiosError(error) ? error?.response?.status : undefined
       );
     }
   }
-
   /**
    * Return the latest block index.
    * @returns {Promise<number>} The latest block index, or a RosettaError for error.
@@ -163,14 +144,13 @@ export default class RosettaApi {
       const response = await this.networkStatus();
       return response.current_block_identifier.index;
     } catch (error) {
-      //console.log(error);
+      //
       return new RosettaError(
         error.message,
         axios.isAxiosError(error) ? error?.response?.status : undefined
       );
     }
   }
-
   /**
    * Return the Transaction object with the specified hash.
    * @param {string} transactionHash The hash of the transaction to return.
@@ -186,20 +166,17 @@ export default class RosettaApi {
       );
       if (responseTransactions.transactions.length === 0)
         return new RosettaError('Transaction not found.', 500);
-
       return new Transaction(
         responseTransactions.transactions[0].transaction,
         responseTransactions.transactions[0].block_identifier.index
       );
     } catch (error) {
-      console.log(error);
       return new RosettaError(
         error.message,
         axios.isAxiosError(error) ? error?.response?.status : undefined
       );
     }
   }
-
   /**
    * Return an array of Transaction objects based on the specified parameters, or an empty array if
    * none found.
@@ -233,14 +210,13 @@ export default class RosettaApi {
       }
       return await Promise.all(promiseAllValue);
     } catch (error) {
-      //console.log(error);
+      //
       return new RosettaError(
         error.message,
         axios.isAxiosError(error) ? error?.response?.status : undefined
       );
     }
   }
-
   /**
    * Return an array of Transaction objects based on the specified parameters, or an empty array if
    * none found.
@@ -285,14 +261,13 @@ export default class RosettaApi {
         transactions: transitions
       };
     } catch (error) {
-      //console.log(error);
+      //
       return new RosettaError(
         error.message,
         axios.isAxiosError(error) ? error?.response?.status : undefined
       );
     }
   }
-
   /**
    * Return the Transaction corresponding to the specified block index (i.e., block height).
    * @param {number} blockIndex The index of the block to return the Transaction for.
@@ -303,7 +278,6 @@ export default class RosettaApi {
     const response = await this.blockByIndex(blockIndex);
     return new Transaction(response.block.transactions[0], blockIndex);
   }
-
   /**
    * Perform the specified http request and return the response data.
    * @param {string} url The server URL that will be used for the request.
@@ -314,7 +288,6 @@ export default class RosettaApi {
   async request(url: any, data: any) {
     return (await this.axios.request({ url: url, data: data })).data;
   }
-
   /**
    * Return the /network/list response, containing a list of NetworkIdentifiers that the Rosetta
    * server supports.
@@ -324,7 +297,6 @@ export default class RosettaApi {
   networksList() {
     return this.request('/network/list', {});
   }
-
   /**
    * Return /network/status response, describing the current status of the network.
    * @returns {Promise<any>} The response body that was provided by the server.
@@ -336,7 +308,6 @@ export default class RosettaApi {
       network_identifier: networkIdentifier
     });
   }
-
   /**
    * Return the /account/balance response for the specified account.
    * @param {string} accountAddress The account address to get the balance of.
@@ -350,7 +321,6 @@ export default class RosettaApi {
       account_identifier: { address: accountAddress }
     });
   }
-
   /**
    * Return the /block response for the block corresponding to the specified block index (i.e.,
    * block height).
@@ -365,7 +335,6 @@ export default class RosettaApi {
       block_identifier: { index: blockIndex }
     });
   }
-
   /**
    * Return the /search/transactions response for transactions containing an operation that affects
    * the specified account.
@@ -391,7 +360,6 @@ export default class RosettaApi {
       offset: offset
     });
   }
-
   /**
    * Return the /search/transactions response for transactions (only one) with the specified hash.
    * @param {string} transactionHash The hash of the transaction to return.

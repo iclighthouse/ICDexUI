@@ -7,7 +7,6 @@ import { createService } from '@/ic/createService';
 import miningIDL from './mining.did';
 import { SerializableIC } from '@/ic/converter';
 import { AccountId, Icrc1Account } from '@/ic/common/icType';
-
 export class MiningService {
   private check = async (
     canisterId: string,
@@ -25,7 +24,6 @@ export class MiningService {
       const res = await service.getRound(roundId);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -37,7 +35,6 @@ export class MiningService {
       const service = await this.check(canisterId, false, false);
       return await service.getAccelerationRate(accountId);
     } catch (e) {
-      console.log(e);
       return '0';
     }
   };
@@ -50,7 +47,6 @@ export class MiningService {
       const service = await this.check(canisterId, false, false);
       return await service.getAccountData(roundId, accountId);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -63,7 +59,6 @@ export class MiningService {
       const service = await this.check(canisterId, false, false);
       return await service.getRoundPointsForLM(roundId, page);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -76,7 +71,6 @@ export class MiningService {
       const service = await this.check(canisterId, false, false);
       return await service.getRoundPointsForTM(roundId, page);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -89,7 +83,6 @@ export class MiningService {
       const service = await this.check(canisterId, false, false);
       return await service.getRoundSettlementsForLM(roundId, page);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -102,7 +95,6 @@ export class MiningService {
       const service = await this.check(canisterId, false, false);
       return await service.getRoundSettlementsForTM(roundId, page);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -114,7 +106,6 @@ export class MiningService {
       const service = await this.check(canisterId, false, false);
       return await service.getBalance(accountId);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -126,7 +117,6 @@ export class MiningService {
       const service = await this.check(canisterId);
       return await service.claim(account);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

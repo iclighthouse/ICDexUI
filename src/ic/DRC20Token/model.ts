@@ -22,7 +22,6 @@ import {
   TxnResult
 } from '@/ic/ICLighthouseToken/model';
 import { Allowance, AllowanceArgs, SendICPTsRequest } from '@/ic/ledger/model';
-
 export interface TxnRecord {
   gas: Gas;
   msgCaller: Array<Principal> | [];
@@ -94,7 +93,6 @@ export type TxnQueryRequest =
   | { lastTxidsGlobal: null }
   | { getTxn: { txid: Txid } }
   | { txnCountGlobal: null };
-
 export type Top100Record = [Address, bigint];
 export type Address = string;
 export interface DRC207Support {
@@ -152,7 +150,6 @@ export interface TransferArgs {
   created_at_time: Array<bigint>;
   amount: bigint;
 }
-
 export type IcrcReceipt = { Ok: bigint } | { Err: IcrcTransferError };
 export type IcrcTransferError =
   | {
@@ -239,7 +236,6 @@ export interface Drc20Allowance {
   remaining: bigint;
   spender: AccountId;
 }
-
 export default interface Service {
   drc20_decimals(): Promise<Decimals>;
   decimals(): Promise<Decimals>;

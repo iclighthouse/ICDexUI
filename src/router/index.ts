@@ -12,9 +12,7 @@ import iclRouter from '@/router/icl';
 import ICSwapRouter from '@/router/ICSwap';
 import ICSNSRouter from '@/router/ICSNS';
 import Error from '@/views/error.vue';
-
 Vue.use(VueRouter);
-
 let redirect = '/icdex';
 // todo
 if (window.location.hostname === 'icdex.io') {
@@ -143,11 +141,9 @@ const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location: any) {
   return originalPush.call(this, location).catch((err) => err);
 };
-
 const router = new VueRouter({
   mode: 'history',
   // base: '/',
   routes
 });
-
 export default router;

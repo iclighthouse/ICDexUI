@@ -839,7 +839,6 @@
     ></nft-balance>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
@@ -868,9 +867,7 @@ import { NFT } from '@/ic/ICDexRouter/model';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
 import { NftService } from '@/ic/nft/Service';
 import { getTokenInfo } from '@/ic/getTokenInfo';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Mining',
   components: {
@@ -1046,7 +1043,6 @@ export default class extends Vue {
     this.ICDexRouterService = new ICDexRouterService();
     this.NftService = new NftService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    console.log(this.$route.params);
     this.init();
     if (this.getPrincipalId) {
       await this.NFTBalance();
@@ -1220,10 +1216,8 @@ export default class extends Vue {
       round
     );
     if (!round.length) {
-      console.log(this.maxRound);
       this.maxRound = Number(this.currentRound.round);
     }
-    console.log(this.currentRound);
     if (
       this.currentRound &&
       this.currentRound.data &&
@@ -1311,7 +1305,6 @@ export default class extends Vue {
       [],
       []
     );
-    console.log(res);
     let pairs = [];
     const info = this.currentRound.data[0];
     const type = Object.keys(info.config.pairs)[0];
@@ -1341,7 +1334,6 @@ export default class extends Vue {
         }
       });
     }
-    console.log(pairs);
     this.miningPairs = pairs;
   }
   private async getAccelerationRate(): Promise<void> {
@@ -1370,7 +1362,6 @@ export default class extends Vue {
       this.currentRound.round,
       BigInt(this.pageLM)
     );
-    console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataLM, 0, res.data);
       this.getAccelerationByAccount(res.data);
@@ -1385,7 +1376,6 @@ export default class extends Vue {
       this.currentRound.round,
       BigInt(this.pageLM)
     );
-    console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataLM, 1, res.data);
     }
@@ -1397,7 +1387,6 @@ export default class extends Vue {
       this.currentRound.round,
       BigInt(this.pageTM)
     );
-    console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataTM, 0, res.data);
       this.getAccelerationByAccount(res.data);
@@ -1405,7 +1394,6 @@ export default class extends Vue {
         this.totalTM = Number(res.total);
       }
     }
-    console.log(this.totalTM);
     this.spinningTM = false;
   }
   private async getAccelerationByAccount(
@@ -1422,7 +1410,6 @@ export default class extends Vue {
         promiseValue = [];
       }
       if (i === res.length - 1 && promiseValue.length) {
-        console.log(i);
         await Promise.all(promiseValue);
       }
     }
@@ -1448,21 +1435,17 @@ export default class extends Vue {
       this.currentRound.round,
       BigInt(this.pageTM)
     );
-    console.log(res);
     if (res && res.data) {
       this.$set(this.miningRoundDataTM, 1, res.data);
     }
-    console.log(this.miningRoundDataTM);
   }
   private pageChangeTM(page): void {
     this.pageTM = page;
-    console.log(this.pageTM);
     this.getRoundPointsForTM();
     this.getRoundSettlementsForTM();
   }
   private pageChangeLM(page): void {
     this.pageLM = page;
-    console.log(this.pageLM);
     this.getRoundPointsForLM();
     this.getRoundSettlementsForLM();
   }
@@ -1492,16 +1475,13 @@ export default class extends Vue {
   private async getTokensExt(): Promise<void> {
     try {
       const res = await this.NftService.tokens_ext();
-      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
         }
       ).ok;
-      console.log(tokensExt);
       this.nfts = tokensExt;
     } catch (e) {
-      console.log(e);
     }
   }
   private NFTWithdrawSuccess(): void {
@@ -1518,7 +1498,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .mining-main-pair {
   display: flex;

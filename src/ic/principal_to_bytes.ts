@@ -34,7 +34,6 @@ export const principalToBytes32 = (text: string): string => {
     }
     return bytes;
   }
-
   /**
    * Appends a hex representation of a number to string.
    * @param {string} s A string to append the hex to.
@@ -46,7 +45,6 @@ export const principalToBytes32 = (text: string): string => {
     s += (b & 0x0f).toString(16);
     return s;
   }
-
   /**
    * Encodes a byte array as Ethereum data hex (staring with 0x).
    * @param {Array<number>} bytes A byte array.
@@ -64,7 +62,6 @@ export const principalToBytes32 = (text: string): string => {
     }
     return s;
   }
-
   const ungroup = text.replace(/-/g, '');
   const rawBytes = base32Decode(ungroup);
   if (rawBytes.length < 4) {

@@ -90,10 +90,8 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-
 @Component({
   name: 'Index',
   components: {}
@@ -101,11 +99,9 @@ import { Component, Vue } from 'vue-property-decorator';
 export default class extends Vue {
   private searchValue = '';
   private onSearch(): void {
-    console.log(this.searchValue);
   }
 }
 </script>
-
 <style scoped lang="scss">
 .dapp-search {
   width: 600px;

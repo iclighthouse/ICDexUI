@@ -1,7 +1,6 @@
 import { Metadata, TokenId, TokenStd } from '@/ic/common/icType';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { IcrcValue } from '@/ic/DRC20Token/model';
-
 export const getTokenLogo = async (
   tokenId: TokenId,
   tokenStd: TokenStd

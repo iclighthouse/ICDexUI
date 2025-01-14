@@ -1,9 +1,7 @@
 import { Principal } from '@dfinity/principal';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { Operation, TokenItem } from '@/ic/ICLighthouse/model';
-
 const iCLighthouseService = new ICLighthouseService();
-
 export const addToken = async (
   tokenId: Principal,
   symbol: string,

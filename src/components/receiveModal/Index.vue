@@ -46,13 +46,11 @@
     </dl>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import QRCode from 'qrcode';
-
 @Component({
   name: 'Index',
   components: {}
@@ -109,11 +107,9 @@ export default class extends Vue {
     this.$message.success(`Principal ID Copied`);
   }
   public onError(): void {
-    console.log('err');
   }
 }
 </script>
-
 <style scoped lang="scss">
 .address-modal {
   i {

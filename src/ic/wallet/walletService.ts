@@ -13,7 +13,6 @@ import { WalletResultCreate } from '@/ic/ICLighthouse/model';
 import { Principal } from '@dfinity/principal';
 import { SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class WalletService {
   private check = async (
     canisterId: string,

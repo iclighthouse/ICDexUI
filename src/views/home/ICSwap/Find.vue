@@ -183,7 +183,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins, Prop } from 'vue-property-decorator';
 import { TokenInfo } from '@/ic/common/icType';
@@ -197,7 +196,6 @@ import { PairsMixin } from '@/mixins';
 import { Liquidity } from '@/ic/cyclesFinance/model';
 import { TokenLiquidity } from '@/ic/ICSwap/model';
 import { icpOrCyclesToSwapTokenId, toLocalPool } from '@/ic/icSwapUtils';
-
 @Component({
   name: 'Find',
   components: {}
@@ -288,7 +286,6 @@ export default class extends Mixins(PairsMixin) {
       this.$message.success('Import liquidity Success');
       this.checkLiquidity();
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -356,19 +353,16 @@ export default class extends Mixins(PairsMixin) {
               this.getLiquidity(this.swapId, principal)
             );
             const value = await Promise.all(promiseAllValue);
-            console.log(value);
             this.userLiquidity = value[1];
           }
         }
       } catch (e) {
-        console.log(e);
       }
       this.routerLoading = false;
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .back-icon {
   position: absolute;

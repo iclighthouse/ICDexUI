@@ -16,7 +16,6 @@ import {
   TTErrorsResponse,
   TTsResponse
 } from '@/ic/ICDex/model';
-
 export class makerPoolService {
   public stats2 = async (canisterId: string): Promise<PoolStats> => {
     const service = await createService<Service>(
@@ -28,7 +27,6 @@ export class makerPoolService {
     try {
       return await service.stats2();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -46,7 +44,6 @@ export class makerPoolService {
       const res = await service.getDepositAccount(address);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -63,7 +60,6 @@ export class makerPoolService {
     try {
       return await service.getAccountShares(address);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -78,7 +74,6 @@ export class makerPoolService {
       const res = await service.info();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -119,7 +114,6 @@ export class makerPoolService {
     try {
       return await service.getUnitNetValues();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -136,7 +130,6 @@ export class makerPoolService {
     try {
       return await service.getAccountVolUsed(address);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -155,7 +148,6 @@ export class makerPoolService {
       const res = await service.get_events(page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -171,7 +163,6 @@ export class makerPoolService {
     try {
       return await service.ictc_getAdmins();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -202,7 +193,6 @@ export class makerPoolService {
       const res = await service.ictc_getTOCount();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -221,7 +211,6 @@ export class makerPoolService {
       const res = await service.ictc_getTTs(page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -240,7 +229,6 @@ export class makerPoolService {
       const res = await service.ictc_getTTErrors(page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -257,7 +245,6 @@ export class makerPoolService {
       const res = await service.ictc_getTOPool();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -275,7 +262,6 @@ export class makerPoolService {
       const res = await service.get_account_events(accountId);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

@@ -184,7 +184,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins, Vue, Watch } from 'vue-property-decorator';
 import {
@@ -208,7 +207,6 @@ import { Principal } from '@dfinity/principal';
 import { getNFID, NFIDLogin, NFIDLogout } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
-
 @Component({
   name: 'App',
   components: {}
@@ -252,7 +250,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     getNFID();
     const hostname = window.location.hostname;
     this.hostname = window.location.hostname;
-    console.log(window.parent.origin);
     if (hostname === 'avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app') {
       this.showTip = true;
     }
@@ -306,59 +303,56 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       // }
     });
     localStorage.removeItem('icxCanisterIds');
-    const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    // SNS1
-    const sns1TokenId = IC_SNS_TOKEN_CANISTER_ID;
-    if (
-      tokens[sns1TokenId] &&
-      tokens[sns1TokenId].symbol.toLocaleLowerCase() === 'sns1'
-    ) {
-      tokens[sns1TokenId] = await getTokenInfo(
-        Principal.fromText(sns1TokenId),
-        {
-          icrc1: null
-        }
-      );
-      tokens[sns1TokenId].fee = tokens[sns1TokenId].fee.toString();
-      delete tokens[sns1TokenId].totalSupply;
-      delete tokens[sns1TokenId].logo;
-      console.log(tokens);
-      localStorage.setItem('tokens', JSON.stringify(tokens));
-    }
-    // EXE
-    const EXETokenId = 'rh2pm-ryaaa-aaaan-qeniq-cai';
-    if (tokens[EXETokenId] && tokens[EXETokenId].fee === '100000') {
-      tokens[EXETokenId] = await getTokenInfo(Principal.fromText(EXETokenId), {
-        icrc1: null
-      });
-      tokens[EXETokenId].fee = tokens[EXETokenId].fee.toString();
-      delete tokens[EXETokenId].totalSupply;
-      delete tokens[EXETokenId].logo;
-      console.log(tokens[EXETokenId]);
-      localStorage.setItem('tokens', JSON.stringify(tokens));
-    }
-    const RICHToken = '77xez-aaaaa-aaaar-qaezq-cai';
-    if (tokens[RICHToken] && tokens[RICHToken].symbol !== 'RICH') {
-      tokens[RICHToken] = await getTokenInfo(Principal.fromText(RICHToken), {
-        icrc1: null
-      });
-      tokens[RICHToken].fee = tokens[RICHToken].fee.toString();
-      delete tokens[RICHToken].totalSupply;
-      delete tokens[RICHToken].logo;
-      console.log(tokens);
-      localStorage.setItem('tokens', JSON.stringify(tokens));
-    }
-    if (!tokens[LEDGER_CANISTER_ID]) {
-      tokens[LEDGER_CANISTER_ID] = {
-        decimals: 8,
-        fee: '10000',
-        name: 'ICP',
-        price: '',
-        symbol: 'ICP',
-        tokenStd: { icp: null }
-      };
-      localStorage.setItem('tokens', JSON.stringify(tokens));
-    }
+    // const tokens = JSON.parse(localStorage.getItem('tokens')) || {};
+    // // SNS1
+    // const sns1TokenId = IC_SNS_TOKEN_CANISTER_ID;
+    // if (
+    //   tokens[sns1TokenId] &&
+    //   tokens[sns1TokenId].symbol.toLocaleLowerCase() === 'sns1'
+    // ) {
+    //   tokens[sns1TokenId] = await getTokenInfo(
+    //     Principal.fromText(sns1TokenId),
+    //     {
+    //       icrc1: null
+    //     }
+    //   );
+    //   tokens[sns1TokenId].fee = tokens[sns1TokenId].fee.toString();
+    //   delete tokens[sns1TokenId].totalSupply;
+    //   delete tokens[sns1TokenId].logo;
+    //   localStorage.setItem('tokens', JSON.stringify(tokens));
+    // }
+    // // EXE
+    // const EXETokenId = 'rh2pm-ryaaa-aaaan-qeniq-cai';
+    // if (tokens[EXETokenId] && tokens[EXETokenId].fee === '100000') {
+    //   tokens[EXETokenId] = await getTokenInfo(Principal.fromText(EXETokenId), {
+    //     icrc1: null
+    //   });
+    //   tokens[EXETokenId].fee = tokens[EXETokenId].fee.toString();
+    //   delete tokens[EXETokenId].totalSupply;
+    //   delete tokens[EXETokenId].logo;
+    //   localStorage.setItem('tokens', JSON.stringify(tokens));
+    // }
+    // const RICHToken = '77xez-aaaaa-aaaar-qaezq-cai';
+    // if (tokens[RICHToken] && tokens[RICHToken].symbol !== 'RICH') {
+    //   tokens[RICHToken] = await getTokenInfo(Principal.fromText(RICHToken), {
+    //     icrc1: null
+    //   });
+    //   tokens[RICHToken].fee = tokens[RICHToken].fee.toString();
+    //   delete tokens[RICHToken].totalSupply;
+    //   delete tokens[RICHToken].logo;
+    //   localStorage.setItem('tokens', JSON.stringify(tokens));
+    // }
+    // if (!tokens[LEDGER_CANISTER_ID]) {
+    //   tokens[LEDGER_CANISTER_ID] = {
+    //     decimals: 8,
+    //     fee: '10000',
+    //     name: 'ICP',
+    //     price: '',
+    //     symbol: 'ICP',
+    //     tokenStd: { icp: null }
+    //   };
+    //   localStorage.setItem('tokens', JSON.stringify(tokens));
+    // }
   }
   private skip(): void {
     localStorage.setItem('skip', 'true');
@@ -407,7 +401,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       this.setIdentity(null);
       this.setCheckAuth(false);
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -420,11 +413,9 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
   }
   private async init(checkAuth: boolean): Promise<void> {
-    console.log(this.getPrincipalId);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     if ((window as any).icx) {
-      console.log('116:' + this.getPrincipalId);
     } else {
       if (priList[this.getPrincipalId] === 'AuthClient') {
         this.type = 'AuthClient';
@@ -444,7 +435,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
             background: 'rgba(0, 0, 0, 0.5)'
           });
           try {
-            console.log('isInit: ' + this.isInit);
             if (this.isInit) {
               await this.connectMetaMask();
               loading.close();
@@ -480,8 +470,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           this.isInit = true;
           const plugIc = (window as any).ic?.plug;
           const plugPrincipalId = await plugIc.getPrincipal();
-          console.log(principal);
-          console.log(plugPrincipalId);
           if (plugPrincipalId && principal !== plugPrincipalId.toString()) {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const _that = this;
@@ -573,7 +561,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       return;
     } else if (this.type === 'SignerNFID') {
       const signerAgent = await NFIDLogin(true);
-      console.log(signerAgent);
       if (signerAgent) {
         loading.close();
         return;
@@ -642,7 +629,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         if (!isLoading) {
           loading.close();
         }
-        console.log(e);
         this.$message.config({ top: '40%' });
         this.$message.error("Password doesn't match");
       }
@@ -663,7 +649,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 #app {
   height: 100%;

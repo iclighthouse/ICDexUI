@@ -348,7 +348,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { toHexString } from '@/ic/converter';
@@ -361,7 +360,6 @@ import {
 } from '@/ic/governance/model';
 import { FunctionsName, TopicInfo } from '@/views/home/neurons/model';
 import { GovernanceService } from '@/ic/governance/governanceService';
-
 @Component({
   name: 'Following',
   components: {}
@@ -410,19 +408,16 @@ export default class extends Vue {
     this.listKnownNeurons = listKnownNeurons;
     this.neuron = this.neuronsList[index];
     this.visible = true;
-    console.log(this.neuron);
     this.followees = {};
     this.neuron.followees = this.neuron.followees.filter((follow) => {
       this.followees[follow[0].toString(10)] = follow[1];
       return this.functionsName[follow[0].toString(10)] && follow[1];
     });
     // this.$forceUpdate();
-    console.log(this.followees);
   }
   private addFolloweeOnOptions(topicId: number, neuronId: bigint): void {
     this.functionId = topicId;
     const followees = this.getFollowees();
-    console.log(followees);
     followees.push({ id: neuronId });
     this.setFollowees(followees, 'add');
   }
@@ -435,7 +430,6 @@ export default class extends Vue {
         this.currentFollowees.push(item.id.toString());
       });
     }
-    console.log(this.currentFollowees);
   }
   private getFollowees(): Array<NeuronId> {
     let followees: Array<NeuronId> = [];
@@ -468,7 +462,6 @@ export default class extends Vue {
       }
     );
     followees.splice(currentIndex, 1);
-    console.log(followees);
     this.setFollowees(followees, 'delete');
   }
   private async deleteAllFollowee(): Promise<void> {
@@ -483,7 +476,6 @@ export default class extends Vue {
     try {
       //
     } catch (e) {
-      console.log(e);
     }
   }
   private followNeuron(): void {
@@ -514,7 +506,6 @@ export default class extends Vue {
             this.$message.error('You are already following this neuron.');
             return;
           }
-          console.log(followees);
           followees.push({ id: BigInt(this.newFolloweeForm.neuronId.trim()) });
           this.setFollowees(followees, 'add');
         }
@@ -535,7 +526,6 @@ export default class extends Vue {
       BigInt(this.functionId),
       followees
     );
-    console.log(res);
     if (res && res.command) {
       const type = Object.keys(res.command[0])[0];
       if (type === 'Error') {
@@ -566,11 +556,9 @@ export default class extends Vue {
     this.$message.success('Copied');
   }
   private onError(): void {
-    console.log('err');
   }
 }
 </script>
-
 <style scoped lang="scss">
 .know-neurons-main {
   margin-top: 40px;

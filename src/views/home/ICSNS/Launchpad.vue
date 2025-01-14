@@ -448,7 +448,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import EventBus from '@/utils/Event';
@@ -485,9 +484,7 @@ import {
   ProposalInfo
 } from '@/ic/governance/model';
 import { checkAuth } from '@/ic/CheckAuth';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Launchpad',
   components: {},
@@ -554,12 +551,10 @@ export default class extends Vue {
     }
   }
   deactivated(): void {
-    console.log('deactivated');
     window.clearInterval(this.timer);
     this.timer = null;
   }
   async mounted(): Promise<void> {
-    console.log('mounted');
     // this.SNSWasmService = new SNSWasmService();
     // this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     // if ((window as any).icx) {
@@ -675,14 +670,12 @@ export default class extends Vue {
         this.initConnected(this.deployedSnses);
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
   private async initConnected(
     listDeployedSnses: Array<DeployedSns>
   ): Promise<void> {
-    console.log(listDeployedSnses);
     this.loading = true;
     const SNSProposals = await this.getSNSProposals();
     const localReject: Array<string> =
@@ -736,7 +729,6 @@ export default class extends Vue {
           }
         ).CreateServiceNervousSystem;
         if (createServiceNervousSystem) {
-          console.log(createServiceNervousSystem);
           const swapParameters = createServiceNervousSystem.swap_parameters[0];
           const swap_due_timestamp_seconds = new BigNumber(
             proposal.proposal_timestamp_seconds.toString(10)
@@ -771,7 +763,6 @@ export default class extends Vue {
               ? swapParameters.minimum_icp[0].e8s[0]
               : swapParameters.minimum_direct_participation_icp[0].e8s[0]
           };
-          console.log(params);
           const tokenInfo = createServiceNervousSystem.ledger_parameters[0];
           const token: SNSToken = {
             tokenId: null,
@@ -792,9 +783,7 @@ export default class extends Vue {
         }
       }
     });
-    console.log(new Date().getTime() - a);
     this.SNSTokens = snsTokens;
-    console.log(snsTokens);
     this.filterTokens();
     this.getCountdown();
   }
@@ -833,7 +822,6 @@ export default class extends Vue {
           }
         }
       });
-      console.log('hasPending: ' + hasPending);
       if (!hasPending) {
         window.clearInterval(this.timer);
         this.timer = null;
@@ -844,7 +832,6 @@ export default class extends Vue {
     try {
       this.$set(token, 'deadlineLoading', true);
       const lifecycle = await this.getLifecycle(token.swapId, token.tokenId);
-      console.log(lifecycle);
       this.$set(token, 'lifecycle', lifecycle);
       if (Number(lifecycle[0]) === 5) {
         window.setTimeout(() => {
@@ -855,18 +842,15 @@ export default class extends Vue {
         this.$set(token, 'deadlineLoading', false);
       }
     } catch (e) {
-      console.log(e);
       this.$set(token, 'deadlineLoading', false);
     }
   }
   private async refreshPendingLifecycle(res: SNSToken): Promise<void> {
-    console.log(res);
     if (Number(res.lifecycle[0]) !== 1) {
       return;
     }
     try {
       const lifecycle = await this.getLifecycle(res.swapId, res.tokenId);
-      console.log(lifecycle);
       this.$set(res, 'lifecycle', lifecycle);
       if (Number(lifecycle[0]) === 1) {
         window.setTimeout(() => {
@@ -874,7 +858,6 @@ export default class extends Vue {
         }, 1000);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getProposalInfo(res: SNSToken): Promise<void> {
@@ -883,7 +866,6 @@ export default class extends Vue {
       const proposalRes = await governanceService.getProposalInfo(
         res.proposalId
       );
-      console.log(proposalRes);
       if (proposalRes && proposalRes.length) {
         const executedTime = proposalRes[0].executed_timestamp_seconds;
         if (proposalRes[0].decided_timestamp_seconds) {
@@ -895,7 +877,7 @@ export default class extends Vue {
         //     .times(1000)
         //     .decimalPlaces(0)
         //     .toNumber();
-        //   console.log(deadline);
+        //   
         //   this.$set(res, 'deadline', deadline);
         // }
       }
@@ -988,7 +970,6 @@ export default class extends Vue {
             .toNumber();
         }
       } catch (e) {
-        console.log(e);
       }
     }
     // let communityFund = '0';
@@ -1041,7 +1022,6 @@ export default class extends Vue {
       res.params[0].max_icp_e8s =
         res.params[0].max_direct_participation_icp_e8s[0];
     }
-    console.log(res);
     return res.params;
   }
   private async getLifecycle(
@@ -1110,7 +1090,6 @@ export default class extends Vue {
         include_status: [1],
         include_all_manage_neuron_proposals: []
       });
-      console.log(proposalRes);
       if (
         proposalRes &&
         proposalRes.proposal_info &&
@@ -1120,7 +1099,6 @@ export default class extends Vue {
       }
       return [];
     } catch (e) {
-      console.log(e);
     }
   }
   private async getSNSTokenSwapState(
@@ -1131,7 +1109,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .launch-pad-token-item-header {
   display: flex;

@@ -131,7 +131,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import ConfirmPassword from '@/views/login/components/ConfirmPassword.vue';
@@ -142,7 +141,6 @@ if (ethereum && ethereum.providers) {
     (provider) => provider.isMetaMask
   );
 }
-
 @Component({
   name: 'NewWallet',
   components: {
@@ -160,7 +158,6 @@ export default class extends Vue {
     this.$message.success('Copied');
   }
   private onError(): void {
-    console.log('err');
   }
   public creatMnemonic(): void {
     let rand = ethers.utils.randomBytes(16);
@@ -195,7 +192,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .mnemonic-encrypt {
   font-size: 20px;

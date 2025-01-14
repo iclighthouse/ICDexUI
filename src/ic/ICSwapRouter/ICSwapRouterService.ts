@@ -18,7 +18,6 @@ import { TokenId } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal';
 import { SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class ICSwapRouterService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -101,7 +100,6 @@ export class ICSwapRouterService {
       const res = await this.service.getCompetitions(dexName, page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -110,7 +108,6 @@ export class ICSwapRouterService {
     try {
       return await this.service.getDexCompetitionRound();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -122,7 +119,6 @@ export class ICSwapRouterService {
       const res = await this.service.getDexCompetition(round);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -135,7 +131,6 @@ export class ICSwapRouterService {
       const res = await this.service.getDexCompetitionTrader(round, address);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -145,7 +140,6 @@ export class ICSwapRouterService {
     try {
       return await this.service.registerDexCompetition(subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

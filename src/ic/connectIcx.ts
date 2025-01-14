@@ -1,14 +1,12 @@
 import { AstroXWebViewHandler } from '@astrox/sdk-webview';
 import store from '@/store';
 import { ICXWhitelist } from '@/ic/utils';
-
 export const connectIcx = async (
   newWhitelist?: Array<string>
 ): Promise<boolean> => {
   await initIcx();
   const thisIcx = store.getters['common/getIcx'];
   const isConnected = await thisIcx.isConnected();
-  console.log('isConnected:' + isConnected);
   if (!isConnected) {
     localStorage.removeItem('principal');
     store.commit('common/SET_PRINCIPAL_ID', null);
@@ -24,21 +22,17 @@ export const connectIcx = async (
   // localStorage.setItem('icxWhitelist', JSON.stringify(whitelist));
   return await connect(whitelist);
 };
-
 export const initIcx = async (): Promise<void> => {
-  console.log('initIcx');
   let thisIcx = store.getters['common/getIcx'];
   if (!thisIcx) {
     localStorage.removeItem('principal');
     store.commit('common/SET_PRINCIPAL_ID', null);
     try {
       thisIcx = new AstroXWebViewHandler();
-      console.log(JSON.stringify(thisIcx));
       await thisIcx.init();
       if (thisIcx.identity) {
         const principal = thisIcx.getPrincipal();
         if (principal) {
-          console.log('principal:' + principal.toString());
           const icxPrincipals =
             JSON.parse(localStorage.getItem('icxPrincipals')) || [];
           icxPrincipals.push(principal.toString());
@@ -49,12 +43,9 @@ export const initIcx = async (): Promise<void> => {
       }
       store.commit('common/SET_ICX', thisIcx);
     } catch (e) {
-      console.log(e);
     }
   }
-  console.log('initIcxend');
 };
-
 export const addIcxWhitelist = async (canisterId: string): Promise<boolean> => {
   let whitelist = JSON.parse(localStorage.getItem('icxWhitelist')) || [];
   // localStorage.setItem('icxWhitelist', JSON.stringify(whitelist));
@@ -71,9 +62,7 @@ const connect = async (newWhitelist?: Array<string>): Promise<boolean> => {
   const thisIcx = store.getters['common/getIcx'];
   const currentPrincipal = localStorage.getItem('principal');
   try {
-    console.log(newWhitelist);
     let isConnect;
-    console.log(thisIcx.identity);
     if (thisIcx && thisIcx.identity) {
       const localPrincipalWhitelist =
         JSON.parse(localStorage.getItem('icxWhitelist')) || [];
@@ -102,7 +91,6 @@ const connect = async (newWhitelist?: Array<string>): Promise<boolean> => {
       localStorage.setItem('icxWhitelist', JSON.stringify(newWhitelist));
       const principal = thisIcx.getPrincipal();
       if (principal) {
-        console.log('principal:' + principal.toString());
         localStorage.setItem('principal', principal.toString());
         if (currentPrincipal && currentPrincipal !== principal.toString()) {
           // Modal.info({
@@ -128,7 +116,6 @@ const connect = async (newWhitelist?: Array<string>): Promise<boolean> => {
       return false;
     }
   } catch (e) {
-    console.log(e);
     return false;
   }
 };

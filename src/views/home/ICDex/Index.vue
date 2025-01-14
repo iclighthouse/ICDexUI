@@ -13065,7 +13065,6 @@
     ></v-tour>-->
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import axios from 'axios';
@@ -13186,7 +13185,6 @@ import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { NftService } from '@/ic/nft/Service';
 import { TokenExt, TokensExt } from '@/ic/nft/model';
 import draggable from 'vuedraggable';
-
 const commonModule = namespace('common');
 const ProSubaccountId = 1;
 const dayjs = require('dayjs');
@@ -13204,7 +13202,6 @@ let ICRC2Token = [
 ];
 let timer = null;
 let hotSort = 0;
-
 @Component({
   name: 'Index',
   components: {
@@ -13533,7 +13530,6 @@ export default class extends Vue {
   @commonModule.Getter('getPrincipalId') getPrincipalId?: string;
   @commonModule.Getter('getIcx') getIcx?: AstroXWebViewHandler;
   @commonModule.Getter('getCheckAuth') getCheckAuth?: boolean;
-
   private poolVisible = false;
   private showPrepareOrder = false;
   private preparing = [];
@@ -14016,8 +14012,6 @@ export default class extends Vue {
   }
   @Watch('currentTradeMarketSort')
   private onCurrentTradeMarketSort(val) {
-    console.log('currentTradeMarketSort');
-    console.log(val);
     const pairs = [];
     if (val && this.tradePairs[val].length) {
       this.tradePairs[val].forEach((pair) => {
@@ -14028,7 +14022,6 @@ export default class extends Vue {
       });
     }
     this.pairsScroll = pairs;
-    console.log(this.pairsScroll);
   }
   get showOpeningTime(): boolean {
     if (this.sysMode && this.sysMode.openingTime) {
@@ -14385,7 +14378,7 @@ export default class extends Vue {
         this.getNTFs();
       }
     } catch (e) {
-      console.log(e);
+      //
     }
     // this.steps = [
     //   {
@@ -14429,7 +14422,6 @@ export default class extends Vue {
   }
   private async getNTFs(): Promise<void> {
     const res = await this.NftService.tokens_ext();
-    console.log(res);
     const tokensExt = (
       res as {
         ok: TokensExt;
@@ -14450,7 +14442,6 @@ export default class extends Vue {
         this.getPrincipalId
       );
     }
-    console.log(this.NFTsExt);
   }
   private getDuration(val: bigint): string {
     const duration = require('dayjs/plugin/duration');
@@ -14468,7 +14459,6 @@ export default class extends Vue {
     }
   }
   private stepCallbacks(): void {
-    console.log('stepCallbacks');
     localStorage.setItem('confirmOldTrade', 'true');
   }
   private getStopLimitNeed(): { token0: bigint; token1: bigint } {
@@ -14532,11 +14522,8 @@ export default class extends Vue {
           accountId: accountId,
           entity: entity ? (entity as string).trim() : ''
         };
-        console.log(JSON.stringify(referral));
         this.$cookies.set('referral', JSON.stringify(referral));
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
     }
   }
   private changeTradeCompetitionsMenu(menu: TradeCompetitionsMenu): void {
@@ -14546,7 +14533,6 @@ export default class extends Vue {
     } else {
       this.tradeCompetitionsMenu = menu;
       (this.$refs.tradeCompetitions as any).init(menu);
-      console.log(this.tradeCompetitionsMenu);
     }
   }
   private infoBack(): void {
@@ -14578,7 +14564,6 @@ export default class extends Vue {
         currentPair,
         this.getPrincipalId
       );
-      console.log(res);
       if (res && res.pairId === this.currentPair[0].toString()) {
         this.feeRebate = res.makerRebate[1].toString();
       }
@@ -14612,8 +14597,6 @@ export default class extends Vue {
         .div(10 ** decimals)
         .toString(10);
       const integer = new BigNumber(sellAmount).div(unit).toFixed(0, 1);
-      console.log(unit);
-      console.log(integer);
       if (new BigNumber(integer).gte(1)) {
         sellAmount = new BigNumber(integer).times(unit).toString(10);
       } else {
@@ -14658,8 +14641,6 @@ export default class extends Vue {
         .div(10 ** decimals)
         .toString(10);
       const integer = new BigNumber(sellAmount).div(unit).toFixed(0, 1);
-      console.log(unit);
-      console.log(integer);
       if (new BigNumber(integer).gte(1)) {
         sellAmount = new BigNumber(integer).times(unit).toString(10);
       } else {
@@ -14998,9 +14979,7 @@ export default class extends Vue {
     this.timerAccount = null;
     try {
       dispose('kInterval-chart');
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
   private changeKIntervalList(kInterval): void {
     window.clearInterval(this.timerQuotes);
@@ -15059,7 +15038,6 @@ export default class extends Vue {
         }
       }
     } else {
-      console.log(this.splitData(this.KIntervals));
       this.kLineChart.applyNewData(this.splitData(this.KIntervals));
     }
     window.clearInterval(this.timerQuotes);
@@ -15239,7 +15217,6 @@ export default class extends Vue {
       }
     } catch (e) {
       this.chartSpinning = false;
-      console.log(e);
     }
   }
   private orderDisabled(orderPrice: bigint): boolean {
@@ -15795,7 +15772,6 @@ export default class extends Vue {
   private onCreateProOrder(item): void {
     this.orderType = 'Pro';
     this.currentProOrderMenu = item;
-    console.log(this.currentProOrderMenu);
     if (!this.NFTsExt.length) {
       this.$info({
         content:
@@ -15924,7 +15900,6 @@ export default class extends Vue {
       this.$message.success('Success');
       this.getDepositBalance();
     } catch (e) {
-      console.log(e);
       if (toHttpRejectError(e)) {
         this.$message.error(toHttpRejectError(e));
       } else {
@@ -16051,7 +16026,6 @@ export default class extends Vue {
     (this.$refs as any).proOrder.type = 'update';
     if (!this.dexRole.vipMaker) {
       const flag = await (this.$refs as any).proOrder.stoFee();
-      console.log(flag);
       if (!flag) {
         loading.close();
         return;
@@ -16220,7 +16194,6 @@ export default class extends Vue {
     });
     await checkAuth();
     this.cancelId = order.txid;
-    console.log(order.txid, isPro);
     this.currentICDexService
       .cancelByTxid(
         this.currentPair[0].toString(),
@@ -16245,7 +16218,6 @@ export default class extends Vue {
         }, 2000);
       })
       .catch((e) => {
-        console.log(e);
         loading.close();
         this.$message.error(toHttpRejectError(e));
         // this.$message.error('Cancel Error');
@@ -16277,7 +16249,6 @@ export default class extends Vue {
               }
             } else {
               const order = Object.values(txidStatus.orderStatusResponse)[0];
-              console.log(order.status);
               if (order.status) {
                 if (Object.keys(order.status)[0] === 'Todo') {
                   if (
@@ -16325,7 +16296,6 @@ export default class extends Vue {
     const res = await this.currentICDexService.pendingCount(currentPair);
     if (res.pairId === this.currentPair[0].toString()) {
       this.pairTotalPending = Number(res.count);
-      console.log(this.pairTotalPending);
       this.clearMonitor();
       if (this.pairTotalPending > 20000) {
         this.pairTotalPendingTimer = setInterval(() => {
@@ -16340,7 +16310,6 @@ export default class extends Vue {
     const currentPair = this.currentPair[0].toString();
     const res = await this.currentICDexService.monitor(currentPair);
     if (res && res.pairId === this.currentPair[0].toString()) {
-      console.log('monitor: ' + res.monitor);
       this.pairTotalPending = Number(res.monitor);
       this.clearMonitor();
     }
@@ -16401,7 +16370,6 @@ export default class extends Vue {
       pendingList,
       ProSubaccountId
     );
-    console.log(res);
     if (res && res.length) {
       this.pendingListPro = res.sort(
         (a, b) => Number(b[1].time) - Number(a[1].time)
@@ -16457,7 +16425,6 @@ export default class extends Vue {
               preparedList[1].nonce.toString(10)
             )
           ) {
-            console.log(toHexString(new Uint8Array(preparedList[0])));
             this.preparedList[currentPairId].splice(i, 1);
             this.deletePrepare(currentPairId, preparedList[1].nonce);
             i--;
@@ -16479,9 +16446,7 @@ export default class extends Vue {
       if (this.totalPending <= 10) {
         this.currentPendingPage = 1;
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     this.getToStatus(swapId);
     this.pendingLoading = false;
   }
@@ -16498,7 +16463,6 @@ export default class extends Vue {
     this.currentICDexService
       .statusByTxid(currentPairId, preparedList[0])
       .then((res) => {
-        console.log(res);
         if (res && res.pairId === this.currentPair[0].toString()) {
           const orderStatus = Object.keys(res.orderStatusResponse)[0];
           if (
@@ -16507,7 +16471,6 @@ export default class extends Vue {
             orderStatus === 'Completed'
           ) {
             if (this.currentPair[0].toString() === currentPairId) {
-              console.log(orderStatus);
               if (orderStatus === 'Pending' || orderStatus === 'Failed') {
                 const current = Object.values(res.orderStatusResponse)[0];
                 if (orderStatus === 'Failed') {
@@ -16665,9 +16628,7 @@ export default class extends Vue {
           await this.currentICDexService.ictc_TTRun(
             this.currentPair[0].toString()
           );
-        } catch (e) {
-          console.log(e);
-        }
+        } catch (e) {}
         break;
       }
     }
@@ -16733,9 +16694,7 @@ export default class extends Vue {
           };
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
   private changePending(page): void {
     this.currentPendingPage = page;
@@ -16787,7 +16746,6 @@ export default class extends Vue {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     } else if (tokenStd.toLocaleLowerCase() === PairTokenStdMenu.icrc2) {
@@ -16826,7 +16784,6 @@ export default class extends Vue {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     } else {
@@ -16853,7 +16810,6 @@ export default class extends Vue {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     }
@@ -17007,7 +16963,6 @@ export default class extends Vue {
     ];
   }
   private setStatusTrading(currentPairId: string, nonce: bigint): void {
-    console.log('setStatusTrading');
     if (
       this.preparedList[currentPairId] &&
       this.preparedList[currentPairId].length
@@ -17016,7 +16971,6 @@ export default class extends Vue {
         const status = Object.keys(
           this.preparedList[currentPairId][i][1].status
         )[0];
-        console.log(i);
         if (
           Number(this.preparedList[currentPairId][i][1].nonce) === Number(nonce)
         ) {
@@ -17071,7 +17025,6 @@ export default class extends Vue {
     if (!this.prepareOrder[currentPairId]) {
       this.prepareOrder[currentPairId] = [];
     }
-    console.log(this.prepareOrder[currentPairId]);
     if (
       this.prepareOrder[currentPairId] &&
       this.prepareOrder[currentPairId].length
@@ -17152,7 +17105,6 @@ export default class extends Vue {
           }
         } catch (e) {
           this.showPrepareOrder = false;
-          console.log(e);
           this.preparedLoading = false;
         }
       }
@@ -17182,7 +17134,6 @@ export default class extends Vue {
     address: string,
     isMounted = false
   ): Promise<void> {
-    console.log(orderPrice);
     const currentPairId = currentPair[0].toString();
     if (!this.prepareOrder[currentPairId]) {
       this.prepareOrder[currentPairId] = [];
@@ -17288,7 +17239,6 @@ export default class extends Vue {
       });
     }
     if (this.orderQueue[currentPairId].length === 1) {
-      console.log(this.orderQueue[currentPairId][0].prepare[2]);
       if (this.orderQueue[currentPairId][0].type === 'buyOrder') {
         this.buyOrder(
           this.orderQueue[currentPairId][0].orderPrice,
@@ -17350,7 +17300,6 @@ export default class extends Vue {
     this.preparedList[currentPair[0].toString()].push(pending);
     this.pendingList.unshift(pending);
     this.isTodo = true;
-    console.log(this.pendingList);
   }
   private initPending(
     currentPair: DePairs,
@@ -17426,13 +17375,10 @@ export default class extends Vue {
   ): Promise<void> {
     try {
       const canTrade = await prepareTrade;
-      console.log(prepare[2] + ': ' + canTrade);
       if (!canTrade) {
         return;
       }
       const d = new Date().getTime();
-      console.log(prepare[2] + ': ' + new Date());
-      console.log(orderPrice);
       if (this.getPrincipalId) {
         const currentAddress = principalToAccountIdentifier(
           Principal.fromText(this.getPrincipalId)
@@ -17451,14 +17397,9 @@ export default class extends Vue {
           orderType as OrderType
         )
         .then((res) => {
-          console.log(res);
           this.initOrderSuccess(res, currentPair, prepare, address);
-          console.log(
-            prepare[2] + ' buySuccess: ' + (new Date().getTime() - d)
-          );
         })
         .catch((e) => {
-          console.log(e);
           this.initPending(currentPair, prepare, address);
           this.$message.error(toHttpRejectError(e));
           // this.$message.error('Order fail');
@@ -17482,7 +17423,6 @@ export default class extends Vue {
           }
         });
       setTimeout(() => {
-        console.log('plugLoading');
         this.plugLoading[currentPair[0].toString()] = false;
       }, 3000);
       this.executionQueue(currentPair, address);
@@ -17490,7 +17430,6 @@ export default class extends Vue {
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
       this.getAccountInitIntervalPrice(6);
     } catch (e) {
-      console.log(e);
       this.initPending(currentPair, prepare, address);
       this.$message.error('Order fail');
     }
@@ -17505,7 +17444,6 @@ export default class extends Vue {
   ): Promise<boolean> {
     try {
       const d = new Date().getTime();
-      console.log(prepare[2] + ': ' + new Date());
       let tokenInfo = this.tokens[currentPair[1][0].token1[0].toString()];
       let tokenStd = Object.keys(currentPair[1][0].token1[2])[0];
       let tokenId = currentPair[1][0].token1[0].toString();
@@ -17540,7 +17478,6 @@ export default class extends Vue {
       keepingBalance = new BigNumber(this.keepingBalance[tokenId])
         .minus(stopLimitBalance)
         .toString(10);
-      console.log(type, total, keepingBalance);
       if (this.tokens && !this.isKeeping) {
         if (this.isPoolMode && (tokenStd === 'icp' || tokenStd === 'icrc1')) {
           needTransfer = new BigNumber(needTransfer)
@@ -17590,7 +17527,6 @@ export default class extends Vue {
           .minus(needTransfer)
           .minus(getFee(this.tokens[tokenId]).toString(10))
           .toString(10);
-        console.log(keepingBalance, total, balance);
         if (this.orderType !== 'Stop-limit') {
           this.$set(this.keepingBalance, tokenId, '0');
         }
@@ -17659,7 +17595,6 @@ export default class extends Vue {
             address,
             tokenStd
           );
-          console.log('canBuy:' + canBuy);
           if (!canBuy) {
             this.initPending(currentPair, prepare, address);
             this.$message.error('Order fail');
@@ -17676,9 +17611,7 @@ export default class extends Vue {
               .minus(needTransfer)
               .toString(10)
           );
-        } catch (e) {
-          console.log(e);
-        }
+        } catch (e) {}
         if (this.isKeeping) {
           if (new BigNumber(needDeposit).gt(0)) {
             let token;
@@ -17702,10 +17635,8 @@ export default class extends Vue {
           }
         }
       }
-      console.log(prepare[2] + type + ': ' + (new Date().getTime() - d));
       return true;
     } catch (e) {
-      console.log(e);
       this.initPending(currentPair, prepare, address);
       this.$message.error('Order fail');
       return false;
@@ -17723,12 +17654,10 @@ export default class extends Vue {
   ): Promise<void> {
     try {
       const canTrade = await prepareTrade;
-      console.log(prepare[2] + ': ' + canTrade);
       if (!canTrade) {
         return;
       }
       const d = new Date().getTime();
-      console.log(prepare[2] + ': ' + new Date());
       if (this.getPrincipalId) {
         const currentAddress = principalToAccountIdentifier(
           Principal.fromText(this.getPrincipalId)
@@ -17748,12 +17677,8 @@ export default class extends Vue {
         )
         .then((res) => {
           this.initOrderSuccess(res, currentPair, prepare, address);
-          console.log(
-            prepare[2] + ' sellSuccess: ' + (new Date().getTime() - d)
-          );
         })
         .catch((e) => {
-          console.log(e);
           this.initPending(currentPair, prepare, address);
           this.$message.error(toHttpRejectError(e));
           // this.$message.error('Order fail');
@@ -17784,7 +17709,6 @@ export default class extends Vue {
       this.deletePrepare(currentPair[0].toString(), prepare[2]);
       this.getAccountInitIntervalPrice(6);
     } catch (e) {
-      console.log(e);
       this.initPending(currentPair, prepare, address);
       this.$message.error('Order fail');
     }
@@ -17802,7 +17726,6 @@ export default class extends Vue {
         this.currentICDexService
           .statusByTxid(currentPair[0].toString(), txid)
           .then((res) => {
-            console.log(res);
             if (res && res.pairId === this.currentPair[0].toString()) {
               const orderStatus = Object.keys(res.orderStatusResponse)[0];
               if (
@@ -17817,13 +17740,11 @@ export default class extends Vue {
                     const status = Object.keys(
                       this.pendingList[i][1].status
                     )[0];
-                    console.log(i);
                     if (
                       toHexString(new Uint8Array(txid)) ===
                       toHexString(new Uint8Array(this.pendingList[i][0]))
                     ) {
                       if (status === 'Prepared' || status === 'Trading') {
-                        console.log(orderStatus);
                         if (
                           orderStatus === 'Pending' ||
                           orderStatus === 'Failed'
@@ -17865,7 +17786,6 @@ export default class extends Vue {
                         this.preparedList[currentPair[0].toString()][i][1]
                           .status
                       )[0];
-                      console.log(i);
                       if (
                         toHexString(new Uint8Array(txid)) ===
                         toHexString(
@@ -17875,7 +17795,6 @@ export default class extends Vue {
                         )
                       ) {
                         if (status === 'Prepared' || status === 'Trading') {
-                          console.log(orderStatus);
                           if (
                             orderStatus === 'Pending' ||
                             orderStatus === 'Failed'
@@ -17920,9 +17839,7 @@ export default class extends Vue {
               }
             }
           });
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
     } else {
       console.dir(res);
       const errMessage = (res as TradingResultErr).err.message;
@@ -17984,11 +17901,8 @@ export default class extends Vue {
     const currentPairId = currentPair[0].toString();
     try {
       this.orderQueue[currentPairId].shift();
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     if (this.orderQueue[currentPairId].length) {
-      console.log(this.orderQueue[currentPairId][0].prepare[2]);
       if (this.orderQueue[currentPairId][0].type === 'buyOrder') {
         this.buyOrder(
           this.orderQueue[currentPairId][0].orderPrice,
@@ -18180,7 +18094,6 @@ export default class extends Vue {
         if (new BigNumber(totalAmount).lt(min)) {
           totalAmount = min;
         }
-        console.log(min, totalAmount);
         const token0Id = this.currentPair[1][0].token0[0].toString();
         if (
           new BigNumber(this.keepingBalance[token0Id])
@@ -18236,6 +18149,36 @@ export default class extends Vue {
     this.getQuotes(currentPair[0].toString(), isInit);
     this.initAccount();
   }
+  private async updateTokenInfo(): Promise<void> {
+    if (this.currentPair) {
+      const token0 = this.currentPair[1][0].token0;
+      if (token0) {
+        getTokenInfo(token0[0], token0[2]).then((info) => {
+          if (
+            info.name !== this.tokens[token0[0].toString()].name ||
+            info.symbol !== this.tokens[token0[0].toString()].symbol ||
+            info.decimals !== this.tokens[token0[0].toString()].decimals ||
+            getFee(info).toString(10) !== this.tokens[token0[0].toString()].fee
+          ) {
+            this.$set(this.tokens, token0[0].toString(), info);
+          }
+        });
+      }
+      const token1 = this.currentPair[1][0].token1;
+      if (token1) {
+        getTokenInfo(token1[0], token1[2]).then((info) => {
+          if (
+            info.name !== this.tokens[token1[0].toString()].name ||
+            info.symbol !== this.tokens[token1[0].toString()].symbol ||
+            info.decimals !== this.tokens[token1[0].toString()].decimals ||
+            getFee(info).toString(10) !== this.tokens[token1[0].toString()].fee
+          ) {
+            this.$set(this.tokens, token1[0].toString(), info);
+          }
+        });
+      }
+    }
+  }
   private async getSysConfig(): Promise<void> {
     this.sysConfig = await this.ICDexRouterService.sys_getConfig();
     const sysToken = this.sysConfig.sysToken;
@@ -18251,7 +18194,6 @@ export default class extends Vue {
     }
     const currentPair = this.currentPair[0].toString();
     const res = await this.currentICDexService.sto_getConfig(currentPair);
-    console.log(res);
     if (res && res.pairId === this.currentPair[0].toString()) {
       this.stoConfig = res.stoSetting;
     }
@@ -18259,7 +18201,6 @@ export default class extends Vue {
   private async initAccount(): Promise<void> {
     if (this.getPrincipalId) {
       await this.getAccountSetting();
-      console.log(this.isKeeping);
       this.getDepositBalance();
     }
   }
@@ -18443,7 +18384,6 @@ export default class extends Vue {
       subaccount
     );
     const std = Object.keys(token[2])[0];
-    console.log(isPro);
     if (std.toLocaleLowerCase() === 'icp') {
       if (isPro) {
         this.balance = new BigNumber(this.tokensBalanceSto[token[0].toString()])
@@ -18519,7 +18459,6 @@ export default class extends Vue {
       token = pair[1][0].token1;
     }
     const std = Object.keys(token[2])[0];
-    console.log(isPro);
     let balance;
     let standard;
     const currentToken = new AddTokenItemClass();
@@ -18557,13 +18496,12 @@ export default class extends Vue {
       isToken0,
       subaccountId
     );
-
     // const loading = this.$loading({
     //   lock: true,
     //   background: 'rgba(0, 0, 0, 0.5)'
     // });
     // let res;
-    // console.log(isPro);
+    //
     // if (isPro) {
     //   // pro subaccount
     //   res = await this.currentICDexService.withdraw(
@@ -18591,7 +18529,7 @@ export default class extends Vue {
     //         ]
     //   );
     // }
-    // console.log(res);
+    //
     // if (res && res.length) {
     //   this.$message.success('Success');
     // } else {
@@ -18653,7 +18591,6 @@ export default class extends Vue {
     }
   }
   private async setMode(): Promise<void> {
-    console.log(this.dexRole);
     if (this.dexRole) {
       if (this.dexRole.broker && !this.isKeepingSetting) {
         this.$message.warning(
@@ -18686,7 +18623,6 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    console.log(mode, keep);
     await this.currentICDexService.accountConfig(
       this.currentPair[0].toString(),
       mode,
@@ -18783,7 +18719,6 @@ export default class extends Vue {
       currentPair,
       this.getPrincipalId
     );
-    console.log(res);
     if (res && res.pairId === this.currentPair[0].toString()) {
       this.isKeeping = res.accountSetting.enKeepingBalance;
       this.isPoolMode = res.accountSetting.enPoolMode;
@@ -18806,9 +18741,6 @@ export default class extends Vue {
     } else {
       return 'ErrAddress';
     }
-    console.time('deposit');
-    console.log(token);
-    console.log('amount: ' + amount);
     const dexId = currentPair[0].toString();
     try {
       await this.currentICDexService.deposit(dexId, token, amount, subAccount);
@@ -18816,7 +18748,6 @@ export default class extends Vue {
       this.$message.error(toHttpRejectError(e));
       return 'ErrDeposit';
     }
-    console.timeEnd('deposit');
   }
   private async onBuyMKT(): Promise<void> {
     if (
@@ -18855,7 +18786,6 @@ export default class extends Vue {
           .toString(10)
       );
       let price = BigInt(0);
-      console.log(this.currentPair);
       if (this.mktPrice) {
         const token0decimals =
           this.tokens[this.currentPair[1][0].token0[0].toString()].decimals;
@@ -19028,7 +18958,6 @@ export default class extends Vue {
         quantity: { Buy: [amount, token1Amount] },
         price: price
       };
-      console.log(orderPrice);
       const currentPairId = this.currentPair[0].toString();
       this.plugLoading[currentPairId] = true;
       // if (this.isPlug() || isInfinity()) {
@@ -19067,7 +18996,6 @@ export default class extends Vue {
         if (new BigNumber(totalAmount).lt(min)) {
           totalAmount = min;
         }
-        console.log(min, totalAmount);
         const token1Id = this.currentPair[1][0].token1[0].toString();
         if (
           new BigNumber(this.keepingBalance[token1Id])
@@ -19110,7 +19038,6 @@ export default class extends Vue {
     }
     // fee
     const sysToken = this.sysConfig.sysToken.toString();
-    console.log(this.sysConfig);
     if (!this.stoConfig.sloFee1) {
       return true;
     }
@@ -19125,7 +19052,6 @@ export default class extends Vue {
         subaccount: []
       }
     });
-    console.log(res.allowance);
     let sloFee = new BigNumber(this.stoConfig.sloFee1.toString(10))
       .div(10 ** this.tokens[sysToken].decimals)
       .toString(10);
@@ -19139,7 +19065,6 @@ export default class extends Vue {
     if (type === 'update') {
       fee = new BigNumber(this.stoConfig.sloFee1.toString(10)).times(0.05);
     }
-    console.log(fee.toString(10));
     const ICLBalance = await getTokenBalance({ icrc1: null }, sysToken);
     let tokenFee = getFee(this.tokens[sysToken]).toString(10);
     if (
@@ -19151,7 +19076,6 @@ export default class extends Vue {
       tokenFee = new BigNumber(tokenFee).plus(tokenFee).toString(10);
     }
     const balance = new BigNumber(ICLBalance).minus(tokenFee);
-    console.log(balance.toString(10));
     let createdFee = fee.plus(tokenFee);
     if (balance.lt(fee)) {
       this.$message.error(
@@ -19241,7 +19165,6 @@ export default class extends Vue {
       address,
       type
     );
-    console.log(canStop);
     if (!canStop) {
       loading.close();
       return;
@@ -19254,7 +19177,6 @@ export default class extends Vue {
           triggerPrice: triggerPrice
         }
       );
-      console.log(res);
       if (type === 'buy') {
         this.isToBuy = false;
         this.buyPrice = '';
@@ -19276,7 +19198,6 @@ export default class extends Vue {
       );
       this.getDepositBalance();
     } catch (e) {
-      console.log(e);
       if (toHttpRejectError(e)) {
         this.$message.error(toHttpRejectError(e));
       } else {
@@ -19325,7 +19246,6 @@ export default class extends Vue {
           return 'err';
         }
       }
-      console.log(needTransfer, needDeposit);
       let token;
       if (isValue0) {
         token = { token0: null };
@@ -19662,30 +19582,22 @@ export default class extends Vue {
           const price = (res as any).data.success[0].rate;
           this.currentMarketPrice['icp'] = price;
         })
-        .catch((e) => {
-          console.log(e);
-        });
+        .catch((e) => {});
       axios
         .get('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/12')
         .then((res) => {
           const price = (res as any).data.success[0].rate;
           this.currentMarketPrice['btc'] = price;
         })
-        .catch((e) => {
-          console.log(e);
-        });
+        .catch((e) => {});
       axios
         .get('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16')
         .then((res) => {
           const price = (res as any).data.success[0].rate;
           this.currentMarketPrice['eth'] = price;
         })
-        .catch((e) => {
-          console.log(e);
-        });
-    } catch (e) {
-      console.log(e);
-    }
+        .catch((e) => {});
+    } catch (e) {}
   }
   private changeTradeType(tradeType: string): void {
     this.tradeType = tradeType;
@@ -19697,7 +19609,6 @@ export default class extends Vue {
     this.changeOrderType(item);
   }
   private changeOrderType(item): void {
-    console.log(item);
     this.orderType = item;
     this.currentMark = 0;
     this.currentTradesMenu = 'std';
@@ -19819,7 +19730,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(new Date().getTime() - a);
     const allPairs = []
       .concat(this.allPairs.Markets.Main)
       .concat(this.allPairs.Markets.Second)
@@ -19841,13 +19751,11 @@ export default class extends Vue {
         }
       }
     });
-    console.log(this.currentMarketMenu);
     if (this.currentMarketMenu !== 'FAVORITES') {
       this.tradePairs.Hot = this.allPairs[this.currentMarketMenu].Hot;
       this.sortHot();
       this.scrollTop();
     }
-    console.log(this.tradePairs);
   }
   private sortHot(): void {
     this.tradePairs.Hot = this.tradePairs.Hot.sort((a: DePairs, b: DePairs) => {
@@ -19890,7 +19798,6 @@ export default class extends Vue {
       });
       this.pairsScroll = res;
     }
-    console.log(this.currentPairIndex);
   }
   private async getAllLiquidity(): Promise<void> {
     let promiseAllValue = [];
@@ -19905,7 +19812,6 @@ export default class extends Vue {
         this.getLiquidity(pairs[i][0].toString(), i, currentTradeMarketSort)
       );
       if (promiseAllValue.length === MAX_CONCURRENCY) {
-        console.log(i);
         await Promise.all(promiseAllValue);
         if (this.currentTradeMarketSort === 'Hot') {
           this.sortHot();
@@ -19913,7 +19819,6 @@ export default class extends Vue {
         promiseAllValue = [];
       }
       if (i === pairs.length - 1 && promiseAllValue.length) {
-        console.log(i);
         await Promise.all(promiseAllValue);
         if (this.currentTradeMarketSort === 'Hot') {
           this.sortHot();
@@ -19939,7 +19844,7 @@ export default class extends Vue {
     //           this.currentPair[3] === 'Hot' &&
     //           this.currentTradeMarketSort === 'Hot'
     //         ) {
-    //           console.log(index);
+    //
     //           this.currentPairIndex = index;
     //         }
     //         return true;
@@ -19976,12 +19881,9 @@ export default class extends Vue {
           }
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
   private getAccountInitIntervalPrice(time = 10): void {
-    console.log(time);
     this.time = time;
     // this.initIntervalPrice();
     window.clearInterval(this.timer);
@@ -19990,7 +19892,6 @@ export default class extends Vue {
       if (!this.getCheckAuth) {
         setTimeout(async () => {
           if (this.$route.name === 'ICDex') {
-            console.log(time);
             this.initIntervalPrice();
           }
         }, 0);
@@ -20040,9 +19941,7 @@ export default class extends Vue {
           }, 0);
         }
       }, 60 * 1000);
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
   private async getAllowance(currentPair: DePairs): Promise<void> {
     const token0Info = currentPair[1][0].token0;
@@ -20177,7 +20076,6 @@ export default class extends Vue {
     canisterIds = [...new Set(canisterIds)];
     if (promiseValue.length) {
       Promise.all(promiseValue).then(() => {
-        console.log(icrc2Tokens);
         localStorage.setItem('icrc2', JSON.stringify(icrc2Tokens));
       });
     }
@@ -20316,7 +20214,6 @@ export default class extends Vue {
   }
   private toTradeICL(): void {
     (this.$refs as any).proOrder.visibleProOrder = false;
-    console.log((this.$refs as any).proOrder.visibleProOrder);
     const token0 = this.currentPair[1][0].token0[0].toString();
     const token1 = this.currentPair[1][0].token1[0].toString();
     if (
@@ -20364,12 +20261,10 @@ export default class extends Vue {
     const now = new Date().getTime();
     if (now - hotSort > 5 * 60 * 1000) {
       hotSort = now;
-      console.log(hotSort);
       this.getAllLiquidity();
     }
     const res = [];
     this.pairs = this.tradePairs[this.currentTradeMarketSort];
-    console.log(this.tradePairs);
     this.tradePairs[this.currentTradeMarketSort].forEach((pair) => {
       res.push({
         id: pair[1][0].canisterId.toString(),
@@ -20389,7 +20284,6 @@ export default class extends Vue {
     this.sortHot();
     const res = [];
     this.pairs = this.tradePairs[this.currentTradeMarketSort];
-    console.log(this.tradePairs);
     this.tradePairs[this.currentTradeMarketSort].forEach((pair) => {
       res.push({
         id: pair[1][0].canisterId.toString(),
@@ -20468,7 +20362,6 @@ export default class extends Vue {
       };
       this.IDOConfig = null;
       this.qualification = null;
-      console.log(pair[0].toString());
       const stage = pair[1][0].marketBoard || {};
       const stageType = Object.keys(stage)[0];
       if (this.currentTradeMarketSort === 'Search') {
@@ -20492,7 +20385,7 @@ export default class extends Vue {
       //   this.pairs = this.tradePairs.Old;
       // }
       // if (pair[1][0].token1[1].toLocaleLowerCase() === 'icp') {
-      //   console.log(this.currentTradeMarketSort);
+      //
       //   if (this.currentTradeMarketSort === 'ICP') {
       //     this.pairs = this.tradePairs.ICP;
       //   } else {
@@ -20507,6 +20400,7 @@ export default class extends Vue {
       //   this.pairs = this.tradePairs.USDT;
       // }
       this.currentPair = pair;
+      this.updateTokenInfo();
       localStorage.setItem(
         'icdexpair',
         `/${pair[1][0].token0[1]}/${pair[1][0].token1[1]}`
@@ -20548,18 +20442,14 @@ export default class extends Vue {
             this.initPrepared(currentPairId);
           }
         }
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
       if (!this.isToSetReferrer) {
         this.toSetReferrer();
       }
       this.initAccount();
       this.stoConfig = null;
       this.getStoConfig();
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
   private initPrice(): void {
     if (
@@ -20623,7 +20513,6 @@ export default class extends Vue {
     const res = await this.currentICDexService.info(currentPair[0].toString());
     if (res && res.pairId === this.currentPair[0].toString()) {
       this.pairInfo = res.pairInfo;
-      console.log(this.pairInfo);
       if (this.pairInfo.paused) {
         await this.getSysMode(currentPair);
       } else {
@@ -20655,7 +20544,6 @@ export default class extends Vue {
           this.$set(this.pairInfo, 'paused', false);
         }
       }
-      console.log(this.sysMode);
     }
   }
   private onFinish(): void {
@@ -20753,12 +20641,10 @@ export default class extends Vue {
   private async addFavorites(pairId: Principal): Promise<void> {
     if (pairId.toString() !== '5t3ek-haaaa-aaaar-qadia-cai') {
       const res = await this.ICLighthouseService.addFavorites(pairId);
-      console.log(res);
     }
   }
   private async removeFavorites(pairId: Principal): Promise<void> {
     const res = await this.ICLighthouseService.removeFavorites(pairId);
-    console.log(res);
   }
   private async getAccountFavorites(): Promise<void> {
     const star: Array<string> = JSON.parse(localStorage.getItem('star')) || [];
@@ -20766,7 +20652,6 @@ export default class extends Vue {
       this.star = star;
     } else {
       const res = await checkAuth(false);
-      console.log(res);
       if (res) {
         const favorites = await this.getFavorites();
         if (favorites.includes('5t3ek-haaaa-aaaar-qadia-cai')) {
@@ -20774,7 +20659,6 @@ export default class extends Vue {
             Principal.fromText('5t3ek-haaaa-aaaar-qadia-cai')
           );
         }
-        console.log(favorites);
         this.star = [].concat(favorites);
         // for (let i = 0; i < star.length; i++) {
         //   if (
@@ -20790,10 +20674,8 @@ export default class extends Vue {
         this.star = star;
       }
     }
-    console.log(this.star);
   }
   private pairSearchChange(): void {
-    console.log(this.pairSearch);
     if (this.pairSearch) {
       const allPairs = []
         .concat(this.allPairs.Markets.Main)
@@ -20832,13 +20714,11 @@ export default class extends Vue {
         });
       });
       this.pairsScroll = res;
-      console.log(this.pairsScroll);
     } else {
       this.tradePairs.Search = [];
       if (localStorage.getItem('label') && localStorage.getItem('sort')) {
         this.currentMarketMenu = localStorage.getItem('label');
         this.currentTradeMarketSort = localStorage.getItem('sort');
-        console.log(this.currentMarketMenu, this.currentTradeMarketSort);
         this.tradePairs = Object.assign(
           { Star: this.tradePairs.Star, Search: [] },
           this.allPairs[this.currentMarketMenu]
@@ -20848,9 +20728,6 @@ export default class extends Vue {
         localStorage.removeItem('sort');
       }
     }
-    console.log(this.currentTradeMarketSort);
-    console.log(this.tradePairs);
-    console.log(this.pairs);
   }
   private async getDebugPairs(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.debugPairs();
@@ -20859,7 +20736,6 @@ export default class extends Vue {
         this.$set(this.debugPairs, item.pair.toString(), item.dev.toString());
       });
     }
-    console.log(this.debugPairs);
   }
   private async getDexPairs(dexName: DexNameType): Promise<void> {
     try {
@@ -20912,7 +20788,6 @@ export default class extends Vue {
         Hot: [],
         Search: []
       };
-      console.log(res);
       if (res.data && res.data.length) {
         const localICRC2Tokens =
           JSON.parse(localStorage.getItem('icrc2')) || [];
@@ -20996,7 +20871,6 @@ export default class extends Vue {
         let currentPairId = '';
         let token1Symbol = '';
         if (token0 && token1) {
-          console.log(token0, token1);
           for (let i = 0; i < pairs.length; i++) {
             const currentPair = pairs[i][1] as TrieListData1SwapPair;
             if (token0 === 'pair') {
@@ -21026,7 +20900,6 @@ export default class extends Vue {
             if (!currentPairId) {
               try {
                 const res = await this.currentICDexService.info(token1);
-                console.log(res);
                 if (res) {
                   this.allPairs.Markets.Hot.push([
                     Principal.fromText(token1),
@@ -21051,9 +20924,7 @@ export default class extends Vue {
                   currentPairId = token1;
                   currentStage = 'STAGE0';
                 }
-              } catch (e) {
-                console.log(e);
-              }
+              } catch (e) {}
             }
           }
           this.tradePairs = Object.assign(
@@ -21086,7 +20957,6 @@ export default class extends Vue {
           //     this.allPairs[this.currentMarketMenu]
           //   );
           // }
-          console.log(currentPairId, currentStage, this.star);
           if (currentPairId && this.star.includes(currentPairId)) {
             this.currentMarketMenu = 'Markets';
             this.currentTradeMarketSort = 'Star';
@@ -21111,6 +20981,7 @@ export default class extends Vue {
               if (this.pairs[i][1][0].canisterId.toString() === token1) {
                 this.currentPairIndex = i;
                 this.currentPair = this.pairs[this.currentPairIndex];
+                this.updateTokenInfo();
                 break;
               }
             } else {
@@ -21124,6 +20995,7 @@ export default class extends Vue {
               ) {
                 this.currentPairIndex = i;
                 this.currentPair = this.pairs[this.currentPairIndex];
+                this.updateTokenInfo();
                 break;
               }
             }
@@ -21144,6 +21016,7 @@ export default class extends Vue {
             //   this.pairs = this.tradePairs.Third;
             // }
             this.currentPair = this.pairs[this.currentPairIndex];
+            this.updateTokenInfo();
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
             );
@@ -21190,9 +21063,8 @@ export default class extends Vue {
             //   this.currentTradeMarketSort = 'Third';
             //   this.pairs = this.tradePairs.Third;
             // }
-            console.log(this.currentMarketMenu);
-            console.log(this.pairs);
             this.currentPair = this.pairs[this.currentPairIndex];
+            this.updateTokenInfo();
             await this.$router.push(
               `/ICDex/${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]}`
             );
@@ -21234,9 +21106,7 @@ export default class extends Vue {
       this.$nextTick(async () => {
         try {
           dispose('kInterval-chart');
-        } catch (e) {
-          console.log(e);
-        }
+        } catch (e) {}
         this.resetChart();
         if (this.$route.name !== 'ICDex') {
           return;
@@ -21259,12 +21129,7 @@ export default class extends Vue {
       // this.getMakerRebate();
       // this.initAccount();
       // this.getStoConfig();
-      console.log(this.prePairs);
-      console.log(this.pairs);
-      console.log(this.tradePairs);
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     // this.loading.close();
   }
   private scrollTop(): void {
@@ -21312,7 +21177,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(this.qualification);
   }
   private async getIDOInfo(currentPair: DePairs): Promise<void> {
     this.isPaused = true;
@@ -21351,8 +21215,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(this.isPaused);
-    console.log(this.IDOConfig);
   }
   private async getIDOLiquidity(
     swapId: string,
@@ -21399,18 +21261,14 @@ export default class extends Vue {
           this.initPrepared(currentPairId);
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     await this.getIntervalPrice();
     if (!this.isToSetReferrer) {
       this.toSetReferrer();
     }
   }
   private async addToken(res: Array<SwapTokenInfo>): Promise<void> {
-    console.log(res);
     const tokens = await addedTokens();
-    console.log(tokens);
     const tokensId: Array<string> = [];
     tokens.forEach((item) => {
       tokensId.push(item.canisterId.toString());
@@ -21421,11 +21279,9 @@ export default class extends Vue {
       }
       const tokenId = res[i][0].toString();
       if (tokenId !== LEDGER_CANISTER_ID && !tokensId.includes(tokenId)) {
-        console.log(tokenId);
         let standard = Object.keys(res[i][2])[0];
         if (standard !== 'dip20') {
           const amount = await getTokenBalance(res[i][2], tokenId);
-          console.log(amount);
           if (new BigNumber(amount).gt(0)) {
             if (standard.toLocaleLowerCase() === 'drc20') {
               standard = 'DRC20';
@@ -21484,9 +21340,7 @@ export default class extends Vue {
       if (res && res.pairId === this.currentPair[0].toString()) {
         return res.referrer;
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     return [];
   }
   private async setReferrer(
@@ -21510,7 +21364,6 @@ export default class extends Vue {
         this.$message.error('Error');
       }
     } catch (e) {
-      console.log(e);
       this.$message.error('Error');
     }
     this.isToSetReferrer = false;
@@ -21554,9 +21407,7 @@ export default class extends Vue {
           this.isToSetReferrer = false;
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
   private async getLiquidity(
     swapId: string,
@@ -21611,9 +21462,7 @@ export default class extends Vue {
           document.title = `${this.currentPair[1][0].token0[1]}/${this.currentPair[1][0].token1[1]} - ICDex (Orderbook Dex)`;
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
   private getPercent(item: PriceResponse): string {
     if (Number(this.maxTotal) === 0) {
@@ -21631,8 +21480,6 @@ export default class extends Vue {
       symbol: val.key,
       size: new BigNumber(1 / 10 ** val.key).toString(10)
     };
-    console.log(val);
-    console.log(this.currentSize);
     const tradeObSymbol =
       JSON.parse(localStorage.getItem('tradeObSymbol')) || {};
     if (
@@ -21690,7 +21537,6 @@ export default class extends Vue {
           };
         }
       }
-      console.log(this.tickSizes);
     }
   }
   private async getLevel100(swapId: string, type?: string): Promise<void> {
@@ -21703,7 +21549,6 @@ export default class extends Vue {
         this.unit !== this.level100[0]
       ) {
         this.unit = this.level100[0];
-        console.log(this.unit);
         this.unitSize = new BigNumber(this.unit.toString(10))
           .div(
             10 **
@@ -21718,7 +21563,6 @@ export default class extends Vue {
       this.getMktTotal();
       this.filterLevel100();
       if (type) {
-        console.log(this.level100);
       }
       this.maxTotal = BigInt('0');
       if (this.tickAsk.length) {
@@ -21875,7 +21719,6 @@ export default class extends Vue {
     });
     return dest;
   }
-
   private getMaxTotal(): void {
     this.maxTotal = BigInt('0');
     let askMax = BigInt('0');
@@ -22251,7 +22094,6 @@ export default class extends Vue {
       }
       return new BigNumber(total).div(10 ** decimals).toFixed(decimalsFixed);
     } catch (e) {
-      console.log(e);
       return '';
     }
   }
@@ -22490,8 +22332,6 @@ export default class extends Vue {
     );
     if (res && res.pairId === this.currentPair[0].toString()) {
       this.orderExpirationDuration = res.time;
-      console.log('orderExpirationDuration');
-      console.log(this.orderExpirationDuration);
     }
   }
   private draggableStar(event): void {
@@ -22500,8 +22340,6 @@ export default class extends Vue {
       this.tradePairs[this.currentTradeMarketSort][event.oldIndex];
   }
   private draggableEnd(event): void {
-    console.log(event.oldIndex);
-    console.log(event.newIndex);
     this.drag = false;
     if (
       event.oldIndex !== event.newIndex &&
@@ -22511,7 +22349,6 @@ export default class extends Vue {
         ][1][0].canisterId.toString()
     ) {
       // const pair = this.tradePairs[this.currentTradeMarketSort][event.oldIndex];
-      console.log(this.dragPair[1][0].token0);
       this.tradePairs[this.currentTradeMarketSort].splice(event.oldIndex, 1);
       this.tradePairs[this.currentTradeMarketSort].splice(
         event.newIndex,
@@ -22532,7 +22369,6 @@ export default class extends Vue {
     if (!this.getPrincipalId) {
       localStorage.setItem('star', JSON.stringify(star));
     }
-    console.log(star);
     await this.ICLighthouseService.updateFavoritesListOrder(favoritesList);
   }
   private throttle() {
@@ -22546,7 +22382,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .old-icl-type {
   padding: 1px 4px;
@@ -24112,7 +23947,6 @@ div.kInterval-chart-h5 {
       font-variant-numeric: tabular-nums;
       display: flex;
       flex-direction: column;
-
       margin-top: 10px;
       height: calc(100% - 67px);
       ul {

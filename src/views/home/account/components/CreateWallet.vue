@@ -22,7 +22,7 @@
         </div>
       </div>
       <div v-if="walletId" class="initialize-info">
-        Initialize a cycles wallet with 0.2 TCycles
+        Initialize a cycles wallet with {{ minCycles }} TCycles
       </div>
       <div class="transfer-balance" v-if="walletId">
         <div class="transfer-balance-left">
@@ -42,7 +42,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
@@ -64,7 +63,6 @@ import { principalToAccountIdentifier } from '@/ic/converter';
 import { Liquidity } from '@/ic/cyclesFinance/model';
 const commonModule = namespace('common');
 let num = 0;
-
 @Component({
   name: 'CreateWallet',
   components: {},
@@ -121,6 +119,7 @@ export default class extends Vue {
     ]
   };
   private depositAccountId = '';
+  private minCycles = 0.9;
   public afterClose(): void {
     this.$refs.form.resetFields();
     window.clearInterval(this.timer);
@@ -145,10 +144,10 @@ export default class extends Vue {
     value: number,
     callback: (arg0?: string) => void
   ): void {
-    const min = 0.2;
+    const min = this.minCycles;
     const max = new BigNumber(this.cycles).minus(value);
     if (value && value < min) {
-      callback('Min amount is 0.2 TCycles');
+      callback(`Min amount is ${this.minCycles} TCycles`);
     } else if (!this.walletId && new BigNumber(this.form.cycles).gt(1)) {
       callback('Max amount is 1 TCycles');
     } else if (this.walletId && new BigNumber(max).lt(0)) {
@@ -168,7 +167,7 @@ export default class extends Vue {
       );
     } else if (this.walletId !== 'aaaaa-aa') {
       const cycles = this.newCycles || this.cycles;
-      flag = new BigNumber(0.2).gt(cycles);
+      flag = new BigNumber(this.minCycles).gt(cycles);
     }
     return flag;
   }
@@ -250,7 +249,7 @@ export default class extends Vue {
         const icp = product
           .div(
             new BigNumber(this.liquidity.cycles.toString(10)).minus(
-              new BigNumber(0.2)
+              new BigNumber(this.minCycles)
                 .plus(260000 / 10 ** 12)
                 .div(feeRate)
                 .times(10 ** 12)
@@ -319,7 +318,9 @@ export default class extends Vue {
           const principal = localStorage.getItem('principal');
           if (this.walletId) {
             const walletRequest: CreateCanisterArgs = {
-              cycles: BigInt(new BigNumber(0.2).times(10 ** 12).toString(10)),
+              cycles: BigInt(
+                new BigNumber(this.minCycles).times(10 ** 12).toString(10)
+              ),
               settings: {
                 controller: [Principal.fromText(principal)],
                 controllers: [],
@@ -333,12 +334,10 @@ export default class extends Vue {
               this.walletId
             );
           } else {
-            console.time();
             const blockHeight = await this.ledgerService.sendIcp(
               this.createdIcp,
               this.depositAccountId
             );
-            console.log(blockHeight);
             const icp = BigInt(
               new BigNumber(this.createdIcp)
                 .times(10 ** this.decimals)
@@ -361,9 +360,6 @@ export default class extends Vue {
                 ).CreditRecord.toString(10)
               })
             );
-            console.log(res);
-            console.timeEnd();
-            console.time();
             loading.setText(
               'Do not close the page, it takes 20-60 seconds.\nstep2: create cycles wallet'
             );
@@ -401,11 +397,8 @@ export default class extends Vue {
           } else {
             this.$message.error((walletResult as { Err: string }).Err);
           }
-          console.log(walletResult);
           loading.close();
-          console.timeEnd();
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpError(e).message);
           loading.close();
         }
@@ -414,7 +407,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .create-wallet-modal {
   .icp-to-cycles {

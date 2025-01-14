@@ -1,5 +1,4 @@
 import { TokenInfo } from '@/ic/common/icType';
-
 export const getFee = (token: TokenInfo): bigint | string => {
   if (token) {
     if (typeof token.fee === 'bigint' || typeof token.fee === 'string') {

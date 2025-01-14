@@ -178,7 +178,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {
@@ -195,7 +194,6 @@ import { Principal } from '@dfinity/principal';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { IcrcTransferError } from '@/ic/DRC20Token/model';
-
 @Component({
   name: 'ProWalletSwap',
   components: {}
@@ -207,7 +205,6 @@ export default class extends Vue {
   private tokensBalanceSto!: { [key: string]: string };
   @Prop({ type: Object, default: () => null })
   private tokens!: { [key: string]: TokenInfo };
-
   private ledgerService: LedgerService | undefined;
   private DRC20TokenService: DRC20TokenService;
   private visible = false;
@@ -389,7 +386,6 @@ export default class extends Vue {
               }
             }
           } catch (e) {
-            console.log(e);
           }
           loading.close();
         }
@@ -442,7 +438,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .swap-main {
   background: #1f2b37;

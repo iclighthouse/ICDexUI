@@ -84,7 +84,6 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { IDL, InputBox, renderInput } from '@dfinity/candid';
@@ -99,9 +98,7 @@ import { GovernanceService } from '@/ic/governance/governanceService';
 import { GOVERNANCE_CANISTER_ID } from '@/ic/utils';
 import { GovernanceError } from '@/ic/SNSGovernance/model';
 import { Principal } from '@dfinity/principal/lib/cjs';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'MakeProposal',
   components: {}
@@ -184,13 +181,10 @@ export default class extends Vue {
     try {
       parse = this.actionInput.parse();
     } catch (e) {
-      console.log(e);
       this.$message.error('Please select action');
       return;
     }
     const actionInput = this.initBlobParams(parse);
-    console.log(actionInput);
-    console.log(this.summary);
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -203,12 +197,10 @@ export default class extends Vue {
         action: [actionInput],
         summary: this.summary
       };
-      console.log(proposal);
       const res = await this.governanceService.makeProposal(
         BigInt(this.neuronId),
         proposal
       );
-      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -223,7 +215,6 @@ export default class extends Vue {
         this.$message.error('Error');
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -261,7 +252,6 @@ export default class extends Vue {
     this.getNeurons();
     const params = await getCandidInterfaceTmpHack(GOVERNANCE_CANISTER_ID);
     this.actionParams = params.manage_neuron.argTypes;
-    console.log(this.actionParams);
     this.setParams(
       (this.actionParams[0] as any)._fields[1][1]._type._fields[8][1]._type
         ._fields[2][1]._type
@@ -282,7 +272,6 @@ export default class extends Vue {
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });
-    console.log(res);
     if (res && res.full_neurons) {
       this.neurons = res.full_neurons.filter((neuron) => {
         const reject_cost_e8s = 10 * 10 ** 8;
@@ -321,7 +310,6 @@ export default class extends Vue {
         );
       });
     }
-    console.log(this.neurons);
     if (this.neurons.length) {
       this.neuronId = this.neurons[0].id[0].id.toString();
     } else {
@@ -393,7 +381,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .maker-proposal-item-neuron {
   width: 100%;

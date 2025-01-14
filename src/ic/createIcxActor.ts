@@ -2,10 +2,8 @@ import { IDL } from '@dfinity/candid';
 import store from '@/store';
 import { buildService } from '@/ic/Service';
 import { ICXWhitelist } from '@/ic/utils';
-
 const icxActor: { [key: string]: any } = {};
 const icxIsAnonymous: { [key: string]: boolean } = {};
-
 export const createIcxActor = async <T>(
   IDL: IDL.InterfaceFactory,
   canisterId: string

@@ -21,7 +21,6 @@ import { Address } from '@/ic/DRC20Token/model';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
 import { createService } from '@/ic/createService';
-
 export class ICStableService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {

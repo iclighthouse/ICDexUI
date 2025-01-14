@@ -54,8 +54,10 @@ module.exports = {
   // // eslint-disable-next-line no-dupe-keys
   configureWebpack: {
     optimization: {
+      minimize: true,
       minimizer: [
         new TerserPlugin({
+          parallel: true,
           terserOptions: {
             compress: {
               drop_console: true

@@ -6,7 +6,6 @@ import {
   TTErrorsResponse,
   TTsResponse
 } from '@/ic/ICDex/model';
-
 export interface PoolStats {
   latestUnitNetValue: UnitNetValue;
   apy7d: {
@@ -223,7 +222,6 @@ export interface MakerConfigure {
   moduleHash?: string;
   ICTCAdmins?: Array<Principal>;
 }
-
 export default interface Service {
   stats2(): Promise<PoolStats>;
   getDepositAccount(address: string): Promise<[Icrc1Account, string]>;

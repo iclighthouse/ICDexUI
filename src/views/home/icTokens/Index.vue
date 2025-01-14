@@ -22,7 +22,6 @@
     <router-view class="token-main" />
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { Identity } from '@dfinity/agent';
@@ -37,7 +36,6 @@ import {
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
 import { checkAuth } from '@/ic/CheckAuth';
-
 @Component({
   name: 'Index',
   components: {}
@@ -128,7 +126,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .token-list-menu {
   display: flex;

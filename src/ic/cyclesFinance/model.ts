@@ -1,6 +1,5 @@
 import { Principal } from '@dfinity/principal';
 import { AccountIdentifier } from '@/ic/common/icType';
-
 export interface Liquidity {
   icpE8s: IcpE8s;
   vol: Vol;
@@ -55,7 +54,6 @@ export type ShareChange =
   | { Burn: bigint }
   | { Mint: bigint }
   | { NoChange: null };
-
 // export type TokenValue = { In: bigint } | { Out: bigint } | { NoChange: null };
 export type Txid__1 = Array<number>;
 export type Txid = Array<number>;
@@ -152,18 +150,15 @@ export interface Config {
   ICP_FEE: Array<bigint>;
   CYCLESFEE_RETENTION_RATE: Array<bigint>;
 }
-
 export type YieldResponse = Array<Yield>;
 export interface Yield {
   apyCycles: string;
   apyIcp: string;
 }
-
 export interface LpRewards {
   icp: bigint;
   cycles: bigint;
 }
-
 export default interface Service {
   getAccountId(accountId: AccountIdentifier): Promise<string>;
   liquidity(accountId: Array<AccountIdentifier>): Promise<Liquidity>;

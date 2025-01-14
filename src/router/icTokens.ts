@@ -47,5 +47,4 @@ const icTokensRouter: RouteConfig[] = [
     ]
   }
 ];
-
 export default icTokensRouter;

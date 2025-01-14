@@ -824,12 +824,12 @@
                   activePending.claim ||
                   activePending.claim2 ||
                   activePending.mint ||
-                  activePending.deposit ||
                   activePending.retrieve ||
                   activePending.retrieve2 ||
                   activePending.mintCKETH ||
                   activePending.retrieveCKETH ||
-                  activePending.CKETHResponse
+                  (activePending.CKETHResponse &&
+                    activePending.CKETHResponse.length)
                 "
               >
                 <div
@@ -843,490 +843,17 @@
                   Activities:
                 </div>
                 <div>
-                  <div v-if="activePending.claim && activePending.claim.length">
-                    <div
-                      :key="index"
-                      class="active-pending-item"
-                      v-for="(item, index) in activePending.claim"
-                    >
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].symbol }}
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                      </span>
-                      <span class="margin-left-auto">
-                        {{ item.txHash | ellipsisAccount }}
-                      </span>
-                      <button
-                        @click="toActive('claim', item.tokenId, item.txHash)"
-                        class="primary"
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    v-if="activePending.claim2 && activePending.claim2.length"
-                  >
-                    <div
-                      :key="index"
-                      class="active-pending-item"
-                      v-for="(item, index) in activePending.claim2"
-                    >
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].symbol }}
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                      </span>
-                      <span class="margin-left-auto">
-                        {{ item.txHash | ellipsisAccount }}
-                      </span>
-                      <button
-                        @click="toActive('claim2', item.tokenId)"
-                        class="primary"
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
-                  <div v-if="activePending.mint && activePending.mint.length">
-                    <div
-                      :key="index"
-                      class="active-pending-item"
-                      v-for="(item, index) in activePending.mint"
-                    >
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].symbol }}
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                      </span>
-                      <span class="margin-left-auto">
-                        {{
-                          item.amount |
-                            bigintToFloat(
-                              8,
-                              ckTokenInfo[item.tokenId].decimals
-                            ) |
-                            formatAmount(8)
-                        }}
-                      </span>
-                      <button
-                        @click="toActive('mint', item.tokenId)"
-                        class="primary"
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    v-if="
-                      activePending.deposit &&
-                      activePending.deposit[2] &&
-                      activePending.deposit[2][0]
-                    "
-                  >
-                    <div class="active-pending-item">
-                      <span
-                        v-if="
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.deposit[2][0].tokenId
-                            ]
-                          ]
-                        "
-                      >
-                        {{
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.deposit[2][0].tokenId
-                            ]
-                          ].symbol
-                        }}
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span
-                        v-if="
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.deposit[2][0].tokenId
-                            ]
-                          ]
-                        "
-                      >
-                        {{
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.deposit[2][0].tokenId
-                            ]
-                          ].ckSymbol
-                        }}(IC Network)
-                      </span>
-                      <span
-                        class="margin-left-auto"
-                        v-if="
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.deposit[2][0].tokenId
-                            ]
-                          ]
-                        "
-                      >
-                        {{
-                          activePending.deposit[2][0].amount |
-                            bigintToFloat(
-                              8,
-                              ckTokenInfo[
-                                ethersTokenIdToCkTokenId[
-                                  activePending.deposit[2][0].tokenId
-                                ]
-                              ].decimals
-                            ) |
-                            formatAmount(8)
-                        }}
-                      </span>
-                      <button
-                        @click="
-                          toActive(
-                            'deposit',
-                            ethersTokenIdToCkTokenId[
-                              activePending.deposit[2][0].tokenId
-                            ]
-                          )
-                        "
-                        class="primary"
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    v-if="
-                      activePending.retrieve && activePending.retrieve.length
-                    "
-                  >
-                    <div
-                      :key="index"
-                      class="active-pending-item"
-                      v-for="(item, index) in activePending.retrieve"
-                    >
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].symbol }}
-                      </span>
-                      <span class="margin-left-auto">
-                        {{
-                          item.amount |
-                            bigintToFloat(
-                              8,
-                              ckTokenInfo[item.tokenId].decimals
-                            ) |
-                            formatAmount(8)
-                        }}
-                      </span>
-                      <button
-                        @click="toActive('retrieve', item.tokenId)"
-                        class="primary"
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    v-if="
-                      activePending.retrieve2 && activePending.retrieve2.length
-                    "
-                  >
-                    <div class="active-pending-item">
-                      <span
-                        v-if="
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.retrieve2[1].tokenId
-                            ]
-                          ]
-                        "
-                      >
-                        {{
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.retrieve2[1].tokenId
-                            ]
-                          ].ckSymbol
-                        }}(IC Network)
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span
-                        v-if="
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.retrieve2[1].tokenId
-                            ]
-                          ]
-                        "
-                      >
-                        {{
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.retrieve2[1].tokenId
-                            ]
-                          ].symbol
-                        }}
-                      </span>
-                      <span
-                        class="margin-left-auto"
-                        v-if="
-                          ckTokenInfo[
-                            ethersTokenIdToCkTokenId[
-                              activePending.retrieve2[1].tokenId
-                            ]
-                          ]
-                        "
-                      >
-                        {{
-                          activePending.retrieve2[1].amount |
-                            bigintToFloat(
-                              8,
-                              ckTokenInfo[
-                                ethersTokenIdToCkTokenId[
-                                  activePending.retrieve2[1].tokenId
-                                ]
-                              ].decimals
-                            ) |
-                            formatAmount(8)
-                        }}
-                      </span>
-                      <button
-                        @click="
-                          toActive(
-                            'retrieve',
-                            ethersTokenIdToCkTokenId[
-                              activePending.retrieve2[1].tokenId
-                            ]
-                          )
-                        "
-                        class="primary"
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    v-if="
-                      activePending.mintCKETH && activePending.mintCKETH.length
-                    "
-                  >
-                    <div
-                      :key="index"
-                      class="active-pending-item"
-                      v-for="(item, index) in activePending.mintCKETH"
-                    >
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].symbol }}
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                      </span>
-                      <span class="margin-left-auto">
-                        <a
-                          :href="`${ckEthLink}/tx/${item.txHash}`"
-                          class="link"
-                          rel="nofollow noreferrer noopener"
-                          target="_blank"
-                        >
-                          {{ item.txHash | ellipsisAccount() }}
-                        </a>
-                      </span>
-                      <span
-                        class="base-font-title"
-                        style="
-                          display: flex;
-                          align-items: center;
-                          justify-content: flex-end;
-                          margin: 0 10px 0 20px;
-                          width: 100px;
-                        "
-                      >
-                        <span v-show="!item.blockNumber"
-                          >Pending<span class="loading-spinner"></span
-                        ></span>
-                        <span
-                          v-show="
-                            lastScrapedBlockNumber &&
-                            item.blockNumber &&
-                            lastScrapedBlockNumber >= Number(item.blockNumber)
-                          "
-                        >
-                          Confirmed
-                        </span>
-                        <span
-                          v-show="
-                            lastScrapedBlockNumber &&
-                            item.blockNumber &&
-                            lastScrapedBlockNumber < Number(item.blockNumber)
-                          "
-                        >
-                          Submitted<span class="loading-spinner"></span>
-                        </span>
-                      </span>
-                      <button
-                        @click="toActive('mintCKETH', item.tokenId)"
-                        class="primary"
-                        v-show="
-                          !(
-                            lastScrapedBlockNumber &&
-                            item.blockNumber &&
-                            lastScrapedBlockNumber >= Number(item.blockNumber)
-                          )
-                        "
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    v-if="
-                      activePending.retrieveCKETH &&
-                      activePending.retrieveCKETH.length
-                    "
-                  >
-                    <div
-                      :key="index"
-                      class="active-pending-item"
-                      v-for="(item, index) in activePending.retrieveCKETH"
-                    >
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-                      </span>
-                      &nbsp;->&nbsp;
-                      <span v-if="ckTokenInfo[item.tokenId]">
-                        {{ ckTokenInfo[item.tokenId].symbol }}
-                      </span>
-                      <span
-                        class="margin-left-auto"
-                        v-if="ckTokenInfo[item.tokenId]"
-                      >
-                        <a
-                          :href="`${ckEthLink}/tx/${
-                            Object.values(item.status)[0].transaction_hash
-                          }`"
-                          class="link"
-                          rel="nofollow noreferrer noopener"
-                          target="_blank"
-                          v-if="
-                            item.status &&
-                            Object.keys(item.status)[0] === 'TxSent'
-                          "
-                        >
-                          {{
-                            item.amount |
-                              bigintToFloat(
-                                8,
-                                ckTokenInfo[item.tokenId].decimals
-                              ) |
-                              formatAmount(8)
-                          }}
-                        </a>
-                        <a
-                          :href="`${ckEthLink}/tx/${
-                            Object.values(item.status)[0].Success
-                              .transaction_hash
-                          }`"
-                          class="link"
-                          rel="nofollow noreferrer noopener"
-                          target="_blank"
-                          v-if="
-                            item.status &&
-                            Object.keys(item.status)[0] === 'TxFinalized' &&
-                            Object.values(item.status)[0] &&
-                            Object.values(item.status)[0].Success &&
-                            Object.values(item.status)[0].Success
-                              .transaction_hash
-                          "
-                        >
-                          {{
-                            item.amount |
-                              bigintToFloat(
-                                8,
-                                ckTokenInfo[item.tokenId].decimals
-                              ) |
-                              formatAmount(8)
-                          }}
-                        </a>
-                        <span
-                          v-if="
-                            (item.status &&
-                              Object.keys(item.status)[0] !== 'TxSent' &&
-                              Object.keys(item.status)[0] !== 'TxFinalized') ||
-                            !item.status
-                          "
-                        >
-                          {{
-                            item.amount |
-                              bigintToFloat(
-                                8,
-                                ckTokenInfo[item.tokenId].decimals
-                              ) |
-                              formatAmount(8)
-                          }}
-                        </span>
-                      </span>
-                      <span
-                        class="base-font-title"
-                        style="
-                          display: flex;
-                          align-items: center;
-                          justify-content: flex-end;
-                          margin: 0 10px 0 20px;
-                          width: 100px;
-                        "
-                        v-if="item.status && Object.keys(item.status)[0]"
-                      >
-                        {{ Object.keys(item.status)[0]
-                        }}<span
-                          class="loading-spinner"
-                          v-show="
-                            item.status &&
-                            ['Pending', 'TxCreated', 'TxSent'].includes(
-                              Object.keys(item.status)[0]
-                            )
-                          "
-                        ></span>
-                      </span>
-                      <button
-                        @click="toActive('retrieveCKETH', item.tokenId)"
-                        class="primary"
-                        v-if="
-                          !item.status ||
-                          (item.status &&
-                            Object.keys(item.status)[0] &&
-                            Object.keys(item.status)[0] !== 'TxFinalized' &&
-                            Object.keys(item.status)[0] !== 'NotFound')
-                        "
-                      >
-                        View
-                      </button>
-                    </div>
-                  </div>
                   <div
                     v-if="
                       activePending.CKETHResponse &&
                       activePending.CKETHResponse.length
                     "
+                    class="response-main"
                   >
                     <div
-                      :key="index"
+                      :key="`${item.time}-${item.tokenId}`"
                       style="color: #adb7c2"
-                      v-for="(item, index) in activePending.CKETHResponse.slice(
+                      v-for="item in activePending.CKETHResponse.slice(
                         (CKETHResponsePage - 1) * 10,
                         CKETHResponsePage * 10
                       )"
@@ -1335,18 +862,53 @@
                         class="active-pending-item"
                         v-if="item.type === 'BTCRetrieve'"
                       >
-                        <span style="width: 170px" v-if="item.time">
-                          {{ item.time | formatDateToCalendar }}
+                        <span
+                          v-show="
+                            item.status &&
+                            [
+                              'Pending',
+                              'Sending',
+                              'Submitted',
+                              'Signing'
+                            ].includes(Object.keys(item.status)[0])
+                          "
+                          style="width: 170px"
+                          class="flex-center"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <span
+                          style="width: 170px"
+                          v-if="
+                            item.time &&
+                            item.status &&
+                            ![
+                              'Pending',
+                              'Sending',
+                              'Submitted',
+                              'Signing'
+                            ].includes(Object.keys(item.status)[0])
+                          "
+                        >
+                          {{ Number(item.time / 1000) | formatDateToCalendar }}
                         </span>
                         <span> ckBTC(IC Network) </span>
                         &nbsp;->&nbsp;
                         <span> BTC </span>
                         <span class="margin-left-auto">
+                          <span v-if="item.amount">
+                            {{
+                              item.amount |
+                                bigintToFloat(8, 8) |
+                                formatAmount(8)
+                            }}
+                          </span>
                           <a
                             :href="`https://www.blockchain.com/btc/tx/${getRetrieveBtcTxidResponse(
                               item.status
                             )}`"
-                            class="link"
+                            class="link ml10"
                             rel="nofollow noreferrer noopener"
                             target="_blank"
                             v-if="getRetrieveBtcTxidResponse(item.status)"
@@ -1366,25 +928,22 @@
                             display: flex;
                             align-items: center;
                             justify-content: flex-end;
-                            margin: 0 10px 0 20px;
-                            width: 100px;
+                            margin-left: 10px;
+                            width: 80px;
+                          "
+                          v-if="
+                            item.status &&
+                            ![
+                              'Pending',
+                              'Sending',
+                              'Submitted',
+                              'Signing'
+                            ].includes(Object.keys(item.status)[0])
                           "
                         >
                           <span>
                             {{ item.status && Object.keys(item.status)[0] }}
                           </span>
-                          <span
-                            class="loading-spinner"
-                            v-show="
-                              item.status &&
-                              [
-                                'Pending',
-                                'Sending',
-                                'Submitted',
-                                'Signing'
-                              ].includes(Object.keys(item.status)[0])
-                            "
-                          ></span>
                         </span>
                         <button
                           @click="toActive('BTCRetrieve', null)"
@@ -1405,25 +964,63 @@
                         class="active-pending-item"
                         v-if="item.type === 'BTCMint'"
                       >
-                        <span style="width: 170px" v-if="item.time">
-                          {{ item.time | formatDateToCalendar }}
+                        <span
+                          v-show="
+                            !item.status.block_height ||
+                            (item.status.block_height &&
+                              item.status.block_height > updateCkBlockHeight)
+                          "
+                          style="width: 170px"
+                          class="flex-center"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          <span v-show="!item.status.block_height"
+                            >Pending</span
+                          >
+                          <span
+                            v-show="
+                              item.status.block_height &&
+                              item.status.block_height > updateCkBlockHeight
+                            "
+                          >
+                            Submitted
+                          </span>
+                        </span>
+                        <span
+                          style="width: 170px"
+                          v-if="
+                            item.time &&
+                            item.status.block_height &&
+                            item.status.block_height <= updateCkBlockHeight
+                          "
+                        >
+                          {{ Number(item.time / 1000) | formatDateToCalendar }}
                         </span>
                         <span> BTC </span>
                         &nbsp;->&nbsp;
                         <span> ckBTC(IC Network) </span>
                         <div class="margin-left-auto">
                           <div :key="index" v-for="(out, index) in item.vout">
-                            <a
-                              :href="`https://www.blockchain.com/btc/tx/${item.txid}`"
-                              class="link"
-                              rel="nofollow noreferrer noopener"
-                              target="_blank"
-                              v-show="out.scriptpubkey_address === BTCAddressCk"
-                              >{{
+                            <span
+                              v-if="
+                                out.value &&
+                                out.scriptpubkey_address === ckBTCAddress
+                              "
+                            >
+                              {{
                                 out.value |
                                   bigintToFloat(8, 8) |
                                   formatAmount(8)
                               }}
+                            </span>
+                            <a
+                              :href="`https://www.blockchain.com/btc/tx/${item.txid}`"
+                              class="link ml10"
+                              rel="nofollow noreferrer noopener"
+                              target="_blank"
+                              v-show="out.scriptpubkey_address === ckBTCAddress"
+                            >
+                              {{ item.txid | ellipsisAccount() }}
                             </a>
                           </div>
                         </div>
@@ -1437,28 +1034,19 @@
                             display: flex;
                             align-items: center;
                             justify-content: flex-end;
-                            margin: 0 10px 0 20px;
-                            width: 100px;
+                            margin-left: 10px;
+                            width: 80px;
                           "
-                          v-show="
+                          v-if="
                             item.status.block_height &&
                             item.status.block_height <= updateCkBlockHeight
                           "
                         >
                           {{ filterStatus(item.status.block_height) }}
-                          <span
-                            v-if="
-                              item.status.block_height &&
-                              blockCount - item.status.block_height < 11
-                            "
-                          >
-                            ({{ blockCount - item.status.block_height + 1 }})
-                          </span>
                         </span>
                         <button
                           @click="toActive('mintCKBTC', null)"
                           class="primary"
-                          style="margin-left: 40px"
                           v-show="
                             !(
                               item.status.block_height &&
@@ -1473,8 +1061,38 @@
                         class="active-pending-item"
                         v-if="item.type === 'mint'"
                       >
-                        <span style="width: 170px" v-if="item.time">
-                          {{ item.time | formatDateToCalendar }}
+                        <span
+                          v-show="
+                            !item.blockNumber ||
+                            (lastScrapedBlockNumber &&
+                              item.blockNumber &&
+                              lastScrapedBlockNumber < Number(item.blockNumber))
+                          "
+                          style="width: 170px"
+                          class="flex-center"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          <span v-show="!item.blockNumber">Pending</span>
+                          <span
+                            v-show="
+                              lastScrapedBlockNumber &&
+                              item.blockNumber &&
+                              lastScrapedBlockNumber < Number(item.blockNumber)
+                            "
+                          >
+                            Submitted
+                          </span>
+                        </span>
+                        <span
+                          style="width: 170px"
+                          v-if="
+                            item.time &&
+                            lastScrapedBlockNumber &&
+                            item.blockNumber &&
+                            lastScrapedBlockNumber >= Number(item.blockNumber)
+                          "
+                        >
+                          {{ Number(item.time / 1000) | formatDateToCalendar }}
                         </span>
                         <span v-if="ckTokenInfo[item.tokenId]">
                           {{ ckTokenInfo[item.tokenId].symbol }}
@@ -1484,12 +1102,7 @@
                           {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
                         </span>
                         <span class="margin-left-auto">
-                          <a
-                            :href="`${ckEthLink}/tx/${item.txHash}`"
-                            class="link"
-                            rel="nofollow noreferrer noopener"
-                            target="_blank"
-                          >
+                          <span v-if="item.amount">
                             {{
                               item.amount |
                                 bigintToFloat(
@@ -1498,6 +1111,15 @@
                                 ) |
                                 formatAmount(8)
                             }}
+                          </span>
+                          <a
+                            v-if="item.txHash"
+                            :href="`${ckEthLink}/tx/${item.txHash}`"
+                            class="link ml10"
+                            rel="nofollow noreferrer noopener"
+                            target="_blank"
+                          >
+                            {{ item.txHash | ellipsisAccount() }}
                           </a>
                         </span>
                         <span
@@ -1506,32 +1128,16 @@
                             display: flex;
                             align-items: center;
                             justify-content: flex-end;
-                            margin: 0 10px 0 20px;
-                            width: 100px;
+                            margin-left: 10px;
+                            width: 80px;
+                          "
+                          v-if="
+                            lastScrapedBlockNumber &&
+                            item.blockNumber &&
+                            lastScrapedBlockNumber >= Number(item.blockNumber)
                           "
                         >
-                          <span v-show="!item.blockNumber">
-                            Pending<span class="loading-spinner"></span
-                          ></span>
-                          <span
-                            class="base-green"
-                            v-show="
-                              lastScrapedBlockNumber &&
-                              item.blockNumber &&
-                              lastScrapedBlockNumber >= Number(item.blockNumber)
-                            "
-                          >
-                            Confirmed
-                          </span>
-                          <span
-                            v-show="
-                              lastScrapedBlockNumber &&
-                              item.blockNumber &&
-                              lastScrapedBlockNumber < Number(item.blockNumber)
-                            "
-                          >
-                            Submitted<span class="loading-spinner"></span>
-                          </span>
+                          <span class="base-green"> Confirmed </span>
                         </span>
                         <button
                           @click="toActive('mintCKETH', item.tokenId)"
@@ -1551,8 +1157,31 @@
                         class="active-pending-item"
                         v-if="item.type === 'retrieve'"
                       >
-                        <span style="width: 170px" v-if="item.time">
-                          {{ item.time | formatDateToCalendar }}
+                        <span
+                          style="width: 170px"
+                          v-show="
+                            item.status &&
+                            ['Pending', 'TxCreated', 'TxSent'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
+                          class="flex-center"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <span
+                          style="width: 170px"
+                          v-if="
+                            item.time &&
+                            item.status &&
+                            Object.keys(item.status)[0] &&
+                            !['Pending', 'TxCreated', 'TxSent'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
+                        >
+                          {{ Number(item.time / 1000) | formatDateToCalendar }}
                         </span>
                         <span v-if="ckTokenInfo[item.tokenId]">
                           {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
@@ -1565,18 +1194,7 @@
                           class="margin-left-auto"
                           v-if="ckTokenInfo[item.tokenId]"
                         >
-                          <a
-                            :href="`${ckEthLink}/tx/${
-                              Object.values(item.status)[0].transaction_hash
-                            }`"
-                            class="link"
-                            rel="nofollow noreferrer noopener"
-                            target="_blank"
-                            v-if="
-                              item.status &&
-                              Object.keys(item.status)[0] === 'TxSent'
-                            "
-                          >
+                          <span v-if="item.amount">
                             {{
                               item.amount |
                                 bigintToFloat(
@@ -1585,13 +1203,32 @@
                                 ) |
                                 formatAmount(8)
                             }}
+                          </span>
+                          <a
+                            :href="`${ckEthLink}/tx/${
+                              Object.values(item.status)[0].transaction_hash
+                            }`"
+                            class="link ml10"
+                            rel="nofollow noreferrer noopener"
+                            target="_blank"
+                            v-if="
+                              item.status &&
+                              Object.keys(item.status)[0] === 'TxSent' &&
+                              Object.values(item.status)[0] &&
+                              Object.values(item.status)[0].transaction_hash
+                            "
+                          >
+                            {{
+                              Object.values(item.status)[0].transaction_hash |
+                                ellipsisAccount()
+                            }}
                           </a>
                           <a
                             :href="`${ckEthLink}/tx/${
                               Object.values(item.status)[0].Success
                                 .transaction_hash
                             }`"
-                            class="link"
+                            class="link ml10"
                             rel="nofollow noreferrer noopener"
                             target="_blank"
                             v-if="
@@ -1604,32 +1241,10 @@
                             "
                           >
                             {{
-                              item.amount |
-                                bigintToFloat(
-                                  8,
-                                  ckTokenInfo[item.tokenId].decimals
-                                ) |
-                                formatAmount(8)
+                              Object.values(item.status)[0].Success
+                                .transaction_hash | ellipsisAccount()
                             }}
                           </a>
-                          <span
-                            v-if="
-                              (item.status &&
-                                Object.keys(item.status)[0] !== 'TxSent' &&
-                                Object.keys(item.status)[0] !==
-                                  'TxFinalized') ||
-                              !item.status
-                            "
-                          >
-                            {{
-                              item.amount |
-                                bigintToFloat(
-                                  8,
-                                  ckTokenInfo[item.tokenId].decimals
-                                ) |
-                                formatAmount(8)
-                            }}
-                          </span>
                         </span>
                         <span
                           :class="{
@@ -1640,21 +1255,18 @@
                             display: flex;
                             align-items: center;
                             justify-content: flex-end;
-                            margin: 0 10px 0 20px;
-                            width: 100px;
+                            margin-left: 10px;
+                            width: 80px;
                           "
-                          v-if="item.status && Object.keys(item.status)[0]"
+                          v-if="
+                            item.status &&
+                            Object.keys(item.status)[0] &&
+                            !['Pending', 'TxCreated', 'TxSent'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
                         >
-                          {{ Object.keys(item.status)[0]
-                          }}<span
-                            class="loading-spinner"
-                            v-show="
-                              item.status &&
-                              ['Pending', 'TxCreated', 'TxSent'].includes(
-                                Object.keys(item.status)[0]
-                              )
-                            "
-                          ></span>
+                          {{ Object.keys(item.status)[0] }}
                         </span>
                         <button
                           @click="toActive('retrieveCKETH', item.tokenId)"
@@ -1666,6 +1278,484 @@
                               Object.keys(item.status)[0] !== 'TxFinalized' &&
                               Object.keys(item.status)[0] !== 'NotFound')
                           "
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'icETHMintMethod1'"
+                      >
+                        <span
+                          v-show="
+                            item.status &&
+                            [
+                              'Signing',
+                              'Building',
+                              'Sending',
+                              'Submitted',
+                              'Pending'
+                            ].includes(Object.keys(item.status)[0])
+                          "
+                          class="flex-center"
+                          style="width: 170px"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <span
+                          style="width: 170px"
+                          v-if="
+                            item.time &&
+                            (Object.keys(item.status)[0] === 'Failure' ||
+                              Object.keys(item.status)[0] === 'Confirmed' ||
+                              Object.keys(item.status)[0] === 'Unknown')
+                          "
+                        >
+                          {{ Number(item.time / 1000) | formatDateToCalendar }}
+                        </span>
+                        <span
+                          v-if="
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                          "
+                        >
+                          {{
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                              .symbol
+                          }}
+                        </span>
+                        &nbsp;->&nbsp;
+                        <span
+                          v-if="
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                          "
+                        >
+                          {{
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                              .ckSymbol
+                          }}(IC Network)
+                        </span>
+                        <span
+                          v-if="
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                          "
+                          class="margin-left-auto"
+                        >
+                          <span v-if="item.amount">
+                            {{
+                              item.amount |
+                                bigintToFloat(
+                                  8,
+                                  ckTokenInfo[
+                                    ethersTokenIdToCkTokenId[item.tokenId]
+                                  ].decimals
+                                ) |
+                                formatAmount(8)
+                            }}
+                          </span>
+                          <span
+                            class="ml10"
+                            v-if="item.txHash && item.txHash.length"
+                          >
+                            <a
+                              :href="`${ethLink}/tx/${
+                                item.txHash[item.txHash.length - 1]
+                              }`"
+                              class="link"
+                              rel="nofollow noreferrer noopener"
+                              target="_blank"
+                            >
+                              {{
+                                item.txHash[item.txHash.length - 1] |
+                                  ellipsisAccount()
+                              }}
+                            </a>
+                          </span>
+                        </span>
+                        <span
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin-left: 10px;
+                            width: 80px;
+                          "
+                          :class="{
+                            'base-red':
+                              Object.keys(item.status)[0] === 'Failure' ||
+                              Object.keys(item.status)[0] === 'Unknown',
+                            'base-green':
+                              Object.keys(item.status)[0] === 'Confirmed'
+                          }"
+                          v-if="
+                            item.status &&
+                            ![
+                              'Signing',
+                              'Building',
+                              'Sending',
+                              'Submitted',
+                              'Pending'
+                            ].includes(Object.keys(item.status)[0])
+                          "
+                        >
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <button
+                          @click="
+                            toActive(
+                              'deposit',
+                              ethersTokenIdToCkTokenId[item.tokenId]
+                            )
+                          "
+                          class="primary"
+                          v-if="
+                            !item.status ||
+                            (item.status &&
+                              Object.keys(item.status)[0] &&
+                              Object.keys(item.status)[0] !== 'Failure' &&
+                              Object.keys(item.status)[0] !== 'Confirmed' &&
+                              Object.keys(item.status)[0] !== 'Unknown')
+                          "
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'icETHRetrieve'"
+                      >
+                        <span
+                          style="width: 170px"
+                          v-show="
+                            item.status &&
+                            [
+                              'Signing',
+                              'Building',
+                              'Sending',
+                              'Submitted',
+                              'Pending'
+                            ].includes(Object.keys(item.status)[0])
+                          "
+                          class="flex-center"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <span
+                          style="width: 170px"
+                          v-if="
+                            item.time &&
+                            (Object.keys(item.status)[0] === 'Failure' ||
+                              Object.keys(item.status)[0] === 'Confirmed' ||
+                              Object.keys(item.status)[0] === 'Unknown')
+                          "
+                        >
+                          {{ Number(item.time / 1000) | formatDateToCalendar }}
+                        </span>
+                        <span
+                          v-if="
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                          "
+                        >
+                          {{
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                              .ckSymbol
+                          }}(IC Network)
+                        </span>
+                        &nbsp;->&nbsp;
+                        <span
+                          v-if="
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                          "
+                        >
+                          {{
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                              .symbol
+                          }}
+                        </span>
+                        <span
+                          v-if="
+                            ckTokenInfo[ethersTokenIdToCkTokenId[item.tokenId]]
+                          "
+                          class="margin-left-auto"
+                        >
+                          <span v-if="item.amount">
+                            {{
+                              item.amount |
+                                bigintToFloat(
+                                  8,
+                                  ckTokenInfo[
+                                    ethersTokenIdToCkTokenId[item.tokenId]
+                                  ].decimals
+                                ) |
+                                formatAmount(8)
+                            }}
+                          </span>
+                          <span
+                            class="ml10"
+                            v-if="item.txHash && item.txHash.length"
+                          >
+                            <a
+                              :href="`${ethLink}/tx/${
+                                item.txHash[item.txHash.length - 1]
+                              }`"
+                              class="link"
+                              rel="nofollow noreferrer noopener"
+                              target="_blank"
+                            >
+                              {{
+                                item.txHash[item.txHash.length - 1] |
+                                  ellipsisAccount()
+                              }}
+                            </a>
+                          </span>
+                        </span>
+                        <span
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin-left: 10px;
+                            width: 80px;
+                          "
+                          :class="{
+                            'base-red':
+                              Object.keys(item.status)[0] === 'Failure' ||
+                              Object.keys(item.status)[0] === 'Unknown',
+                            'base-green':
+                              Object.keys(item.status)[0] === 'Confirmed'
+                          }"
+                          v-if="
+                            item.status &&
+                            ![
+                              'Signing',
+                              'Building',
+                              'Sending',
+                              'Submitted',
+                              'Pending'
+                            ].includes(Object.keys(item.status)[0])
+                          "
+                        >
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <button
+                          @click="
+                            toActive(
+                              'retrieve',
+                              ethersTokenIdToCkTokenId[item.tokenId]
+                            )
+                          "
+                          class="primary"
+                          v-if="
+                            !item.status ||
+                            (item.status &&
+                              Object.keys(item.status)[0] &&
+                              Object.keys(item.status)[0] !== 'Failure' &&
+                              Object.keys(item.status)[0] !== 'Confirmed' &&
+                              Object.keys(item.status)[0] !== 'Unknown')
+                          "
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'icETHMintMethod2'"
+                      >
+                        <span
+                          style="width: 170px"
+                          class="flex-center"
+                          v-show="Object.keys(item.status)[0] !== 'Confirmed'"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <span
+                          style="width: 170px"
+                          v-if="
+                            item.time &&
+                            Object.keys(item.status)[0] === 'Confirmed'
+                          "
+                        >
+                          {{ Number(item.time / 1000) | formatDateToCalendar }}
+                        </span>
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].symbol }}
+                        </span>
+                        &nbsp;->&nbsp;
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                        </span>
+                        <span class="margin-left-auto">
+                          <span v-if="item.amount">
+                            {{
+                              item.amount |
+                                bigintToFloat(
+                                  8,
+                                  ckTokenInfo[item.tokenId].decimals
+                                ) |
+                                formatAmount(8)
+                            }}
+                          </span>
+                          <span class="ml10" v-if="item.txHash">
+                            <a
+                              :href="`${ethLink}/tx/${item.txHash}`"
+                              class="link"
+                              rel="nofollow noreferrer noopener"
+                              target="_blank"
+                            >
+                              {{ item.txHash | ellipsisAccount() }}
+                            </a>
+                          </span>
+                        </span>
+                        <span
+                          v-if="Object.keys(item.status)[0] === 'Confirmed'"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin-left: 10px;
+                            width: 80px;
+                          "
+                          class="base-green"
+                        >
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <button
+                          v-if="Object.keys(item.status)[0] === 'Pending'"
+                          @click="toActive('claim', item.tokenId, item.txHash)"
+                          class="primary"
+                        >
+                          View
+                        </button>
+                        <button
+                          v-if="Object.keys(item.status)[0] === 'Submitted'"
+                          @click="toActive('claim2', item.tokenId, item.txHash)"
+                          class="primary"
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'icETHMint'"
+                      >
+                        <span
+                          v-show="
+                            item.status &&
+                            ['Pending', 'Submitted'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
+                          style="width: 170px"
+                          class="flex-center"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].symbol }}
+                        </span>
+                        &nbsp;->&nbsp;
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                        </span>
+                        <span class="margin-left-auto">
+                          {{
+                            item.amount |
+                              bigintToFloat(
+                                8,
+                                ckTokenInfo[item.tokenId].decimals
+                              ) |
+                              formatAmount(8)
+                          }}
+                        </span>
+                        <span
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin-left: 10px;
+                            width: 80px;
+                          "
+                          :class="{
+                            'base-green':
+                              Object.keys(item.status)[0] === 'Confirmed'
+                          }"
+                          v-if="
+                            item.status &&
+                            !['Pending', 'Submitted'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
+                        >
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <button
+                          @click="toActive('mint', item.tokenId)"
+                          class="primary"
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div
+                        class="active-pending-item"
+                        v-if="item.type === 'icETHRetrieve1'"
+                      >
+                        <span
+                          v-show="
+                            item.status &&
+                            ['Pending', 'Submitted'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
+                          style="width: 170px"
+                          class="flex-center"
+                        >
+                          <span class="loading-spinner mr20"></span>
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
+                        </span>
+                        &nbsp;->&nbsp;
+                        <span v-if="ckTokenInfo[item.tokenId]">
+                          {{ ckTokenInfo[item.tokenId].symbol }}
+                        </span>
+                        <span class="margin-left-auto">
+                          {{
+                            item.amount |
+                              bigintToFloat(
+                                8,
+                                ckTokenInfo[item.tokenId].decimals
+                              ) |
+                              formatAmount(8)
+                          }}
+                        </span>
+                        <span
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            margin-left: 10px;
+                            width: 80px;
+                          "
+                          :class="{
+                            'base-green':
+                              Object.keys(item.status)[0] === 'Confirmed'
+                          }"
+                          v-if="
+                            item.status &&
+                            !['Pending', 'Submitted'].includes(
+                              Object.keys(item.status)[0]
+                            )
+                          "
+                        >
+                          {{ Object.keys(item.status)[0] }}
+                        </span>
+                        <button
+                          @click="toActive('retrieve', item.tokenId)"
+                          class="primary"
                         >
                           View
                         </button>
@@ -2472,12 +2562,22 @@
             ref="erc20Form"
             v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           >
-            <a-form-model-item
-              :label="`Transfer ${icNetworkTokens.icTokenInfo.symbol} (${
-                networkIds[otherNetworkTokens.networkId]
-              }) amount`"
-              prop="amount"
-            >
+            <a-form-model-item prop="amount" :colon="false">
+              <template slot="label">
+                <span
+                  >Transfer {{ icNetworkTokens.icTokenInfo.symbol }} ({{
+                    networkIds[otherNetworkTokens.networkId]
+                  }}) amount:</span
+                >
+                <span
+                  v-show="toMint"
+                  class="link pointer base-tip-size"
+                  @click="mintStep = 2"
+                >
+                  {{ ckETHDepositBalance | formatAmount(8) }}
+                  {{ icNetworkTokens.icTokenInfo.symbol }} to be minted
+                </span>
+              </template>
               <a-input
                 :suffix="`${icNetworkTokens.icTokenInfo.symbol} (${
                   networkIds[otherNetworkTokens.networkId]
@@ -3411,15 +3511,29 @@
             </div>
             <div
               class="btc-config mt20 base-font-normal"
-              v-show="BTCType === BTCTypeEnum.icBTC && BTCAddressIc"
+              v-if="
+                BTCType === BTCTypeEnum.icBTC && BTCAddressIc && minterInfoIcBTC
+              "
             >
-              Minimum amount 0.0002 BTC, maximum amount 0.05 BTC.
+              Minimum amount
+              {{
+                minterInfoIcBTC.btcMinAmount |
+                  bigintToFloat(8, 8) |
+                  formatAmount(8)
+              }}
+              BTC, maximum amount 0.05 BTC.
             </div>
             <div
               class="btc-config mt20 base-font-normal"
-              v-show="BTCType === BTCTypeEnum.ckBTC && BTCAddressCk"
+              v-if="
+                BTCType === BTCTypeEnum.ckBTC && BTCAddressCk && minterInfoCkBTC
+              "
             >
-              KYT Fee 0.00002 BTC.
+              KYT Fee
+              {{
+                minterInfoCkBTC.kyt_fee | bigintToFloat(8, 8) | formatAmount(8)
+              }}
+              BTC.
               <!--Minimum amount 0.0001 BTC.-->
             </div>
           </div>
@@ -3475,10 +3589,17 @@
                 "
               />
             </div>
-            <div class="step-footer-confirmation">
+            <div
+              v-if="minterInfoIcBTC && minterInfoCkBTC"
+              class="step-footer-confirmation"
+            >
               Wait for
-              {{ BTCType === BTCTypeEnum.icBTC ? 6 : 12 }} confirmations, then
-              submit to mint
+              {{
+                BTCType === BTCTypeEnum.icBTC
+                  ? minterInfoIcBTC.minConfirmations
+                  : minterInfoCkBTC.min_confirmations
+              }}
+              confirmations, then submit to mint
               {{ BTCType }}
               .
             </div>
@@ -3526,11 +3647,15 @@
                       {{ filterStatus(tx.status.block_height) }}
                       <span
                         v-if="
+                          minterInfoIcBTC &&
+                          minterInfoCkBTC &&
                           tx.status.block_height &&
                           ((BTCType === BTCTypeEnum.icBTC &&
-                            blockCount - tx.status.block_height < 5) ||
+                            blockCount - tx.status.block_height <
+                              Number(minterInfoIcBTC.minConfirmations) - 1) ||
                             (BTCType === BTCTypeEnum.ckBTC &&
-                              blockCount - tx.status.block_height < 11))
+                              blockCount - tx.status.block_height <
+                                Number(minterInfoCkBTC.min_confirmations) - 1))
                         "
                       >
                         ({{ blockCount - tx.status.block_height + 1 }})
@@ -3663,11 +3788,15 @@
                       {{ filterStatus(tx.status.block_height) }}
                       <span
                         v-if="
+                          minterInfoIcBTC &&
+                          minterInfoCkBTC &&
                           tx.status.block_height &&
                           ((BTCType === BTCTypeEnum.icBTC &&
-                            blockCount - tx.status.block_height < 5) ||
+                            blockCount - tx.status.block_height <
+                              Number(minterInfoIcBTC.minConfirmations) - 1) ||
                             (BTCType === BTCTypeEnum.ckBTC &&
-                              blockCount - tx.status.block_height < 11))
+                              blockCount - tx.status.block_height <
+                                Number(minterInfoCkBTC.min_confirmations) - 1))
                         "
                       >
                         ({{ blockCount - tx.status.block_height + 1 }})
@@ -3798,23 +3927,6 @@
               "
             />
           </div>
-          <!--<div class="step-footer">
-						Step2: Wait for
-						{{ BTCType === BTCTypeEnum.icBTC ? 6 : 12 }} confirmations, then
-						submit to update
-						{{ BTCType }}
-						balance.
-						<img
-							v-show="BTCType === BTCTypeEnum.icBTC && hasConfirmedLoading"
-							src="@/assets/img/loading.svg"
-							alt=""
-						/>
-						<img
-							v-show="BTCType === BTCTypeEnum.ckBTC && hasCkConfirmedLoading"
-							src="@/assets/img/loading.svg"
-							alt=""
-						/>
-					</div>-->
         </div>
       </div>
     </a-modal>
@@ -4748,323 +4860,6 @@
         </div>
       </div>
     </a-modal>
-    <a-modal
-      :footer="null"
-      :keyboard="false"
-      :maskClosable="false"
-      centered
-      class="transfer-modal forge-modal forge-modal-eth active-pending-modal"
-      title="Activities"
-      v-model="activePendingModal"
-      width="750px"
-    >
-      <div>
-        <div v-if="activePending.claim && activePending.claim.length">
-          <div
-            :key="index"
-            class="active-pending-item"
-            v-for="(item, index) in activePending.claim"
-          >
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].symbol }}
-            </span>
-            &nbsp;->&nbsp;
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-            </span>
-            <span class="margin-left-auto">
-              {{ item.txHash | ellipsisAccount }}
-            </span>
-            <button
-              @click="toActive('claim', item.tokenId, item.txHash)"
-              class="primary"
-            >
-              View
-            </button>
-          </div>
-        </div>
-        <div v-if="activePending.claim2 && activePending.claim2.length">
-          <div
-            :key="index"
-            class="active-pending-item"
-            v-for="(item, index) in activePending.claim2"
-          >
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].symbol }}
-            </span>
-            &nbsp;->&nbsp;
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-            </span>
-            <span class="margin-left-auto">
-              {{ item.txHash | ellipsisAccount }}
-            </span>
-            <button @click="toActive('claim2', item.tokenId)" class="primary">
-              View
-            </button>
-          </div>
-        </div>
-        <div v-if="activePending.mint && activePending.mint.length">
-          <div
-            :key="index"
-            class="active-pending-item"
-            v-for="(item, index) in activePending.mint"
-          >
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].symbol }}
-            </span>
-            &nbsp;->&nbsp;
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-            </span>
-            <span class="margin-left-auto">
-              {{
-                item.amount |
-                  bigintToFloat(8, ckTokenInfo[item.tokenId].decimals) |
-                  formatAmount(8)
-              }}
-            </span>
-            <button @click="toActive('mint', item.tokenId)" class="primary">
-              View
-            </button>
-          </div>
-        </div>
-        <div
-          v-if="
-            activePending.deposit &&
-            activePending.deposit[2] &&
-            activePending.deposit[2][0]
-          "
-        >
-          <div class="active-pending-item">
-            <span
-              v-if="
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
-                ]
-              "
-            >
-              {{
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
-                ].symbol
-              }}
-            </span>
-            &nbsp;->&nbsp;
-            <span
-              v-if="
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
-                ]
-              "
-            >
-              {{
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
-                ].ckSymbol
-              }}(IC Network)
-            </span>
-            <span
-              class="margin-left-auto"
-              v-if="
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
-                ]
-              "
-            >
-              {{
-                activePending.deposit[2][0].amount |
-                  bigintToFloat(
-                    8,
-                    ckTokenInfo[
-                      ethersTokenIdToCkTokenId[
-                        activePending.deposit[2][0].tokenId
-                      ]
-                    ].decimals
-                  ) |
-                  formatAmount(8)
-              }}
-            </span>
-            <button
-              @click="
-                toActive(
-                  'deposit',
-                  ethersTokenIdToCkTokenId[activePending.deposit[2][0].tokenId]
-                )
-              "
-              class="primary"
-            >
-              View
-            </button>
-          </div>
-        </div>
-        <div v-if="activePending.retrieve && activePending.retrieve.length">
-          <div
-            :key="index"
-            class="active-pending-item"
-            v-for="(item, index) in activePending.retrieve"
-          >
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-            </span>
-            &nbsp;->&nbsp;
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].symbol }}
-            </span>
-            <span class="margin-left-auto">
-              {{
-                item.amount |
-                  bigintToFloat(8, ckTokenInfo[item.tokenId].decimals) |
-                  formatAmount(8)
-              }}
-            </span>
-            <button @click="toActive('retrieve', item.tokenId)" class="primary">
-              View
-            </button>
-          </div>
-        </div>
-        <div v-if="activePending.retrieve2 && activePending.retrieve2.length">
-          <div class="active-pending-item">
-            <span
-              v-if="
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
-                ]
-              "
-            >
-              {{
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
-                ].ckSymbol
-              }}(IC Network)
-            </span>
-            &nbsp;->&nbsp;
-            <span
-              v-if="
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
-                ]
-              "
-            >
-              {{
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
-                ].symbol
-              }}
-            </span>
-            <span
-              class="margin-left-auto"
-              v-if="
-                ckTokenInfo[
-                  ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
-                ]
-              "
-            >
-              {{
-                activePending.retrieve2[1].amount |
-                  bigintToFloat(
-                    8,
-                    ckTokenInfo[
-                      ethersTokenIdToCkTokenId[
-                        activePending.retrieve2[1].tokenId
-                      ]
-                    ].decimals
-                  ) |
-                  formatAmount(8)
-              }}
-            </span>
-            <button
-              @click="
-                toActive(
-                  'retrieve',
-                  ethersTokenIdToCkTokenId[activePending.retrieve2[1].tokenId]
-                )
-              "
-              class="primary"
-            >
-              View
-            </button>
-          </div>
-        </div>
-        <div v-if="activePending.mintCKETH && activePending.mintCKETH.length">
-          <div
-            :key="index"
-            class="active-pending-item"
-            v-for="(item, index) in activePending.mintCKETH"
-          >
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].symbol }}
-            </span>
-            &nbsp;->&nbsp;
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-            </span>
-            <span class="margin-left-auto">
-              {{ item.txHash | ellipsisAccount }}
-            </span>
-            <button
-              @click="toActive('mintCKETH', item.tokenId)"
-              class="primary"
-            >
-              View
-            </button>
-          </div>
-        </div>
-        <div
-          v-if="
-            activePending.retrieveCKETH && activePending.retrieveCKETH.length
-          "
-        >
-          <div
-            :key="index"
-            class="active-pending-item"
-            v-for="(item, index) in activePending.retrieveCKETH"
-          >
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].ckSymbol }}(IC Network)
-            </span>
-            &nbsp;->&nbsp;
-            <span v-if="ckTokenInfo[item.tokenId]">
-              {{ ckTokenInfo[item.tokenId].symbol }}
-            </span>
-            <span class="margin-left-auto" v-if="ckTokenInfo[item.tokenId]">
-              {{
-                item.amount |
-                  bigintToFloat(8, ckTokenInfo[item.tokenId].decimals) |
-                  formatAmount(8)
-              }}
-            </span>
-            <!--<button
-              class="primary"
-              v-if="
-                (item.status &&
-                  Object.keys(item.status)[0] &&
-                  Object.keys(item.status)[0] !== 'TxFinalized' &&
-                  Object.keys(item.status)[0] !== 'NotFound') ||
-                !Object.keys(item.status)[0]
-              "
-              @click="toActive('retrieveCKETH', item.tokenId)"
-            >
-              View
-            </button>-->
-          </div>
-        </div>
-      </div>
-      <div
-        v-show="
-          !activePending.claim &&
-          !activePending.claim2 &&
-          !activePending.mint &&
-          !activePending.deposit &&
-          !activePending.retrieve &&
-          !activePending.retrieve2 &&
-          !activePending.mintCKETH &&
-          !activePending.retrieveCKETH
-        "
-      >
-        No data
-      </div>
-    </a-modal>
     <approve-icrc2
       :balance="balance"
       @approveIcrc2Success="approveIcrc2Success"
@@ -5079,12 +4874,10 @@
     ></pro-wallet-swap>
   </div>
 </template>
-
 <script lang="ts">
-import { Component, Vue, Mixins, Prop } from 'vue-property-decorator';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 import TransferIcp from '@/components/transferIcp/Index.vue';
 import TopUp from '@/components/topUp/Index.vue';
-import { BalanceMixin } from '@/mixins';
 import {
   Icrc1Account,
   PrincipalString,
@@ -5099,10 +4892,12 @@ import {
   AddTokenItem,
   AddTokenItemClass,
   BTCTypeEnum,
+  CKETHResponse,
   ClaimActive,
   ClaimCKETHActive,
   ClaimCKETHActiveResponse,
   ICNetworkTokensInterface,
+  localStatus,
   MintActive,
   MintCKBTCResponse,
   networkIds,
@@ -5126,6 +4921,7 @@ import {
 import BigNumber from 'bignumber.js';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
 import {
+  MinterInfoBTC,
   RetrieveBtcError,
   RetrieveBtcOk,
   RetrieveBtcStatus,
@@ -5173,18 +4969,16 @@ import { getTokenInfo } from '@/ic/getTokenInfo';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import abi from '@/ic/abi/erc20';
 import ethAbi from '@/ic/abi/eth';
+import depositAbi from '@/ic/abi/deposit';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { getTokenLogo } from '@/ic/getTokenLogo';
 import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
 import { principalToBytes32 } from '@/ic/principal_to_bytes';
 import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
-import erc20ABI from '@/ic/abi/erc20Deposit';
 import { getFee } from '@/ic/getTokenFee';
 import { connectIcx } from '@/ic/connectIcx';
-
 const { Web3 } = require('web3');
-
 let ethereum = (window as any).ethereum;
 if (ethereum && ethereum.providers) {
   ethereum = ethereum.providers.find((provider) => provider.isMetaMask);
@@ -5195,7 +4989,6 @@ const ethVersion = '0.1';
 let timer: number;
 let num = 0;
 const ckETHSep = 'apia6-jaaaa-aaaar-qabma-cai';
-
 @Component({
   name: 'Ledger',
   components: {
@@ -5238,7 +5031,6 @@ export default class extends Vue {
   private tokensBalanceMain!: { [key: string]: string };
   @Prop()
   private tokensBalancePro!: { [key: string]: string };
-
   private walletId: PrincipalString = '';
   private ckETHMinterDfiService: ckETHMinterDfiService;
   private DRC20TokenService: DRC20TokenService;
@@ -5271,6 +5063,7 @@ export default class extends Vue {
   private dissolveModal = false;
   private BTCAddressCk = '';
   private BTCAddressIc = '';
+  private ckBTCAddress = '';
   private withdrawalAccount: Icrc1Account = null;
   private btcRetrieveFee: bigint = null;
   private accountCode = '';
@@ -5318,6 +5111,7 @@ export default class extends Vue {
     amount: string;
     txStatus?: string;
     time?: string;
+    FinalizedTime?: number;
   }> = [];
   private ckETHMintPage = 1;
   private CKETHResponsePage = 1;
@@ -5371,10 +5165,14 @@ export default class extends Vue {
   private tokens: { [key: string]: TokenInfo } = {};
   private metaMaskVisible = false;
   private depositing: Array<TxStatus> = [];
+  private depositDisabledTimeout = false;
   // [txHash, hasClaim?, claimSuccess?]
-  private depositInfo: Array<[string, boolean?, boolean?, number?]> = [];
+  private depositInfo: Array<[string, boolean?, boolean?, number?, string?]> =
+    [];
   private depositingInfo: PendingDepositTxn = null;
   private minterInfo: MinterInfo = null;
+  private minterInfoCkBTC: MinterInfoBTC = null;
+  private minterInfoIcBTC: MinterInfoBTC = null;
   private ethTokenInfo: IcTokenInfo = null;
   private retrieveEvent: Array<[ckETHEvent]> = [];
   private retrieveEventPageSize = 5;
@@ -5387,13 +5185,13 @@ export default class extends Vue {
   private claimTxError = '';
   private pendingLoading = false;
   private claimModalTransactions = false;
-  private activePending: Active = {};
-  private activePendingModal = false;
+  private activePending: Active = { CKETHResponse: [] };
   private depositInfoPage = 1;
   private depositInfoPageSize = 5;
   private otherNetworkTokens: ICNetworkTokensInterface = null;
   private smartContractAddress = '';
   private smartContractAddressERC20 = '';
+  private depositHelperContractAddress = '';
   private ethLink = 'https://etherscan.io';
   private etherscanLink = 'https://api.etherscan.io';
   private ckEthLink = 'https://etherscan.io';
@@ -5503,10 +5301,35 @@ export default class extends Vue {
     status: RetrieveBtcStatus;
     time: string;
     BTCBlock?: number;
+    amount?: string;
   }> = [];
-
+  get toMint(): boolean {
+    if (
+      this.depositMethod === 1 &&
+      this.icNetworkTokens &&
+      this.icNetworkTokens.icTokenInfo &&
+      this.ethTokenInfo &&
+      this.minterInfo &&
+      this.ckETHDepositBalance
+    ) {
+      const erc20TokenInfo = this.icNetworkTokens.icTokenInfo;
+      const minAmount = new BigNumber(erc20TokenInfo.minAmount.toString(10))
+        .div(10 ** erc20TokenInfo.decimals)
+        .toString(10);
+      const fee = this.filterEstimatedFee(
+        erc20TokenInfo,
+        this.ethTokenInfo,
+        this.minterInfo
+      );
+      return new BigNumber(minAmount).plus(fee).lt(this.ckETHDepositBalance);
+    }
+    return false;
+  }
   get depositDisabled(): boolean {
-    if (this.depositing && this.depositing.length) {
+    if (
+      (this.depositing && this.depositing.length) ||
+      this.depositDisabledTimeout
+    ) {
       return true;
     }
     if (
@@ -5520,38 +5343,21 @@ export default class extends Vue {
       const minAmount = new BigNumber(erc20TokenInfo.minAmount.toString(10))
         .div(10 ** erc20TokenInfo.decimals)
         .toString(10);
-      if (erc20TokenInfo.fee) {
-        const std = Object.keys(erc20TokenInfo.std)[0];
-        if (std === 'ERC20') {
-          const fee = new BigNumber(erc20TokenInfo.fee.gasLimit.toString(10))
-            .plus(this.ethTokenInfo.fee.gasLimit.toString(10))
-            .times(this.minterInfo.gasPrice.toString(10))
-            .plus(erc20TokenInfo.fee.fixedFee.toString(10))
-            .times(erc20TokenInfo.fee.ethRatio.toString(10))
-            .div(1000000000)
-            .div(10 ** erc20TokenInfo.decimals)
-            .decimalPlaces(erc20TokenInfo.decimals)
-            .toString(10);
-          console.log(minAmount, fee, this.ckETHDepositBalance);
-          return new BigNumber(minAmount)
-            .plus(fee)
-            .gt(this.ckETHDepositBalance);
-        }
-      } else {
-        return new BigNumber(minAmount).gt(this.ckETHDepositBalance);
-      }
+      const fee = this.filterEstimatedFee(
+        erc20TokenInfo,
+        this.ethTokenInfo,
+        this.minterInfo
+      );
+      return new BigNumber(minAmount).plus(fee).gt(this.ckETHDepositBalance);
     }
     return false;
   }
-
   get changeMethodDisabled(): boolean {
     if (!this.mintDisabled) {
       const networkIdFrom =
         this.networkTokensFrom[this.networkTokenIdMint as number].networkId;
       const networkIdTo =
         this.networkTokensTo[this.networkTokenIdMintTo as number].networkId;
-      console.log(this.networkTokensFrom[this.networkTokenIdMint as number]);
-      console.log(this.networkTokensTo[this.networkTokenIdMintTo as number]);
       return !(
         (networkIdFrom === '1' || networkIdFrom === '2') &&
         networkIdTo === '-1' &&
@@ -5562,7 +5368,6 @@ export default class extends Vue {
     }
     return true;
   }
-
   get mintDisabled(): boolean {
     return !(
       typeof this.networkIdMint === 'number' &&
@@ -5571,7 +5376,6 @@ export default class extends Vue {
       typeof this.networkTokenIdMintTo === 'number'
     );
   }
-
   get availableBalance(): string {
     if (this.dissolveBalance) {
       let fee = 0;
@@ -5584,7 +5388,6 @@ export default class extends Vue {
     }
     return '';
   }
-
   get icNetworkTokens(): ICNetworkTokensInterface {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -5649,7 +5452,6 @@ export default class extends Vue {
     this.otherNetworkTokens = null;
     return null;
   }
-
   beforeDestroy(): void {
     num = 0;
     this.clearTime();
@@ -5679,7 +5481,6 @@ export default class extends Vue {
     this.ckETHMinterDfiService = new ckETHMinterDfiService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     if (num === 0) {
-      console.log(this.type);
       ++num;
       this.getMinterInfo().then(() => {
         this.networkTokenDisabled = true;
@@ -5702,14 +5503,12 @@ export default class extends Vue {
       });
     }
   }
-
   public async transferSuccess(): Promise<void> {
     this.$emit('getBalance');
   }
   private showTraderAccounts(): void {
     this.$emit('showTraderAccounts');
   }
-
   private changeDepositMethod(depositMethod: number): void {
     if (this.changeMethodDisabled) {
       return;
@@ -5730,18 +5529,15 @@ export default class extends Vue {
     }
     this.depositMethod = depositMethod;
   }
-
   private swapWallet(): void {
     (this.$refs as any).proWalletSwap.tokenId = LEDGER_CANISTER_ID;
     (this.$refs as any).proWalletSwap.type = 'toWallet';
     (this.$refs as any).proWalletSwap.showSwap = true;
     (this.$refs as any).proWalletSwap.visible = true;
   }
-
   private proWalletSwapSuccess(): void {
     this.$emit('getBalance');
   }
-
   private accountToAddress(account: Icrc1Account): string {
     if (account.subaccount[0]) {
       return principalToAccountIdentifier(
@@ -5752,14 +5548,12 @@ export default class extends Vue {
       return principalToAccountIdentifier(account.owner);
     }
   }
-
   private async getAccountEvents(): Promise<void> {
     const res = await this.ckETHMinterService.getAccountEvents(
       hexToBytes(
         principalToAccountIdentifier(Principal.fromText(this.principal))
       )
     );
-    console.log(res);
     if (this.forgeModalETH) {
       this.filterMint(res);
     }
@@ -5767,7 +5561,6 @@ export default class extends Vue {
       this.filterBurn(res);
     }
   }
-
   private filterMint(val: Array<[ckETHEvent, Time]>): void {
     let mintRes: Array<[ckETHEvent]> = [];
     let mintItem: [ckETHEvent];
@@ -5797,7 +5590,6 @@ export default class extends Vue {
         }
       }
       this.mintEvent = mintRes;
-      console.log(mintRes);
     }
     if (this.depositMethod === 2) {
       for (let i = val.length - 1; i >= 0; i--) {
@@ -5834,10 +5626,8 @@ export default class extends Vue {
         }
       }
       this.mintEvent = mintRes;
-      console.log(mintRes);
     }
   }
-
   private filterBurn(val: Array<[ckETHEvent, Time]>): void {
     let burnRes: Array<[ckETHEvent]> = [];
     let burnItem: [ckETHEvent];
@@ -5870,9 +5660,7 @@ export default class extends Vue {
       }
     }
     this.retrieveEvent = burnRes;
-    console.log(burnRes);
   }
-
   private async getMinterInfo(): Promise<void> {
     this.minterInfo = await this.ckETHMinterService.getMinterInfo();
     // 11155111(0xaa36a7)
@@ -5880,18 +5668,24 @@ export default class extends Vue {
       this.ethLink = 'https://sepolia.etherscan.io';
       this.etherscanLink = 'https://api-sepolia.etherscan.io';
     }
+    this.minterInfoCkBTC = await this.ckBTCMinterService.info(
+      BTCTypeEnum.ckBTC
+    );
+    this.minterInfoIcBTC = await this.ckBTCMinterService.info(
+      BTCTypeEnum.icBTC
+    );
   }
-
   private async getCkTokensDfi(): Promise<void> {
     const res = await this.ckETHMinterDfiService.get_minter_info(
       CK_ETH_MINTER_CANISTER_ID_TEST
     );
     let minimum_withdrawal_amount = BigInt('30000000000000000');
-    console.log(res);
     this.ckTokens.push(CK_BTC_CANISTER_ID);
     if (res) {
       this.smartContractAddress = res.eth_helper_contract_address[0];
       this.smartContractAddressERC20 = res.erc20_helper_contract_address[0];
+      this.depositHelperContractAddress =
+        res.deposit_with_subaccount_helper_contract_address[0];
       const promiseValue = [];
       if (res.minimum_withdrawal_amount.length) {
         minimum_withdrawal_amount = res.minimum_withdrawal_amount[0];
@@ -5908,7 +5702,6 @@ export default class extends Vue {
           this.ckTokens.push(item.ledger_canister_id.toString());
         });
       }
-      console.log(promiseValue);
       if (promiseValue.length) {
         await Promise.all(promiseValue);
       }
@@ -6034,9 +5827,7 @@ export default class extends Vue {
       icTokenInfo,
       { symbol: 'ETH' }
     );
-    console.log(this.ckTokenInfo);
   }
-
   private async getCKERC20TokenInfo(
     info: CkErc20Token,
     minimum_withdrawal_amount: bigint
@@ -6098,16 +5889,13 @@ export default class extends Vue {
       symbol: symbol
     });
   }
-
   private async getCkTokens(): Promise<void> {
     let res = await this.ckETHMinterService.getCkTokens();
-    console.log(res);
     if (res.length) {
       this.networkTokensFrom =
         this.networkTokensTo =
         this.networkTokens =
           JSON.parse(JSON.stringify(networkTokens));
-      console.log(this.networkTokens);
       res = res.sort((a, b) => b[1].symbol.localeCompare(a[1].symbol));
       res.forEach((item) => {
         if (!this.tokens[item[1].ckLedgerId.toString()]) {
@@ -6198,15 +5986,12 @@ export default class extends Vue {
     });
     this.networkTokenDisabled = false;
     this.initICRouter();
-    console.log(this.networkTokens);
   }
-
   private async getMinterAddress(): Promise<string> {
     return await this.ckETHMinterDfiService.smart_contract_address(
       CK_ETH_MINTER_CANISTER_ID
     );
   }
-
   private initICRouter(): void {
     const type = this.$route.query.type;
     const tokenId = this.$route.query.token;
@@ -6218,14 +6003,12 @@ export default class extends Vue {
       }
     }
   }
-
   private toActive(type: ActiveType, tokenId: string, txHash?: string): void {
     if (type === 'mintCKBTC') {
       this.networkIdMint = 1;
       let network;
       network = this.networkListFrom[this.networkIdMint as number];
       this.changeNetworkIdMint(this.networkIdMint as number);
-      console.log(this.networkTokensFrom);
       this.networkTokensFrom.some((item, index) => {
         if (item.tokenId === 'btc' && network.id === item.networkId) {
           this.networkTokenIdMint = index;
@@ -6235,7 +6018,6 @@ export default class extends Vue {
       });
       this.networkIdMintTo = 0;
       this.changeNetworkIdMintTo(this.networkIdMintTo);
-      console.log(this.networkTokensTo);
       this.networkTokensTo.some((item, index) => {
         if (
           item.tokenId === CK_BTC_CANISTER_ID &&
@@ -6253,7 +6035,6 @@ export default class extends Vue {
       let network;
       network = this.networkListFrom[this.networkIdMint as number];
       this.changeNetworkIdMint(this.networkIdMint as number);
-      console.log(this.networkTokensFrom);
       this.networkTokensFrom.some((item, index) => {
         if (
           item.tokenId === CK_BTC_CANISTER_ID &&
@@ -6266,7 +6047,6 @@ export default class extends Vue {
       });
       this.networkIdMintTo = 0;
       this.changeNetworkIdMintTo(this.networkIdMintTo);
-      console.log(this.networkTokensTo);
       this.networkTokensTo.some((item, index) => {
         if (item.tokenId === 'btc' && network.id === item.networkToIcId) {
           this.networkTokenIdMintTo = index;
@@ -6285,9 +6065,6 @@ export default class extends Vue {
       type === 'mintCKETH'
     ) {
       let network;
-      console.log(type);
-      console.log(tokenId);
-      console.log(this.networkTokens);
       // todo networkIdMint
       if (type === 'mintCKETH') {
         this.networkIdMint = 2;
@@ -6302,7 +6079,6 @@ export default class extends Vue {
       } else if (type === 'dexMint') {
         this.networkTokens.some((item) => {
           if (item.tokenId === tokenId) {
-            console.log(item);
             if (item.networkId === '1') {
               this.networkIdMint = 2;
             }
@@ -6316,11 +6092,8 @@ export default class extends Vue {
       } else {
         //
       }
-      console.log(this.networkListFrom);
-      console.log(this.networkIdMint);
       network = this.networkListFrom[this.networkIdMint as number];
       this.changeNetworkIdMint(this.networkIdMint as number);
-      console.log(this.networkTokensFrom);
       this.networkTokensFrom.some((item, index) => {
         if (item.tokenId === tokenId && network.id === item.networkId) {
           this.networkTokenIdMint = index;
@@ -6368,7 +6141,6 @@ export default class extends Vue {
       }
       network = this.networkListFrom[this.networkIdMint as number];
       this.changeNetworkIdMint(this.networkIdMint as number);
-      console.log(this.networkTokensFrom);
       this.networkTokensFrom.some((item, index) => {
         if (item.tokenId === tokenId && network.id === item.networkId) {
           this.networkTokenIdMint = index;
@@ -6393,84 +6165,683 @@ export default class extends Vue {
         this.retrieveStep = 2;
       }
     }
-    this.activePendingModal = false;
   }
-
-  private onGetClaimPending(): void {
-    const hasClaimPending = this.getClaimPending();
-    if (hasClaimPending && hasClaimPending.length) {
-      console.log(hasClaimPending);
-      this.$set(this.activePending, 'claim', hasClaimPending);
-    } else {
-      this.$set(this.activePending, 'claim', null);
-    }
-  }
-
-  private onGetClaim2Pending(): void {
-    const hasClaim2Pending = this.getClaimPending(false);
-    if (hasClaim2Pending && hasClaim2Pending.length) {
-      console.log(hasClaim2Pending);
-      this.$set(this.activePending, 'claim2', hasClaim2Pending);
-    } else {
-      this.$set(this.activePending, 'claim2', null);
-    }
-  }
-
   private onGetMintPending(): void {
     this.getMintPending().then((mintPending) => {
-      if (mintPending && mintPending.length) {
-        console.log(mintPending);
-        this.$set(this.activePending, 'mint', mintPending);
-      } else {
-        this.$set(this.activePending, 'mint', null);
-      }
+      const response = [];
+      mintPending.forEach((mint) => {
+        if (this.ckTokenInfo[mint.tokenId]) {
+          response.push(mint);
+        }
+      });
+      // method1 mint step1
+      this.concatResponseSort('icETHMint', response);
     });
   }
-
-  private onGetDepositing(): void {
-    this.ckETHMinterService.getDepositing({ all: null }).then((res) => {
-      if (res && res[0] && res[0][2] && res[0][2].length) {
-        console.log(res);
-        this.$set(this.activePending, 'deposit', res[0]);
-      } else {
-        this.$set(this.activePending, 'deposit', null);
+  private onGetDepositing(isInit = true): void {
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
+    const mintKey = IC_ETH_MINTER_CANISTER_ID + ethVersion;
+    if (!currentInfo.icETHMintPending) {
+      currentInfo.icETHMintPending = {};
+    }
+    if (!currentInfo.icETHMintPending[mintKey]) {
+      currentInfo.icETHMintPending[mintKey] = {};
+    }
+    const response = [];
+    if (!isInit) {
+      for (let key in currentInfo.icETHMintPending[mintKey]) {
+        let val: TxStatus = currentInfo.icETHMintPending[mintKey][key];
+        if (this.ckTokenInfo[this.ethersTokenIdToCkTokenId[val.tokenId]]) {
+          if (val.type === 'icETHMintMethod1') {
+            response.push(val);
+          }
+        }
       }
-    });
+      this.concatResponseSort('icETHMintMethod1', response);
+    } else {
+      this.ckETHMinterService.getDepositing({ all: null }).then((res) => {
+        let txIndex;
+        if (res && res[0] && res[0][2] && res[0][2].length) {
+          this.activePending.deposit = res[0][2];
+          const type = Object.keys(res[0][2][0].txType)[0];
+          if (
+            type === 'Deposit' &&
+            this.principal === res[0][2][0].account.owner.toString()
+          ) {
+            txIndex = res[0][1][0].toString(10);
+            if (!currentInfo.icETHMintPending[mintKey][txIndex]) {
+              res[0][2][0].txIndex = txIndex;
+              currentInfo.icETHMintPending[mintKey][txIndex] = res[0][2][0];
+              currentInfo.icETHMintPending[mintKey][txIndex].type =
+                'icETHMintMethod1';
+              currentInfo.icETHMintPending[mintKey][txIndex].time =
+                new Date().getTime();
+              this.updateMintPending(
+                this.ckTokenInfo[
+                  this.ethersTokenIdToCkTokenId[res[0][2][0].tokenId]
+                ].ckLedgerId.toString(),
+                res[0][2][0].tokenId
+              );
+              localStorage.setItem(
+                this.principal,
+                JSON.stringify(currentInfo, (key, value) =>
+                  typeof value === 'bigint' ? value.toString(10) : value
+                )
+              );
+            }
+          }
+        } else {
+          this.activePending.deposit = null;
+        }
+        const promise = [];
+        for (let key in currentInfo.icETHMintPending[mintKey]) {
+          let val: TxStatus = currentInfo.icETHMintPending[mintKey][key];
+          if (this.ckTokenInfo[this.ethersTokenIdToCkTokenId[val.tokenId]]) {
+            if (val.type === 'icETHMintMethod1') {
+              const status = Object.keys(val.status)[0];
+              if (
+                status !== 'Confirmed' &&
+                status !== 'Failure' &&
+                status !== 'Unknown'
+              ) {
+                promise.push(this.updateDepositing(val, mintKey, key));
+              } else {
+                response.push(val);
+              }
+              this.updateMintPending(
+                this.ckTokenInfo[
+                  this.ethersTokenIdToCkTokenId[val.tokenId]
+                ].ckLedgerId.toString(),
+                val.tokenId
+              );
+            }
+          }
+        }
+        Promise.all(promise).then((res) => {
+          res.forEach((item) => {
+            response.push(item);
+          });
+          this.concatResponseSort('icETHMintMethod1', response);
+        });
+      });
+    }
   }
-
+  private async updateDepositing(
+    val: TxStatus,
+    mintKey: string,
+    key: string
+  ): Promise<TxStatus> {
+    const status = Object.keys(val.status)[0];
+    const res = await this.ckETHMinterService.getEthTx(BigInt(val.txIndex));
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
+    const txStatus = Object.keys(res[0].status)[0];
+    if (txStatus !== status) {
+      const newVal = Object.assign({}, val, {
+        txHash: res[0].txHash,
+        status: res[0].status,
+        time: new Date().getTime()
+      });
+      currentInfo.icETHMintPending[mintKey][key] = newVal;
+      localStorage.setItem(
+        this.principal,
+        JSON.stringify(currentInfo, (key, value) =>
+          typeof value === 'bigint' ? value.toString(10) : value
+        )
+      );
+      return newVal;
+    }
+    return val;
+  }
+  private updateDepositingStatus(
+    val: Array<TxStatus>,
+    ethTokenId: string,
+    tokenId: string
+  ): void {
+    if (val && val.length) {
+      const currentInfo =
+        JSON.parse(localStorage.getItem(this.principal)) || {};
+      const mintKey = IC_ETH_MINTER_CANISTER_ID + ethVersion;
+      if (!currentInfo.icETHMintPending) {
+        currentInfo.icETHMintPending = {};
+      }
+      if (!currentInfo.icETHMintPending[mintKey]) {
+        currentInfo.icETHMintPending[mintKey] = {};
+      }
+      const info = val[val.length - 1];
+      const status = Object.keys(info.status)[0];
+      const obj = currentInfo.icETHMintPending[mintKey];
+      const keys = Object.keys(obj).reverse();
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        let val: TxStatus = obj[key];
+        if (
+          this.ckTokenInfo[this.ethersTokenIdToCkTokenId[val.tokenId]] &&
+          val.tokenId === ethTokenId &&
+          this.ckTokenInfo[
+            this.ethersTokenIdToCkTokenId[val.tokenId]
+          ].ckLedgerId.toString() === tokenId &&
+          info.txIndex.toString(10) === val.txIndex.toString(10)
+        ) {
+          const txStatus = Object.keys(val.status)[0];
+          if (status !== txStatus) {
+            const newVal = Object.assign({}, val, {
+              txHash: info.txHash,
+              status: info.status,
+              time: new Date().getTime()
+            });
+            currentInfo.icETHMintPending[mintKey][key] = newVal;
+            localStorage.setItem(
+              this.principal,
+              JSON.stringify(currentInfo, (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+              )
+            );
+            this.onGetDepositing(false);
+          }
+          break;
+        }
+      }
+    }
+  }
+  private updateRetrieveStatus(
+    val: Array<[TxIndex, TxStatus, Time]>,
+    ethTokenId: string,
+    tokenId: string
+  ): void {
+    if (val && val.length) {
+      const currentInfo =
+        JSON.parse(localStorage.getItem(this.principal)) || {};
+      const retrieveKey = IC_ETH_MINTER_CANISTER_ID + ethVersion;
+      if (!currentInfo.icETHMintRetrieve) {
+        currentInfo.icETHMintRetrieve = {};
+      }
+      if (!currentInfo.icETHMintRetrieve[retrieveKey]) {
+        currentInfo.icETHMintRetrieve[retrieveKey] = {};
+      }
+      const obj = currentInfo.icETHMintRetrieve[retrieveKey];
+      const keys = Object.keys(obj).reverse();
+      let flag = false;
+      for (let i = 0; i < val.length; i++) {
+        const status = Object.keys(val[i][1].status)[0];
+        for (let j = 0; j < keys.length; j++) {
+          const key = keys[j];
+          let local: TxStatus = obj[key];
+          if (
+            this.ckTokenInfo[this.ethersTokenIdToCkTokenId[local.tokenId]] &&
+            local.tokenId === ethTokenId &&
+            this.ckTokenInfo[
+              this.ethersTokenIdToCkTokenId[local.tokenId]
+            ].ckLedgerId.toString() === tokenId
+          ) {
+            const txStatus = Object.keys(local.status)[0];
+            if (
+              !['Unknown', 'Confirmed', 'Failure'].includes(txStatus) &&
+              val[i][0].toString(10) === key
+            ) {
+              if (status !== txStatus) {
+                const newVal = Object.assign({}, local, {
+                  txHash: val[i][1].txHash,
+                  status: val[i][1].status,
+                  time: val[i][2]
+                });
+                currentInfo.icETHMintRetrieve[retrieveKey][key] = newVal;
+                flag = true;
+              }
+              break;
+            }
+          }
+        }
+      }
+      if (
+        this.retrieveStep === 2 &&
+        this.ethRetrieveForm.address.trim() &&
+        this.ethRetrieveForm.address.trim().toLocaleLowerCase() ===
+          val[0][1].to &&
+        !keys.includes(val[0][0].toString(10))
+      ) {
+        const isLoading = !!document.querySelector('.retrieve-icETH-loading');
+        if (isLoading) {
+          const loading = this.$loading({
+            lock: true,
+            background: 'rgba(0, 0, 0, 0.5)'
+          });
+          loading.close();
+          this.removeRetrievePending(
+            this.icNetworkTokens.icTokenInfo.ckLedgerId.toString(),
+            this.icNetworkTokens.tokenId
+          );
+          this.onGetRetrieving();
+          this.ckETHRefreshRetrieving();
+          (this.$refs as any).ethRetrieveForm.resetFields();
+          flag = true;
+        }
+      }
+      if (flag) {
+        localStorage.setItem(
+          this.principal,
+          JSON.stringify(currentInfo, (key, value) =>
+            typeof value === 'bigint' ? value.toString(10) : value
+          )
+        );
+        this.onGetRetrieving(false);
+      }
+    }
+  }
+  private responseSort(): void {
+    if (this.activePending.CKETHResponse.length) {
+      if (this.activePending.CKETHResponse.length) {
+        this.activePending.CKETHResponse.sort((a, b) => {
+          let statusA;
+          let statusB;
+          if (typeof a.status === 'object') {
+            if (a.type === 'BTCMint' && this.updateCkBlockHeight) {
+              const res = a as MintCKBTCResponse;
+              if (
+                res.status.block_height &&
+                res.status.block_height <= this.updateCkBlockHeight
+              ) {
+                statusA = 'Confirmed';
+              } else {
+                statusA = 'Pending';
+              }
+            } else {
+              statusA = Object.keys(a.status)[0];
+            }
+          }
+          if (typeof b.status === 'object') {
+            if (b.type === 'BTCMint' && this.updateCkBlockHeight) {
+              const res = b as MintCKBTCResponse;
+              if (
+                res.status.block_height &&
+                res.status.block_height <= this.updateCkBlockHeight
+              ) {
+                statusB = 'Confirmed';
+              } else {
+                statusB = 'Pending';
+              }
+            } else {
+              statusB = Object.keys(b.status)[0];
+            }
+          }
+          const confirmedStatus = [
+            'Confirmed',
+            'Unknown',
+            'Failure',
+            'AmountTooLow',
+            'NotFound',
+            'TxFinalized'
+          ];
+          if (statusA && statusB) {
+            if (
+              !confirmedStatus.includes(statusB) &&
+              confirmedStatus.includes(statusA)
+            ) {
+              return 1;
+            } else if (
+              confirmedStatus.includes(statusB) &&
+              !confirmedStatus.includes(statusA)
+            ) {
+              return -1;
+            }
+          }
+          if (b.time && !a.time) {
+            return -1;
+          }
+          return Number(b.time) - Number(a.time);
+        });
+      } else {
+        this.$set(this.activePending, 'CKETHResponse', null);
+      }
+    }
+  }
+  private concatResponseSort(
+    type: string,
+    response: Array<CKETHResponse>
+  ): void {
+    if (!response.length) {
+      if (
+        this.activePending.CKETHResponse &&
+        this.activePending.CKETHResponse.length
+      ) {
+        this.activePending.CKETHResponse.forEach((item, index) => {
+          if (item && item.type === type) {
+            this.activePending.CKETHResponse.splice(index, 1);
+          }
+        });
+      }
+    } else {
+      const CKETHResponse = [];
+      if (
+        this.activePending.CKETHResponse &&
+        this.activePending.CKETHResponse.length
+      ) {
+        this.activePending.CKETHResponse.forEach((item) => {
+          if (item && item.type !== type) {
+            CKETHResponse.push(item);
+          }
+        });
+        this.activePending.CKETHResponse = CKETHResponse.concat(response);
+      } else {
+        this.activePending.CKETHResponse = response;
+      }
+      if (this.activePending.CKETHResponse.length) {
+        this.activePending.CKETHResponse.sort((a, b) => {
+          let statusA;
+          let statusB;
+          if (typeof a.status === 'object') {
+            if (a.type === 'BTCMint' && this.updateCkBlockHeight) {
+              const res = a as MintCKBTCResponse;
+              if (
+                res.status.block_height &&
+                res.status.block_height <= this.updateCkBlockHeight
+              ) {
+                statusA = 'Confirmed';
+              } else {
+                statusA = 'Pending';
+              }
+            } else {
+              statusA = Object.keys(a.status)[0];
+            }
+          }
+          if (typeof b.status === 'object') {
+            if (b.type === 'BTCMint' && this.updateCkBlockHeight) {
+              const res = b as MintCKBTCResponse;
+              if (
+                res.status.block_height &&
+                res.status.block_height <= this.updateCkBlockHeight
+              ) {
+                statusB = 'Confirmed';
+              } else {
+                statusB = 'Pending';
+              }
+            } else {
+              statusB = Object.keys(b.status)[0];
+            }
+          }
+          const confirmedStatus = [
+            'Confirmed',
+            'Unknown',
+            'Failure',
+            'AmountTooLow',
+            'NotFound',
+            'TxFinalized'
+          ];
+          if (statusA && statusB) {
+            if (
+              !confirmedStatus.includes(statusB) &&
+              confirmedStatus.includes(statusA)
+            ) {
+              return 1;
+            } else if (
+              confirmedStatus.includes(statusB) &&
+              !confirmedStatus.includes(statusA)
+            ) {
+              return -1;
+            }
+          }
+          if (b.time && !a.time) {
+            return -1;
+          }
+          return Number(b.time) - Number(a.time);
+        });
+        // this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
+      } else {
+        this.$set(this.activePending, 'CKETHResponse', null);
+      }
+    }
+  }
   private onGetRetrievePending(): void {
     this.getRetrievePending().then((retrievePending) => {
-      if (retrievePending && retrievePending.length) {
-        console.log(retrievePending);
-        this.$set(this.activePending, 'retrieve', retrievePending);
-      } else {
-        this.$set(this.activePending, 'retrieve', null);
-      }
+      const response = [];
+      retrievePending.forEach((retrieve) => {
+        if (this.ckTokenInfo[retrieve.tokenId]) {
+          response.push(retrieve);
+        }
+      });
+      // retrieve step1
+      this.concatResponseSort('icETHRetrieve1', response);
     });
   }
-
-  private onGetRetrieving(): void {
-    this.ckETHMinterService.getRetrieving({ all: null }).then((res) => {
-      if (res && res.length) {
-        console.log(res);
-        this.$set(this.activePending, 'retrieve2', res[0]);
-      } else {
-        this.$set(this.activePending, 'retrieve2', null);
+  private onGetRetrieving(isInit = true): void {
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
+    const retrieveKey = IC_ETH_MINTER_CANISTER_ID + ethVersion;
+    if (!currentInfo.icETHMintRetrieve) {
+      currentInfo.icETHMintRetrieve = {};
+    }
+    if (!currentInfo.icETHMintRetrieve[retrieveKey]) {
+      currentInfo.icETHMintRetrieve[retrieveKey] = {};
+    }
+    const response = [];
+    if (!isInit) {
+      for (let key in currentInfo.icETHMintRetrieve[retrieveKey]) {
+        let val: TxStatus = currentInfo.icETHMintRetrieve[retrieveKey][key];
+        if (this.ckTokenInfo[this.ethersTokenIdToCkTokenId[val.tokenId]]) {
+          if (val.type === 'icETHRetrieve') {
+            response.push(val);
+          }
+        }
       }
-    });
+      this.concatResponseSort('icETHRetrieve', response);
+    } else {
+      this.ckETHMinterService.getRetrieving({ all: null }).then((res) => {
+        let txIndex;
+        if (res && res.length) {
+          let updateLocal = false;
+          res.forEach((item) => {
+            const type = Object.keys(item[1].txType)[0];
+            if (type === 'Withdraw') {
+              txIndex = item[0].toString(10);
+              if (
+                !currentInfo.icETHMintRetrieve[retrieveKey][txIndex] &&
+                this.principal === item[1].account.owner.toString()
+              ) {
+                item[1].txIndex = txIndex;
+                currentInfo.icETHMintRetrieve[retrieveKey][txIndex] = item[1];
+                currentInfo.icETHMintRetrieve[retrieveKey][txIndex].type =
+                  'icETHRetrieve';
+                currentInfo.icETHMintRetrieve[retrieveKey][txIndex].time =
+                  Number(item[2]) * 1000;
+                this.removeRetrievePending(
+                  this.ckTokenInfo[
+                    this.ethersTokenIdToCkTokenId[item[1].tokenId]
+                  ].ckLedgerId.toString(),
+                  item[1].tokenId
+                );
+                updateLocal = true;
+              }
+            }
+          });
+          if (updateLocal) {
+            localStorage.setItem(
+              this.principal,
+              JSON.stringify(currentInfo, (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+              )
+            );
+          }
+        } else {
+          // this.$set(this.activePending, 'retrieve2', null);
+        }
+        const promise = [];
+        for (let key in currentInfo.icETHMintRetrieve[retrieveKey]) {
+          let val: TxStatus = currentInfo.icETHMintRetrieve[retrieveKey][key];
+          if (this.ckTokenInfo[this.ethersTokenIdToCkTokenId[val.tokenId]]) {
+            if (val.type === 'icETHRetrieve') {
+              const status = Object.keys(val.status)[0];
+              if (
+                status !== 'Confirmed' &&
+                status !== 'Failure' &&
+                status !== 'Unknown'
+              ) {
+                promise.push(this.updateRetrieve(val, retrieveKey, key));
+              } else {
+                response.push(val);
+              }
+              this.removeRetrievePending(
+                this.ckTokenInfo[
+                  this.ethersTokenIdToCkTokenId[val.tokenId]
+                ].ckLedgerId.toString(),
+                val.tokenId
+              );
+            }
+          }
+        }
+        Promise.all(promise).then((res) => {
+          res.forEach((item) => {
+            response.push(item);
+          });
+          this.concatResponseSort('icETHRetrieve', response);
+        });
+      });
+    }
   }
-
+  private async updateRetrieve(
+    val: TxStatus,
+    mintKey: string,
+    key: string
+  ): Promise<TxStatus> {
+    const status = Object.keys(val.status)[0];
+    const res = await this.ckETHMinterService.getEthTx(BigInt(val.txIndex));
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
+    const txStatus = Object.keys(res[0].status)[0];
+    if (txStatus !== status) {
+      const newVal = Object.assign({}, val, {
+        txHash: res[0].txHash,
+        status: res[0].status,
+        time: new Date().getTime()
+      });
+      currentInfo.icETHMintRetrieve[mintKey][key] = newVal;
+      localStorage.setItem(
+        this.principal,
+        JSON.stringify(currentInfo, (key, value) =>
+          typeof value === 'bigint' ? value.toString(10) : value
+        )
+      );
+      return newVal;
+    }
+    return val;
+  }
+  private onGetMintICETH(): void {
+    try {
+      const principal = localStorage.getItem('principal');
+      const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
+      if (currentInfo.depositInfo) {
+        const keyStart = IC_ETH_MINTER_CANISTER_ID + ethVersion;
+        let keys = Object.keys(currentInfo.depositInfo);
+        keys = keys.filter((item) => {
+          return item.startsWith(keyStart);
+        });
+        const response = [];
+        const promise = [];
+        keys.forEach((key) => {
+          if (
+            currentInfo.depositInfo[key] &&
+            currentInfo.depositInfo[key].length
+          ) {
+            currentInfo.depositInfo[key].forEach((item, index) => {
+              const tokenId = key.split(keyStart)[1];
+              if (this.ckTokenInfo[tokenId]) {
+                let status;
+                if (!item[1]) {
+                  status = {
+                    Pending: null
+                  };
+                  response.push({
+                    tokenId: tokenId,
+                    txHash: item[0],
+                    amount: item[4],
+                    time: item[3],
+                    status: status,
+                    type: 'icETHMintMethod2'
+                  });
+                } else if (item[1] && !item[2]) {
+                  promise.push(
+                    this.updatePendingDepositTxn(
+                      tokenId,
+                      item[0],
+                      item[4],
+                      key,
+                      currentInfo,
+                      index
+                    )
+                  );
+                } else if (item[1] && item[2]) {
+                  status = {
+                    Confirmed: null
+                  };
+                  response.push({
+                    tokenId: tokenId,
+                    txHash: item[0],
+                    amount: item[4],
+                    time: item[3],
+                    status: status,
+                    type: 'icETHMintMethod2'
+                  });
+                }
+              }
+            });
+          }
+        });
+        Promise.all(promise).then((res) => {
+          res.forEach((item) => {
+            if (this.ckTokenInfo[item.tokenId]) {
+              let status: localStatus = {
+                Submitted: null
+              };
+              if (item[1] && item[2]) {
+                status = {
+                  Confirmed: null
+                };
+              }
+              response.push({
+                tokenId: item.tokenId,
+                txHash: item.info[0],
+                amount: item.info[4],
+                time: item.info[3],
+                status: status,
+                type: 'icETHMintMethod2'
+              });
+            }
+          });
+          this.concatResponseSort('icETHMintMethod2', response);
+        });
+      }
+    } catch (e) {}
+  }
+  private async updatePendingDepositTxn(
+    tokenId: string,
+    txHash: string,
+    amount: string,
+    key: string,
+    currentInfo,
+    index: number
+  ): Promise<{
+    tokenId: string;
+    info: [string, boolean?, boolean?, number?, string?];
+  }> {
+    const deposit = await this.getPendingDepositTxn(txHash);
+    if (!(deposit && deposit.length)) {
+      currentInfo.depositInfo[key][index] = [
+        txHash,
+        true,
+        true,
+        new Date().getTime(),
+        amount
+      ];
+      this.updateDepositInfo(tokenId, currentInfo.depositInfo[key]);
+    }
+    return { tokenId: tokenId, info: currentInfo.depositInfo[key][index] };
+  }
   private async getActive(): Promise<void> {
     if (this.principal) {
-      console.log('getActive');
       // method2 claim step1
-      this.onGetClaimPending();
+      // this.onGetClaimPending();
       // method2 claim step2
-      this.onGetClaim2Pending();
-      // method1 mint step1
-      this.onGetMintPending();
+      // this.onGetClaim2Pending();
       // method1 mint step2
       this.onGetDepositing();
+      // method1 mint step1
+      this.onGetMintPending();
       // retrieve step1
       this.onGetRetrievePending();
       // retrieve step2
@@ -6483,60 +6854,62 @@ export default class extends Vue {
       this.onGetMintCKBTCPending();
       // ckBTC retrieve
       this.onGetRetrieveCKBTCPending();
-      console.log(this.activePending);
+      // icETH mint method2
+      this.onGetMintICETH();
+      // icETH retrieve
+      // this.onGetMintICETH();
     }
   }
-
-  private onGetMintCKBTCPending(): void {
+  private async onGetMintCKBTCPending(): Promise<void> {
     const principal = localStorage.getItem('principal');
     if (principal) {
       const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
       this.updateBlockHeight = Number(currentInfo.icBTCUpdateBlockHeight);
       this.updateCkBlockHeight = Number(currentInfo.ckBTCUpdateBlockHeight);
-      console.log(this.updateBlockHeight, this.updateCkBlockHeight);
-    }
-    if (this.BTCAddressCk) {
-      axios.get('https://blockchain.info/q/getblockcount').then((blockRes) => {
+      const version = '1.0';
+      if (!this.ckBTCAddress) {
+        const ckBTCAddress = currentInfo.ckBTCAddress;
+        if (
+          ckBTCAddress &&
+          ckBTCAddress.startsWith(`${CK_BTC_MINTER_CANISTER_ID}-${version}-`)
+        ) {
+          this.ckBTCAddress = ckBTCAddress.split(
+            `${CK_BTC_MINTER_CANISTER_ID}-${version}-`
+          )[1];
+        } else {
+          const btcAddress = await this.ckBTCMinterService.getBtcAddress(
+            'ckBTC'
+          );
+          this.ckBTCAddress = btcAddress;
+          const principal = localStorage.getItem('principal');
+          if (principal) {
+            currentInfo.ckBTCAddress = `${CK_BTC_MINTER_CANISTER_ID}-${version}-${btcAddress}`;
+            localStorage.setItem(principal, JSON.stringify(currentInfo));
+          }
+        }
+      }
+      if (this.ckBTCAddress) {
         axios
-          .get(`https://blockstream.info/api/address/${this.BTCAddressCk}/txs`)
-          .then((res) => {
-            this.blockCount = blockRes.data;
-            const txs = this.filterBTCTxRes(
-              res,
-              blockRes.data,
-              BTCTypeEnum.ckBTC,
-              this.BTCAddressCk
-            );
-            console.log(txs);
-            const CKETHResponse = [];
-            if (
-              this.activePending.CKETHResponse &&
-              this.activePending.CKETHResponse.length
-            ) {
-              this.activePending.CKETHResponse.forEach((item) => {
-                if (item.type !== 'BTCMint') {
-                  CKETHResponse.push(item);
-                }
+          .get('https://blockchain.info/q/getblockcount')
+          .then((blockRes) => {
+            axios
+              .get(
+                `https://blockstream.info/api/address/${this.ckBTCAddress}/txs`
+              )
+              .then((res) => {
+                this.blockCount = blockRes.data;
+                const txs = this.filterBTCTxRes(
+                  res,
+                  blockRes.data,
+                  BTCTypeEnum.ckBTC,
+                  this.ckBTCAddress
+                );
+                this.concatResponseSort('BTCMint', txs);
               });
-              this.activePending.CKETHResponse = CKETHResponse.concat(txs);
-            } else {
-              this.activePending.CKETHResponse = txs;
-            }
-            if (this.activePending.CKETHResponse.length) {
-              const CKETHResponse = this.activePending.CKETHResponse.sort(
-                (a, b) => {
-                  return Number(b.time) - Number(a.time);
-                }
-              );
-              this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
-            } else {
-              this.$set(this.activePending, 'CKETHResponse', null);
-            }
           });
-      });
+      }
     }
   }
-
   private filterBTCTxRes(
     res: any,
     block: number,
@@ -6545,7 +6918,6 @@ export default class extends Vue {
   ): Array<MintCKBTCResponse> {
     if (res && res.data) {
       const txs = res.data;
-      console.log(txs);
       let needUpdate = false;
       if (txs && txs.length) {
         for (let i = 0; i < txs.length; i++) {
@@ -6578,15 +6950,45 @@ export default class extends Vue {
             return val.scriptpubkey_address === BTCAddress;
           });
           if (flag && block && txs[i].status.block_height) {
-            tx.time = txs[i].status.block_time;
+            tx.time = Number(txs[i].status.block_time) * 1000;
             tx.type = 'BTCMint';
             if (
               (BTCType === BTCTypeEnum.icBTC &&
-                block - txs[i].status.block_height < 5) ||
+                block - txs[i].status.block_height <
+                  Number(this.minterInfoIcBTC.minConfirmations) - 1) ||
               (BTCType === BTCTypeEnum.ckBTC &&
-                block - txs[i].status.block_height < 11)
+                block - txs[i].status.block_height <
+                  Number(this.minterInfoCkBTC.min_confirmations) - 1)
             ) {
-              //  hasConfirmedLoading = true;
+              //
+            }
+            if (
+              (BTCType === BTCTypeEnum.icBTC &&
+                block - txs[i].status.block_height >=
+                  Number(this.minterInfoIcBTC.minConfirmations)) ||
+              (BTCType === BTCTypeEnum.ckBTC &&
+                block - txs[i].status.block_height >=
+                  Number(this.minterInfoCkBTC.min_confirmations))
+            ) {
+              let blockConfirmed;
+              if (BTCType === BTCTypeEnum.icBTC) {
+                blockConfirmed =
+                  txs[i].status.block_height +
+                  Number(this.minterInfoIcBTC.minConfirmations) -
+                  1;
+              } else {
+                blockConfirmed =
+                  txs[i].status.block_height +
+                  Number(this.minterInfoCkBTC.min_confirmations) -
+                  1;
+              }
+              axios
+                .get(`https://blockstream.info/api/blocks/${blockConfirmed}`)
+                .then((blockVal) => {
+                  if (blockVal && blockVal.data && blockVal.data.length) {
+                    tx.time = blockVal.data[0].timestamp * 1000;
+                  }
+                });
             }
             let updateBlockHeight;
             if (BTCType === BTCTypeEnum.icBTC) {
@@ -6597,15 +6999,25 @@ export default class extends Vue {
             // todo Synchronized Blocks
             if (
               ((BTCType === BTCTypeEnum.icBTC &&
-                block - txs[i].status.block_height >= 6) ||
+                block - txs[i].status.block_height >=
+                  Number(this.minterInfoIcBTC.minConfirmations)) ||
                 (BTCType === BTCTypeEnum.ckBTC &&
-                  block - txs[i].status.block_height >= 12)) &&
+                  block - txs[i].status.block_height >=
+                    Number(this.minterInfoCkBTC.min_confirmations))) &&
               (txs[i].status.block_height > updateBlockHeight ||
                 !updateBlockHeight)
             ) {
               needUpdate = true;
             }
           } else if (flag && !txs[i].status.block_height) {
+            tx.time = Number(txs[i].status.block_time) * 1000;
+            tx.type = 'BTCMint';
+            let updateBlockHeight;
+            if (BTCType === BTCTypeEnum.icBTC) {
+              updateBlockHeight = this.updateBlockHeight;
+            } else {
+              updateBlockHeight = this.updateCkBlockHeight;
+            }
             // hasConfirmedLoading = true;
           }
           if (!flag) {
@@ -6619,7 +7031,6 @@ export default class extends Vue {
       } else {
         this.ckBTCTransactions = txs;
       }
-      console.log(needUpdate);
       if (needUpdate) {
         this.forge(BTCType, false);
         this.setUpdateBlockHeight(BTCType);
@@ -6627,7 +7038,6 @@ export default class extends Vue {
       return txs;
     }
   }
-
   private onGetRetrieveCKBTCPending(): void {
     const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
     if (currentInfo.ckBTCBlock) {
@@ -6635,37 +7045,14 @@ export default class extends Vue {
         JSON.parse(JSON.stringify(currentInfo.ckBTCBlock)) || [];
       ckBTCRetrieve.map((info) => {
         info.type = 'BTCRetrieve';
-        if (Number(info.time) > 9999999999) {
-          info.time = Math.floor(info.time / 1000);
+        if (Number(info.time) < 10000000000) {
+          info.time = Math.floor(info.time * 1000);
         }
       });
-      console.log(ckBTCRetrieve);
-      const CKETHResponse = [];
-      if (
-        this.activePending.CKETHResponse &&
-        this.activePending.CKETHResponse.length
-      ) {
-        this.activePending.CKETHResponse.forEach((item) => {
-          if (item.type !== 'BTCRetrieve') {
-            CKETHResponse.push(item);
-          }
-        });
-        this.activePending.CKETHResponse = CKETHResponse.concat(ckBTCRetrieve);
-      } else {
-        this.activePending.CKETHResponse = ckBTCRetrieve;
-      }
-      if (this.activePending.CKETHResponse.length) {
-        const CKETHResponse = this.activePending.CKETHResponse.sort((a, b) => {
-          return Number(b.time) - Number(a.time);
-        });
-        this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
-      } else {
-        this.$set(this.activePending, 'CKETHResponse', null);
-      }
+      this.concatResponseSort('BTCRetrieve', ckBTCRetrieve);
       this.updateRetrieveBtcStatusResponse(ckBTCRetrieve);
     }
   }
-
   private updateRetrieveBtcStatusResponse(
     response: Array<RetrieveCKBTCResponse>
   ): void {
@@ -6680,87 +7067,114 @@ export default class extends Vue {
           status = Object.keys(val.status)[0];
         }
         if (canGetStatus.includes(status) || !status) {
-          this.getRetrieveBtcStatus(val.blockIndex).then(async (res) => {
-            console.log(res);
-            const currentStatus = Object.keys(res)[0];
-            if (
-              status === 'Pending' &&
-              time - Number(val.time) > 10 * 60 * 1000
-            ) {
-              this.$set(response, index, {
-                blockIndex: val.blockIndex,
-                status: res,
-                time: time
-              });
-              this.batchSend(val.blockIndex);
+          this.getRetrieveBtcStatus(val.blockIndex, BTCTypeEnum.ckBTC).then(
+            async (res) => {
+              const currentStatus = Object.keys(res)[0];
+              if (
+                status === 'Pending' &&
+                time - Number(val.time) > 10 * 60 * 1000
+              ) {
+                this.$set(response, index, {
+                  blockIndex: val.blockIndex,
+                  status: res,
+                  time: time,
+                  amount: val.amount
+                });
+                // this.batchSend(val.blockIndex);
+              }
+              if (currentStatus !== status) {
+                const txid = this.getRetrieveBtcTxidResponse(res);
+                if (txid) {
+                  axios
+                    .get(`https://blockstream.info/api/tx/${txid}`)
+                    .then((hash) => {
+                      if (hash && hash.data && hash.data.status.block_height) {
+                        const block =
+                          hash.data.status.block_height +
+                          Number(this.minterInfoCkBTC.min_confirmations) -
+                          1;
+                        axios
+                          .get(`https://blockstream.info/api/blocks/${block}`)
+                          .then((blockVal) => {
+                            let time = val.time;
+                            if (
+                              blockVal &&
+                              blockVal.data &&
+                              blockVal.data.length
+                            ) {
+                              time = blockVal.data[0].timestamp;
+                            }
+                            this.$set(response, index, {
+                              blockIndex: val.blockIndex,
+                              status: res,
+                              time: time,
+                              amount: val.amount
+                            });
+                            currentInfo.ckBTCBlock = response;
+                            localStorage.setItem(
+                              this.principal,
+                              JSON.stringify(currentInfo)
+                            );
+                            this.responseSort();
+                          })
+                          .catch(() => {
+                            this.$set(response, index, {
+                              blockIndex: val.blockIndex,
+                              status: res,
+                              time: time,
+                              amount: val.amount
+                            });
+                            currentInfo.ckBTCBlock = response;
+                            localStorage.setItem(
+                              this.principal,
+                              JSON.stringify(currentInfo)
+                            );
+                            this.responseSort();
+                          });
+                      }
+                    });
+                } else {
+                  this.$set(response, index, {
+                    blockIndex: val.blockIndex,
+                    status: res,
+                    time: time,
+                    amount: val.amount
+                  });
+                  currentInfo.ckBTCBlock = response;
+                  localStorage.setItem(
+                    this.principal,
+                    JSON.stringify(currentInfo)
+                  );
+                  this.responseSort();
+                }
+              }
             }
-            if (currentStatus !== status) {
-              this.$set(response, index, {
-                blockIndex: val.blockIndex,
-                status: res,
-                time: val.time
-              });
-              currentInfo.ckBTCBlock = response;
-              localStorage.setItem(this.principal, JSON.stringify(currentInfo));
-            }
-          });
+          );
         }
       });
     }
   }
-
   private onGetRetrieveCKETHPending(): void {
     this.getRetrieveCKETHPending().then((res) => {
-      console.log(res);
-      if (res.pending && res.pending.length) {
-        this.$set(this.activePending, 'retrieveCKETH', res.pending);
-      } else {
-        this.$set(this.activePending, 'retrieveCKETH', null);
-      }
-      const CKETHResponse = [];
       const response = [];
       res.retrieve.forEach((item: RetrieveActiveResponse) => {
         if (this.ckTokenInfo[item.tokenId]) {
           response.push(item);
         }
       });
-      if (
-        this.activePending.CKETHResponse &&
-        this.activePending.CKETHResponse.length
-      ) {
-        this.activePending.CKETHResponse.forEach((item) => {
-          if (item.type !== 'retrieve') {
-            CKETHResponse.push(item);
-          }
-        });
-        this.activePending.CKETHResponse = CKETHResponse.concat(response);
-      } else {
-        this.activePending.CKETHResponse = response;
-      }
-      if (this.activePending.CKETHResponse.length) {
-        console.log(res.retrieve);
-        const CKETHResponse = this.activePending.CKETHResponse.sort((a, b) => {
-          return Number(b.time) - Number(a.time);
-        });
-        this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
-      } else {
-        this.$set(this.activePending, 'CKETHResponse', null);
-      }
+      this.concatResponseSort('retrieve', response);
     });
   }
-
   private async getRetrieveCKETHPending(): Promise<{
     retrieve: Array<RetrieveActiveResponse>;
-    pending: Array<RetrieveActive>;
   }> {
-    let retrievePending: Array<RetrieveActive> = [];
     let retrieve: Array<RetrieveActiveResponse> = [];
     const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
     for (let ckETHRetrieveKey in currentInfo) {
       if (ckETHRetrieveKey.startsWith('ckETHRetrieve-')) {
         const retrieveCKETH = currentInfo[ckETHRetrieveKey] || {};
-        console.log(retrieveCKETH);
         let flag = false;
+        let updateCkETHRetrieveStatus = false;
         if (retrieveCKETH) {
           for (let key in retrieveCKETH) {
             if (retrieveCKETH[key]) {
@@ -6775,55 +7189,33 @@ export default class extends Vue {
                 ) {
                   ETHHttps = ETHHttpsSepolia;
                 }
-                const status = Object.keys(retrieveCKETH[key][i].status)[0];
-                if (status === 'TxFinalized' && !retrieveCKETH[key][i].time) {
-                  const hash = Object.values(
-                    retrieveCKETH[key][i].status as RetrieveEthStatus
-                  )[0].Success.transaction_hash;
-                  const receipt = await this.getEthTransactionReceipt(
-                    hash,
-                    0,
-                    0,
-                    ETHHttps
-                  );
-                  if (receipt && receipt.data.result) {
-                    console.log(receipt.data.result);
-                    const block = Number(receipt.data.result.blockNumber);
-                    const resReceipt = await this.getBlockByNumber(
-                      block,
-                      0,
-                      0,
-                      ETHHttps
-                    );
-                    if (resReceipt && resReceipt.data.result) {
-                      console.log(resReceipt);
-                      if (!flag) {
-                        flag = true;
-                      }
-                      retrieveCKETH[key][i].time = Number(
-                        resReceipt.data.result.timestamp
-                      ).toString(10);
-                    }
-                  }
-                }
                 const type = Object.keys(retrieveCKETH[key][i].status)[0];
                 if (type !== 'TxFinalized' && type !== 'NotFound') {
-                  retrievePending.push({
+                  if (!updateCkETHRetrieveStatus) {
+                    updateCkETHRetrieveStatus = true;
+                  }
+                  retrieve.push({
                     amount: retrieveCKETH[key][i].amount,
                     tokenId: key,
                     status: retrieveCKETH[key][i].status,
-                    time: retrieveCKETH[key][i].time
+                    time: Number(retrieveCKETH[key][i].time) * 1000,
+                    type: 'retrieve'
                   });
                 } else {
                   retrieve.push({
                     amount: retrieveCKETH[key][i].amount,
                     tokenId: key,
                     status: retrieveCKETH[key][i].status,
-                    time: retrieveCKETH[key][i].time,
+                    time: Number(retrieveCKETH[key][i].time) * 1000,
                     type: 'retrieve'
                   });
                 }
               }
+            }
+            if (updateCkETHRetrieveStatus) {
+              const tokenId = key;
+              const id = ckETHRetrieveKey.replace('ckETHRetrieve-', '');
+              this.updateCkETHRetrieveStatus(id, tokenId);
             }
           }
         }
@@ -6833,54 +7225,22 @@ export default class extends Vue {
         }
       }
     }
-    return { retrieve: retrieve, pending: retrievePending };
+    return { retrieve: retrieve };
   }
-
   private onGetMintCKETHPending(): void {
     this.getMintCKETHPending().then((res) => {
-      console.log(res);
-      if (res && res.mintPending && res.mintPending.length) {
-        this.$set(this.activePending, 'mintCKETH', res.mintPending);
-      } else {
-        this.$set(this.activePending, 'mintCKETH', null);
-      }
-      const CKETHResponse = [];
       const response = [];
       res.mint.forEach((item) => {
         if (this.ckTokenInfo[item.tokenId]) {
           response.push(item);
         }
       });
-      if (
-        this.activePending.CKETHResponse &&
-        this.activePending.CKETHResponse.length
-      ) {
-        this.activePending.CKETHResponse.forEach((item) => {
-          if (item && item.type !== 'mint') {
-            CKETHResponse.push(item);
-          }
-        });
-        this.activePending.CKETHResponse = response.concat(CKETHResponse);
-      } else {
-        this.activePending.CKETHResponse = response;
-      }
-      if (this.activePending.CKETHResponse.length) {
-        console.log(response);
-        const CKETHResponse = this.activePending.CKETHResponse.sort((a, b) => {
-          return Number(b.time) - Number(a.time);
-        });
-        this.$set(this.activePending, 'CKETHResponse', CKETHResponse);
-      } else {
-        this.$set(this.activePending, 'CKETHResponse', null);
-      }
+      this.concatResponseSort('mint', response);
     });
   }
-
   private async getMintCKETHPending(): Promise<{
     mint: Array<ClaimCKETHActiveResponse>;
-    mintPending: Array<ClaimCKETHActive>;
   }> {
-    let mintPending: Array<ClaimCKETHActive> = [];
     let mint: Array<ClaimCKETHActiveResponse> = [];
     const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
     const lastScrapedBlockNumber = await this.getLastScrapedBlockNumber(
@@ -6889,17 +7249,14 @@ export default class extends Vue {
     const lastScrapedBlockNumberTest = await this.getLastScrapedBlockNumber(
       CK_ETH_MINTER_CANISTER_ID_TEST
     );
-    console.log(lastScrapedBlockNumber);
-    console.log(lastScrapedBlockNumberTest);
     for (let ckETHMintKey in currentInfo) {
       if (ckETHMintKey.startsWith('ckETHMint-')) {
         const mintCKETH = currentInfo[ckETHMintKey] || {};
-        console.log(mintCKETH);
         let flag = false;
         if (mintCKETH) {
           if (lastScrapedBlockNumber && lastScrapedBlockNumberTest) {
             for (let key in mintCKETH) {
-              if (mintCKETH[key]) {
+              if (mintCKETH[key] && this.ckTokenInfo[key]) {
                 for (let i = 0; i < mintCKETH[key].length; i++) {
                   let blockNumber = lastScrapedBlockNumber;
                   let ETHHttps = ETHHttpsMainnet;
@@ -6914,41 +7271,78 @@ export default class extends Vue {
                     ETHHttps = ETHHttpsSepolia;
                   }
                   this.lastScrapedBlockNumber = blockNumber;
-                  if (mintCKETH[key][i].blockNum && !mintCKETH[key][i].time) {
-                    const resReceipt = await this.getBlockByNumber(
-                      Number(mintCKETH[key][i].blockNum),
+                  if (!mintCKETH[key][i].blockNum && mintCKETH[key][i].txHash) {
+                    const receipt = await this.getEthTransactionReceipt(
+                      mintCKETH[key][i].txHash,
                       0,
                       0,
                       ETHHttps
                     );
-                    if (resReceipt && resReceipt.data.result) {
-                      console.log(resReceipt);
-                      if (!flag) {
-                        flag = true;
-                      }
-                      mintCKETH[key][i].time = Number(
-                        resReceipt.data.result.timestamp
-                      ).toString(10);
+                    if (receipt && receipt.data.result) {
+                      flag = true;
+                      mintCKETH[key][i].blockNum = Number(
+                        receipt.data.result.blockNumber
+                      );
                     }
                   }
                   if (
-                    !mintCKETH[key][i].blockNum ||
-                    new BigNumber(blockNumber).lt(mintCKETH[key][i].blockNum)
+                    mintCKETH[key][i].blockNum &&
+                    new BigNumber(blockNumber).gt(mintCKETH[key][i].blockNum)
                   ) {
-                    mintPending.push({
-                      txHash: mintCKETH[key][i].txHash,
-                      amount: mintCKETH[key][i].amount,
-                      tokenId: key,
-                      blockNumber: mintCKETH[key][i].blockNum,
-                      time: mintCKETH[key][i].time
-                    });
-                  } else {
+                    if (!mintCKETH[key][i].FinalizedTime) {
+                      flag = true;
+                      const resReceipt = await this.getBlockByNumber(
+                        Number(mintCKETH[key][i].blockNum),
+                        0,
+                        0,
+                        ETHHttps
+                      );
+                      if (resReceipt && resReceipt.data.result) {
+                        const resReceiptTime = resReceipt.data.result.timestamp;
+                        const now = new Date().getTime() / 1000;
+                        const finalized = 20 * 60;
+                        let finalizedTime;
+                        if (
+                          new BigNumber(resReceiptTime).plus(finalized).lt(now)
+                        ) {
+                          finalizedTime = new BigNumber(resReceiptTime)
+                            .plus(finalized)
+                            .decimalPlaces(0)
+                            .toString(10);
+                        } else {
+                          finalizedTime = new BigNumber(now)
+                            .decimalPlaces(0)
+                            .toString(10);
+                        }
+                        mintCKETH[key][i].FinalizedTime = finalizedTime;
+                      }
+                    }
                     mint.push({
                       txHash: mintCKETH[key][i].txHash,
                       amount: mintCKETH[key][i].amount,
                       tokenId: key,
                       blockNumber: mintCKETH[key][i].blockNum,
-                      time: mintCKETH[key][i].time,
+                      time: Number(mintCKETH[key][i].FinalizedTime) * 1000,
+                      status: {
+                        Confirmed: null
+                      },
+                      FinalizedTime: mintCKETH[key][i].FinalizedTime,
+                      type: 'mint'
+                    });
+                  }
+                  if (
+                    !mintCKETH[key][i].blockNum ||
+                    new BigNumber(blockNumber).lt(mintCKETH[key][i].blockNum)
+                  ) {
+                    mint.push({
+                      txHash: mintCKETH[key][i].txHash,
+                      amount: mintCKETH[key][i].amount,
+                      tokenId: key,
+                      blockNumber: mintCKETH[key][i].blockNum,
+                      time: Number(mintCKETH[key][i].time) * 1000,
+                      status: {
+                        Pending: null
+                      },
                       type: 'mint'
                     });
                   }
@@ -6963,9 +7357,8 @@ export default class extends Vue {
         }
       }
     }
-    return { mint: mint, mintPending: mintPending };
+    return { mint: mint };
   }
-
   private async getRetrievePending(): Promise<Array<RetrieveActive>> {
     let retrievePending: Array<RetrieveActive> = [];
     try {
@@ -6978,18 +7371,20 @@ export default class extends Vue {
       ) {
         for (let tokenId in currentInfo.ckETHRetrievePending[key]) {
           const pending = {
+            time: new Date().getTime(),
             tokenId: tokenId,
-            amount: currentInfo.ckETHRetrievePending[key][tokenId]
+            amount: currentInfo.ckETHRetrievePending[key][tokenId],
+            type: 'icETHRetrieve1',
+            status: {
+              Pending: null
+            }
           };
           retrievePending.push(pending);
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     return retrievePending;
   }
-
   private async getMintPending(): Promise<Array<MintActive>> {
     let mintPending: Array<MintActive> = [];
     try {
@@ -7006,26 +7401,26 @@ export default class extends Vue {
           const val = currentInfo.ckETHMintPending[key][i].split('&');
           const tokenId = val[0];
           const ethersTokenId = val[1];
-          const std = Object.keys(this.ckTokenInfo[tokenId].std)[0];
-          console.log(tokenId, ethersTokenId, std);
-          promiseValue.push(
-            this.getEthereumTokenBalance(ethersTokenId, tokenId, std)
-          );
-          if (promiseValue.length === MAX_COCURRENCY) {
-            const res = await Promise.all(promiseValue);
-            pending = pending.concat(res);
-            promiseValue = [];
-          }
-          if (
-            i === currentInfo.ckETHMintPending[key].length - 1 &&
-            promiseValue.length
-          ) {
-            const res = await Promise.all(promiseValue);
-            pending = pending.concat(res);
-            promiseValue = [];
+          if (this.ckTokenInfo[tokenId]) {
+            const std = Object.keys(this.ckTokenInfo[tokenId].std)[0];
+            promiseValue.push(
+              this.getEthereumTokenBalance(ethersTokenId, tokenId, std)
+            );
+            if (promiseValue.length === MAX_COCURRENCY) {
+              const res = await Promise.all(promiseValue);
+              pending = pending.concat(res);
+              promiseValue = [];
+            }
+            if (
+              i === currentInfo.ckETHMintPending[key].length - 1 &&
+              promiseValue.length
+            ) {
+              const res = await Promise.all(promiseValue);
+              pending = pending.concat(res);
+              promiseValue = [];
+            }
           }
         }
-        console.log(pending);
         pending.forEach((item) => {
           let fixedFee = '0';
           const std = Object.keys(this.ckTokenInfo[item.tokenId].std)[0];
@@ -7037,23 +7432,43 @@ export default class extends Vue {
               .div(1000000000)
               .toString(10);
           }
-          console.log(fixedFee);
-          console.log(item.balance);
           if (
             new BigNumber(item.balance)
               .minus(this.ckTokenInfo[item.tokenId].minAmount.toString(10))
               .gte(fixedFee)
           ) {
-            mintPending.push({ amount: item.balance, tokenId: item.tokenId });
+            if (
+              this.activePending.deposit &&
+              this.activePending.deposit.length
+            ) {
+              if (
+                this.activePending.deposit[0].tokenId !== item.ethersTokenId &&
+                item.tokenId !==
+                  this.ckTokenInfo[item.tokenId].ckLedgerId.toString()
+              ) {
+                mintPending.push({
+                  time: new Date().getTime().toString(10),
+                  amount: item.balance,
+                  tokenId: item.tokenId,
+                  type: 'icETHMint',
+                  status: { Pending: null }
+                });
+              }
+            } else {
+              mintPending.push({
+                time: new Date().getTime().toString(10),
+                amount: item.balance,
+                tokenId: item.tokenId,
+                type: 'icETHMint',
+                status: { Pending: null }
+              });
+            }
           }
         });
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     return mintPending;
   }
-
   private async getEthereumTokenBalance(
     ethersTokenId: string,
     tokenId: string,
@@ -7066,51 +7481,6 @@ export default class extends Vue {
     );
     return { balance: balance, tokenId: tokenId };
   }
-
-  private getClaimPending(isStep1 = true): Array<ClaimActive> {
-    try {
-      const principal = localStorage.getItem('principal');
-      const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
-      let hasClaimPending: Array<ClaimActive> = [];
-      if (currentInfo.depositInfo) {
-        const keyStart = IC_ETH_MINTER_CANISTER_ID + ethVersion;
-        let keys = Object.keys(currentInfo.depositInfo);
-        keys = keys.filter((item) => {
-          return item.startsWith(keyStart);
-        });
-        console.log(keys);
-        keys.forEach((key) => {
-          const claimHistory = currentInfo.depositInfo[key];
-          if (claimHistory && claimHistory.length) {
-            claimHistory.forEach((item) => {
-              if (isStep1) {
-                if (!item[1]) {
-                  const tokenId = key.split(keyStart)[1];
-                  hasClaimPending.push({
-                    tokenId: tokenId,
-                    txHash: item[0]
-                  });
-                }
-              } else {
-                if (item[1] && !item[2]) {
-                  const tokenId = key.split(keyStart)[1];
-                  hasClaimPending.push({
-                    tokenId: tokenId,
-                    txHash: item[0]
-                  });
-                }
-              }
-            });
-          }
-        });
-      }
-      return hasClaimPending;
-    } catch (e) {
-      console.log(e);
-      return null;
-    }
-  }
-
   private filterRetrieveEstimatedFee(
     erc20TokenInfo: IcTokenInfo,
     minterInfo: MinterInfo
@@ -7137,7 +7507,6 @@ export default class extends Vue {
         .toString(10);
     }
   }
-
   private filterEstimatedFeeMode2(erc20TokenInfo: IcTokenInfo): string {
     if (!erc20TokenInfo.fee) {
       return '';
@@ -7157,7 +7526,6 @@ export default class extends Vue {
         .toString(10);
     }
   }
-
   private filterEstimatedFee(
     erc20TokenInfo: IcTokenInfo,
     ethTokenInfo: IcTokenInfo,
@@ -7186,7 +7554,6 @@ export default class extends Vue {
         .toString(10);
     }
   }
-
   private getBalanceInit(): void {
     if (this.principal) {
       if (this.BTCType === BTCTypeEnum.icBTC) {
@@ -7197,7 +7564,6 @@ export default class extends Vue {
           .get(`https://blockstream.info/api/address/${this.BTCAddressIc}`)
           .then((res) => {
             if (res && res.data && res.data.chain_stats) {
-              console.log(res);
               this.BTCBalanceIC = new BigNumber(
                 res.data.chain_stats.funded_txo_sum
               )
@@ -7216,7 +7582,6 @@ export default class extends Vue {
           .get(`https://blockstream.info/api/address/${this.BTCAddressCk}`)
           .then((res) => {
             if (res && res.data && res.data.chain_stats) {
-              console.log(res);
               this.BTCBalanceCk = new BigNumber(
                 res.data.chain_stats.funded_txo_sum
               )
@@ -7231,7 +7596,6 @@ export default class extends Vue {
         const ERC20TokenId = this.icNetworkTokens.tokenId;
         if (ERC20TokenId) {
           getTokenBalance({ icrc1: null }, ERC20TokenId).then((res) => {
-            console.log(res);
             this.$set(this.ERC20Balance, ERC20TokenId, res);
             // this.ckETHBalance = res;
           });
@@ -7239,11 +7603,9 @@ export default class extends Vue {
       }
     }
   }
-
   private getCkBTCBalance(): void {
     window.clearInterval(this.btcTimer);
     this.btcTimer = null;
-    console.log(this.BTCType);
     this.getBalanceInit();
     this.btcTimer = window.setInterval(() => {
       if (this.principal) {
@@ -7255,7 +7617,6 @@ export default class extends Vue {
       }
     }, 10000);
   }
-
   private setMaxRetrieve(): void {
     let fee;
     let total;
@@ -7271,7 +7632,6 @@ export default class extends Vue {
       this.dissolveForm.amount = max.toString(10);
     }
   }
-
   private setMaxETHRetrieve(type: string): void {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -7292,9 +7652,7 @@ export default class extends Vue {
           .div(10 ** decimals)
           .toString(10);
         const max = new BigNumber(total).div(10 ** decimals).minus(fee);
-        console.log(total, max.toString(10));
         if (max.gt(0)) {
-          console.log(type);
           if (type) {
             this.ethDissolveFormCK.retrieveAmount = max.toString(10);
             (this.$refs as any).ethDissolveFormCK.validateField(
@@ -7308,7 +7666,6 @@ export default class extends Vue {
       }
     }
   }
-
   private async retrieveCkETH(): Promise<void> {
     (this.$refs as any).ethDissolveFormCK.validate(async (valid: any) => {
       if (valid) {
@@ -7371,14 +7728,6 @@ export default class extends Vue {
             this.icNetworkTokens.icTokenInfo.type &&
             this.icNetworkTokens.icTokenInfo.type === 'dfinityERC20'
           ) {
-            console.log(
-              this.icNetworkTokens.networkToIcId === '3' ||
-                this.icNetworkTokens.networkId === '3'
-                ? CK_ETH_MINTER_CANISTER_ID_TEST
-                : CK_ETH_MINTER_CANISTER_ID
-            );
-            console.log(this.icNetworkTokens.tokenId);
-            console.log(amount);
             const withdraw = await this.ckETHMinterDfiService.withdraw_erc20(
               this.icNetworkTokens.networkToIcId === '3' ||
                 this.icNetworkTokens.networkId === '3'
@@ -7394,7 +7743,6 @@ export default class extends Vue {
                 from_ckerc20_subaccount: []
               }
             );
-            console.log(withdraw);
             if (withdraw) {
               const type = Object.keys(withdraw)[0];
               if (type === 'Ok') {
@@ -7453,7 +7801,6 @@ export default class extends Vue {
                 from_subaccount: []
               }
             );
-            console.log(withdraw);
             if (withdraw) {
               const type = Object.keys(withdraw)[0];
               if (type === 'Ok') {
@@ -7501,7 +7848,6 @@ export default class extends Vue {
       }
     });
   }
-
   private async icrc2Approve(
     canisterId: string,
     amount: bigint,
@@ -7517,14 +7863,12 @@ export default class extends Vue {
       if (type === 'Ok') {
         return true;
       } else {
-        console.log(res);
         this.$message.error('Approve Error');
         return false;
       }
     }
     return false;
   }
-
   private async transferCkETH(): Promise<void> {
     (this.$refs as any).ethForm.validate(async (valid: any) => {
       if (valid) {
@@ -7565,14 +7909,12 @@ export default class extends Vue {
             this.$message.error(err);
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(e);
         }
         loading.close();
       }
     });
   }
-
   private async transferCkBTC(): Promise<void> {
     (this.$refs as any).form.validate(async (valid: any) => {
       if (valid) {
@@ -7613,14 +7955,12 @@ export default class extends Vue {
             this.$message.error(err);
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(e);
         }
         loading.close();
       }
     });
   }
-
   private ckETHRefreshRetrieving(): void {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     if (ERC20TokenId) {
@@ -7636,12 +7976,14 @@ export default class extends Vue {
       ).then((res) => {
         this.dissolveBalanceETH = res;
         if (res === '0') {
-          this.removeRetrievePending();
+          this.removeRetrievePending(
+            this.icNetworkTokens.icTokenInfo.ckLedgerId.toString(),
+            this.icNetworkTokens.tokenId
+          );
         }
       });
     }
   }
-
   private refreshRetrieving(): void {
     if (this.BTCType === BTCTypeEnum.icBTC) {
       getTokenBalance({ icrc1: null }, IC_BTC_CANISTER_ID).then((res) => {
@@ -7667,12 +8009,12 @@ export default class extends Vue {
       });
     }
   }
-
   private async dissolveCkETH(): Promise<void> {
     (this.$refs as any).ethRetrieveForm.validate(async (valid: any) => {
       if (valid) {
         const loading = this.$loading({
           lock: true,
+          customClass: 'retrieve-icETH-loading',
           background: 'rgba(0, 0, 0, 0.5)'
         });
         await checkAuth();
@@ -7689,18 +8031,13 @@ export default class extends Vue {
             BigInt(this.dissolveBalanceETH),
             ERC20TokenId
           );
-          console.log(res);
           const type = Object.keys(res)[0];
-          const time = new Date().getTime();
           if (type === 'Ok') {
-            // const retrieval = {
-            //   txIndex: res.Ok.txIndex,
-            //   amount: res.Ok.amount,
-            //   time: time
-            // };
-            // this.retrieveETHStatus.unshift([retrieval]);
             this.getRetrieveETHList();
-            this.removeRetrievePending();
+            this.removeRetrievePending(
+              this.icNetworkTokens.icTokenInfo.ckLedgerId.toString(),
+              this.icNetworkTokens.tokenId
+            );
             this.onGetRetrieving();
             // this.updateRetrieveETHStatus();
             this.ckETHRefreshRetrieving();
@@ -7715,14 +8052,12 @@ export default class extends Vue {
             );
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(e);
         }
         loading.close();
       }
     });
   }
-
   private async dissolve(): Promise<void> {
     (this.$refs as any).retrieveForm.validate(async (valid: any) => {
       if (valid) {
@@ -7736,7 +8071,6 @@ export default class extends Vue {
             address: this.retrieveForm.address.trim(),
             amount: BigInt(this.availableBalance)
           });
-          console.log(res);
           const type = Object.keys(res)[0];
           if (type === 'Ok') {
             const block = (
@@ -7753,7 +8087,8 @@ export default class extends Vue {
               currentInfo.icBTCBlock.unshift({
                 blockIndex: block,
                 status: { Signing: null },
-                time: time
+                time: time,
+                amount: this.availableBalance
               });
               localStorage.setItem(principal, JSON.stringify(currentInfo));
               this.retrieveBtcStatus = currentInfo.icBTCBlock;
@@ -7764,7 +8099,8 @@ export default class extends Vue {
               currentInfo.ckBTCBlock.unshift({
                 blockIndex: block,
                 status: { Signing: null },
-                time: time
+                time: time,
+                amount: this.availableBalance
               });
               localStorage.setItem(principal, JSON.stringify(currentInfo));
               this.retrieveBtcStatus = currentInfo.ckBTCBlock;
@@ -7773,6 +8109,7 @@ export default class extends Vue {
             (this.$refs as any).retrieveForm.resetFields();
             this.$message.success('Retrieve pending');
             this.retrieveStep = 3;
+            this.onGetRetrieveCKBTCPending();
           } else {
             const err = (res as { Err: RetrieveBtcError }).Err;
             this.$message.error(
@@ -7782,14 +8119,12 @@ export default class extends Vue {
             );
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(e);
         }
         loading.close();
       }
     });
   }
-
   private initETHWithdrawalAccount(): void {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -7815,11 +8150,9 @@ export default class extends Vue {
       }
     }
   }
-
   private async initETHDissolve(): Promise<void> {
     this.ckETHWithdrawalAccount = null;
     this.initETHWithdrawalAccount();
-    console.log(this.ckETHWithdrawalAccount);
     await this.getETHWithdrawalAccount('1.0');
     await this.getRetrieveETHList();
     // this.updateRetrieveETHStatus();
@@ -7834,13 +8167,11 @@ export default class extends Vue {
       }, 0);
     }, 30 * 1000);
   }
-
   private async showDissolveETH(): Promise<void> {
     this.dissolveBalanceETH = '';
     this.canRetrieveETH = false;
     this.hasShowWarningETH('dissolve');
   }
-
   private async getEthTokenBalance(
     std: string,
     tokenId: string,
@@ -7852,7 +8183,6 @@ export default class extends Vue {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
         ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
-        console.log(ETHHttpsNum);
       } else {
         if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
@@ -7868,7 +8198,6 @@ export default class extends Vue {
           params: [address, 'latest'],
           method: 'eth_getBalance'
         });
-        console.log(res);
         if (res.data.result) {
           balance = res.data.result.toString(10);
         }
@@ -7879,7 +8208,6 @@ export default class extends Vue {
           params: [address, [tokenId]],
           method: 'alchemy_getTokenBalances'
         });
-        console.log(res);
         if (
           res.data.result.tokenBalances &&
           res.data.result.tokenBalances.length
@@ -7889,7 +8217,6 @@ export default class extends Vue {
       }
       return balance;
     } catch (e) {
-      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthTokenBalance(
           std,
@@ -7902,7 +8229,6 @@ export default class extends Vue {
       }
     }
   }
-
   private async getEthTransactionReceipt(
     txHash: string,
     ETHHttpsNum?: number,
@@ -7912,7 +8238,6 @@ export default class extends Vue {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
         ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
-        console.log(ETHHttpsNum);
       } else {
         if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
@@ -7927,7 +8252,6 @@ export default class extends Vue {
         method: 'eth_getTransactionReceipt'
       });
     } catch (e) {
-      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthTransactionReceipt(
           txHash,
@@ -7938,7 +8262,6 @@ export default class extends Vue {
       }
     }
   }
-
   private async getEthTransactionByHash(
     txHash: string,
     ETHHttpsNum?: number,
@@ -7948,7 +8271,6 @@ export default class extends Vue {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
         ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
-        console.log(ETHHttpsNum);
       } else {
         if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
@@ -7963,7 +8285,6 @@ export default class extends Vue {
         method: 'eth_getTransactionByHash'
       });
     } catch (e) {
-      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthTransactionByHash(
           txHash,
@@ -7974,7 +8295,6 @@ export default class extends Vue {
       }
     }
   }
-
   private async getBlockByNumber(
     block: number,
     ETHHttpsNum?: number,
@@ -7984,7 +8304,6 @@ export default class extends Vue {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
         ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
-        console.log(ETHHttpsNum);
       } else {
         if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
@@ -8000,13 +8319,11 @@ export default class extends Vue {
         method: 'eth_getBlockByNumber'
       });
     } catch (e) {
-      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getBlockByNumber(block, ETHHttpsNum, ++retry, ETHHttpsKeys);
       }
     }
   }
-
   private async getEthBlock(
     ETHHttpsNum?: number,
     retry = 0,
@@ -8015,7 +8332,6 @@ export default class extends Vue {
     try {
       if (!ETHHttpsNum && ETHHttpsNum !== 0) {
         ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
-        console.log(ETHHttpsNum);
       } else {
         if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
           ETHHttpsNum = 0;
@@ -8029,26 +8345,20 @@ export default class extends Vue {
         method: 'eth_blockNumber'
       });
     } catch (e) {
-      console.log(e);
       if (retry < ETHHttpsKeys.length) {
         await this.getEthBlock(ETHHttpsNum, ++retry, ETHHttpsKeys);
       }
     }
   }
-
   private async getMintDepositing(): Promise<void> {
     this.getBalanceInit();
     if (this.depositMethod === 1) {
       try {
         const block = await this.getEthBlock();
-        console.log(block);
         if (block) {
           this.blockCountETH = parseInt(block.data.result);
         }
-        console.log(this.blockCountETH);
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
       const std = Object.keys(this.icNetworkTokens.icTokenInfo.std)[0];
       let token;
       if (std === 'ETH') {
@@ -8057,7 +8367,6 @@ export default class extends Vue {
         token = { token: this.icNetworkTokens.icTokenInfo.tokenId };
       }
       const res = await this.ckETHMinterService.getDepositing(token);
-      console.log(res);
       if (res && res[0] && res[0][1] && res[0][1].length) {
         const promiseValue = [];
         const txIndex = [];
@@ -8100,8 +8409,6 @@ export default class extends Vue {
                   break;
                 }
               }
-              console.log(i);
-              console.log(resReceipt);
               let receipt;
               if (resReceipt) {
                 receipt = resReceipt.data.result;
@@ -8193,7 +8500,6 @@ export default class extends Vue {
                 }
               }
               if (i === promiseRes.length - 1) {
-                console.log(needUpdate);
                 if (!needUpdate.includes(false)) {
                   this.updateETH(false);
                 }
@@ -8201,22 +8507,80 @@ export default class extends Vue {
             }
           }
         }
+        if (this.depositing && this.depositing.length) {
+          const isLoading = !!document.querySelector('.el-loading-mask');
+          if (isLoading) {
+            const loading = this.$loading({
+              lock: true,
+              background: 'rgba(0, 0, 0, 0.5)'
+            });
+            loading.close();
+            this.setCkETHUpdateBlockHeight();
+            this.depositNotifyLoading = false;
+            this.pendingLoading = false;
+            this.depositDisabledTimeout = false;
+            this.updateMintPending(
+              this.icNetworkTokens.icTokenInfo.ckLedgerId.toString(),
+              this.icNetworkTokens.icTokenInfo.tokenId
+            );
+            this.onGetDepositing();
+          }
+        }
+        this.updateDepositingStatus(
+          this.depositing,
+          this.icNetworkTokens.icTokenInfo.tokenId,
+          this.icNetworkTokens.icTokenInfo.ckLedgerId.toString()
+        );
       } else {
         this.depositing = [];
       }
     }
     if (this.depositMethod === 2) {
+      const claimHash = this.signatureForm.txHash.trim();
       this.depositInfo = this.getDepositInfo();
+      let flag = true;
       for (let i = 0; i < this.depositInfo.length; i++) {
+        if (
+          claimHash &&
+          this.depositInfo[i][0] === claimHash &&
+          !this.depositInfo[i][1]
+        ) {
+          const isLoading = !!document.querySelector('.el-loading-mask');
+          if (isLoading) {
+            let pendingDepositTxn = await this.getPendingDepositTxn(
+              this.depositInfo[i][0]
+            );
+            if (pendingDepositTxn && pendingDepositTxn.length) {
+              const loading = this.$loading({
+                lock: true,
+                background: 'rgba(0, 0, 0, 0.5)'
+              });
+              loading.close();
+              this.claimModalTransactions = false;
+              this.depositingInfo = pendingDepositTxn[0];
+              const depositInfo = this.getDepositInfo();
+              depositInfo.some((item) => {
+                if (item[0] === claimHash) {
+                  item[1] = true;
+                  return true;
+                }
+              });
+              this.setDepositInfo(this.icNetworkTokens.tokenId, depositInfo);
+              this.signatureForm.txHash = '';
+              this.depositInfo = this.getDepositInfo();
+              this.getMintDepositing();
+            }
+          }
+        }
         if (
           this.depositInfo[i][0] &&
           this.depositInfo[i][1] &&
           !this.depositInfo[i][2]
         ) {
+          flag = false;
           let pendingDepositTxn = await this.getPendingDepositTxn(
             this.depositInfo[i][0]
           );
-          console.log(pendingDepositTxn);
           if (pendingDepositTxn && pendingDepositTxn.length) {
             this.depositingInfo = pendingDepositTxn[0];
             const now = new Date().getTime();
@@ -8228,12 +8592,14 @@ export default class extends Vue {
               // await this.ckETHMinterService.updateClaims();
               const now = new Date().getTime();
               this.depositInfo[i][3] = now;
-              this.setDepositInfo(this.depositInfo);
+              this.setDepositInfo(
+                this.icNetworkTokens.tokenId,
+                this.depositInfo
+              );
               pendingDepositTxn = await this.getPendingDepositTxn(
                 this.depositInfo[i][0]
               );
               this.depositInfo[i][3] = now;
-              console.log(pendingDepositTxn);
               if (
                 pendingDepositTxn &&
                 pendingDepositTxn[0] &&
@@ -8243,8 +8609,10 @@ export default class extends Vue {
               } else {
                 this.getBalanceInit();
                 this.depositInfo[i][2] = true;
-                this.setDepositInfo(this.depositInfo);
-                this.onGetClaim2Pending();
+                this.setDepositInfo(
+                  this.icNetworkTokens.tokenId,
+                  this.depositInfo
+                );
                 this.depositingInfo = null;
               }
             }
@@ -8254,20 +8622,20 @@ export default class extends Vue {
             this.depositInfo[i][2] = true;
             this.depositInfo[i][3] = now;
             this.depositingInfo = null;
-            this.setDepositInfo(this.depositInfo);
-            this.onGetClaim2Pending();
+            this.setDepositInfo(this.icNetworkTokens.tokenId, this.depositInfo);
           }
         }
       }
+      if (flag) {
+        this.depositingInfo = null;
+      }
     }
   }
-
   private async getPendingDepositTxn(
     txHash: string
   ): Promise<Array<PendingDepositTxn>> {
     return await this.ckETHMinterService.getPendingDepositTxn(txHash);
   }
-
   private async getRetrieveETHList(isHand = true): Promise<void> {
     if (isHand) {
       this.showRetrieveETHStatus = true;
@@ -8281,9 +8649,13 @@ export default class extends Vue {
       token = { token: this.icNetworkTokens.icTokenInfo.tokenId };
     }
     const res = await this.ckETHMinterService.getRetrieving(token);
-    console.log(res);
     if (res && res.length) {
       this.retrieveETHStatus = res;
+      this.updateRetrieveStatus(
+        this.retrieveETHStatus,
+        this.icNetworkTokens.icTokenInfo.tokenId,
+        this.icNetworkTokens.icTokenInfo.ckLedgerId.toString()
+      );
       this.updateRetrieveETHStatus();
     } else {
       this.retrieveETHStatus = [];
@@ -8291,7 +8663,6 @@ export default class extends Vue {
     }
     this.showRetrieveETHStatus = false;
   }
-
   private async getETHWithdrawalAccount(version: string): Promise<void> {
     if (!this.ckETHWithdrawalAccount) {
       const principal = localStorage.getItem('principal');
@@ -8314,7 +8685,6 @@ export default class extends Vue {
     // todo cketh fee
     this.getETHDissolveBalance();
   }
-
   private async getETHDissolveBalance(): Promise<void> {
     if (this.ckETHWithdrawalAccount) {
       const tokenId = this.icNetworkTokens.tokenId;
@@ -8347,7 +8717,6 @@ export default class extends Vue {
       }, 3000);
     }
   }
-
   private async showDissolve(type: BTCTypeEnum): Promise<void> {
     this.BTCType = type;
     this.dissolveBalance = '';
@@ -8362,7 +8731,6 @@ export default class extends Vue {
     } else {
       this.retrieveBtcStatus = currentInfo.ckBTCBlock || [];
     }
-    console.log(this.retrieveBtcStatus);
     this.updateRetrieveBtcStatus();
     this.updateRetrieveBtcStatusTimer = window.setInterval(() => {
       window.setTimeout(() => {
@@ -8373,7 +8741,6 @@ export default class extends Vue {
         }
       }, 0);
     }, 30 * 1000);
-
     // icBTC update Submitted
     if (this.BTCType === BTCTypeEnum.icBTC) {
       this.updateIcBtcConfirmed();
@@ -8424,8 +8791,7 @@ export default class extends Vue {
     }
     this.getWithdrawalAccount(version);
   }
-
-  private async batchSend(blockIndex): Promise<void> {
+  private async batchSend(blockIndex: string): Promise<void> {
     try {
       const res = await this.ckBTCMinterService.retrieveLog(this.BTCType, [
         Number(blockIndex)
@@ -8433,11 +8799,8 @@ export default class extends Vue {
       if (res && res.length) {
         await this.ckBTCMinterService.batchSend(this.BTCType, [res[0].txIndex]);
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
-
   private updateRetrieveETHStatus(): void {
     const principal = localStorage.getItem('principal');
     this.retrieveETHStatus.forEach(async (val, index) => {
@@ -8466,7 +8829,6 @@ export default class extends Vue {
       }
     });
   }
-
   private updateRetrieveBtcStatus(): void {
     const principal = localStorage.getItem('principal');
     if (principal) {
@@ -8483,7 +8845,6 @@ export default class extends Vue {
         }
         if (canGetStatus.includes(status) || !status) {
           this.getRetrieveBtcStatus(val.blockIndex).then(async (res) => {
-            console.log(res);
             const currentStatus = Object.keys(res)[0];
             if (
               status === 'Pending' &&
@@ -8492,7 +8853,8 @@ export default class extends Vue {
               this.$set(this.retrieveBtcStatus, index, {
                 blockIndex: val.blockIndex,
                 status: res,
-                time: time
+                time: time,
+                amount: val.amount
               });
               this.batchSend(val.blockIndex);
             }
@@ -8500,7 +8862,8 @@ export default class extends Vue {
               this.$set(this.retrieveBtcStatus, index, {
                 blockIndex: val.blockIndex,
                 status: res,
-                time: val.time
+                time: val.time,
+                amount: val.amount
               });
               if (this.BTCType === BTCTypeEnum.icBTC) {
                 currentInfo.icBTCBlock = this.retrieveBtcStatus;
@@ -8514,14 +8877,12 @@ export default class extends Vue {
       });
     }
   }
-
   private async updateIcBtcConfirmed(): Promise<void> {
     let block = 0;
     const blockRes = await axios.get('https://blockchain.info/q/getblockcount');
     if (blockRes && blockRes.data) {
       block = blockRes.data;
     }
-    console.log(block);
     for (let i = this.retrieveBtcStatus.length - 1; i >= 0; i--) {
       const val = this.retrieveBtcStatus[i];
       let status;
@@ -8548,7 +8909,8 @@ export default class extends Vue {
                           txid: Array.from(Object.values(val.status)[0].txid)
                         }
                       },
-                      time: val.time
+                      time: val.time,
+                      amount: val.amount
                     });
                     const principal = localStorage.getItem('principal');
                     const currentInfo =
@@ -8563,14 +8925,13 @@ export default class extends Vue {
                       blockIndex: val.blockIndex,
                       status: val.status,
                       time: val.time,
-                      BTCBlock: currentBlock
+                      BTCBlock: currentBlock,
+                      amount: val.amount
                     });
                   }
                 }
                 break;
-              } catch (e) {
-                console.log(e);
-              }
+              } catch (e) {}
             } else {
               if (new BigNumber(block).minus(val.BTCBlock).gt(4)) {
                 this.$set(this.retrieveBtcStatus, i, {
@@ -8580,7 +8941,8 @@ export default class extends Vue {
                       txid: Array.from(Object.values(val.status)[0].txid)
                     }
                   },
-                  time: val.time
+                  time: val.time,
+                  amount: val.amount
                 });
                 const principal = localStorage.getItem('principal');
                 const currentInfo =
@@ -8593,9 +8955,7 @@ export default class extends Vue {
         }
       }
     }
-    console.log(this.retrieveBtcStatus);
   }
-
   private getBTCTxs(): void {
     const time = new Date().getTime();
     if (this.BTCType === BTCTypeEnum.icBTC) {
@@ -8641,14 +9001,11 @@ export default class extends Vue {
         this.showCkETHTransactions = false;
         return;
       }
-
       this.getETHTransactions();
       this.currentTxTimeCkETH[ERC20TokenId] = time;
     }
   }
-
   private async getTransactions(): Promise<void> {
-    console.log('BTCType: ' + this.BTCType);
     if (this.BTCType === BTCTypeEnum.icBTC) {
       const version = await this.getInfo(BTCTypeEnum.icBTC);
       this.BTCAddress(version, BTCTypeEnum.icBTC);
@@ -8677,7 +9034,6 @@ export default class extends Vue {
       });
     }, 100 * 1000);
   }
-
   private ETHAddress(version: string): void {
     if (version) {
       const principal = localStorage.getItem('principal');
@@ -8698,7 +9054,6 @@ export default class extends Vue {
       }
     }
   }
-
   private BTCAddress(version: string, BTCType: BTCTypeEnum): void {
     if (version) {
       const principal = localStorage.getItem('principal');
@@ -8728,13 +9083,10 @@ export default class extends Vue {
       }
     }
   }
-
   private showForgeETH(): void {
     this.hasShowWarningETH('forge');
   }
-
   private showRetrieveCKETH(): void {
-    console.log(this.icNetworkTokens);
     this.retrieveTitleETH = `Retrieve: ${this.icNetworkTokens.symbol} (${
       networkIds[this.icNetworkTokens.networkId]
     }) -> ${this.icNetworkTokens.icTokenInfo.symbol} (${
@@ -8760,7 +9112,6 @@ export default class extends Vue {
     }
     this.initCKETHRetrieve();
   }
-
   private initCKETHRetrieve(): void {
     if (this.principal && this.icNetworkTokens) {
       const id = this.icNetworkTokens.id;
@@ -8774,7 +9125,81 @@ export default class extends Vue {
       this.getCKETHRetrieveInterval(this.icNetworkTokens);
     }
   }
-
+  private async updateCkETHRetrieveStatus(
+    id: string,
+    tokenId: string
+  ): Promise<void> {
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
+    if (currentInfo['ckETHRetrieve-' + id]) {
+      if (
+        currentInfo['ckETHRetrieve-' + id][tokenId] &&
+        currentInfo['ckETHRetrieve-' + id][tokenId].length
+      ) {
+        const ckETHRetrieve = currentInfo['ckETHRetrieve-' + id][tokenId];
+        for (let i = 0; i < ckETHRetrieve.length; i++) {
+          const retrieve = ckETHRetrieve[i];
+          const status = Object.keys(retrieve.status)[0];
+          if (status !== 'TxFinalized' && status !== 'NotFound') {
+            const res = await this.ckETHMinterDfiService.retrieve_eth_status(
+              CK_ETH_MINTER_CANISTER_ID,
+              BigInt(retrieve.blockIndex)
+            );
+            const currentStatus = Object.keys(res)[0];
+            if (status !== currentStatus) {
+              if (currentStatus === 'TxFinalized') {
+                const hash = Object.values(res)[0].Success.transaction_hash;
+                const receipt = await this.getEthTransactionReceipt(
+                  hash,
+                  0,
+                  0,
+                  ETHHttpsMainnet
+                );
+                if (receipt && receipt.data.result) {
+                  const block = Number(receipt.data.result.blockNumber);
+                  const resReceipt = await this.getBlockByNumber(
+                    block,
+                    0,
+                    0,
+                    ETHHttpsMainnet
+                  );
+                  if (resReceipt && resReceipt.data.result) {
+                    const resReceiptTime = resReceipt.data.result.timestamp;
+                    const now = new Date().getTime() / 1000;
+                    const finalized = 20 * 60;
+                    let finalizedTime;
+                    if (new BigNumber(resReceiptTime).plus(finalized).lt(now)) {
+                      finalizedTime = new BigNumber(resReceiptTime)
+                        .plus(finalized)
+                        .decimalPlaces(0)
+                        .toString(10);
+                    } else {
+                      finalizedTime = new BigNumber(now)
+                        .decimalPlaces(0)
+                        .toString(10);
+                    }
+                    retrieve.time = finalizedTime;
+                  }
+                }
+              }
+              this.$set(
+                retrieve,
+                'status',
+                JSON.parse(
+                  JSON.stringify(res, (key, value) =>
+                    typeof value === 'bigint' ? value.toString(10) : value
+                  )
+                )
+              );
+              const currentInfo =
+                JSON.parse(localStorage.getItem(this.principal)) || {};
+              currentInfo['ckETHRetrieve-' + id][tokenId] = ckETHRetrieve;
+              localStorage.setItem(this.principal, JSON.stringify(currentInfo));
+            }
+          }
+        }
+      }
+    }
+  }
   private async getCkETHRetrieveStatus(
     id: string,
     tokenId: string
@@ -8792,6 +9217,31 @@ export default class extends Vue {
         );
         const currentStatus = Object.keys(res)[0];
         if (status !== currentStatus) {
+          if (currentStatus === 'TxFinalized') {
+            const hash = Object.values(
+              retrieve[i].status as RetrieveEthStatus
+            )[0].Success.transaction_hash;
+            const receipt = await this.getEthTransactionReceipt(
+              hash,
+              0,
+              0,
+              ETHHttps
+            );
+            if (receipt && receipt.data.result) {
+              const block = Number(receipt.data.result.blockNumber);
+              const resReceipt = await this.getBlockByNumber(
+                block,
+                0,
+                0,
+                ETHHttps
+              );
+              if (resReceipt && resReceipt.data.result) {
+                retrieve[i].time = Number(
+                  resReceipt.data.result.timestamp
+                ).toString(10);
+              }
+            }
+          }
           this.$set(
             retrieve,
             'status',
@@ -8809,7 +9259,6 @@ export default class extends Vue {
       }
     }
   }
-
   private getCKETHRetrieveInterval(
     icNetworkTokens: ICNetworkTokensInterface
   ): void {
@@ -8829,9 +9278,7 @@ export default class extends Vue {
       }
     }, 30 * 1000);
   }
-
   private showForgeCKETH(): void {
-    console.log(this.icNetworkTokens);
     this.forgeTitleETH = `Mint: ${this.icNetworkTokens.icTokenInfo.symbol} (${
       networkIds[this.otherNetworkTokens.networkId]
     }) -> ${this.icNetworkTokens.symbol} (${
@@ -8840,7 +9287,6 @@ export default class extends Vue {
     this.forgeModalCKETH = true;
     this.initCKETHMint();
   }
-
   private initCKETHMint(): void {
     if (this.principal && this.icNetworkTokens) {
       const id = this.icNetworkTokens.id;
@@ -8864,7 +9310,6 @@ export default class extends Vue {
       this.getCKETHMinterInterval(this.icNetworkTokens);
     }
   }
-
   private async getCKETHBalance(
     icNetworkTokens: ICNetworkTokensInterface
   ): Promise<void> {
@@ -8878,7 +9323,6 @@ export default class extends Vue {
     ) {
       if (icNetworkTokens.networkToIcId === '3') {
         getTokenBalance({ icrc1: null }, ckETHSep).then((res) => {
-          console.log(res);
           this.canRetrieveCkerc20 = new BigNumber(res)
             .div(10 ** this.tokens[ckETHSep].decimals)
             .gte(this.ckerc20RetrieveFee);
@@ -8887,7 +9331,6 @@ export default class extends Vue {
       } else if (icNetworkTokens.networkToIcId === '1') {
         getTokenBalance({ icrc1: null }, CK_ETH_LEDGER_CANISTER_ID).then(
           (res) => {
-            console.log(res);
             this.canRetrieveCkerc20 = new BigNumber(res)
               .div(10 ** this.tokens[CK_ETH_LEDGER_CANISTER_ID].decimals)
               .gte(this.ckerc20RetrieveFee);
@@ -8897,7 +9340,6 @@ export default class extends Vue {
       }
     }
   }
-
   private getCKETHMinterInterval(
     icNetworkTokens: ICNetworkTokensInterface
   ): void {
@@ -8927,7 +9369,6 @@ export default class extends Vue {
       }
     }, 30 * 1000);
   }
-
   private async getCkETHMintBlockNum(
     id: string,
     tokenId: string
@@ -8940,11 +9381,16 @@ export default class extends Vue {
       ETHHttps = ETHHttpsSepolia;
     }
     this.getEthBlock(0, 0, ETHHttps).then((res) => {
-      console.log(res);
       if (res) {
         this.ckETHBlockNum = parseInt(res.data.result);
       }
     });
+    const currentInfo = JSON.parse(localStorage.getItem(this.principal)) || {};
+    if (!currentInfo['ckETHMint-' + id]) {
+      currentInfo['ckETHMint-' + id] = {};
+    }
+    currentInfo['ckETHMint-' + id][tokenId] = this.ckETHMint;
+    localStorage.setItem(this.principal, JSON.stringify(currentInfo));
     for (let i = 0; i < this.ckETHMint.length; i++) {
       const mint = this.ckETHMint[i];
       if (!mint.blockNum) {
@@ -8957,7 +9403,6 @@ export default class extends Vue {
         if (res) {
           const receipt = res.data.result;
           if (receipt) {
-            console.log(receipt);
             this.$set(
               mint,
               'blockNum',
@@ -8966,21 +9411,37 @@ export default class extends Vue {
             if (receipt.status && receipt.status === '0x0') {
               this.$set(mint, 'txStatus', 'Failed');
             }
-            const currentInfo =
-              JSON.parse(localStorage.getItem(this.principal)) || {};
-            if (!currentInfo['ckETHMint-' + id]) {
-              currentInfo['ckETHMint-' + id] = {};
-            }
-            currentInfo['ckETHMint-' + id][tokenId] = this.ckETHMint;
-            localStorage.setItem(this.principal, JSON.stringify(currentInfo));
           }
+        }
+      } else if (mint.blockNum && !mint.FinalizedTime) {
+        const resReceipt = await this.getBlockByNumber(
+          Number(mint.blockNum),
+          0,
+          0,
+          ETHHttps
+        );
+        if (resReceipt && resReceipt.data.result) {
+          const resReceiptTime = resReceipt.data.result.timestamp;
+          const now = new Date().getTime() / 1000;
+          const finalized = 20 * 60;
+          let finalizedTime;
+          if (new BigNumber(resReceiptTime).plus(finalized).lt(now)) {
+            finalizedTime = new BigNumber(resReceiptTime)
+              .plus(finalized)
+              .decimalPlaces(0)
+              .toString(10);
+          } else {
+            finalizedTime = new BigNumber(now).decimalPlaces(0).toString(10);
+          }
+          this.$set(mint, 'FinalizedTime', finalizedTime);
+          currentInfo['ckETHMint-' + id][tokenId] = this.ckETHMint;
+          localStorage.setItem(this.principal, JSON.stringify(currentInfo));
         }
       } else {
         break;
       }
     }
   }
-
   private async getLastScrapedBlockNumber(
     ckETHMinterId: string
   ): Promise<number> {
@@ -8989,13 +9450,10 @@ export default class extends Vue {
       return Number(res.last_observed_block_number[0]);
     }
   }
-
   private initETHDeposit(): void {
-    console.log(this.forgeModalETH);
     if (this.forgeModalETH) {
       this.getETHDepositBalance();
       this.getMintDepositing();
-      console.log('getMintDepositing');
       this.updateDepositETHStatusTimer = window.setInterval(() => {
         window.setTimeout(() => {
           if (this.principal) {
@@ -9009,7 +9467,6 @@ export default class extends Vue {
       }, 30 * 1000);
     }
   }
-
   private async getETHDepositBalance(): Promise<void> {
     if (this.ETHAddressCk) {
       let ckETHDepositBalance;
@@ -9027,7 +9484,6 @@ export default class extends Vue {
       }
     }
   }
-
   private hasShowWarningETH(type: string): void {
     const hasShowWarning = this.$cookies.get('icETHTip');
     if (hasShowWarning) {
@@ -9094,12 +9550,10 @@ export default class extends Vue {
       });
     }
   }
-
   private async showForge(type: BTCTypeEnum): Promise<void> {
     this.BTCType = type;
     this.hasShowWarning('forge');
   }
-
   private onContinue(): void {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -9128,7 +9582,6 @@ export default class extends Vue {
         this.showForge(BTCTypeEnum.icBTC);
       } else {
         let ckETHId = '1';
-
         if (
           this.icNetworkTokens.networkId === '3' ||
           this.icNetworkTokens.networkToIcId === '3'
@@ -9178,9 +9631,7 @@ export default class extends Vue {
         }
       }
     }
-    console.log(this.icNetworkTokens);
   }
-
   private switchHub(): void {
     if (
       typeof this.networkIdMint === 'number' &&
@@ -9192,8 +9643,6 @@ export default class extends Vue {
       const networkListTo = this.networkListFrom[this.networkIdMint];
       const networkTokensFrom = this.networkTokensTo[this.networkTokenIdMintTo];
       const networkTokensTo = this.networkTokensFrom[this.networkTokenIdMint];
-      console.log(networkTokensFrom);
-      console.log(networkTokensTo);
       this.networkListFrom = this.networkList;
       this.networkListTo = this.networkList.filter((item) => {
         return item.id === networkListTo.id;
@@ -9238,7 +9687,6 @@ export default class extends Vue {
       });
     }
   }
-
   private changeNetworkIdMint(val: number): void {
     this.networkIdMintTo = [];
     this.networkTokenIdMint = [];
@@ -9247,7 +9695,6 @@ export default class extends Vue {
       return this.networkListFrom[val].id === item.networkId;
     });
   }
-
   private changeNetworkIdMintTo(val: number): void {
     this.networkTokenIdMintTo = [];
     this.networkTokensTo = this.networkTokens.filter((item) => {
@@ -9260,12 +9707,7 @@ export default class extends Vue {
         );
       }
     });
-    console.log(this.networkTokens);
-    console.log(this.networkTokensFrom[this.networkTokenIdMint as number]);
-    console.log(this.networkListTo[val]);
-    console.log(this.networkTokensTo);
   }
-
   private changeNetworkTokenIdMint(val: number): void {
     this.networkIdMintTo = [];
     this.networkTokenIdMintTo = [];
@@ -9277,7 +9719,6 @@ export default class extends Vue {
       if (ERC20TokenId && this.principal) {
         getTokenBalance({ icrc1: null }, ERC20TokenId).then((balance) => {
           this.$set(this.ERC20Balance, ERC20TokenId, balance);
-          console.log(this.ERC20Balance[ERC20TokenId]);
         });
       }
     } else if (
@@ -9293,7 +9734,6 @@ export default class extends Vue {
                 params: []
               })
               .then((res) => {
-                console.log(res);
                 if (res && res.length) {
                   ethereum
                     .request({
@@ -9350,17 +9790,13 @@ export default class extends Vue {
       }
     }
   }
-
   private changeNetworkTokenIdMintTo(val: number): void {
     // this.changeNetworkTokenList();
-    console.log('changeNetworkTokenIdMintTo');
-    console.log(this.networkTokensTo[val].networkId);
     if (this.networkTokensTo[val].networkId === '-1') {
       const ERC20TokenId = this.networkTokensTo[val].tokenId;
       if (ERC20TokenId && this.principal) {
         getTokenBalance({ icrc1: null }, ERC20TokenId).then((balance) => {
           this.$set(this.ERC20Balance, ERC20TokenId, balance);
-          console.log(this.ERC20Balance[ERC20TokenId]);
         });
       }
     } else if (
@@ -9376,7 +9812,6 @@ export default class extends Vue {
                 params: []
               })
               .then((res) => {
-                console.log(res);
                 if (res && res.length) {
                   ethereum
                     .request({
@@ -9433,11 +9868,9 @@ export default class extends Vue {
       }
     }
   }
-
   private pageChangeDepositInfo(page: number): void {
     this.depositInfoPage = page;
   }
-
   private pageChange(page: number): void {
     if (this.BTCType === BTCTypeEnum.icBTC) {
       this.BTCTransactionsPage = page;
@@ -9445,35 +9878,27 @@ export default class extends Vue {
       this.ckBTCTransactionsPage = page;
     }
   }
-
   private pageChangeCKETHMint(page: number) {
     this.ckETHMintPage = page;
   }
-
   private pageChangeCKETHResponse(page: number) {
     this.CKETHResponsePage = page;
   }
-
   private mintEventPageChange(page: number): void {
     this.mintEventPage = page;
   }
-
   private retrieveEventPageChange(page: number): void {
     this.retrieveEventPage = page;
   }
-
   private pageChangeETH(page: number): void {
     this.ckETHTransactionsPage = page;
   }
-
   private retrieveBtcStatusPageChange(page: number): void {
     this.retrieveBtcStatusPage = page;
   }
-
   private retrieveETHStatusPageChange(page: number): void {
     this.retrieveETHStatusPage = page;
   }
-
   private setUpdateBlockHeight(BTCType: BTCTypeEnum): void {
     const principal = localStorage.getItem('principal');
     if (principal) {
@@ -9487,7 +9912,8 @@ export default class extends Vue {
         const transaction = BTCTransactions[i];
         if (
           transaction.status.block_height &&
-          this.blockCount - transaction.status.block_height >= 5 &&
+          this.blockCount - transaction.status.block_height >=
+            Number(this.minterInfoIcBTC.minConfirmations) - 1 &&
           BTCType === BTCTypeEnum.icBTC
         ) {
           this.updateBlockHeight = transaction.status.block_height;
@@ -9495,7 +9921,8 @@ export default class extends Vue {
         }
         if (
           transaction.status.block_height &&
-          this.blockCount - transaction.status.block_height >= 11 &&
+          this.blockCount - transaction.status.block_height >=
+            Number(this.minterInfoCkBTC.min_confirmations) - 1 &&
           BTCType === BTCTypeEnum.ckBTC
         ) {
           this.updateCkBlockHeight = transaction.status.block_height;
@@ -9511,7 +9938,6 @@ export default class extends Vue {
       localStorage.setItem(principal, JSON.stringify(currentInfo));
     }
   }
-
   private setCkETHUpdateBlockHeight(): void {
     const principal = localStorage.getItem('principal');
     if (principal) {
@@ -9542,7 +9968,6 @@ export default class extends Vue {
       localStorage.setItem(principal, JSON.stringify(currentInfo));
     }
   }
-
   private async depositETH(isHand = true): Promise<void> {
     const now = new Date().getTime() / 1000;
     // todo 1 Minutes
@@ -9576,21 +10001,28 @@ export default class extends Vue {
       ) {
         ERC20Tokenid = [this.icNetworkTokens.id];
       }
-      console.log(ERC20Tokenid);
+      this.depositDisabledTimeout = true;
       const res = await this.ckETHMinterService.updateBalance(ERC20Tokenid);
-      this.pendingLoading = false;
       this.setCkETHUpdateBlockHeight();
       if (res) {
-        console.log(res);
         const type = Object.keys(res)[0];
         if (type === 'Ok') {
-          this.getMintDepositing();
-          this.updateMintPending();
-          this.onGetDepositing();
           if (isHand) {
             this.$message.success('Mint pending');
           }
+          window.setTimeout(() => {
+            this.pendingLoading = false;
+            this.depositDisabledTimeout = false;
+            this.updateMintPending(
+              this.icNetworkTokens.icTokenInfo.ckLedgerId.toString(),
+              this.icNetworkTokens.icTokenInfo.tokenId
+            );
+            this.getMintDepositing();
+            this.onGetDepositing();
+          }, 9 * 1000);
         } else {
+          this.pendingLoading = false;
+          this.depositDisabledTimeout = false;
           if (isHand) {
             const err = (res as { Err: ResultError }).Err;
             this.$message.error(
@@ -9602,16 +10034,13 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
       this.$message.error('Error');
     }
     this.depositNotifyLoading = false;
     loading && loading.close();
   }
-
   private async onRetrieveETH(index: number): Promise<void> {
     const txHash = this.retrieveETHStatus[index][1].txHash;
-    console.log(txHash);
     if (txHash && txHash.length) {
       let res;
       for (let i = 0; i < txHash.length; i++) {
@@ -9620,7 +10049,6 @@ export default class extends Vue {
           break;
         }
       }
-      console.log(res);
       let receipt;
       if (res) {
         receipt = res.data.result;
@@ -9648,14 +10076,10 @@ export default class extends Vue {
       }
       try {
         const block = await this.getEthBlock();
-        console.log(block);
         if (block) {
           this.blockCountETH = parseInt(block.data.result);
         }
-        console.log(this.blockCountETH);
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
       if (
         receipt &&
         receipt.status &&
@@ -9746,28 +10170,20 @@ export default class extends Vue {
               }
             }
           }
-        } catch (e) {
-          console.log(e);
-        }
+        } catch (e) {}
       }
     }
   }
-
   private async updateETHStatus(signedTx: Array<number>): Promise<void> {
     const num = Math.floor(Math.random() * ETHWebsocketProvider.length);
     if (signedTx) {
       const web3 = new Web3(ETHWebsocketProvider[num]);
       web3.eth
         .sendSignedTransaction('0x' + toHexString(new Uint8Array(signedTx)))
-        .then((receipt) => {
-          console.log(receipt);
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+        .then((receipt) => {})
+        .catch((e) => {});
     }
   }
-
   private async updateRetrievals(): Promise<void> {
     // const num = Math.floor(Math.random() * ETHWebsocketProvider.length);
     // const res = await this.ckETHMinterService.updateRetrievals();
@@ -9779,12 +10195,11 @@ export default class extends Vue {
     //         '0x' + toHexString(new Uint8Array(item[0].signedTx[0][0]))
     //       )
     //       .then((receipt) => {
-    //         console.log(receipt);
+    //
     //       });
     //   });
     // }
   }
-
   private async updateETH(isHand = true): Promise<void> {
     let loading;
     const now = new Date().getTime() / 1000;
@@ -9805,7 +10220,6 @@ export default class extends Vue {
     try {
       ETHUpdateTime = now;
       const res = await this.ckETHMinterService.updateBalance();
-      console.log(res);
       if (res) {
         const type = Object.keys(res)[0];
         if (type === 'Ok') {
@@ -9825,12 +10239,9 @@ export default class extends Vue {
           }
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     loading && loading.close();
   }
-
   private async forge(BTCType: BTCTypeEnum, isHand = true): Promise<void> {
     let loading;
     if (isHand) {
@@ -9842,7 +10253,6 @@ export default class extends Vue {
     }
     try {
       const res = await this.ckBTCMinterService.updateBalance(BTCType);
-      console.log(res);
       if (res) {
         const type = Object.keys(res)[0];
         if (type === 'Ok') {
@@ -9914,23 +10324,17 @@ export default class extends Vue {
           }
         }
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     loading && loading.close();
   }
-
   private async putQuests(): Promise<void> {
     try {
       await this.questsService.putEvent(
         'ckBTC',
         Principal.fromText(this.principal)
       );
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
-
   private async getETHTransactions(): Promise<void> {
     try {
       const ERC20TokenId = this.icNetworkTokens.tokenId;
@@ -9949,30 +10353,23 @@ export default class extends Vue {
         this.updateCkETHBlockHeight[ERC20TokenId] = Number(
           currentInfo.ckETHUpdateBlockHeight[ERC20TokenId]
         );
-        console.log(this.updateCkETHBlockHeight);
       }
       const block = await this.getEthBlock();
-      console.log(block);
       if (block) {
         this.blockCountETH = parseInt(block.data.result);
       }
-      console.log(this.blockCountETH);
       this.ckETHTransactionsPage = 1;
       // this.ckETHTransactionTotal = 0;
       if (this.forgeModalETH) {
         await this.getEThTxs();
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     this.showCkETHTransactions = false;
   }
-
   private async getEThTxs(scanNum?: number, retry = 0): Promise<void> {
     try {
       if (!scanNum && scanNum !== 0) {
         scanNum = Math.floor(Math.random() * etherScanKey.length);
-        console.log(scanNum);
       } else {
         if (scanNum + 1 >= etherScanKey.length) {
           scanNum = 0;
@@ -10002,7 +10399,6 @@ export default class extends Vue {
           `${this.etherscanLink}/api?module=account&action=tokentx&contractaddress=${ERC20Id}&address=${this.ETHAddressCk}&page=1&offset=50&startblock=0&endblock=${this.blockCountETH}&sort=desc&apikey=${etherScanKey[scanNum]}`
         );
       }
-      console.log(res);
       if (res && res.data && res.data.status === '1') {
         this.filterETHTx(res, this.ETHAddressCk);
       } else {
@@ -10022,7 +10418,6 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
       if (retry < etherScanKey.length) {
         setTimeout(() => {
           this.getEThTxs(scanNum, ++retry);
@@ -10030,7 +10425,6 @@ export default class extends Vue {
       }
     }
   }
-
   private async getBTCTransactions(BTCType: BTCTypeEnum): Promise<void> {
     try {
       const principal = localStorage.getItem('principal');
@@ -10041,13 +10435,11 @@ export default class extends Vue {
         } else {
           this.updateCkBlockHeight = Number(currentInfo.ckBTCUpdateBlockHeight);
         }
-        console.log(this.updateBlockHeight, this.updateCkBlockHeight);
       }
       const block = await axios.get('https://blockchain.info/q/getblockcount');
       if (block) {
         this.blockCount = block.data;
       }
-      console.log(this.blockCount);
       if (BTCType === BTCTypeEnum.icBTC) {
         this.BTCTransactionsPage = 1;
         this.BTCTransactionTotal = 0;
@@ -10063,18 +10455,14 @@ export default class extends Vue {
         );
         this.filterBTCTx(res, BTCType, this.BTCAddressCk);
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     this.showBTCTransactions = false;
     this.showCkBTCTransactions = false;
   }
-
   private filterETHTx(res: any, BTCAddress: string): void {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     if (res && res.data && res.data.result && res.data.result.length) {
       const txs = res.data.result;
-      console.log(txs);
       let hasConfirmedLoading = false;
       let needUpdate = false;
       if (txs && txs.length) {
@@ -10112,14 +10500,12 @@ export default class extends Vue {
       }
       this.ckETHTransactions[ERC20TokenId] = txs;
       this.hasCkETHConfirmedLoading = hasConfirmedLoading;
-      console.log(txs);
       this.ckETHTransactionTotal = this.ckETHTransactions[ERC20TokenId].length;
     } else {
       this.ckETHTransactions[ERC20TokenId] = [];
       this.ckETHTransactionTotal = 0;
     }
   }
-
   private filterBTCTx(
     res: any,
     BTCType: BTCTypeEnum,
@@ -10127,7 +10513,6 @@ export default class extends Vue {
   ): void {
     if (res && res.data) {
       const txs = res.data;
-      console.log(txs);
       let hasConfirmedLoading = false;
       let needUpdate = false;
       if (txs && txs.length) {
@@ -10163,9 +10548,11 @@ export default class extends Vue {
           if (flag && this.blockCount && txs[i].status.block_height) {
             if (
               (BTCType === BTCTypeEnum.icBTC &&
-                this.blockCount - txs[i].status.block_height < 5) ||
+                this.blockCount - txs[i].status.block_height <
+                  Number(this.minterInfoIcBTC.minConfirmations) - 1) ||
               (BTCType === BTCTypeEnum.ckBTC &&
-                this.blockCount - txs[i].status.block_height < 11)
+                this.blockCount - txs[i].status.block_height <
+                  Number(this.minterInfoCkBTC.min_confirmations) - 1)
             ) {
               hasConfirmedLoading = true;
             }
@@ -10180,7 +10567,8 @@ export default class extends Vue {
               ((BTCType === BTCTypeEnum.icBTC &&
                 this.blockCount - txs[i].status.block_height >= 6) ||
                 (BTCType === BTCTypeEnum.ckBTC &&
-                  this.blockCount - txs[i].status.block_height >= 12)) &&
+                  this.blockCount - txs[i].status.block_height >=
+                    Number(this.minterInfoCkBTC.min_confirmations))) &&
               (txs[i].status.block_height > updateBlockHeight ||
                 !updateBlockHeight)
             ) {
@@ -10202,12 +10590,10 @@ export default class extends Vue {
         this.ckBTCTransactions = txs;
         this.hasCkConfirmedLoading = hasConfirmedLoading;
       }
-      console.log(needUpdate, BTCType);
       // if (needUpdate) {
       //   this.forge(BTCType, false);
       //   this.setUpdateBlockHeight(BTCType);
       // }
-      console.log(txs);
       if (BTCType === BTCTypeEnum.icBTC) {
         this.BTCTransactionTotal = this.BTCTransactions.length;
       } else {
@@ -10215,17 +10601,14 @@ export default class extends Vue {
       }
     }
   }
-
   private async getInfo(BTCType: BTCTypeEnum): Promise<string> {
     if (BTCType === BTCTypeEnum.icBTC) {
       const res = await this.ckBTCMinterService.info(BTCType);
-      console.log(res);
       return res.version;
     } else {
       return '1.0';
     }
   }
-
   private async getETHAddress(version: string): Promise<void> {
     if (!this.ETHAddressCk) {
       this.ETHAddressCk = await this.ckETHMinterService.getEthAddress();
@@ -10244,7 +10627,6 @@ export default class extends Vue {
       this.ckETHAccountCode = res;
     });
   }
-
   private async getBTCAddress(
     version: string,
     BTCType: BTCTypeEnum
@@ -10255,7 +10637,6 @@ export default class extends Vue {
         (BTCType === BTCTypeEnum.ckBTC && !this.BTCAddressCk)
       ) {
         const btcAddress = await this.ckBTCMinterService.getBtcAddress(BTCType);
-        console.log(btcAddress);
         if (BTCType === BTCTypeEnum.icBTC) {
           this.BTCAddressIc = btcAddress;
         } else {
@@ -10281,7 +10662,6 @@ export default class extends Vue {
       } else {
         this.showCkBTCTransactions = false;
       }
-      console.log(e);
     }
     if (this.BTCAddressCk) {
       QRCode.toDataURL(this.BTCAddressCk, {
@@ -10298,7 +10678,6 @@ export default class extends Vue {
       });
     }
   }
-
   private async getWithdrawalAccount(version: string): Promise<void> {
     if (!this.withdrawalAccount) {
       this.withdrawalAccount =
@@ -10327,33 +10706,26 @@ export default class extends Vue {
     if (this.BTCType === BTCTypeEnum.icBTC) {
       try {
         const info = await this.ckBTCMinterService.info(this.BTCType);
-        console.log(info);
         this.btcRetrieveFee = info.btcRetrieveFee;
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
     } else {
       try {
         const res = await this.ckBTCMinterService.estimate_fee(this.BTCType);
-        console.log(res);
         this.btcRetrieveFee = res;
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
     }
     this.getDissolveBalance();
   }
-
   private async getDissolveBalance(): Promise<void> {
     if (this.withdrawalAccount) {
       let tokenId;
       let retrieve_btc_min_amount;
       if (this.BTCType === BTCTypeEnum.icBTC) {
         tokenId = IC_BTC_CANISTER_ID;
-        retrieve_btc_min_amount = 20000;
+        retrieve_btc_min_amount = this.minterInfoIcBTC.btcMinAmount;
       } else {
         tokenId = CK_BTC_CANISTER_ID;
-        retrieve_btc_min_amount = 100000;
+        retrieve_btc_min_amount = this.minterInfoCkBTC.retrieve_btc_min_amount;
       }
       this.clearTime();
       this.dissolveBalance = await getDepositing(
@@ -10383,20 +10755,24 @@ export default class extends Vue {
       }, 3000);
     }
   }
-
   private async getRetrieveBtcStatus(
-    blockIndex: string
+    blockIndex: string,
+    BTCType?: BTCTypeEnum
   ): Promise<RetrieveBtcStatus> {
     try {
-      return await this.ckBTCMinterService.retrieveBtcStatus(
-        this.BTCType,
-        BigInt(blockIndex)
-      );
-    } catch (e) {
-      console.log(e);
-    }
+      if (!BTCType) {
+        return await this.ckBTCMinterService.retrieveBtcStatus(
+          this.BTCType,
+          BigInt(blockIndex)
+        );
+      } else {
+        return await this.ckBTCMinterService.retrieveBtcStatus(
+          BTCType,
+          BigInt(blockIndex)
+        );
+      }
+    } catch (e) {}
   }
-
   private initTransactions(): void {
     if (this.BTCType === BTCTypeEnum.icBTC) {
       this.showBTCTransactions = true;
@@ -10434,7 +10810,6 @@ export default class extends Vue {
       this.getTransactions();
     }
   }
-
   private hasShowWarning(type: string): void {
     const hasShowWarning = this.$cookies.get('ckBTCTip');
     if (hasShowWarning) {
@@ -10482,7 +10857,6 @@ export default class extends Vue {
       });
     }
   }
-
   private async refreshCkETHBalance(
     isRefresh = true,
     std = 'DRC20'
@@ -10500,11 +10874,8 @@ export default class extends Vue {
       if (isRefresh) {
         this.refreshCkETHBalanceLoading = false;
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
-
   private async toAddToken(std = 'DRC20'): Promise<void> {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     if (ERC20TokenId) {
@@ -10538,13 +10909,10 @@ export default class extends Vue {
             }
           );
           this.$emit('addTokenSuccess');
-        } catch (e) {
-          console.log(e);
-        }
+        } catch (e) {}
       }
     }
   }
-
   private async refreshCkBTCBalance(
     type: string,
     isRefresh = true
@@ -10569,9 +10937,7 @@ export default class extends Vue {
       } else {
         this.ckBTCBalance = balance;
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     if (isRefresh) {
       if (type === BTCTypeEnum.icBTC) {
         this.refreshIcBTCBalanceLoading = false;
@@ -10580,7 +10946,6 @@ export default class extends Vue {
       }
     }
   }
-
   private showApprove(type: BTCTypeEnum): void {
     this.BTCType = type;
     this.$emit('getBalance');
@@ -10595,32 +10960,26 @@ export default class extends Vue {
     };
     this.$refs.approveIcrc2.init(approveTokenInfo);
   }
-
   private showTransfer(type: BTCTypeEnum): void {
     this.BTCType = type;
     this.$emit('getBalance');
     this.$refs.transferIcp.visibleTransfer = true;
   }
-
   private showReceive(showAccount = true, type: BTCTypeEnum): void {
     this.BTCType = type;
     this.$refs.receiveModal.init(showAccount);
     this.$refs.receiveModal.principal = this.principal;
     this.$refs.receiveModal.visibleReceive = true;
   }
-
   private async refreshBalance(): Promise<void> {
     if (!this.refreshBalanceLoading) {
       this.refreshBalanceLoading = true;
       try {
         await this.$emit('getBalance');
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
       this.refreshBalanceLoading = false;
     }
   }
-
   private showTopUp(walletId?: PrincipalString): void {
     if (walletId && typeof walletId === 'string') {
       this.topUpType = 'topUpWallet';
@@ -10632,24 +10991,18 @@ export default class extends Vue {
     this.$emit('getBalance');
     this.$refs.topUp.visibleTopUp = true;
   }
-
   private async topUpSuccess(): Promise<void> {
     this.$emit('getBalance');
     this.$emit('topUpSuccess');
   }
-
   private approveIcrc2Success(): void {
     this.$emit('getBalance');
   }
-
   private async transferTokenSuccess(): Promise<void> {
     try {
       this.getCkBTCBalance();
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
-
   private afterClose(): void {
     this.BTCType = null;
     (this.$refs as any).form && (this.$refs as any).form.resetFields();
@@ -10664,7 +11017,6 @@ export default class extends Vue {
     this.retrieveEvent = [];
     this.withdrawalAccount = null;
   }
-
   private afterForgeClose(): void {
     this.BTCType = null;
     window.clearInterval(this.btcTimer);
@@ -10673,7 +11025,6 @@ export default class extends Vue {
     this.mintStep = 1;
     this.mintEvent = [];
   }
-
   private afterRetrieveCloseCKETH(): void {
     this.retrieveStep = 1;
     this.ckETHMintPage = 1;
@@ -10682,7 +11033,6 @@ export default class extends Vue {
     window.clearInterval(this.ckETHTimer);
     this.ckETHTimer = null;
   }
-
   private afterForgeCloseCKETH(): void {
     this.mintStep = 1;
     this.ckETHMintPage = 1;
@@ -10691,7 +11041,6 @@ export default class extends Vue {
     window.clearInterval(this.ckETHTimer);
     this.ckETHTimer = null;
   }
-
   private afterForgeCloseETH(): void {
     try {
       this.mintStep = 1;
@@ -10707,9 +11056,7 @@ export default class extends Vue {
         (this.$refs as any).signatureForm.resetFields();
         this.signatureForm.txHash = '';
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     window.clearInterval(this.updateRetrieveETHStatusTimer);
     this.updateRetrieveETHStatusTimer = null;
     window.clearInterval(this.updateDepositETHStatusTimer);
@@ -10725,14 +11072,12 @@ export default class extends Vue {
     this.depositInfo = [];
     this.depositing = [];
   }
-
   private clearTime(): void {
     window.clearInterval(this.balanceTimer);
     this.balanceTimer = null;
     window.clearInterval(this.btcTxTimer);
     this.btcTxTimer = null;
   }
-
   private validateIcBTCAddress(
     rule: ValidationRule,
     value: string,
@@ -10744,7 +11089,6 @@ export default class extends Vue {
       callback();
     }
   }
-
   private validateAmountCKETH(
     rule: ValidationRule,
     value: number,
@@ -10823,7 +11167,6 @@ export default class extends Vue {
       }
     }
   }
-
   private validateAmountETH(
     rule: ValidationRule,
     value: number,
@@ -10891,7 +11234,6 @@ export default class extends Vue {
       }
     }
   }
-
   private validateErc20Amount(
     rule: ValidationRule,
     value: number,
@@ -10903,17 +11245,15 @@ export default class extends Vue {
       .toString(10);
     const std = Object.keys(erc20TokenInfo.std)[0];
     let fee = '0';
-    if (std === 'ERC20') {
-      if (this.depositMethod === 1) {
-        fee = this.filterEstimatedFee(
-          erc20TokenInfo,
-          this.ethTokenInfo,
-          this.minterInfo
-        );
-      }
-      if (this.depositMethod === 2) {
-        fee = this.filterEstimatedFeeMode2(erc20TokenInfo);
-      }
+    if (this.depositMethod === 1) {
+      fee = this.filterEstimatedFee(
+        erc20TokenInfo,
+        this.ethTokenInfo,
+        this.minterInfo
+      );
+    }
+    if (this.depositMethod === 2) {
+      fee = this.filterEstimatedFeeMode2(erc20TokenInfo);
     }
     const minAmountFee = new BigNumber(fee).plus(minAmount);
     if (value && new BigNumber(value).lt(minAmountFee)) {
@@ -10926,7 +11266,6 @@ export default class extends Vue {
       callback();
     }
   }
-
   private validateAmount(
     rule: ValidationRule,
     value: number,
@@ -10939,12 +11278,20 @@ export default class extends Vue {
       fee = this.icBTCFee;
       total = this.icBTCBalance;
       // todo
-      retrieve_btc_min_amount = new BigNumber(0.0002).toString(10);
+      retrieve_btc_min_amount = new BigNumber(
+        this.minterInfoIcBTC.btcMinAmount.toString(10)
+      )
+        .div(10 ** 8)
+        .toString(10);
     } else {
       fee = this.ckBTCFee;
       total = this.ckBTCBalance;
       // todo
-      retrieve_btc_min_amount = new BigNumber(0.001).toString(10);
+      retrieve_btc_min_amount = new BigNumber(
+        this.minterInfoCkBTC.retrieve_btc_min_amount.toString(10)
+      )
+        .div(10 ** 8)
+        .toString(10);
     }
     const min = Number(
       new BigNumber(total)
@@ -10961,7 +11308,6 @@ export default class extends Vue {
       callback();
     }
   }
-
   private getRetrieveBtcTxidResponse(val: RetrieveBtcStatus): string {
     if (val) {
       const status = Object.keys(val)[0];
@@ -10974,7 +11320,6 @@ export default class extends Vue {
     }
     return null;
   }
-
   private getRetrieveBtcTxid(val: RetrieveBtcStatus): string {
     if (val) {
       const status = Object.keys(val)[0];
@@ -10989,12 +11334,10 @@ export default class extends Vue {
     }
     return null;
   }
-
   private isMetaMaskInstalled(): boolean {
     //Have to check the ethereum binding on the window object to see if it's installed
     return Boolean(ethereum && ethereum.isMetaMask);
   }
-
   private installMetaMask(): void {
     const forwarderOrigin = 'https://fwd.metamask.io';
     //We create a new MetaMask onboarding object to use in our app
@@ -11002,19 +11345,16 @@ export default class extends Vue {
     //This will start the onboarding proccess
     onboarding.startOnboarding();
   }
-
   private previousMintStepCK(): void {
     if (this.mintStep > 1) {
       this.changeMintStepCK(this.mintStep - 1);
     }
   }
-
   private nextMintStepCK(max: number): void {
     if (this.mintStep < max) {
       this.changeMintStepCK(this.mintStep + 1);
     }
   }
-
   private changeMintStepCK(step: number): void {
     this.mintStep = step;
     this.pendingLoading = false;
@@ -11022,50 +11362,42 @@ export default class extends Vue {
       (this.$refs as any).erc20Form.resetFields();
     }
   }
-
   private previousMintStep(): void {
     if (this.mintStep > 1) {
       this.changeMintStep(this.mintStep - 1);
     }
   }
-
   private nextMintStep(max: number): void {
     if (this.mintStep < max) {
       this.changeMintStep(this.mintStep + 1);
     }
   }
-
   private previousRetrieveStep(): void {
     if (this.retrieveStep > 1) {
       this.changeRetrieveStep(this.retrieveStep - 1);
     }
   }
-
   private nextRetrieveStep(max: number): void {
     if (this.retrieveStep < max) {
       this.changeRetrieveStep(this.retrieveStep + 1);
     }
   }
-
   private previousRetrieveStepCK(): void {
     if (this.retrieveStep > 1) {
       this.changeRetrieveStepCK(this.retrieveStep - 1);
     }
   }
-
   private nextRetrieveStepCK(max: number): void {
     if (this.retrieveStep < max) {
       this.changeRetrieveStepCK(this.retrieveStep + 1);
     }
   }
-
   private changeRetrieveStepCK(step: number): void {
     this.retrieveStep = step;
     if (step === 3) {
       this.retrieveEventPage = 1;
     }
   }
-
   private changeMintStep(step: number): void {
     this.mintStep = step;
     this.pendingLoading = false;
@@ -11083,7 +11415,6 @@ export default class extends Vue {
       this.getAccountEvents();
     }
   }
-
   private changeRetrieveStep(step: number): void {
     this.retrieveStep = step;
     if (step === 3) {
@@ -11091,7 +11422,6 @@ export default class extends Vue {
       this.getAccountEvents();
     }
   }
-
   private transferFromOther(): void {
     (this.$refs as any).erc20Form.validate(async (valid: any) => {
       if (valid) {
@@ -11100,7 +11430,6 @@ export default class extends Vue {
       }
     });
   }
-
   private transferFromMetaMaskCK(): void {
     (this.$refs as any).erc20Form.validate(async (valid: any) => {
       if (valid) {
@@ -11127,35 +11456,32 @@ export default class extends Vue {
             const accounts: string[] = await ethereum.request({
               method: 'eth_requestAccounts'
             });
-            console.log(accounts);
-            console.log(this.icNetworkTokens);
             const amount =
               '0x' +
               new BigNumber(this.erc20Form.amount).times(10 ** 18).toString(16);
             const _principalHex = principalToBytes32(this.principal);
+            const subaccount =
+              '0x' + toHexString(new Uint8Array(fromSubAccountId(0)));
             const web3 = new Web3();
-            console.log(amount, _principalHex);
-            console.log(this.smartContractAddress);
             if (this.icNetworkTokens.tokenId === CK_ETH_LEDGER_CANISTER_ID) {
               const ethContract = new web3.eth.Contract(
-                ethAbi,
-                this.smartContractAddress
+                depositAbi,
+                this.depositHelperContractAddress
               );
               const contractData = ethContract.methods
-                .deposit(_principalHex)
+                .depositEth(_principalHex, subaccount)
                 .encodeABI();
               const sendTransactionRes = await ethereum.request({
                 method: 'eth_sendTransaction',
                 params: [
                   {
                     from: accounts[0],
-                    to: this.smartContractAddress,
+                    to: this.depositHelperContractAddress,
                     value: amount,
                     data: contractData
                   }
                 ]
               });
-              console.log(sendTransactionRes);
               const amountMint = new BigNumber(this.erc20Form.amount)
                 .times(10 ** 18)
                 .toString(10);
@@ -11196,7 +11522,6 @@ export default class extends Vue {
                   }
                 ]
               });
-              console.log(sendTransactionRes);
               const amountMint = new BigNumber(this.erc20Form.amount)
                 .times(10 ** 18)
                 .toString(10);
@@ -11235,30 +11560,33 @@ export default class extends Vue {
                   )
                   .toString(16);
               const approveRes = await tokenContract.methods
-                .approve(this.smartContractAddressERC20, amount)
+                .approve(this.depositHelperContractAddress, amount)
                 .send({ from: accounts[0] });
-              console.log(approveRes);
               (loading as any).setText(
                 `Deposit ${this.icNetworkTokens.icTokenInfo.symbol} ...`
               );
               const ERC20Contract = new web3.eth.Contract(
-                erc20ABI,
-                this.smartContractAddressERC20
+                depositAbi,
+                this.depositHelperContractAddress
               );
               const contractData = ERC20Contract.methods
-                .deposit(this.icNetworkTokens.id, amount, _principalHex)
+                .depositErc20(
+                  this.icNetworkTokens.id,
+                  amount,
+                  _principalHex,
+                  subaccount
+                )
                 .encodeABI();
               const sendTransactionRes = await ethereum.request({
                 method: 'eth_sendTransaction',
                 params: [
                   {
                     from: accounts[0],
-                    to: this.smartContractAddressERC20,
+                    to: this.depositHelperContractAddress,
                     data: contractData
                   }
                 ]
               });
-              console.log(sendTransactionRes);
               const amountMint = new BigNumber(this.erc20Form.amount)
                 .times(10 ** this.tokens[this.icNetworkTokens.tokenId].decimals)
                 .toString(10);
@@ -11282,7 +11610,6 @@ export default class extends Vue {
               this.onGetMintCKETHPending();
             }
           } catch (e) {
-            console.log(e);
             if (e.code !== 4001) {
               this.$message.error(e.message);
             }
@@ -11292,7 +11619,6 @@ export default class extends Vue {
       }
     });
   }
-
   private async transferFromMetaMask(): Promise<void> {
     (this.$refs as any).erc20Form.validate(async (valid: any) => {
       if (valid) {
@@ -11326,12 +11652,14 @@ export default class extends Vue {
             const accounts: string[] = await ethereum.request({
               method: 'eth_requestAccounts'
             });
-            console.log(accounts);
             const value =
               '0x' +
               new BigNumber(this.erc20Form.amount)
                 .times(10 ** this.icNetworkTokens.icTokenInfo.decimals)
                 .toString(16);
+            const amount = new BigNumber(this.erc20Form.amount)
+              .times(10 ** this.icNetworkTokens.icTokenInfo.decimals)
+              .toString(10);
             const std = Object.keys(this.icNetworkTokens.icTokenInfo.std)[0];
             let sendTransactionRes;
             if (std === 'ETH') {
@@ -11346,7 +11674,6 @@ export default class extends Vue {
                 ]
               });
             } else {
-              console.log(value);
               const web3 = new Web3();
               const erc20Contract = new web3.eth.Contract(
                 abi,
@@ -11366,14 +11693,18 @@ export default class extends Vue {
                 ]
               });
             }
-            console.log(sendTransactionRes);
             this.changeMintStep(2);
             if (this.depositMethod === 2) {
               const depositInfo = this.getDepositInfo();
               const now = new Date().getTime();
-              depositInfo.unshift([sendTransactionRes, false, false, now]);
-              this.setDepositInfo(depositInfo);
-              this.onGetClaimPending();
+              depositInfo.unshift([
+                sendTransactionRes,
+                false,
+                false,
+                now,
+                amount
+              ]);
+              this.setDepositInfo(this.icNetworkTokens.tokenId, depositInfo);
               this.depositInfo = this.getDepositInfo();
               this.signatureForm.txHash = sendTransactionRes;
               this.txHashChange();
@@ -11386,7 +11717,6 @@ export default class extends Vue {
               );
             }
           } catch (e) {
-            console.log(e);
             if (e.code !== 4001) {
               this.$message.error(e.message);
             }
@@ -11396,14 +11726,11 @@ export default class extends Vue {
       }
     });
   }
-
-  private updateMintPending(): void {
+  private updateMintPending(ckLedgerId: string, tokenId: string): void {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
     const key = IC_ETH_MINTER_CANISTER_ID + ethVersion;
-    const current = `${this.icNetworkTokens.icTokenInfo.ckLedgerId.toString()}&${
-      this.icNetworkTokens.icTokenInfo.tokenId
-    }`;
+    const current = `${ckLedgerId}&${tokenId}`;
     if (
       currentInfo.ckETHMintPending &&
       currentInfo.ckETHMintPending[key] &&
@@ -11412,14 +11739,11 @@ export default class extends Vue {
       const index = currentInfo.ckETHMintPending[key].indexOf(current);
       if (index > -1) {
         currentInfo.ckETHMintPending[key].splice(index, 1);
-        console.log(index);
-        console.log(currentInfo.ckETHMintPending[key]);
         localStorage.setItem(principal, JSON.stringify(currentInfo));
         this.onGetMintPending();
       }
     }
   }
-
   private async setRetrievePending(): Promise<void> {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -11436,7 +11760,6 @@ export default class extends Vue {
         ERC20TokenId,
         this.ckETHWithdrawalAccount
       ).then((res) => {
-        console.log(res);
         if (!currentInfo.ckETHRetrievePending) {
           currentInfo.ckETHRetrievePending = {};
         }
@@ -11451,29 +11774,25 @@ export default class extends Vue {
       });
     }
   }
-
-  private async removeRetrievePending(): Promise<void> {
+  private async removeRetrievePending(
+    ckLedgerId: string,
+    tokenId: string
+  ): Promise<void> {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
     const key = IC_ETH_MINTER_CANISTER_ID + ethVersion;
-    const ERC20TokenId = this.icNetworkTokens.tokenId;
-    if (ERC20TokenId) {
+    if (tokenId) {
       if (
         currentInfo.ckETHRetrievePending &&
         currentInfo.ckETHRetrievePending[key] &&
-        currentInfo.ckETHRetrievePending[key][
-          this.icNetworkTokens.icTokenInfo.ckLedgerId.toString()
-        ]
+        currentInfo.ckETHRetrievePending[key][ckLedgerId]
       ) {
-        delete currentInfo.ckETHRetrievePending[key][
-          this.icNetworkTokens.icTokenInfo.ckLedgerId.toString()
-        ];
+        delete currentInfo.ckETHRetrievePending[key][ckLedgerId];
         localStorage.setItem(principal, JSON.stringify(currentInfo));
         this.onGetRetrievePending();
       }
     }
   }
-
   private setMintPending(): void {
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
@@ -11501,11 +11820,18 @@ export default class extends Vue {
     }
     this.onGetMintPending();
   }
-
   private setDepositInfo(
-    depositInfo: Array<[string, boolean?, boolean?, number?]>
+    ERC20TokenId: string,
+    depositInfo: Array<[string, boolean?, boolean?, number?, string?]>
   ): void {
-    const ERC20TokenId = this.icNetworkTokens.tokenId;
+    this.updateDepositInfo(ERC20TokenId, depositInfo);
+    this.onGetMintICETH();
+  }
+  private updateDepositInfo(
+    ERC20TokenId: string,
+    depositInfo: Array<[string, boolean?, boolean?, number?, string?]>
+  ): void {
+    // const ERC20TokenId = this.icNetworkTokens.tokenId;
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
     if (!currentInfo.depositInfo) {
@@ -11516,24 +11842,22 @@ export default class extends Vue {
     ] = depositInfo;
     localStorage.setItem(principal, JSON.stringify(currentInfo));
   }
-
-  private getDepositInfo(): Array<[string, boolean?, boolean?, number?]> {
+  private getDepositInfo(): Array<
+    [string, boolean?, boolean?, number?, string?]
+  > {
     const ERC20TokenId = this.icNetworkTokens.tokenId;
     const principal = localStorage.getItem('principal');
     const currentInfo = JSON.parse(localStorage.getItem(principal)) || {};
     if (!currentInfo.depositInfo) {
       currentInfo.depositInfo = {};
     }
-    console.log('getDepositInfo');
     return (
       currentInfo.depositInfo[
         IC_ETH_MINTER_CANISTER_ID + ethVersion + ERC20TokenId
       ] || []
     );
   }
-
   private txHashChange(): void {
-    console.log('txHashChange');
     const web3 = new Web3();
     const hash = this.signatureForm.txHash.trim();
     if (web3.utils.isHexStrict(hash) && hash.length === 66) {
@@ -11550,7 +11874,6 @@ export default class extends Vue {
       }
     }
   }
-
   private getTxReceipt(hash: string): void {
     if (this.txReceiptTimer) {
       window.clearInterval(this.txReceiptTimer);
@@ -11565,10 +11888,8 @@ export default class extends Vue {
       }
     }, 60 * 1000);
   }
-
   private async checkTxReceipt(hash: string): Promise<void> {
     const resReceipt = await this.getEthTransactionReceipt(hash);
-    console.log(resReceipt);
     if (resReceipt && resReceipt.data.result) {
       window.clearInterval(this.txReceiptTimer);
       this.txReceiptTimer = null;
@@ -11605,7 +11926,6 @@ export default class extends Vue {
           resReceipt.data.result.logsBloom,
           resReceipt.data.result.logs[0].topics.slice(1)
         );
-        console.log(res);
         to = res.to.toLocaleLowerCase();
         amount = resReceipt.data.result.logs[0].data.toString(10);
       } else {
@@ -11615,10 +11935,9 @@ export default class extends Vue {
         }
         to = resReceipt.data.result.to.toLocaleLowerCase();
         const res = await this.getEthTransactionByHash(hash);
-        console.log(res);
-        amount = res.data.result.value.toString(10);
+        const web3 = new Web3();
+        amount = web3.utils.fromWei(res.data.result.value, 'ether');
       }
-      console.log(amount);
       if (to !== this.minterInfo.address) {
         this.claimTxError = 'Invalid transaction.';
         return;
@@ -11636,7 +11955,6 @@ export default class extends Vue {
         .plus(fee)
         .decimalPlaces(8)
         .toString(10);
-      console.log(minAmount);
       if (
         new BigNumber(
           this.icNetworkTokens.icTokenInfo.minAmount.toString(20)
@@ -11647,7 +11965,7 @@ export default class extends Vue {
       }
     } else if (resReceipt && !resReceipt.data.result) {
       this.claimTxError =
-        'Unable to locate the transaction, please try again later.';
+        'No txn record found. Waiting for txns to be synchronized.';
       return;
     } else if (
       resReceipt &&
@@ -11659,7 +11977,6 @@ export default class extends Vue {
     }
     this.claimTxError = '';
   }
-
   private onClaim(): void {
     (this.$refs as any).signatureForm.validate(async (valid: any) => {
       if (valid) {
@@ -11668,7 +11985,6 @@ export default class extends Vue {
       }
     });
   }
-
   private async tryClaim(txHash: string): Promise<void> {
     if (typeof txHash === 'string') {
       this.signatureForm.txHash = txHash;
@@ -11677,8 +11993,22 @@ export default class extends Vue {
       await this.signTypedData();
     }
   }
-
-  private async claim(txHash: string, signature: string): Promise<void> {
+  private async claim(
+    txHash: string,
+    signature: string,
+    amount: string
+  ): Promise<void> {
+    const depositInfo = this.getDepositInfo();
+    const flag = depositInfo.some((item) => {
+      if (item[0] === txHash) {
+        item[4] = amount;
+        return true;
+      }
+    });
+    if (!flag) {
+      depositInfo.unshift([txHash, true, false, new Date().getTime(), amount]);
+    }
+    this.setDepositInfo(this.icNetworkTokens.tokenId, depositInfo);
     const res = await this.ckETHMinterService.claim(
       txHash,
       hexToBytes(signature)
@@ -11695,20 +12025,56 @@ export default class extends Vue {
         const flag = depositInfo.some((item) => {
           if (item[0] === txHash) {
             item[1] = true;
+            item[4] = amount;
             return true;
           }
         });
         if (!flag) {
-          depositInfo.unshift([txHash, true, true, new Date().getTime()]);
+          depositInfo.unshift([
+            txHash,
+            true,
+            true,
+            new Date().getTime(),
+            amount
+          ]);
         }
-        this.setDepositInfo(depositInfo);
-        this.onGetClaimPending();
-        this.onGetClaim2Pending();
+        this.setDepositInfo(this.icNetworkTokens.tokenId, depositInfo);
         this.signatureForm.txHash = '';
         this.depositInfo = this.getDepositInfo();
         this.getMintDepositing();
       } else {
         const err = (res as { Err: ResultError }).Err;
+        if (
+          err &&
+          err.GenericError &&
+          err.GenericError.message &&
+          err.GenericError.message
+            .toLocaleLowerCase()
+            .includes('txhash already exists')
+        ) {
+          const depositInfo = this.getDepositInfo();
+          const flag = depositInfo.some((item) => {
+            if (item[0] === txHash) {
+              item[1] = true;
+              item[2] = true;
+              item[4] = amount;
+              return true;
+            }
+          });
+          if (!flag) {
+            depositInfo.unshift([
+              txHash,
+              true,
+              true,
+              new Date().getTime(),
+              amount
+            ]);
+          }
+          this.setDepositInfo(this.icNetworkTokens.tokenId, depositInfo);
+          this.signatureForm.txHash = '';
+          this.depositInfo = this.getDepositInfo();
+          this.getMintDepositing();
+        }
         this.$message.error(
           JSON.stringify(err, (key, value) =>
             typeof value === 'bigint' ? value.toString(10) : value
@@ -11719,7 +12085,6 @@ export default class extends Vue {
       this.$message.error('Mint error');
     }
   }
-
   private async signTypedData(): Promise<void> {
     if (!this.isMetaMaskInstalled()) {
       this.metaMaskVisible = true;
@@ -11745,13 +12110,19 @@ export default class extends Vue {
           method: 'eth_requestAccounts'
         });
         const resReceipt = await this.getEthTransactionReceipt(txHash);
-        console.log(resReceipt);
+        let amount;
         if (resReceipt && resReceipt.data.result) {
+          const web3 = new Web3();
           const std = Object.keys(this.icNetworkTokens.icTokenInfo.std)[0];
           let address;
           let to;
           if (std === 'ERC20') {
-            const web3 = new Web3();
+            const transferLog = resReceipt.data.result.logs.find((log) => {
+              return (
+                log.topics[0] ===
+                web3.utils.sha3('Transfer(address,address,uint256)')
+              );
+            });
             const res = web3.eth.abi.decodeLog(
               [
                 {
@@ -11765,17 +12136,29 @@ export default class extends Vue {
                   internalType: 'address',
                   name: 'to',
                   type: 'address'
+                },
+                {
+                  indexed: false,
+                  internalType: 'uint256',
+                  name: 'value',
+                  type: 'uint256'
                 }
               ],
-              resReceipt.data.result.logsBloom,
-              resReceipt.data.result.logs[0].topics.slice(1)
+              transferLog.data,
+              transferLog.topics.slice(1)
             );
-            console.log(res);
             address = res.from.toLocaleLowerCase();
             to = res.to.toLocaleLowerCase();
+            amount = res.value.toString(10);
           } else {
+            const res = await this.getEthTransactionByHash(txHash);
             address = resReceipt.data.result.from.toLocaleLowerCase();
             to = resReceipt.data.result.to.toLocaleLowerCase();
+            amount = new BigNumber(
+              web3.utils.fromWei(res.data.result.value, 'ether')
+            )
+              .times(10 ** this.icNetworkTokens.icTokenInfo.decimals)
+              .toString(10);
           }
           if (to !== this.minterInfo.address) {
             loading.close();
@@ -11814,8 +12197,6 @@ export default class extends Vue {
         salt = Array(32 - salt.length)
           .fill(0)
           .concat(salt);
-        console.log(salt);
-        console.log(fromSubAccountId(0));
         const msgParams = {
           domain: {
             // Give a user friendly name to the specific contract you are signing for.
@@ -11862,10 +12243,8 @@ export default class extends Vue {
           method: 'eth_signTypedData_v4',
           params: [accounts[0], JSON.stringify(msgParams)]
         });
-        console.log(signature);
-        await this.claim(txHash, signature);
+        await this.claim(txHash, signature, amount);
       } catch (e) {
-        console.log(e);
         if (e.code !== 4001) {
           this.$message.error(e.message);
         }
@@ -11874,26 +12253,19 @@ export default class extends Vue {
       loading.close();
     }
   }
-
   private filterStatus(val: number): string {
     if (val || val === 0) {
       return 'Confirmed';
     }
     return 'UnConfirmed';
   }
-
   private arrayToString(val: Array<number>): string {
     return toHexString(new Uint8Array(val));
   }
-
   private onCopySuccess(): void {
     this.$message.success(`Copied`);
   }
-
-  private onError(): void {
-    console.log('err');
-  }
-
+  private onError(): void {}
   private getCKETHRetrieveTxid(status: RetrieveEthStatus): string {
     const type = Object.keys(status)[0];
     if (type === 'TxSent') {
@@ -11920,58 +12292,50 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style lang="scss" scoped>
 .active-pending-item {
   display: flex;
   align-items: center;
   padding: 10px 0;
-
+  font-size: 12px;
   button {
     width: 80px;
     height: 28px;
-    margin-left: 20px;
+    margin-left: 10px;
+    margin-right: 0 !important;
     background: rgba(81, 183, 195, 0.7) !important;
   }
 }
-
 .chain-hub-token-info {
   margin-top: 10px;
 }
-
 .transaction-update-time {
   margin-bottom: 10px;
   font-size: 12px;
   text-align: right;
   color: #777d90;
 }
-
 .ic-token-balance {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   margin-top: 10px;
 }
-
 .cross-title {
   display: flex;
   align-items: center;
-
   p {
     font-size: 16px;
     color: #adb7c2;
     font-weight: bold;
-
     span {
       font-size: 14px;
       font-weight: normal;
     }
   }
-
   .minting-method-info {
     display: flex;
     align-items: center;
-
     .minting-method-type {
       display: flex;
       align-items: center;
@@ -11980,7 +12344,6 @@ export default class extends Vue {
       width: 180px;
       border-radius: 30px;
       background: #232730;
-
       span {
         display: flex;
         align-items: center;
@@ -11989,16 +12352,13 @@ export default class extends Vue {
         height: 30px;
         border-radius: 30px;
         cursor: pointer;
-
         &.h5-show {
           display: none;
         }
-
         &.active {
           background: #3899a4;
           color: #e7eaee;
         }
-
         &.disabled {
           cursor: not-allowed;
           background: #232730;
@@ -12009,101 +12369,88 @@ export default class extends Vue {
     }
   }
 }
-
 .retrieving-fee {
   display: flex;
   align-items: flex-start;
-
   .transfer-balance-max {
     color: #1996c4;
     cursor: pointer;
     margin-left: 5px;
   }
-
   .transfer-balance-right {
     margin-left: auto;
     color: #1996c4;
     cursor: pointer;
   }
 }
-
 .ic-btc-tip {
   color: #727a87;
   font-size: 12px;
 }
-
 .ckbtc-button {
   display: flex;
   align-items: center;
   width: 100%;
   margin-top: 30px;
   margin-bottom: 20px;
-
   button {
     width: 400px;
     height: 40px;
   }
 }
-
 .retrieve-button {
   height: 36px;
 }
-
+.response-main {
+  button {
+    margin-right: 0 !important;
+  }
+}
 .pagination-transaction-main {
   display: flex;
-
   .pagination-transaction {
     margin-top: 10px;
     margin-left: auto;
+    margin-right: 0 !important;
     overflow: hidden;
   }
 }
-
 .forge-modal {
   ::v-deep .ant-modal {
     padding-bottom: 70px;
   }
-
   ::v-deep .ant-modal-header {
     padding: 70px 70px 55px 90px;
   }
-
   ::v-deep .ant-modal-body {
     padding: 0 90px;
     min-height: 300px;
   }
-
   &.active-pending-modal {
     ::v-deep .ant-modal-header {
       padding: 70px 55px;
     }
-
     ::v-deep .ant-modal-body {
       min-height: auto;
       padding: 0 55px;
     }
   }
-
   ::v-deep .ant-spin-spinning {
     background: rgba(21, 22, 27, 0.1);
   }
-
   ::v-deep .ant-modal-title {
     text-align: left;
     font-size: 20px;
   }
-
   .Confirmed {
     color: rgba(33, 199, 125, 0.8);
   }
-
   /*.UnConfirmed {
     color: rgba(209, 54, 81, 0.8);
   }*/
   .modal-title-info {
     display: flex;
   }
-
   .title-tip {
     display: flex;
     align-items: center;
@@ -12111,51 +12458,41 @@ export default class extends Vue {
     line-height: 16px;
   }
 }
-
 .has-update {
   color: rgba(33, 199, 125, 1);
 }
-
 .flex-auto {
   display: flex;
-
   .flex1 {
     flex: 1;
   }
 }
-
 .retrieve-btc-status-ul-table {
   li {
     display: flex;
-
     &.retrieve-btc-status-ul-table-eth {
       font-size: 12px;
       padding: 10px 0;
       border-bottom: 1px solid #212b35 !important;
     }
-
     a {
       color: #2b8cb0;
     }
-
     .cell {
       width: 20%;
       display: flex;
       align-items: flex-start;
       word-break: break-word;
       word-wrap: break-word;
-
       &.cell-header {
         align-items: center;
       }
-
       &.grow1 {
         flex-grow: 1;
       }
     }
   }
 }
-
 .retrieve-btc-status {
   .retrieve-btc-status-ul {
     min-height: 100px;
@@ -12164,34 +12501,28 @@ export default class extends Vue {
     padding-right: 5px;
     overflow-y: auto;
     overflow-x: hidden;
-
     .retrieve-btc-status-block-index {
       width: 80px;
       margin-right: 10px;
     }
   }
-
   .no-retrieve-btc-status-ul {
     height: 150px;
     justify-content: center;
   }
-
   li {
     display: flex;
     align-items: center;
     padding: 5px 0;
     border-bottom: 1px solid #212b35;
-
     &:first-child {
       border-bottom: none;
     }
-
     &:last-child {
       border-bottom: none;
     }
   }
 }
-
 .btc-txs {
   .no-btc-txs-ul {
     display: flex;
@@ -12200,87 +12531,68 @@ export default class extends Vue {
     height: 275px;
     font-size: 14px;
   }
-
   .btc-txs-ul {
     min-height: 275px;
     max-height: calc(100vh - 400px);
     padding-right: 5px;
     overflow-y: auto;
     overflow-x: hidden;
-
     li {
       padding: 5px 0;
       border-bottom: 1px solid #212b35;
-
       &:first-child {
         margin-top: 0;
       }
     }
   }
-
   .btc-txs-hash {
     display: flex;
   }
-
   .btc-txs-info {
     display: flex;
-
     > div {
       flex: 1;
-
       &.btc-txs-info-left {
         flex: 0.7;
       }
     }
-
     .tx-balance {
       padding-left: 5px;
     }
   }
-
   a {
     color: #2b8cb0;
-
     &.out-address-m {
       opacity: 0.7;
     }
   }
 }
-
 .operation-disabled {
   opacity: 0.5;
 }
-
 .ic-balance-main {
   p {
     line-height: 20px;
   }
-
   .operation {
     height: auto;
     margin-top: 10px !important;
-
     .button-history {
       margin-right: 0;
-
       i {
         padding: 2px 0;
       }
     }
   }
-
   .ic-balance-item {
     margin-top: 10px;
-
     &.ic-balance-item-launch-event {
       display: flex;
-
       .ckBTC-launch-event {
         color: #2b8cb0;
       }
     }
   }
-
   .ic-balance-item-launch-event-select {
     position: relative;
     display: flex;
@@ -12288,74 +12600,60 @@ export default class extends Vue {
     height: 50px;
     margin-top: 30px;
     font-size: 16px;
-
     .ic-balance-item-launch-event-selected-icon {
       position: absolute;
       z-index: 100;
       left: 11px;
     }
-
     .select-erc20-token {
       height: 50px;
       min-width: 300px;
       margin-right: 10px;
-
       .ic-router-token-placeholder {
         display: flex;
         align-items: center;
       }
-
       &.select-erc20-token-event {
         ::v-deep .ant-select-selection-selected-value {
           margin-left: 38px;
         }
       }
-
       ::v-deep .ant-select-selection-selected-value {
         display: flex !important;
         align-items: center;
       }
-
       ::v-deep .ant-select-selection {
         border-radius: 25px;
       }
-
       ::v-deep .ant-select-selection--single {
         position: relative;
         height: 50px;
       }
-
       ::v-deep .ant-select-selection__rendered {
         line-height: 50px;
       }
     }
   }
-
   .operation {
     margin-top: 0;
     margin-left: auto;
     border: none;
   }
 }
-
 .ic-router-token-info {
   display: flex;
   align-items: center;
-
   .ic-router-token-info-right {
     display: flex;
     flex-direction: column;
-
     .ic-router-token-info-symbol {
       color: #adb7c2;
     }
-
     .ic-router-token-info-name {
       font-size: 12px;
     }
   }
 }
-
 .ic-router-token-symbol {
   display: inline-block;
   text-align: center;
@@ -12367,7 +12665,6 @@ export default class extends Vue {
   background: #a8aaaf;
   border-radius: 14px;
 }
-
 .ic-router-token-logo {
   width: 28px;
   height: 28px;
@@ -12375,75 +12672,61 @@ export default class extends Vue {
   object-fit: contain;
   margin-right: 10px;
 }
-
 .ic-balance-item-container {
   display: flex;
   align-items: flex-start;
   width: 100%;
   padding-bottom: 20px;
   border-bottom: 1px solid #383e4e;
-
   &.ic-balance-item-container-btc {
     padding-bottom: 25px;
   }
-
   .ic-balance-item-container-item {
     padding-top: 15px;
     width: 50%;
   }
-
   &.ic-balance-item-container-icp {
     padding: 10px 0 30px;
   }
-
   &:last-child {
     border-bottom: none;
   }
-
   button {
     &:disabled {
       background: rgba(81, 183, 195, 0.1) !important;
     }
   }
 }
-
 .ic-balance-item-other {
   display: flex;
   align-items: center;
   padding: 20px 0 10px;
-
   .ic-balance-item-other-item {
     min-width: 200px;
   }
 }
-
 .dissolve-modal {
   .forge-left-balance {
     flex-direction: column;
     align-items: flex-start;
   }
 }
-
 .btc-txs-header {
   display: flex;
   align-items: baseline;
   margin-bottom: 10px;
-
   button {
     margin-right: 0 !important;
-
     &:disabled {
       background: rgba(81, 183, 195, 0.1) !important;
     }
   }
-
   img {
     width: 15px;
     animation: loading-rotate 2s linear infinite;
     margin-left: 5px;
   }
 }
-
 button {
   width: 100px;
   height: 30px;
@@ -12452,58 +12735,45 @@ button {
   border: none;
   background: rgba(81, 183, 195, 0.1);
   transition: all 0.3s;
-
   &:hover,
   &.primary {
     background: #51b7c3;
-
     span {
       color: #fff;
     }
   }
-
   span {
     color: #b4bacd;
   }
 }
-
 .primary-receive {
   background: rgba(81, 183, 195, 0.7) !important;
   color: #adb7c2 !important;
 }
-
 .ic-balance-item-container-wrap {
   padding: 0;
-
   .balance {
     font-size: 26px;
     word-break: break-word;
   }
-
   button {
     width: 90px;
   }
-
   .operation {
     margin-top: 25px !important;
   }
-
   .ic-balance-item {
     margin: 0;
   }
-
   .ic-balance-item-container-item {
     margin-top: 20px;
     padding: 0;
-
     &:first-child {
       padding-right: 10px;
     }
-
     &:last-child {
       padding-left: 10px;
     }
-
     &.ic-balance-item-container-item-eth {
       p {
         line-height: 30px;
@@ -12511,30 +12781,24 @@ button {
     }
   }
 }
-
 .coming-soon {
   line-height: 26px;
 }
-
 .ic-balance-item-container-item-btc {
   border-right: 1px solid #212b35;
 }
-
 .forge-left-balance,
 .forge-right-balance {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-
   .balance {
     padding: 0 5px;
   }
 }
-
 .forge-left-balance {
   display: flex;
   align-items: center;
-
   > div {
     display: flex;
     align-items: center;
@@ -12542,7 +12806,6 @@ button {
     white-space: nowrap;
   }
 }
-
 .step-list {
   position: relative;
   display: flex;
@@ -12553,61 +12816,50 @@ button {
   padding: 10px;
   border-radius: 20px;
   font-size: 15px;
-
   .step-previous {
     position: absolute;
     left: -25px;
     font-size: 18px;
     color: #55575b;
-
     &.active {
       color: #c0c7cf;
       cursor: pointer;
     }
   }
-
   .step-next {
     position: absolute;
     right: -25px;
     font-size: 18px;
     color: #55575b;
-
     &.active {
       color: #c0c7cf;
       cursor: pointer;
     }
   }
-
   .step-list-center {
     flex: 1;
     padding: 0 15px;
-
     .step-list-center-t {
       display: flex;
       align-items: center;
       padding: 0 15px;
     }
-
     .step-list-line {
       flex: 1;
       height: 1px;
       background: #adb3c4;
     }
   }
-
   > .pointer {
     display: flex;
     align-items: center;
-
     &.active {
       color: #fff;
-
       .step-list-num {
         border-color: #fff;
       }
     }
   }
-
   .step-list-num {
     display: flex;
     align-items: center;
@@ -12619,21 +12871,18 @@ button {
     border-radius: 10px;
   }
 }
-
 .ckEth-mint-top {
   margin-bottom: 10px;
   padding: 10px;
   background: #101014;
   border-radius: 10px;
 }
-
 .forge-main {
   display: flex;
   background: #101014;
   padding: 10px;
   border-radius: 10px;
 }
-
 .btc-address-code {
   display: flex;
   align-items: center;
@@ -12641,21 +12890,17 @@ button {
   width: auto;
   margin-top: 10px;
   color: #adb3c4;
-
   img {
     width: 200px;
     min-height: 200px;
     padding: 5px 0;
   }
 }
-
 .ic-balance-item-container-ckbtc {
   filter: grayscale(1);
-
   .balance {
     color: #b4bacd;
   }
-
   button {
     &:hover {
       span {
@@ -12664,11 +12909,9 @@ button {
     }
   }
 }
-
 .btc-txs-ul-spin {
   min-height: 100px;
 }
-
 .loading-spinner {
   display: inline-block;
   background-image: url('../../../../assets/img/loading.svg');
@@ -12681,28 +12924,33 @@ button {
   margin-left: 5px;
   color: #808a94;
 }
-
+.mr20 {
+  margin-right: 5px;
+  margin-left: 0;
+}
+.ml10 {
+  display: inline-block;
+  width: 80px;
+  margin-left: 10px;
+  text-align: right;
+}
 .retrieve-btc-status-flex {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-
   &.retrieve-btc-status-flex-pc {
     width: 100px;
   }
 }
-
 .eth-tx-hash {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-
   > div {
     display: flex;
     flex-direction: column;
   }
 }
-
 .step-footer-confirmation {
   position: absolute;
   right: 70px;
@@ -12713,10 +12961,8 @@ button {
   justify-content: space-between;
   font-size: 14px;
 }
-
 .forge-left {
   width: 100%;
-
   .step-footer {
     position: absolute;
     right: 20px;
@@ -12728,120 +12974,99 @@ button {
     color: #1996c4;
     cursor: pointer;
   }
-
   .mint-footer {
     display: flex;
     align-items: center;
     margin-top: 100px;
-
     button {
       width: 200px;
       height: 36px;
       margin: 0;
     }
   }
-
   .next-button {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 40px;
     margin-bottom: 20px;
-
     button {
       width: 100%;
       height: 36px;
     }
   }
-
   .mint-button {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin: 40px 0 20px;
-
     button {
       width: auto;
       height: 36px;
       margin: 0 !important;
-
       img {
         width: 16px;
         margin-right: 5px;
       }
     }
   }
-
   .ckbtc-button {
     /*position: absolute;
 		bottom: 0;
 		margin-bottom: 0;*/
   }
 }
-
 .forge-modal-eth {
   .forge-left {
     margin-right: 0;
     /*background: #131920;
 		padding: 10px;*/
   }
-
   .forge-right {
     width: 100%;
-
     table {
       font-size: 12px;
     }
-
     table,
     tr,
     th,
     td {
       background: transparent !important;
     }
-
     tbody {
       tr:nth-child(2n-1) {
         background: rgba(21, 22, 27, 0.4) !important;
       }
     }
-
     .deposit-balance {
       font-size: 18px;
       color: #f5f5f5;
     }
-
     .deposit-balance-symbol {
       vertical-align: bottom;
       font-size: 12px;
     }
-
     .retrieve-btc-status-block-index {
       width: 60px;
     }
-
     .retrieve-btc-status-ul {
       min-height: 250px;
       max-height: calc(100vh - 400px);
       padding-right: 0;
     }
-
     .btc-txs-ul {
       min-height: 100px;
     }
-
     .btc-txs-ul-spin {
       min-height: 100px;
     }
   }
 }
-
 .dissolve-modal {
   .forge-left {
     height: auto;
   }
 }
-
 .step-footer {
   position: absolute;
   right: 20px;
@@ -12853,56 +13078,45 @@ button {
   color: #1996c4;
   cursor: pointer;
 }
-
 .pc-show {
   display: block;
 }
-
 .h5-show {
   display: none;
 }
-
 .ic-balance-item-container-item-cross {
   display: flex;
   align-items: center;
   justify-content: center;
-
   ::v-deep .ant-select-selection {
     border: 1px solid #646e79;
     color: #d5d5d5;
   }
-
   ::v-deep .ant-select-selection__placeholder {
     height: 28px;
     margin-top: -14px;
     color: #adb3c4;
   }
-
   ::v-deep .ant-select-disabled {
     .ant-select-selection {
       background: #272e36;
       opacity: 0.5;
-
       &:hover {
         border-color: #646e79;
       }
     }
   }
 }
-
 .cross-main {
   display: flex;
-
   .cross-item {
     &:first-child {
       margin-right: 20px;
     }
-
     &:last-child {
       margin-left: 20px;
     }
   }
-
   .cross-item-icon {
     display: flex;
     align-items: center;
@@ -12916,10 +13130,8 @@ button {
     border: 2px solid #000;
     color: #adb3c4;
     transition: all 0.3s;
-
     &.pointer {
       color: #fff;
-
       &:hover {
         i {
           transform: scale(1.1);
@@ -12927,26 +13139,22 @@ button {
       }
     }
   }
-
   .cross-item-title {
     margin-bottom: 20px;
     font-size: 16px;
   }
 }
-
 .cross-button {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 40px;
-
   button {
     height: 40px;
     width: 300px;
     margin-right: 0 !important;
   }
-
   span {
     position: absolute;
     left: 50%;
@@ -12958,47 +13166,38 @@ button {
     color: #1996c4;
   }
 }
-
 @media screen and (max-width: 1000px) {
   .forge-modal,
   .dissolve-modal {
     .modal-title-info {
       display: block;
-
       .modal-title-main {
         width: auto;
       }
     }
-
     ::v-deep .ant-modal-body {
       max-height: calc(100vh - 172px);
     }
-
     .retrieve-button {
       width: 100%;
       margin-top: 20px;
     }
-
     .btc-txs-ul-spin {
       height: auto;
       min-height: 100px;
     }
-
     .btc-txs-ul {
       min-height: 100px;
       max-height: none;
     }
-
     .forge-main {
       flex-direction: column;
     }
-
     .forge-left,
     .forge-right,
     .btc-address-code {
       width: 100%;
     }
-
     .forge-right {
       margin-top: 20px;
     }
@@ -13018,27 +13217,22 @@ button {
     }
   }
 }
-
 .btc-txs-header-h5 {
   .deposit-balance {
     display: flex;
     align-items: baseline;
   }
 }
-
 .icp-balance-main {
   display: flex;
   align-items: center;
-
   .ic-token-operation {
     margin-left: auto;
-
     .button-history {
       margin-right: 0 !important;
     }
   }
 }
-
 @media screen and (max-width: 768px) {
   .cross-info,
   .cross-item {
@@ -13061,7 +13255,6 @@ button {
   .icp-balance-main {
     align-items: flex-start;
     flex-direction: column;
-
     .ic-token-operation {
       margin-left: 0;
     }
@@ -13070,14 +13263,12 @@ button {
     &.retrieve-btc-status-flex-pc {
       width: auto;
     }
-
     &.retrieve-btc-status-flex-h5 {
       margin-left: auto;
     }
   }
   .btc-txs-header-h5 {
     flex-direction: column;
-
     .margin-left-auto {
       margin-left: 0;
     }
@@ -13112,7 +13303,6 @@ button {
   .btc-txs-ul {
     li {
       font-size: 12px;
-
       .btc-txs-hash {
         flex-wrap: wrap;
       }
@@ -13120,7 +13310,6 @@ button {
   }
   .ic-token-operation {
     flex-wrap: wrap;
-
     button {
       margin-bottom: 8px;
     }
@@ -13128,7 +13317,6 @@ button {
   .cross-title {
     flex-direction: column;
     align-items: flex-start;
-
     .minting-method-info {
       margin-left: 0;
     }
@@ -13139,7 +13327,6 @@ button {
   .cross-main {
     flex-direction: column;
     align-items: center;
-
     .cross-item-icon-down {
       display: flex;
       align-items: center;
@@ -13153,10 +13340,8 @@ button {
       border: 2px solid #000;
       color: #adb3c4;
       transition: all 0.3s;
-
       &.pointer {
         color: #fff;
-
         &:hover {
           i {
             transform: scale(1.1);
@@ -13164,16 +13349,13 @@ button {
         }
       }
     }
-
     .ic-balance-item-launch-event-select {
       margin-top: 20px;
     }
-
     .cross-item {
       &:first-child {
         margin-right: 0;
       }
-
       &:last-child {
         margin-left: 0;
       }
@@ -13185,37 +13367,29 @@ button {
       padding-bottom: 20px;
       font-size: 12px !important;
     }
-
     ::v-deep .ant-modal-header {
       padding: 35px 15px !important;
     }
-
     ::v-deep .ant-modal-body {
       padding: 0 15px !important;
     }
-
     .forge-main.mt20 {
       margin-top: 0;
     }
-
     .step-list {
       .step-list-center {
         padding: 0 5px;
-
         .step-list-center-t {
           padding: 0 5px;
         }
       }
     }
-
     .btc-txs-header {
       flex-wrap: wrap;
       font-size: 12px;
     }
-
     .mint-button {
       flex-wrap: wrap;
-
       button {
         width: 100%;
         margin-bottom: 10px !important;
@@ -13242,30 +13416,25 @@ button {
       flex-wrap: wrap;
       font-size: 12px;
     }
-
     .li-h5-item {
       display: flex;
       align-items: center;
       width: 100%;
       padding: 5px 0;
     }
-
     .no-retrieve-btc-status-ul {
       min-height: 100px;
       height: auto;
     }
-
     .retrieve-btc-status-ul {
       .retrieve-btc-status-block-index {
         width: 55px;
         margin-right: 0;
-
         &.retrieve-btc-status-block-index-block {
           width: 80px;
         }
       }
     }
-
     /*.retrieve-btc-status-ul-table-eth {
       .retrieve-margin-left-auto {
         margin-left: 0;
@@ -13275,16 +13444,13 @@ button {
   }
   .ic-balance-item-container {
     flex-direction: column;
-
     .operation {
       width: 100%;
       flex-wrap: wrap;
-
       button {
         margin-bottom: 10px;
       }
     }
-
     .ic-balance-item-container-item-btc {
       width: 100%;
       border-right: none;

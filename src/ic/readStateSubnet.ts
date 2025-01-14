@@ -7,14 +7,12 @@ import {
 } from '@dfinity/agent';
 import { PrincipalString } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal';
-
 export const gib_storage_per_second_fee = 127000; // For 13-node subnet;For 34-node subnet: 127000 / 13 * 34 cycles
 export const gib_storage_per_second_fee_34 = 127000 / 13 * 34;
 const encoder = new TextEncoder();
 const encode = (arg: string): ArrayBuffer => {
   return new DataView(encoder.encode(arg).buffer).buffer;
 };
-
 export const readStateSubnet = async (
   canisterId: PrincipalString
 ): Promise<SubnetStatus> => {
@@ -74,7 +72,6 @@ export const fetchNodeKeys = (
   }
   const nodeForks = flatten_forks(subnetLookupResult.value);
   const nodeKeys = new Map<string, DerEncodedPublicKey>();
-
   nodeForks.forEach((fork) => {
     const node_id = Principal.from(
       new Uint8Array(fork[1] as ArrayBuffer)
@@ -86,7 +83,6 @@ export const fetchNodeKeys = (
     if (publicKeyLookupResult.status !== LookupStatus.Found) {
       throw new Error('Public key not found');
     }
-
     const derEncodedPublicKey = publicKeyLookupResult.value as ArrayBuffer;
     if (derEncodedPublicKey.byteLength !== 44) {
       throw new Error('Invalid public key length');
@@ -94,7 +90,6 @@ export const fetchNodeKeys = (
       nodeKeys.set(node_id, derEncodedPublicKey as DerEncodedPublicKey);
     }
   });
-
   return {
     subnetId: Principal.fromUint8Array(
       new Uint8Array(delegation.subnet_id)
@@ -129,27 +124,23 @@ export function lookup_path(
         if (!tree[1]) {
           throw new Error('Invalid tree structure for leaf');
         }
-
         if (tree[1] instanceof ArrayBuffer) {
           return {
             status: LookupStatus.Found,
             value: tree[1]
           };
         }
-
         if (tree[1] instanceof Uint8Array) {
           return {
             status: LookupStatus.Found,
             value: tree[1].buffer
           };
         }
-
         return {
           status: LookupStatus.Found,
           value: tree[1]
         };
       }
-
       default: {
         return {
           status: LookupStatus.Found,
@@ -158,23 +149,19 @@ export function lookup_path(
       }
     }
   }
-
   const label =
     typeof path[0] === 'string' ? new TextEncoder().encode(path[0]) : path[0];
   const lookupResult = find_label(label, tree);
-
   switch (lookupResult.status) {
     case LookupStatus.Found: {
       return lookup_path(path.slice(1), lookupResult.value as HashTree);
     }
-
     case LabelLookupStatus.Greater:
     case LabelLookupStatus.Less: {
       return {
         status: LookupStatus.Absent
       };
     }
-
     default: {
       return lookupResult;
     }
@@ -195,7 +182,6 @@ export function find_label(
           status: LabelLookupStatus.Greater
         };
       }
-
       // if the label we're searching for is equal this node's label, we can
       // stop searching and return the found node
       if (bufEquals(label, tree[1])) {
@@ -204,25 +190,21 @@ export function find_label(
           value: tree[2]
         };
       }
-
       // if the label we're searching for is not greater than or equal to this
       // node's label, then it's less than this node's label, and we can stop
       // searching because we've looked too far
       return {
         status: LabelLookupStatus.Less
       };
-
     // if we have a fork node, we need to search both sides, starting with the left
     case NodeType.Fork:
       // search in the left node
       const leftLookupResult = find_label(label, tree[1]);
-
       switch (leftLookupResult.status) {
         // if the label we're searching for is greater than the left node lookup,
         // we need to search the right node
         case LabelLookupStatus.Greater: {
           const rightLookupResult = find_label(label, tree[2]);
-
           // if the label we're searching for is less than the right node lookup,
           // then we can stop searching and say that the label is provably Absent
           if (rightLookupResult.status === LabelLookupStatus.Less) {
@@ -230,17 +212,14 @@ export function find_label(
               status: LookupStatus.Absent
             };
           }
-
           // if the label we're searching for is less than or equal to the right
           // node lookup, then we let the caller handle it
           return rightLookupResult;
         }
-
         // if the left node returns an uncertain result, we need to search the
         // right node
         case LookupStatus.Unknown: {
           let rightLookupResult = find_label(label, tree[2]);
-
           // if the label we're searching for is less than the right node lookup,
           // then we also need to return an uncertain result
           if (rightLookupResult.status === LabelLookupStatus.Less) {
@@ -248,12 +227,10 @@ export function find_label(
               status: LookupStatus.Unknown
             };
           }
-
           // if the label we're searching for is less than or equal to the right
           // node lookup, then we let the caller handle it
           return rightLookupResult;
         }
-
         // if the label we're searching for is not greater than the left node
         // lookup, or the result is not uncertain, we stop searching and return
         // whatever the result of the left node lookup was, which can be either
@@ -262,14 +239,12 @@ export function find_label(
           return leftLookupResult;
         }
       }
-
     // if we encounter a Pruned node, we can't know for certain if the label
     // we're searching for is present or not
     case NodeType.Pruned:
       return {
         status: LookupStatus.Unknown
       };
-
     // if the current node is Empty, or a Leaf, we can stop searching because
     // we know for sure that the label we're searching for is not present
     default:
@@ -288,7 +263,6 @@ export function compare(b1: ArrayBuffer, b2: ArrayBuffer): number {
   if (b1.byteLength !== b2.byteLength) {
     return b1.byteLength - b2.byteLength;
   }
-
   const u1 = new Uint8Array(b1);
   const u2 = new Uint8Array(b2);
   for (let i = 0; i < u1.length; i++) {
@@ -298,7 +272,6 @@ export function compare(b1: ArrayBuffer, b2: ArrayBuffer): number {
   }
   return 0;
 }
-
 /**
  * Checks two array buffers for equality.
  * @param b1 array buffer 1
@@ -308,7 +281,6 @@ export function compare(b1: ArrayBuffer, b2: ArrayBuffer): number {
 export function bufEquals(b1: ArrayBuffer, b2: ArrayBuffer): boolean {
   return compare(b1, b2) === 0;
 }
-
 function isBufferGreaterThan(a: ArrayBuffer, b: ArrayBuffer): boolean {
   const a8 = new Uint8Array(a);
   const b8 = new Uint8Array(b);
@@ -343,27 +315,21 @@ export enum NodeType {
   Leaf = 3,
   Pruned = 4
 }
-
 export type NodeLabel = ArrayBuffer | Uint8Array;
-
 export type HashTree =
   | [NodeType.Empty]
   | [NodeType.Fork, HashTree, HashTree]
   | [NodeType.Labeled, NodeLabel, HashTree]
   | [NodeType.Leaf, NodeLabel]
   | [NodeType.Pruned, NodeLabel];
-
 enum LabelLookupStatus {
   Less = 'less',
   Greater = 'greater'
 }
-
 interface LookupResultGreater {
   status: LabelLookupStatus.Greater;
 }
-
 interface LookupResultLess {
   status: LabelLookupStatus.Less;
 }
-
 type LabelLookupResult = LookupResult | LookupResultGreater | LookupResultLess;

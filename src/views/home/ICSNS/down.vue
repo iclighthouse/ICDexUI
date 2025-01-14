@@ -1,12 +1,10 @@
 <template>
   <span>{{ dissolveTime }}</span>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { SNSNeuron } from '@/ic/SNSGovernance/model';
 const dayjs = require('dayjs');
-
 @Component({
   name: 'down',
   components: {}
@@ -21,7 +19,6 @@ export default class extends Vue {
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
-    console.log(this.timer);
   }
   mounted(): void {
     this.setDissolveTime();
@@ -120,5 +117,4 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss"></style>

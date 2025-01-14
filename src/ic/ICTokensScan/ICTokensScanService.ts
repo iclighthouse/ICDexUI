@@ -4,7 +4,6 @@ import { buildService } from '@/ic/Service';
 import ICTokensScanIDL from './ICTokensScan.did';
 import { IC_TOKENS_SCAN_CANISTER_ID } from '@/ic/utils';
 import { SerializableIC } from '@/ic/converter';
-
 export class ICTokensScanService {
   private service: Service;
   // constructor(identity?: Identity, host?: string) {

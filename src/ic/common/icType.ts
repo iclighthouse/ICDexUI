@@ -10,7 +10,6 @@ export type Option<T> = T | null;
 export type CanisterId = Principal;
 export type Time = bigint;
 export type AccountId = Array<number>;
-
 export type ICL = bigint;
 export type TokenId = Principal;
 export type TokenSymbol = string;
@@ -32,7 +31,6 @@ export interface TokenInfo {
   logo?: string;
   tokenStd?: TokenStd;
 }
-
 export type Txid = Array<number>;
 export type Decimals = number;
 export type TotalSupply = bigint;

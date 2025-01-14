@@ -1,5 +1,4 @@
 import { Principal } from '@dfinity/principal';
-
 export interface IcpXdrConversionRateCertifiedResponse {
   certificate: Array<number>;
   data: IcpXdrConversionRate;

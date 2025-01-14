@@ -2,12 +2,10 @@ import { IDL } from '@dfinity/candid';
 import { canRequest } from '@/ic/ConnectInfinity';
 import { LEDGER_CANISTER_ID } from '@/ic/utils';
 import ledgerIDL from '@/ic/ledger/ledger.did.js';
-
 const InfinityActor: { [key: string]: any } = {};
 // each item will be an actor from to be executed
 const requests = {};
 const requestsCanisterId = [];
-
 export const createInfinityActor = async <T>(
   IDL: IDL.InterfaceFactory,
   canisterId: string
@@ -28,12 +26,10 @@ export const createInfinityActor = async <T>(
     if (await canRequest(canisterId)) {
       requestsCanisterId.push(canisterId);
       const t = new Date().getTime();
-      console.log(canisterId + ': ' + t);
       return (window as any).ic?.infinityWallet.createActor({
         canisterId: canisterId,
         interfaceFactory: IDL
       }).then((res) => {
-        console.log(canisterId + ': ' + (new Date().getTime() - t));
         InfinityActor[canisterId] = res;
         if (requests[canisterId] && requests[canisterId].length) {
           requests[canisterId].forEach((m) => m(InfinityActor[canisterId]));
@@ -47,7 +43,6 @@ export const createInfinityActor = async <T>(
     }
   }
 };
-
 const plugWhitelist = [
   // {
   //   canisterId: IC_MANAGEMENT_CANISTER_ID,
@@ -97,7 +92,6 @@ const plugWhitelist = [
 ];
 export const createInfinityWhiteActor = async (): Promise<void> => {
   const t = new Date().getTime();
-  console.log(t);
   for (let i = 0; i < plugWhitelist.length; i++) {
     await createInfinityActor(
       plugWhitelist[i].idl,
@@ -111,5 +105,4 @@ export const createInfinityWhiteActor = async (): Promise<void> => {
   //   );
   // }
   // await Promise.all(promiseAll);
-  console.log('end: ' + (new Date().getTime() - t));
 };

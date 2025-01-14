@@ -101,7 +101,6 @@
     </div>
   </a-spin>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import ConfirmPassword from '@/views/login/components/ConfirmPassword.vue';
@@ -110,9 +109,7 @@ import { Identity } from '@dfinity/agent';
 import { namespace } from 'vuex-class';
 import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { toHexString } from '@/ic/converter';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'MetaMaskWallet',
   components: {
@@ -137,7 +134,6 @@ export default class extends Vue {
     this.$message.success('Copied');
   }
   private onError(): void {
-    console.log('err');
   }
   private confirmPasswordBack(): void {
     this.$emit('back');
@@ -212,7 +208,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .mnemonic-wrap {
   /*display: flex;

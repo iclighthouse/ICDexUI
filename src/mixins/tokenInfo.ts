@@ -2,7 +2,6 @@ import { Component, Vue } from 'vue-property-decorator';
 import { Gas, Token } from '@/ic/ICTokens/model';
 import BigNumber from 'bignumber.js';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
-
 @Component({
   filters: {
     filterGas(val: Gas, currentToken: Token) {

@@ -5,12 +5,10 @@ import borc from 'borc';
 import { sha256 } from '@noble/hashes/sha256';
 import { Principal } from '@dfinity/principal';
 import * as cbor from 'simple-cbor';
-
 const domainSeparator = new TextEncoder().encode('\x0Aic-request');
 const DEFAULT_INGRESS_EXPIRY_DELTA_IN_MSECS = 5 * 60 * 1000;
 const NANOSECONDS_PER_MILLISECONDS = BigInt(1000000);
 const REPLICA_PERMITTED_DRIFT_MILLISECONDS = BigInt(60 * 1000);
-
 export const sign = async (
   identity: SignIdentity,
   blob: ArrayBuffer
@@ -33,7 +31,6 @@ export const senderSig = async (
     sender: sender,
     ingress_expiry: new Expiry(DEFAULT_INGRESS_EXPIRY_DELTA_IN_MSECS)
   };
-  console.log(body);
   const requestId = await requestIdOf(body);
   return await sign(identity, concat(domainSeparator, requestId));
 };

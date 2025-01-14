@@ -1,7 +1,6 @@
 import { Principal } from '@dfinity/principal';
 import { Address } from '@/ic/DRC20Token/model';
 import { TokenIdentifier, User } from '@/ic/nft/model';
-
 export type Time = bigint;
 export interface PhaseConfig {
   end: Time;
@@ -70,7 +69,6 @@ export type MiningStatus =
       Finished: null;
     };
 export type TmNFTBalance = Array<[User, TokenIdentifier, bigint]>;
-
 export default interface Service {
   configLog(phase: bigint): Promise<PhaseConfig>;
   status(): Promise<MiningStatusResponse>;

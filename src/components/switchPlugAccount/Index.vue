@@ -29,14 +29,12 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import AuthClientAPi from '@/ic/AuthClientApi';
 import { namespace } from 'vuex-class';
 import { NFIDLogout } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
-
 @Component({
   name: 'Index',
   components: {}
@@ -93,11 +91,9 @@ export default class extends Vue {
         query: { redirect: this.$route.fullPath }
       });
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
 }
 </script>
-
 <style scoped lang="scss"></style>

@@ -13,7 +13,6 @@ if (ethereum && ethereum.providers) {
     (provider) => provider.isMetaMask
   );
 }
-
 @Component({})
 export class ConnectMetaMaskMixin extends Vue {
   public metaMaskVisible = false;
@@ -58,7 +57,6 @@ export class ConnectMetaMaskMixin extends Vue {
           principal = selectedAccount;
         }
         const currentAccountInfo = principalList[principal];
-        console.log(currentAccountInfo);
         if (currentAccountInfo) {
           const currentAccount = currentAccountInfo.split('MetaMask-')[1];
           // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -94,7 +92,6 @@ export class ConnectMetaMaskMixin extends Vue {
         }
         await this.sign(account);
       } catch (error) {
-        console.log(error);
         this.connectSpinning = false;
       }
     }
@@ -150,7 +147,6 @@ export class ConnectMetaMaskMixin extends Vue {
       signature: signature,
       version: SignTypedDataVersion.V4
     });
-    console.log(account, signature);
     if (recovered === account) {
       this.signature = signature;
       this.ethAccount = account;

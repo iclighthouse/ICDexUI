@@ -10,5 +10,4 @@ const lighthouseRouter: RouteConfig[] = [
     }
   }
 ];
-
 export default lighthouseRouter;

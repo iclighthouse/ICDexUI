@@ -7,7 +7,6 @@ import { createInfinityActor } from '@/ic/createInfinityActor';
 import store from '@/store';
 import Vue from 'vue';
 import { createNFIDActor } from '@/ic/createNFIDActor';
-
 export const createService = async <T>(
   canisterId: string,
   IDL: IDL.InterfaceFactory,

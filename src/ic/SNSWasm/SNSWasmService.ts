@@ -3,7 +3,6 @@ import { SNS_WASM_CANISTER_ID } from '@/ic/utils';
 import SNSWasmIDL from './SNSWasm.did';
 import { SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class SNSWasmService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -22,7 +21,6 @@ export class SNSWasmService {
         return SerializableIC(res.instances);
       }
     } catch (e) {
-      console.log(e);
       return [];
     }
   };

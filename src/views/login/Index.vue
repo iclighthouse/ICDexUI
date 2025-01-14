@@ -247,7 +247,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import { LoginType } from './model';
@@ -301,7 +300,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.type = 'Existing';
   }
   public async connect(type: LoginType): Promise<void> {
-    console.log(type);
     this.setCheckAuth(false);
     if (type === 'Signer') {
       this.signerVisible = true;
@@ -423,7 +421,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         background: 'rgba(0, 0, 0, 0.5)'
       });
       const signerAgent = await NFIDLogin(true);
-      console.log(signerAgent);
       loading.close();
       this.signerVisible = false;
       if (signerAgent) {
@@ -451,7 +448,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .main {
   display: flex;

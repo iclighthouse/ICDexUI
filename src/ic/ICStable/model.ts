@@ -10,7 +10,6 @@ import {
 import { _data, Nonce } from '@/ic/ICLighthouseToken/model';
 import { Amount } from '@/ic/ICSwap/model';
 import { Address } from '@/ic/DRC20Token/model';
-
 export type ConfigRes = [Config, Config];
 export interface Config {
   ICL: Principal;
@@ -210,7 +209,6 @@ export interface DebtPositionLog {
   debtPeak: bigint;
 }
 export type ClosingType = { Payback: null } | { Liquidate: null };
-
 export default interface Service {
   stats(): Promise<StatsResponse>;
   getConfig(): Promise<ConfigRes>;

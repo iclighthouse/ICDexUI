@@ -4,7 +4,6 @@ import { PrincipalString } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal';
 import { IC_MANAGEMENT_CANISTER_ID } from '@/ic/utils';
 import { DelegationIdentity } from '@dfinity/identity';
-
 export const buildService = async <T>(
   identity: Identity | DelegationIdentity,
   IDL: IDL.InterfaceFactory,
@@ -20,7 +19,6 @@ export const buildService = async <T>(
       console.warn(
         'Unable to fetch root key. Check to ensure that your local replica is running'
       );
-      console.log(err);
     });
   }
   if (canisterId === IC_MANAGEMENT_CANISTER_ID) {

@@ -47,7 +47,6 @@
     </div>
   </a-spin>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import {
@@ -64,7 +63,6 @@ import { MetaMaskInfo } from '@/ic/ICLighthouse/model';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common';
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en';
-
 const ethers = require('ethers');
 const commonModule = namespace('common');
 const options = {
@@ -75,9 +73,7 @@ const options = {
     ...zxcvbnEnPackage.dictionary
   }
 };
-
 zxcvbnOptions.setOptions(options);
-
 @Component({
   name: 'ConfirmPassword',
   components: {}
@@ -116,7 +112,6 @@ export default class extends Vue {
     if (value === '') {
       callback(new Error('Please enter the password'));
     } else {
-      console.log(zxcvbn(value));
       const res = zxcvbn(value);
       if (res.score <= 2) {
         this.suggestions = res.feedback.suggestions;
@@ -131,7 +126,6 @@ export default class extends Vue {
           (this.$refs.passwordForm as any).validateField(
             'checkPassword',
             (errorMessage) => {
-              console.log(errorMessage);
             }
           );
         }
@@ -150,7 +144,7 @@ export default class extends Vue {
     //     (this.$refs.passwordForm as FormModel).validateField(
     //       'checkPassword',
     //       (errorMessage) => {
-    //         console.log(errorMessage);
+    //         
     //       }
     //     );
     //   }
@@ -198,7 +192,6 @@ export default class extends Vue {
       if (!newAccount) {
         const iCLighthouseService = new ICLighthouseService();
         metaMaskInfo = await iCLighthouseService.getMetaMask(this.ethAccount);
-        console.log(metaMaskInfo);
       }
       if (!newAccount && metaMaskInfo && metaMaskInfo.length) {
         for (let i = 0; i < metaMaskInfo[0].mnemonic.length; i++) {
@@ -215,7 +208,6 @@ export default class extends Vue {
               break;
             }
           } catch (e) {
-            console.log(e);
           }
         }
         if (!mnemonic) {
@@ -306,7 +298,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .password-form {
   margin-top: 20px;

@@ -1,5 +1,4 @@
 import { E8s } from '../common/icType';
-
 import { Principal } from '@dfinity/principal';
 export interface NeuronId {
   id: bigint;
@@ -531,7 +530,6 @@ export interface KnownNeuron {
   id: Array<NeuronId>;
   known_neuron_data: Array<KnownNeuronData>;
 }
-
 export default interface Service {
   'claim_or_refresh_neuron_from_account'(
     request: ClaimOrRefreshNeuronFromAccount

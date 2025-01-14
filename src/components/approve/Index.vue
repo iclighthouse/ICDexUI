@@ -62,7 +62,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
@@ -78,7 +77,6 @@ import { hexToBytes } from '@/ic/converter';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { Principal } from '@dfinity/principal';
 import { Icrc1Account } from '@/ic/common/icType';
-
 @Component({
   name: 'Index',
   components: {}
@@ -211,7 +209,6 @@ export default class extends Vue {
                 this.$message.success('Approval success!');
                 this.$emit('approveSuccess');
               } else {
-                console.log(res);
                 this.$message.error('Approve Error');
               }
             }
@@ -219,12 +216,10 @@ export default class extends Vue {
           loading.close();
         } catch (e) {
           loading.close();
-          console.log(e);
         }
       }
     });
   }
 }
 </script>
-
 <style scoped lang="scss"></style>

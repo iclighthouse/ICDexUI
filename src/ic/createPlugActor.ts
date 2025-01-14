@@ -7,12 +7,10 @@ import { PlugTransport } from '@slide-computer/signer-transport-plug';
 import { Signer } from '@slide-computer/signer';
 import { SignerAgent } from '@slide-computer/signer-agent';
 import { Principal } from '@dfinity/principal';
-
 const plugActor: { [key: string]: any } = {};
 // each item will be an actor from to be executed
 const requests = {};
 const requestsCanisterId = [];
-
 export const createPlugActor = async <T>(
   IDL: IDL.InterfaceFactory,
   canisterId: string,
@@ -34,12 +32,10 @@ export const createPlugActor = async <T>(
     if (await canRequest(canisterId)) {
       requestsCanisterId.push(canisterId);
       const t = new Date().getTime();
-      console.log(canisterId + ': ' + t);
       const actor = await (window as any).ic?.plug.createActor({
         canisterId: canisterId,
         interfaceFactory: IDL
       });
-      console.log(canisterId + ': ' + (new Date().getTime() - t));
       plugActor[canisterId] = actor;
       if (requests[canisterId] && requests[canisterId].length) {
         requests[canisterId].forEach((m) => m(plugActor[canisterId]));
@@ -52,11 +48,9 @@ export const createPlugActor = async <T>(
     }
   }
 };
-
 export const hasActor = (canisterId: string): boolean => {
   return !!plugActor[canisterId];
 };
-
 const plugWhitelist = [
   {
     canisterId: LEDGER_CANISTER_ID,
@@ -67,8 +61,6 @@ export const createPlugWhiteActor = async (
   isSigner: boolean
 ): Promise<void> => {
   const t = new Date().getTime();
-  console.log(t);
-  console.log(isSigner);
   for (let i = 0; i < plugWhitelist.length; i++) {
     createPlugActor(
       plugWhitelist[i].idl,
@@ -76,14 +68,12 @@ export const createPlugWhiteActor = async (
       isSigner
     );
   }
-  console.log('end: ' + (new Date().getTime() - t));
 };
 export const createPlugActorWithSigner = async <T>(
   IDL: IDL.InterfaceFactory,
   canisterId: string
 ): Promise<T> => {
   let signerAgent = getPlugSignerAgent();
-  console.log(signerAgent);
   if (!signerAgent) {
     const connectPlug = new ConnectPlug();
     signerAgent = await connectPlug.connectSignerPlug();

@@ -85,11 +85,9 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
-
 @Component({
   name: 'About',
   components: {}
@@ -98,7 +96,6 @@ export default class extends Vue {
   private ICLTokenId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID;
 }
 </script>
-
 <style scoped lang="scss">
 .icl-item-info {
   background: #141b23;

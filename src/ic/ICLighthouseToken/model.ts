@@ -2,7 +2,6 @@ import { Principal } from '@dfinity/principal';
 import { PrincipalString, ICL, CanisterId } from '@/ic/common/icType';
 import { Metadata, TotalSupply, Gas } from '@/ic/ICTokens/model';
 import { Data } from '@/ic/cyclesFinance/model';
-
 export type TxnResult =
   | {
       ok: Txid;
@@ -32,7 +31,6 @@ export type _data = Array<Array<number>>;
 export type Decimals = number;
 export type Nonce = bigint;
 export type Amount = bigint;
-
 export type TxnQueryRequest =
   | {
       getEvents: { owner: Array<PrincipalString> };
@@ -43,7 +41,6 @@ export type TxnQueryRequest =
   | { lastTxidsGlobal: null }
   | { getTxn: { txid: Txid } }
   | { txnCountGlobal: null };
-
 export type TxnQueryResponse =
   | { getEvents: Array<TxnRecord> }
   | {
@@ -61,7 +58,6 @@ export type TxnQueryResponse =
   | { lastTxidsGlobal: Array<TxnRecord> }
   | { getTxn: Array<TxnRecord> }
   | { txnCountGlobal: number };
-
 export interface TxnRecord {
   gas: Gas;
   msgCaller: Array<Principal>;
@@ -152,7 +148,6 @@ export interface dip20TokenInfo {
   cycles: bigint;
   feeTo: Principal;
 }
-
 export default interface Service {
   ictokens_setMetadata(request: Array<Metadata>): Promise<boolean>;
   ictokens_getOwner(): Promise<CanisterId>;

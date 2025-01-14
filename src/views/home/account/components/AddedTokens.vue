@@ -655,7 +655,6 @@
     ></pro-wallet-swap>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
@@ -716,9 +715,7 @@ import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import ApproveIcrc2 from '@/components/approveIcrc2/Index.vue';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 import { TokenInfo, TokenStd } from '@/ic/common/icType';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'AddedTokens',
   components: {
@@ -911,7 +908,6 @@ export default class extends Vue {
         try {
           caller = principalToAccountIdentifier(Principal.fromText(principal));
         } catch (e) {
-          console.log(e);
         }
         if (toHexString(new Uint8Array(record.caller)) === caller) {
           return text.toString();
@@ -1021,7 +1017,6 @@ export default class extends Vue {
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
-    console.log(this.timer);
   }
   created(): void {
     // this.principal = localStorage.getItem('principal');
@@ -1030,7 +1025,6 @@ export default class extends Vue {
     this.ICTokensScanService = new ICTokensScanService();
     this.SNSWasmService = new SNSWasmService();
     this.localTokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    console.log(this.$route);
     if (this.getPrincipalId) {
       if (this.$route.path.toLocaleLowerCase().includes('icrouter')) {
         this.tokenSpinning = true;
@@ -1132,7 +1126,6 @@ export default class extends Vue {
     this.tokenList = tokenList.sort((a, b) => {
       return a.symbol.localeCompare(b.symbol);
     });
-    console.log('getTokenList');
   }
   private async init(): Promise<void> {
     if (!this.listDeployedSnses.length) {
@@ -1177,7 +1170,6 @@ export default class extends Vue {
           this.getIcrcMetadata(token)
         );
       }
-      console.log(promiseAll.length);
       if (promiseAll.length >= MAX_COCURRENCY) {
         await Promise.all(promiseAll);
         promiseAll = [];
@@ -1246,7 +1238,6 @@ export default class extends Vue {
       }
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   private execute(txnRecord: TxnRecord, type?: string): void {
@@ -1332,7 +1323,6 @@ export default class extends Vue {
       this.$refs.approveIcrc2.init(
         Object.assign({}, this.currentToken, { tokenStd: { icrc2: null } })
       );
-      console.log(this.currentToken);
     }
   }
   private showLockTransfer(token: AddTokenItem, index: number): void {
@@ -1366,7 +1356,6 @@ export default class extends Vue {
     }
   }
   private handleTransferToken(token: AddTokenItem, index: number): void {
-    console.log(token);
     this.currentToken = token;
     this.currentIndex = index;
     this.$refs.transferToken.init(token);
@@ -1413,7 +1402,6 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private swapWallet(token: AddTokenItem, index: number): void {
@@ -1526,7 +1514,6 @@ export default class extends Vue {
         this.addIclToken();
       }
     } catch (e) {
-      console.log(e);
     }
     this.getTokenBalanceInterval();
     this.tokenSpinning = false;
@@ -1542,7 +1529,6 @@ export default class extends Vue {
       );
       tokenInfo = await Promise.all(promiseAllValue);
     } catch (e) {
-      console.log(e);
     }
     try {
       const res = await addToken(
@@ -1569,7 +1555,6 @@ export default class extends Vue {
         this.getIcrcMetadata(token);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async addIclToken(): Promise<void> {
@@ -1584,7 +1569,6 @@ export default class extends Vue {
       tokenInfo = await Promise.all(promiseAllValue);
     } catch (e) {
       this.$message.error('Please enter a valid tokenId');
-      console.log(e);
     }
     try {
       const res = await addToken(
@@ -1612,7 +1596,6 @@ export default class extends Vue {
         this.getIcrcMetadata(token);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getIcrcMetadata(token: AddTokenItem): Promise<void> {
@@ -1647,7 +1630,6 @@ export default class extends Vue {
       if (SNSGovernance) {
         const snsGovernanceService = new SNSGovernanceService();
         const metadata = await snsGovernanceService.getMetadata(SNSGovernance);
-        console.log(metadata);
         if (metadata && metadata.logo && metadata.logo.length) {
           logo = metadata.logo[0];
         }
@@ -1832,7 +1814,6 @@ export default class extends Vue {
       loading.close();
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   private async getLockTransaction(
@@ -1897,7 +1878,6 @@ export default class extends Vue {
       this.approvals = res;
     } catch (e) {
       this.approvalsLoading = false;
-      console.log(e);
     }
   }
   private async getTransactions(token: AddTokenItem): Promise<void> {
@@ -1924,7 +1904,6 @@ export default class extends Vue {
         this.transactions = transition;
       }
     } catch (e) {
-      console.log(e);
     }
     this.transactionsLoading = false;
   }
@@ -2056,7 +2035,6 @@ export default class extends Vue {
               background: 'rgba(0, 0, 0, 0.5)'
             });
             if ((window as any).icx) {
-              console.log('connectIcx');
               await addIcxWhitelist(this.addTokenForm.tokenId);
             }
             this.initAddToken(loading);
@@ -2064,7 +2042,6 @@ export default class extends Vue {
         } catch (e) {
           loading.close();
           this.$message.error('Please enter a valid tokenId');
-          console.log(e);
           removeWhitelist(this.addTokenForm.tokenId);
         }
       }
@@ -2145,7 +2122,6 @@ export default class extends Vue {
       }
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   private afterClose(): void {
@@ -2154,7 +2130,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .tokens-title {
   margin-top: 20px;

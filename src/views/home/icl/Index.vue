@@ -9,16 +9,13 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { Identity } from '@dfinity/agent';
 import IclInfo from '@/views/home/icl/components/ICLInfo.vue';
 import { namespace } from 'vuex-class';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Index',
   components: {
@@ -30,7 +27,6 @@ export default class extends Vue {
   @commonModule.Getter('getIdentity') getIdentity?: Identity;
 }
 </script>
-
 <style scoped lang="scss">
 .home-header {
   top: 10px;

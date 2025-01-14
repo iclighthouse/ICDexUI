@@ -1,6 +1,5 @@
 import { AccountId, Icrc1Account, Time } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal';
-
 export interface RoundInfo {
   data: Array<RoundDataResponse>;
   round: bigint;
@@ -21,7 +20,6 @@ export interface RoundDataResponse {
     tm: Array<[AccountId, bigint]>;
   }>;
 }
-
 export type RoundDataStatus =
   | {
       Closed: null;
@@ -59,7 +57,6 @@ export interface RoundPointsForLM {
   page: bigint;
   totalPage: bigint;
 }
-
 export default interface Service {
   getRound(roundId: Array<bigint>): Promise<RoundInfo>;
   getAccelerationRate(accountId: AccountId): Promise<string>;

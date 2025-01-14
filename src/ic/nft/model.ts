@@ -1,6 +1,5 @@
 import { Principal } from '@dfinity/principal';
 import { Amount } from '@/ic/ICSwap/model';
-
 export type AccountIdentifier = string;
 export type TokenIdentifier = string;
 export type TokenIndex = bigint;
@@ -19,7 +18,6 @@ export type CommonError =
     };
 export type TokensExt = Array<TokenExt>;
 export type TokenExt = [TokenIndex, Array<Listing>, Array<Array<number>>];
-
 export type ExtResult =
   | {
       ok: TokensExt;
@@ -64,7 +62,6 @@ export interface AllowanceRequest {
   spender: Principal;
 }
 export type AllowanceResponse = { ok: bigint } | { err: CommonError };
-
 export default interface Service {
   tokens_ext(request: AccountIdentifier): Promise<ExtResult>;
   transfer(transferRequest: TransferNFTRequest): Promise<TransferNFTResponse>;

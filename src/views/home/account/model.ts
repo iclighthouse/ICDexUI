@@ -11,7 +11,6 @@ import {
 import { Time } from '@/ic/common/icType';
 import { CK_BTC_CANISTER_ID } from '@/ic/utils';
 import { RetrieveBtcStatus } from '@/ic/ckbtcMinter/model';
-
 export type SettingType = 'Modify' | 'Update';
 export interface AddTokenItem extends TokenItem {
   balance: string;
@@ -32,7 +31,6 @@ export interface AddTokenItem extends TokenItem {
   transactions1?: string;
   coinSeconds1?: string;
 }
-
 export class AddTokenItemClass {
   public balance = '-';
   public canisterId = null;
@@ -57,7 +55,6 @@ export class AddTokenItemClass {
   public transactions1? = '0';
   public coinSeconds1? = null;
 }
-
 export enum TokenStandard {
   'DRC20' = 'DRC20',
   'DIP20' = 'DIP20',
@@ -77,7 +74,6 @@ export enum BTCTypeEnum {
 //   'icBTC' = 'icBTC',
 //   'ckBTC' = 'ckBTC'
 // }
-
 export const networkIds = {
   '-1': 'IC Network',
   '0': 'Bitcoin',
@@ -106,7 +102,6 @@ export const networkList = [
     logo: require('@/assets/img/seth.svg')
   }
 ];
-
 export interface ICNetworkTokensInterface {
   id: string;
   networkId: string;
@@ -147,7 +142,6 @@ export const networkTokens: Array<ICNetworkTokensInterface> = [
     logo: require('@/assets/img/ckBTC.svg')
   }
 ];
-
 export type ActiveType =
   | 'claim'
   | 'claim2'
@@ -165,38 +159,50 @@ export interface Active {
   claim?: Array<ClaimActive>; // method2 claim step1
   claim2?: Array<ClaimActive>; // method2 claim step2
   mint?: Array<MintActive>; // method1 mint step1
-  deposit?: [Wei, Array<TxIndex>, Array<TxStatus>]; // method1 mint step2
+  deposit?: Array<TxStatus>; // method1 mint step2
   retrieve?: Array<RetrieveActive>; // retrieve step1
-  retrieve2?: [TxIndex, TxStatus, Time]; // retrieve step2
+  retrieve2?: Array<RetrieveActive>; // retrieve step2
   mintCKETH?: Array<ClaimActive>; // ckETH mint
   retrieveCKETH?: Array<RetrieveActive>; // ckETH retrieve
-  CKETHResponse?: Array<| ClaimCKETHActiveResponse
-    | RetrieveActiveResponse
-    | MintCKBTCResponse
-    | RetrieveCKBTCResponse>;
+  CKETHResponse?: Array<CKETHResponse>;
 }
+export type CKETHResponse =
+  | ClaimCKETHActiveResponse
+  | RetrieveActiveResponse
+  | MintCKBTCResponse
+  | RetrieveCKBTCResponse
+  | ClaimActive
+  | MintActive
+  | TxStatus; // method1
 export interface RetrieveActive {
   tokenId: string;
   amount: string;
   status?: RetrieveEthStatus;
-  time?: string;
+  time: number;
+  type?: string;
 }
 export interface MintActive {
   tokenId: string;
   amount: string;
-  time?: string;
+  status?: localStatus;
+  time: string;
+  type?: string;
 }
 export interface ClaimActive {
   tokenId: string;
   txHash: string;
-  time?: string;
+  amount?: string;
+  status?: localStatus;
+  type?: string;
+  time: string;
 }
 export interface ClaimCKETHActive {
   amount: string;
   txHash: string;
   tokenId: string;
   blockNumber: string;
-  time?: string;
+  time: number;
+  status?: localStatus;
 }
 export interface ClaimCKETHActiveResponse {
   amount: string;
@@ -204,20 +210,24 @@ export interface ClaimCKETHActiveResponse {
   tokenId: string;
   blockNumber: string;
   type: string;
-  time?: string;
+  time: number;
+  FinalizedTime?: number;
+  status?: localStatus;
 }
 export interface RetrieveActiveResponse {
   tokenId: string;
   amount: string;
   status?: RetrieveEthStatus;
   type: string;
-  time?: string;
+  time: number;
 }
 export interface RetrieveCKBTCResponse {
   blockIndex: string;
   status: RetrieveBtcStatus;
   time: string;
   BTCBlock?: number;
+  tokenId?: string;
+  amount?: string;
   type: string;
 }
 export interface MintCKBTCResponse {
@@ -250,21 +260,23 @@ export interface MintCKBTCResponse {
       tokenamountcommitment: string;
     };
   }>;
-  vout: Array<| {
-    scriptpubkey: string;
-    scriptpubkey_asm: string;
-    scriptpubkey_type: string;
-    scriptpubkey_address: string;
-    valuecommitment: string;
-    assetcommitment: string;
-  }
+  vout: Array<
     | {
-    scriptpubkey: string;
-    scriptpubkey_asm: string;
-    scriptpubkey_type: string;
-    value: number;
-    asset: string;
-  }>;
+        scriptpubkey: string;
+        scriptpubkey_asm: string;
+        scriptpubkey_type: string;
+        scriptpubkey_address: string;
+        valuecommitment: string;
+        assetcommitment: string;
+      }
+    | {
+        scriptpubkey: string;
+        scriptpubkey_asm: string;
+        scriptpubkey_type: string;
+        value: number;
+        asset: string;
+      }
+  >;
   size: number;
   weight: number;
   fee: number;
@@ -277,3 +289,13 @@ export interface MintCKBTCResponse {
   type: string;
   time: string;
 }
+export type localStatus =
+  | {
+      Pending: null;
+    }
+  | {
+      Submitted: null;
+    }
+  | {
+      Confirmed: null;
+    };

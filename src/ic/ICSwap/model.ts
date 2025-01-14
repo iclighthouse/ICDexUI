@@ -171,7 +171,6 @@ export type OrderRequest =
       receive: { token: Principal; value: Amount };
     };
 export type DepositAccount = [Icrc1Account, Address, Nonce, Txid];
-
 export default interface Service {
   drc205_dexInfo(): Promise<DexInfo>;
   liquidity(accountId: Array<AccountIdentifier>): Promise<TokenLiquidity>;

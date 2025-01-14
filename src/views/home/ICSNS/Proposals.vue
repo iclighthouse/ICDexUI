@@ -335,7 +335,6 @@
     ></maker-proposal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { proposalsNeurons } from '@/views/home/ICSNS/model';
@@ -364,9 +363,7 @@ import { SNSSwapService } from '@/ic/SNSSwap/SNSSwapService';
 import { checkAuth } from '@/ic/CheckAuth';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { Principal } from '@dfinity/principal';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Proposals',
   components: {
@@ -542,7 +539,6 @@ export default class extends Vue {
   }
   private handleInfiniteOnLoad(): void {
     if (!this.busy) {
-      console.log('handleInfiniteOnLoad');
       this.busy = true;
       this.loading = true;
       this.getListProposals();
@@ -556,10 +552,8 @@ export default class extends Vue {
     this.loadMore = true;
     this.getListProposals('init');
     this.getOpenProposals(null);
-    console.log(this.proposalsOpening);
   }
   private SNSTokensChange(): void {
-    console.log(this.currentIndex);
     this.$router
       .replace(
         `/icsns/proposals?id=${this.SNSTokens[this.currentIndex].tokenId}`
@@ -624,7 +618,6 @@ export default class extends Vue {
         }
       }
     );
-    console.log(this.proposalsOpening);
   }
   private async getOpenProposals(lastProposals: ProposalData): Promise<void> {
     if (!this.getPrincipalId) {
@@ -655,7 +648,6 @@ export default class extends Vue {
         true
       )
       .then((res) => {
-        console.log(res);
         if (res && res.proposals && res.proposals.length) {
           const accepts = res.proposals.filter((item) => {
             return item.ballots.some((ballot) => {
@@ -663,7 +655,6 @@ export default class extends Vue {
             });
           });
           this.proposalsOpening = this.proposalsOpening.concat(accepts);
-          console.log(this.proposalsOpening);
           if (res.proposals.length === 10) {
             this.getOpenProposals(res.proposals[res.proposals.length - 1]);
           } else {
@@ -678,7 +669,6 @@ export default class extends Vue {
       });
   }
   private async getListProposals(type?: string): Promise<void> {
-    console.log(this.busy);
     if (!this.loadMore) {
       this.busy = false;
       this.loading = false;
@@ -709,22 +699,16 @@ export default class extends Vue {
         include_status: this.proposalStatusFilter,
         include_reward_status: []
       };
-      console.log(request);
-      console.log(this.SNSTokens[this.currentIndex].governanceId);
       const res = await snsGovernanceService.listProposals(
         this.SNSTokens[this.currentIndex].governanceId,
         request
       );
-      console.log(res);
       if (res.proposals.length < 10) {
         this.loadMore = false;
       }
       this.proposals = this.proposals.concat(res.proposals);
-      console.log(this.proposals);
     } catch (e) {
-      console.log(e);
     }
-    console.log('end');
     this.busy = false;
     this.loading = false;
     this.proposalLoading = false;
@@ -820,7 +804,6 @@ export default class extends Vue {
         this.initConnected(this.deployedSnses, loading);
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -828,7 +811,6 @@ export default class extends Vue {
     listDeployedSnses: Array<DeployedSns>,
     loading
   ): Promise<void> {
-    console.log(listDeployedSnses);
     const localReject: Array<string> =
       JSON.parse(localStorage.getItem('rejectSNSTokens')) || [];
     listDeployedSnses = listDeployedSnses.filter((item) => {
@@ -870,7 +852,6 @@ export default class extends Vue {
       this.SNSTokens.splice(index, res.length, ...res);
       index += res.length;
     }
-    console.log(this.SNSTokens);
     this.SNSTokens = this.SNSTokens.filter((SNSToken: proposalsNeurons) => {
       if (
         (SNSToken.lifecycle &&
@@ -911,12 +892,10 @@ export default class extends Vue {
     });
     localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     this.setCurrentIndex();
-    console.log(this.currentIndex);
     loading.close();
     this.topics = this.SNSTokens[this.currentIndex].allTopics;
     this.getListProposals();
     this.getOpenProposals(null);
-    console.log(this.proposalsOpening);
   }
   private setCurrentIndex(): void {
     let tokenId = this.$route.query.id as string;
@@ -967,7 +946,6 @@ export default class extends Vue {
     const res = await Promise.all(promiseAll);
     let allTopics = [];
     let types = {};
-    console.log(res);
     let listTypes = [];
     if (res[3] && res[3].functions) {
       res[3].functions.forEach((item) => {
@@ -1085,7 +1063,6 @@ export default class extends Vue {
         governanceCanisterId
       );
     } catch (e) {
-      console.log(e);
     }
   }
   private onCheckChangeTopics(): void {
@@ -1119,7 +1096,6 @@ export default class extends Vue {
   private holdFilter(): void {
     this.topics = this.checkTopics;
     this.topicsVisible = false;
-    console.log(this.topics);
     this.initProposals();
   }
   private filterStatus(): void {
@@ -1130,7 +1106,6 @@ export default class extends Vue {
   private holdFilterStatus(): void {
     this.proposalStatusFilter = this.checkStatus;
     this.statusVisible = false;
-    console.log(this.proposalStatusFilter);
     this.initProposals();
   }
   private afterClose(): void {
@@ -1148,7 +1123,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .proposals-main {
   position: relative;

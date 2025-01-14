@@ -480,7 +480,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import EventBus from '@/utils/Event';
@@ -510,9 +509,7 @@ import { Principal } from '@dfinity/principal';
 import { TokenInfo } from '@/ic/common/icType';
 import { namespace } from 'vuex-class';
 import { checkAuth } from '@/ic/CheckAuth';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Proposal',
   components: {},
@@ -628,7 +625,6 @@ export default class extends Vue {
   }
   private handleInfiniteOnLoad(): void {
     if (!this.busy) {
-      console.log('handleInfiniteOnLoad');
       this.busy = true;
     }
   }
@@ -654,12 +650,10 @@ export default class extends Vue {
         this.proposal.id,
         hexToBytes(neuronId)
       );
-      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
           const err = Object.values(res.command[0])[0] as GovernanceError;
-          console.log(err.error_message);
           if (!err.error_message.includes('Neuron already voted on proposal')) {
             return `NeuronId: ${neuronId}, ${err.error_message}`;
           }
@@ -672,7 +666,6 @@ export default class extends Vue {
         // this.$message.error('Vote Error');
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async onVote(): Promise<void> {
@@ -688,17 +681,13 @@ export default class extends Vue {
       for (let i = 0; i < this.checked.length; i++) {
         promiseValue.push(this.registerVote(this.checked[i]));
         if (promiseValue.length === MAX_COCURRENCY) {
-          console.log(i);
           res.push(await Promise.all(promiseValue));
           promiseValue = [];
         }
         if (i === this.checked.length - 1 && promiseValue.length) {
-          console.log(i);
           res.push(await Promise.all(promiseValue));
         }
       }
-      console.log(this.checked);
-      console.log(res);
       this.voteVisible = false;
       await this.getProposal(this.governanceId);
       this.SNSNeurons = this.filterNeuron(this.allSNSNeurons);
@@ -718,7 +707,6 @@ export default class extends Vue {
         this.$message.success('Vote Success');
       }
     } catch (e) {
-      console.log(e);
       this.$message.error('Vote Error');
     }
     loading.close();
@@ -876,7 +864,6 @@ export default class extends Vue {
         this.initConnected(listDeployedSnses, loading);
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -884,7 +871,6 @@ export default class extends Vue {
     listDeployedSnses: Array<DeployedSns>,
     loading
   ): Promise<void> {
-    console.log(listDeployedSnses);
     let governanceId;
     const tokenId = this.$route.params.tokenId;
     if (listDeployedSnses && listDeployedSnses.length) {
@@ -903,7 +889,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(governanceId);
     this.governanceId = governanceId;
     const res = await Promise.all([
       this.getNervousSystemParameters(governanceId, tokenId),
@@ -938,7 +923,6 @@ export default class extends Vue {
       try {
         this.nervousSystemParameters =
           await snsGovernanceService.getNervousSystemParameters(governanceId);
-        console.log(this.nervousSystemParameters);
       } catch (e) {
         return null;
       }
@@ -963,7 +947,6 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
       if (e && e.toString().indexOf('application payload size')) {
         this.proposalIsLarge = true;
         const proposalId = this.$route.params.proposalId.trim();
@@ -974,12 +957,10 @@ export default class extends Vue {
           include_status: [1, 2, 3, 4, 5],
           include_reward_status: []
         };
-        console.log(request);
         const res = await snsGovernanceService.listProposals(
           governanceId,
           request
         );
-        console.log(res);
         if (res && res.proposals) {
           this.proposal = res.proposals[0];
         }
@@ -987,7 +968,6 @@ export default class extends Vue {
         this.proposalIsLarge = false;
       }
     }
-    console.log(this.proposal);
     if (this.proposal && this.proposal.wait_for_quiet_state.length) {
       this.deadline =
         Number(
@@ -1034,14 +1014,11 @@ export default class extends Vue {
         });
       }
     } catch (e) {
-      console.log(e);
     }
     const now = new Date().getTime();
-    console.log(now, this.deadline);
     if (now < this.deadline) {
       window.clearTimeout(this.timer);
       this.timer = window.setTimeout(() => {
-        console.log('setTimeout');
         this.getProposal(governanceId);
       }, 60 * 1000);
     }
@@ -1094,7 +1071,6 @@ export default class extends Vue {
         governanceId,
         request
       );
-      console.log(res);
       if (res) {
         return res.neurons;
         // this.SNSNeurons = this.filterNeuron(res.neurons);
@@ -1181,7 +1157,6 @@ export default class extends Vue {
         .toString(10);
       return new BigNumber(vote).gt(0);
     });
-    console.log(SNSNeurons);
     return SNSNeurons;
   }
   private getVoteBalance(SNSNeuron: SNSNeuron): string {
@@ -1232,8 +1207,6 @@ export default class extends Vue {
       });
       this.showNeurons = true;
     }
-    console.log(this.hasBallots);
-    console.log(this.checked);
     return SNSNeurons;
   }
   private arrayToString(val: Array<number>): string {
@@ -1241,7 +1214,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .proposal-main {
   margin-top: 30px;

@@ -6,10 +6,8 @@ import { fromSubAccountId, principalToAccountIdentifier } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import { namespace } from 'vuex-class';
 import { LEDGER_CANISTER_ID } from '@/ic/utils';
-
 const commonModule = namespace('common');
 let num = 0;
-
 @Component({})
 export class BalanceMixin extends Vue {
   @commonModule.Getter('getCheckAuth') getCheckAuth?: boolean;

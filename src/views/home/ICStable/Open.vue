@@ -639,7 +639,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
@@ -672,7 +671,6 @@ import {
   IC_STABLE_CANISTER_ID
 } from '@/ic/utils';
 import { OperateType } from '@/views/home/ICStable/model';
-
 @Component({
   name: 'Open',
   components: {},
@@ -1162,7 +1160,6 @@ export default class extends Vue {
     this.paybackDusdAmountInput = '';
     this.tokenId = this.$route.params.tokenId;
     this.dpId = this.$route.params.dpId;
-    console.log(this.dpId);
     if (this.dpId) {
       if (this.operateType === 'open') {
         this.operateType = 'add';
@@ -1191,7 +1188,6 @@ export default class extends Vue {
       this.getPrice();
       this.getCollaterals();
     } catch (e) {
-      console.log(e);
     }
   }
   private back(): void {
@@ -1234,7 +1230,6 @@ export default class extends Vue {
   }
   private async getDp(): Promise<void> {
     const res = await this.ICStableService.dp(BigInt(this.dpId));
-    console.log(res);
     if (res && res.length) {
       const status = Object.keys(res[0].status)[0];
       if (status === 'Opening') {
@@ -1252,7 +1247,6 @@ export default class extends Vue {
         .decimalPlaces(this.dusdDecimal)
         .toString(10);
       this.currentCollaterals = res[0].collaterals;
-      console.log(this.currentCollaterals);
       this.dpInfo = res[0];
       this.payable = new BigNumber(res[0].payable.toString(10))
         .div(10 ** this.dusdDecimal)
@@ -1295,7 +1289,6 @@ export default class extends Vue {
           return false;
         }
       } catch (e) {
-        console.log(e);
         this.openLoading.close();
         return false;
       }
@@ -1335,14 +1328,12 @@ export default class extends Vue {
           return false;
         }
       } catch (e) {
-        console.log(e);
         this.openLoading.close();
         return false;
       }
     }
   }
   private async open(): Promise<void> {
-    console.time();
     this.openLoading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -1353,7 +1344,6 @@ export default class extends Vue {
           .times(10 ** this.tokenInfo.decimals)
           .toString(10)
       );
-      console.log(amount);
       const canOpen = await this.approve(
         this.tokenId,
         this.tokenInfo.tokenStd,
@@ -1363,7 +1353,6 @@ export default class extends Vue {
         const res = await this.ICStableService.open([
           [Principal.fromText(this.tokenId), amount]
         ]);
-        console.log(res);
         if (
           (
             res as {
@@ -1383,13 +1372,10 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     this.openLoading.close();
-    console.timeEnd();
   }
   private async add(): Promise<void> {
-    console.time();
     this.openLoading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -1400,7 +1386,6 @@ export default class extends Vue {
           .times(10 ** this.tokenInfo.decimals)
           .toString(10)
       );
-      console.log(amount);
       const canOpen = await this.approve(
         this.tokenId,
         this.tokenInfo.tokenStd,
@@ -1410,7 +1395,6 @@ export default class extends Vue {
         const res = await this.ICStableService.add(BigInt(this.dpId), [
           [Principal.fromText(this.tokenId), amount]
         ]);
-        console.log(res);
         if (
           (
             res as {
@@ -1425,13 +1409,10 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     this.openLoading.close();
-    console.timeEnd();
   }
   private async remove(): Promise<void> {
-    console.time();
     this.openLoading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -1442,7 +1423,6 @@ export default class extends Vue {
           .times(10 ** this.tokenInfo.decimals)
           .toString(10)
       );
-      console.log(amount);
       const shares = BigInt(
         new BigNumber(amount.toString(10))
           .div(this.currentCollaterals[0][1].toString(10))
@@ -1450,12 +1430,10 @@ export default class extends Vue {
           .decimalPlaces(0, 1)
           .toString(10)
       );
-      console.log(this.currentCollaterals[0], shares);
       const res = await this.ICStableService.remove(BigInt(this.dpId), [
         Principal.fromText(this.tokenId),
         [shares]
       ]);
-      console.log(res);
       if (
         (
           res as {
@@ -1469,13 +1447,10 @@ export default class extends Vue {
         this.$message.error((res as { err: StableTxnResultErr }).err.message);
       }
     } catch (e) {
-      console.log(e);
     }
     this.openLoading.close();
-    console.timeEnd();
   }
   private async generate(): Promise<void> {
-    console.time();
     this.openLoading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -1489,7 +1464,6 @@ export default class extends Vue {
       const res = await this.ICStableService.generate(BigInt(this.dpId), [
         amount
       ]);
-      console.log(res);
       if (
         (
           res as {
@@ -1503,13 +1477,10 @@ export default class extends Vue {
         this.$message.error((res as { err: StableTxnResultErr }).err.message);
       }
     } catch (e) {
-      console.log(e);
     }
     this.openLoading.close();
-    console.timeEnd();
   }
   private async payback(): Promise<void> {
-    console.time();
     this.openLoading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -1528,7 +1499,6 @@ export default class extends Vue {
         .plus(this.dpInfo.payable.toString(10))
         .div(10 ** this.dusdDecimal)
         .decimalPlaces(this.dusdDecimal);
-      console.log(payable.toString(10));
       if (this.payableRadioType === 'DUSD') {
         chargeMethod = { DUSD: null };
         const DUSDDebt = BigInt(
@@ -1539,7 +1509,6 @@ export default class extends Vue {
             .toString(10)
         );
         // const DUSDDebt = BigInt(5 * 10 ** 8);
-        console.log(DUSDDebt);
         const canPayback = await this.approve(
           DUSD_CANISTER_ID,
           { drc20: null },
@@ -1548,7 +1517,6 @@ export default class extends Vue {
         if (!canPayback) {
           return;
         }
-        console.log(canPayback);
       } else {
         chargeMethod = { ICL: null };
         const DUSDDebtToIcl = new BigNumber(payable)
@@ -1579,7 +1547,6 @@ export default class extends Vue {
         BigInt(this.dpId),
         chargeMethod
       );
-      console.log(res);
       if (
         (
           res as {
@@ -1591,18 +1558,14 @@ export default class extends Vue {
         await this.$router.push('/ICStable/positions');
         // this.init();
       } else {
-        console.log(res);
         this.$message.error((res as { err: StableTxnResultErr }).err.message);
       }
     } catch (e) {
-      console.log(e);
     }
     this.openLoading.close();
-    console.timeEnd();
   }
   private async getStats(): Promise<void> {
     this.stats = await this.ICStableService.stats();
-    console.log(this.stats);
     this.stats.assets.forEach((res) => {
       this.assetsStats[res[0].tokenId.toString()] = res[0];
     });
@@ -1628,7 +1591,6 @@ export default class extends Vue {
     }
   }
   private dusdAmountChange(): void {
-    console.log(this.dusdAmountInput);
     if (this.dusdAmountInput) {
       this.depositAmount = this.currentDepositAmount;
     }
@@ -1784,11 +1746,9 @@ export default class extends Vue {
   private async getConfig(): Promise<void> {
     const res = await this.ICStableService.getConfig();
     this.config = res[1];
-    console.log(res);
   }
 }
 </script>
-
 <style scoped lang="scss">
 .container-width {
   padding-bottom: 20px;

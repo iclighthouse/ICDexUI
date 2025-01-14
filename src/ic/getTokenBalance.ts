@@ -6,7 +6,6 @@ import BigNumber from 'bignumber.js';
 import { LedgerService } from '@/ic/ledger/ledgerService';
 import { Address } from '@/ic/DRC20Token/model';
 import { CYCLES_FINANCE_CANISTER_ID, getSubAccountArray } from '@/ic/utils';
-
 export const getTokenBalance = async (
   tokenStd: TokenStd,
   tokenId: string,
@@ -67,7 +66,6 @@ export const getTokenBalance = async (
       return balance.toString(10);
     }
   } catch (e) {
-    console.log(e);
   }
 };
 const getIcpBalance = async (subAccountId = 0): Promise<string> => {

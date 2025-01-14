@@ -74,7 +74,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {
@@ -95,7 +94,6 @@ import {
 import store from '@/store';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { LEDGER_CANISTER_ID } from '@/ic/utils';
-
 @Component({
   name: 'Index',
   components: {}
@@ -224,8 +222,6 @@ export default class extends Vue {
                 to = principalAndAccountId.accountId;
               }
             }
-            console.log(this.transferForm.to);
-            console.log(principalAndAccountId);
             let amount = new BigNumber(this.transferForm.amount.toString())
               .times(10 ** 8)
               .toString(10);
@@ -280,7 +276,6 @@ export default class extends Vue {
             this.$emit('transferSuccess', deposit, loading, this.subaccountId);
           } catch (e) {
             loading.close();
-            console.log(e);
           }
         } else {
           return false;
@@ -302,7 +297,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .transfer-modal {
   .transfer-submit {

@@ -76,7 +76,6 @@
     ></transfer-token>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -223,7 +222,6 @@ export default class extends Vue {
       localStorage.setItem(principal, JSON.stringify(currentInfo));
     }
     this.$set(this.currentToken, 'balance', this.ICL);
-    console.log(this.currentToken);
     this.refreshBalanceLoading = false;
   }
   private afterClose(): void {
@@ -232,7 +230,6 @@ export default class extends Vue {
   private onchangeFile(event: Event, item): void {
     const target = event.target as HTMLInputElement;
     const file = target.files[0];
-    console.log(event, item);
     const isLt1M = file.size / 1024 / 1024 < 1;
     if (!isLt1M) {
       this.$message.error('Image must smaller than 1MB!');
@@ -284,21 +281,18 @@ export default class extends Vue {
               this.visible = false;
               this.$message.success('Approve Success');
             } else {
-              console.log(res);
               this.$message.error('Approve Error');
             }
           }
           loading.close();
         } catch (e) {
           loading.close();
-          console.log(e);
         }
       }
     });
   }
 }
 </script>
-
 <style scoped lang="scss">
 .icl-info {
   margin-bottom: 20px;

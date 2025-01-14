@@ -24,7 +24,6 @@ import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';
 import { Icrc1Account } from '@/ic/common/icType';
 import { createService } from '@/ic/createService';
-
 export class SNSGovernanceService {
   private check = async (
     canisterId: string,
@@ -42,7 +41,6 @@ export class SNSGovernanceService {
       const res = await service.get_metadata({});
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -55,7 +53,6 @@ export class SNSGovernanceService {
       const res = await service.list_neurons(request);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -68,7 +65,6 @@ export class SNSGovernanceService {
       const res = await service.get_neuron({ neuron_id: request });
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -80,7 +76,6 @@ export class SNSGovernanceService {
       const res = await service.get_nervous_system_parameters(null);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -275,7 +270,6 @@ export class SNSGovernanceService {
       const res = await service.list_nervous_system_functions();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

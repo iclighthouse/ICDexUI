@@ -23,7 +23,6 @@ import { createService } from '@/ic/createService';
 import { NFT } from '@/ic/ICDexRouter/model';
 import { fromSubAccountId } from '@/ic/converter';
 import { TokenIdentifier } from '@/ic/nft/model';
-
 export class ICSwapRouterFiduciaryService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -98,7 +97,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.getCompetitions(dexName, page, size);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -107,7 +105,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.getDexCompetitionRound();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -118,7 +115,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.getDexCompetition(round);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -130,7 +126,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.getDexCompetitionTrader(round, address);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -140,7 +135,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.registerDexCompetition(subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -149,7 +143,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.getConfig();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -158,7 +151,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.NFTBalance(address);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -176,7 +168,6 @@ export class ICSwapRouterFiduciaryService {
       await this.service.NFTDeposit(principal, tokenIdentifier, subAccount);
       return true;
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -192,7 +183,6 @@ export class ICSwapRouterFiduciaryService {
       }
       return await this.service.NFTWithdraw(tokenIdentifier, subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -201,7 +191,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.NFTStaked(address);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -210,7 +199,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.propose(pairCanisterId);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -221,7 +209,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.getPairListingReferrers(pairCanisterId);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -230,7 +217,6 @@ export class ICSwapRouterFiduciaryService {
     try {
       return await this.service.debugPairs();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

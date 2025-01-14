@@ -1,6 +1,5 @@
 import { Principal } from '@dfinity/principal';
 import { Icrc1Account } from '@/ic/common/icType';
-
 export interface GetMetadataResponse {
   url: Array<string>;
   logo: Array<string>;
@@ -445,7 +444,6 @@ export type Result_1 =
   | {
       Proposal: ProposalData;
     };
-
 export default interface Service {
   get_metadata({}): Promise<GetMetadataResponse>;
   list_neurons(request: ListNeurons): Promise<ListNeuronsResponse>;

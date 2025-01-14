@@ -33,7 +33,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.2.11
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.2.2
             </span>
           </span>
         </span>
@@ -165,7 +165,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { principalToAccountIdentifier } from '@/ic/converter';
@@ -180,9 +179,7 @@ import { connectIcx } from '@/ic/connectIcx';
 import EventBus from '@/utils/Event';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { ICDexRouterService } from '@/ic/ICDexRouter/ICDexRouterService';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Index',
   components: {
@@ -338,7 +335,6 @@ export default class extends Vue {
       if (typeof encryptSeedPhrase === 'string') {
         encryptSeedPhrase = JSON.parse(encryptSeedPhrase);
       }
-      console.log(encryptSeedPhrase);
       if (!encryptSeedPhrase) {
         this.activeKey = 0;
       }
@@ -363,7 +359,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .arrow-left-link {
   display: flex;

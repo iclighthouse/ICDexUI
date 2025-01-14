@@ -46,7 +46,6 @@
     />
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins, Watch } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
@@ -68,7 +67,6 @@ import {
 } from '@/ic/ConnectInfinity';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import { checkAuth } from '@/ic/CheckAuth';
-
 @Component({
   name: 'Index',
   components: {
@@ -174,7 +172,6 @@ export default class extends Mixins(BalanceMixin) {
         [size]
       );
     } catch (e) {
-      console.log(e);
     }
   }
   private async getTokens(): Promise<void> {
@@ -184,7 +181,6 @@ export default class extends Mixins(BalanceMixin) {
     });
     try {
       const res = await this.ICSwapRouterFiduciaryService.getTokens();
-      console.log(res);
       loading.close();
       const tokenFromId = this.$route.params.tokenFromId;
       if (!tokenFromId) {
@@ -193,7 +189,6 @@ export default class extends Mixins(BalanceMixin) {
       let pairs: TrieList;
       if (isPlug() || isInfinity()) {
         pairs = await this.getDexPairs();
-        console.log(pairs);
       }
       if (res && res.length) {
         let canisterIds: Array<string> = [];
@@ -254,9 +249,7 @@ export default class extends Mixins(BalanceMixin) {
                     promiseAllValue.push(_that.setTokenInfo(tokenId, tokenStd));
                   }
                 }
-                console.time();
                 await Promise.all(promiseAllValue);
-                console.timeEnd();
                 res.forEach((token) => {
                   const tokenStd = token[2];
                   const tokenId = token[0];
@@ -276,7 +269,6 @@ export default class extends Mixins(BalanceMixin) {
                         ...token,
                         _that.tokens[tokenId.toString()]
                       ]);
-                      console.log(_that.tokens[tokenId.toString()]);
                     } else {
                       if ((tokenStd as { icp: null }).icp === null) {
                         _that.swapTokens.unshift([
@@ -293,7 +285,6 @@ export default class extends Mixins(BalanceMixin) {
                       }
                     }
                   } catch (e) {
-                    console.log(e);
                   }
                 });
                 _that.getTokensBalance();
@@ -342,9 +333,7 @@ export default class extends Mixins(BalanceMixin) {
                     promiseAllValue.push(_that.setTokenInfo(tokenId, tokenStd));
                   }
                 }
-                console.time();
                 await Promise.all(promiseAllValue);
-                console.timeEnd();
                 res.forEach((token) => {
                   const tokenStd = token[2];
                   const tokenId = token[0];
@@ -364,7 +353,6 @@ export default class extends Mixins(BalanceMixin) {
                         ...token,
                         _that.tokens[tokenId.toString()]
                       ]);
-                      console.log(_that.tokens[tokenId.toString()]);
                     } else {
                       if ((tokenStd as { icp: null }).icp === null) {
                         _that.swapTokens.unshift([
@@ -381,7 +369,6 @@ export default class extends Mixins(BalanceMixin) {
                       }
                     }
                   } catch (e) {
-                    console.log(e);
                   }
                 });
                 _that.getTokensBalance();
@@ -416,9 +403,7 @@ export default class extends Mixins(BalanceMixin) {
               promiseAllValue.push(this.setTokenInfo(tokenId, tokenStd));
             }
           }
-          console.time();
           await Promise.all(promiseAllValue);
-          console.timeEnd();
           res.forEach((token) => {
             const tokenStd = token[2];
             const tokenId = token[0];
@@ -454,16 +439,13 @@ export default class extends Mixins(BalanceMixin) {
                 }
               }
             } catch (e) {
-              console.log(e);
             }
           });
           this.getTokensBalance();
         }
         // this.getTokensBalanceInterval();
       }
-      console.log(this.swapTokens);
     } catch (e) {
-      console.log(e);
     }
   }
   private tokenChange(tokenId: string): void {
@@ -477,7 +459,6 @@ export default class extends Mixins(BalanceMixin) {
     this.$set(this.tokens, tokenId.toString(), tokenInfo);
   }
   private async change(type: SwapType): Promise<void> {
-    console.log(type);
     this.swapType = type;
     if (type === SwapMenu.Swap) {
       const tokenFromId = swapTokenIdToIcpOrCycles(
@@ -508,7 +489,6 @@ export default class extends Mixins(BalanceMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .ic-swap-container {
   margin-top: 80px;

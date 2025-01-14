@@ -3,8 +3,6 @@ import store from '@/store';
 import router from '@/router';
 import Vue from 'vue';
 import { isInfinity } from '@/ic/isInfinity';
-
-
 export default class ConnectInfinity {
   public connect = async (
     newWhitelist?: Array<string>,
@@ -40,7 +38,6 @@ export default class ConnectInfinity {
           console.warn(
             'Unable to fetch root key. Check to ensure that your local replica is running'
           );
-          console.log(err);
         });
       }
       store.commit('common/SET_IS_OPEN', true);
@@ -48,7 +45,6 @@ export default class ConnectInfinity {
       loading && loading.text && loading.close();
       return true;
     } catch (e) {
-      console.log(e);
       loading && loading.text && loading.close();
       return false;
     }
@@ -63,7 +59,6 @@ export default class ConnectInfinity {
       whitelist[principalId.toString()] = newWhitelist;
       localStorage.setItem('whitelistInfinity', JSON.stringify(whitelist));
     }
-    console.log(principalId.toString());
     localStorage.setItem('principal', principalId.toString());
     store.commit('common/SET_PRINCIPAL_ID', principalId.toString());
     const principalList = JSON.parse(localStorage.getItem('priList')) || {};

@@ -41,7 +41,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { LEDGER_CANISTER_ID } from '@/ic/utils';
@@ -54,9 +53,7 @@ import { ApproveError } from '@/ic/DRC20Token/model';
 import { validateCanister } from '@/utils/validate';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { namespace } from 'vuex-class';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Index',
   components: {}
@@ -92,7 +89,6 @@ export default class extends Vue {
     if (this.tokenInfo && this.tokenInfo.symbol) {
       this.title = 'Approve ' + this.tokenInfo.symbol;
     }
-    console.log(this.tokenInfo);
     this.visible = true;
   }
   private approve(): void {
@@ -150,5 +146,4 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss"></style>

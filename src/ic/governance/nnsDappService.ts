@@ -4,7 +4,6 @@ import Service, {
 import { buildService } from '@/ic/Service';
 import { NNS_DAPP_CANISTER_ID } from '@/ic/utils';
 import IDL from './nnsDapp.did';
-
 export class nnsDappService {
   private service: Service;
   private check = async (): Promise<void> => {

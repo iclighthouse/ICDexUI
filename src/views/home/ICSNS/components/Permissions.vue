@@ -158,7 +158,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import {
@@ -176,9 +175,7 @@ import { checkAuth } from '@/ic/CheckAuth';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { Principal } from '@dfinity/principal';
 import { namespace } from 'vuex-class';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Permissions',
   components: {}
@@ -220,8 +217,6 @@ export default class extends Vue {
     this.SNSNeurons = SNSNeuronsList[SNSIndex];
     this.neuron = this.SNSNeurons.SNSNeurons[index];
     this.visible = true;
-    console.log(this.neuron);
-    console.log(this.SNSNeurons);
     this.getPermissions();
   }
   private getPermissions(): void {
@@ -245,7 +240,6 @@ export default class extends Vue {
         }
       });
     });
-    console.log(this.permissions);
     const neuron_grantable_permissions = [];
     this.neuronSystemPermissions = [];
     this.SNSNeurons.nervousSystemParameters.neuron_grantable_permissions[0].permissions.forEach(
@@ -253,7 +247,6 @@ export default class extends Vue {
         neuron_grantable_permissions.push(Number(item));
       }
     );
-    console.log(neuron_grantable_permissions);
     const neuronSystemPermissions: Array<neuronSystemPermissionsType> = [
       {
         id: 0,
@@ -366,7 +359,6 @@ export default class extends Vue {
     }
     loading.close();
   }
-
   /**
    * removeAllPermissionsForPrincipal
    * @param principal
@@ -384,9 +376,7 @@ export default class extends Vue {
         principal,
         permissionIds
       );
-      console.log(res);
     } catch (e) {
-      console.log(e);
     }
   }
   private onAddPermission(item: neuronSystemPermissionsType): void {
@@ -411,7 +401,6 @@ export default class extends Vue {
         Principal.from(principalId),
         [BigInt(permissionId)]
       );
-      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -423,7 +412,6 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
       this.$message.error('Remove Neuron Permission Error');
     }
     loading.close();
@@ -464,7 +452,6 @@ export default class extends Vue {
                 Principal.from(this.addPermissionForm.principalId.trim()),
                 [BigInt(this.permissionId)]
               );
-              console.log(res);
               if (res && res.command) {
                 const type = Object.keys(res.command[0])[0];
                 if (type === 'Error') {
@@ -483,7 +470,6 @@ export default class extends Vue {
                 }
               }
             } catch (e) {
-              console.log(e);
               this.$message.error('Add Neuron Permission Error');
             }
             loading.close();
@@ -513,7 +499,6 @@ export default class extends Vue {
               this.addPermissionVisible = false;
               this.$emit('permissionsNeuronSuccess', this.SNSIndex, this.index);
             } catch (e) {
-              console.log(e);
               this.$message.error('Add Neuron Permissions Error');
             }
             loading.close();
@@ -531,7 +516,6 @@ export default class extends Vue {
         Principal.from(this.addPermissionForm.principalId.trim()),
         [BigInt(permissionId)]
       );
-      console.log(res);
       // if (res && res.command) {
       //   const type = Object.keys(res.command[0])[0];
       //   if (type === 'Error') {
@@ -544,7 +528,6 @@ export default class extends Vue {
       //   }
       // }
     } catch (e) {
-      console.log(e);
     }
   }
   private afterClose(): void {
@@ -556,7 +539,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .add-remove-title {
   display: flex;

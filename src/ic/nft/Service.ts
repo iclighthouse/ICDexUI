@@ -11,7 +11,6 @@ import nftIDL from '@/ic/nft/erc721.did';
 import { NFT_CANISTER_ID } from '@/ic/utils';
 import { principalToAccountIdentifier, SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class NftService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -29,7 +28,6 @@ export class NftService {
       return null;
     }
     const account = principalToAccountIdentifier(Principal.fromText(principal));
-    console.log(this.service);
     const res = await this.service.tokens_ext(account);
     return SerializableIC(res);
   };
@@ -42,7 +40,6 @@ export class NftService {
   };
   public approve = async (approveRequest: ApproveRequest): Promise<boolean> => {
     await this.check();
-    console.log(this.service);
     return await this.service.approve(approveRequest);
   };
   public allowance = async (

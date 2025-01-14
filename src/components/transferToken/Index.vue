@@ -99,7 +99,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Identity } from '@dfinity/agent';
@@ -137,10 +136,8 @@ import { isInfinity } from '@/ic/isInfinity';
 import { validateAccount } from '@/ic/utils';
 import { DePairs } from '@/views/home/ICDex/model';
 import { getFee } from '@/ic/getTokenFee';
-
 const OGYTokenId = 'jwcfb-hyaaa-aaaaj-aac4q-cai';
 const ProSubaccountId = 1;
-
 @Component({
   name: 'Index',
   components: {}
@@ -307,7 +304,6 @@ export default class extends Vue {
     if (this.isH5 && this.currentToken.decimals > 8) {
       decimalPlaces = 8;
     }
-    console.log(res);
     this.currentToken.balance = new BigNumber(res.toString(10))
       .div(10 ** Number(this.currentToken.decimals))
       .decimalPlaces(decimalPlaces, 1)
@@ -326,7 +322,6 @@ export default class extends Vue {
         this.gas = await this.DRC20TokenService.gas(
           this.currentToken.canisterId.toString()
         );
-        console.log(this.gas);
         fee = (this.gas as { token: bigint }).token;
       } catch (e) {
         fee = await this.DRC20TokenService.fee(
@@ -450,7 +445,6 @@ export default class extends Vue {
                   data,
                   this.currentToken.canisterId.toString()
                 );
-                console.log(res);
                 if (
                   (
                     res as {
@@ -714,7 +708,6 @@ export default class extends Vue {
               loading.close();
             }
           } catch (e) {
-            console.log(e);
             loading.close();
             this.$message.error('Transfer fail');
           }
@@ -727,7 +720,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .transfer-submit {
   margin-top: 20px;

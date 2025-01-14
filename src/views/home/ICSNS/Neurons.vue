@@ -1063,7 +1063,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
@@ -1108,9 +1107,7 @@ import { questsService } from '@/ic/quests/questsService';
 import Down from './down.vue';
 import DisburseMaturityInProgress from './disburseMaturityInProgress.vue';
 import { SNSSwapService } from '@/ic/SNSSwap/SNSSwapService';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Neurons',
   components: {
@@ -1245,7 +1242,6 @@ export default class extends Vue {
       this.currentNeuron.SNSNeurons[this.currentNeuronIndex],
       this.currentNeuron
     );
-    console.log(neuronBalance);
     const minAmount = new BigNumber(currentNeuronMinimumStakeE8s.toString(10))
       .div(10 ** Number(this.currentNeuron.SNSNeuronOfSNSTokenInfo.decimals))
       .plus(fee)
@@ -1274,7 +1270,6 @@ export default class extends Vue {
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
-    console.log(this.SNSNeuronsList);
   }
   async mounted(): Promise<void> {
     this.SNSWasmService = new SNSWasmService();
@@ -1333,7 +1328,6 @@ export default class extends Vue {
           }
         }
       }
-      console.log(governanceId);
       const snsGovernanceService = new SNSGovernanceService();
       const promiseValue = [];
       promiseValue.push(
@@ -1365,11 +1359,9 @@ export default class extends Vue {
             res[0].result[0] as { Neuron: SNSNeuron }
           )[0];
           this.currentNeuronForNeuronId = neuron;
-          console.log(neuron);
         }
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -1412,8 +1404,6 @@ export default class extends Vue {
               amount,
               memo
             );
-            console.log(amount);
-            console.log(res);
             if (res && res.command) {
               const type = Object.keys(res.command[0])[0];
               if (type === 'Error') {
@@ -1434,7 +1424,6 @@ export default class extends Vue {
               this.$message.error('Split Neuron Error');
             }
           } catch (e) {
-            console.log(e);
           }
           loading.close();
         }
@@ -1510,7 +1499,6 @@ export default class extends Vue {
         this.$message.error('Stop Dissolving Error');
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -1555,7 +1543,6 @@ export default class extends Vue {
           })
           .catch((err) => {
             loading.close();
-            console.log(err);
             that.$message.error('Start Dissolving Error');
           });
       }
@@ -1596,13 +1583,11 @@ export default class extends Vue {
       SNSNeuronInfo.SNSNeuronOfGovernanceId,
       neuron.id
     );
-    console.log(SNSIndex, index);
     if (res.result) {
       const type = Object.keys(res.result[0])[0];
       if (type === 'Neuron') {
         const neuron = Object.values(res.result[0] as { Neuron: SNSNeuron })[0];
         this.$set(this.SNSNeuronsList[SNSIndex].SNSNeurons, index, neuron);
-        console.log(neuron);
       }
     }
   }
@@ -1767,7 +1752,6 @@ export default class extends Vue {
     neurons: SNSNeuronsInfo
   ): string {
     try {
-      console.log('getNeuronMaturityBalance');
       const maturity_e8s_equivalent = SNSNeuron.maturity_e8s_equivalent;
       // const staked_maturity_e8s_equivalent =
       //   SNSNeuron.staked_maturity_e8s_equivalent[0] || BigInt(0);
@@ -1915,7 +1899,6 @@ export default class extends Vue {
         description
       );
     } catch (e) {
-      console.log(e);
     }
   }
   private onSubmitStakeNeuron(): void {
@@ -1936,14 +1919,12 @@ export default class extends Vue {
                 .toString(10)
             );
             const currentDrc20Token = new DRC20TokenService();
-            console.log(this.stakeNeuronTitle.startsWith('Stake'));
             if (this.stakeNeuronTitle.startsWith('Stake')) {
               const principal = localStorage.getItem('principal');
               const response = createSNSSubAccount(
                 Principal.fromText(principal),
                 this.currentNeuron.SNSNeuronOfGovernanceId
               );
-              console.log(response);
               const res = await currentDrc20Token.icrc1Transfer(
                 this.currentNeuron.SNSNeuronOfId,
                 amount,
@@ -1985,7 +1966,6 @@ export default class extends Vue {
                     .catch((err) => {
                       this.$message.error(err.error_message);
                       loading.close();
-                      console.log(err);
                     });
                 }
               }
@@ -2018,7 +1998,6 @@ export default class extends Vue {
                         .id[0].id
                     )
                     .then((res) => {
-                      console.log(res);
                       loading.close();
                       this.$message.success('Increase Stake Success');
                       this.stakeNeuronVisible = false;
@@ -2030,14 +2009,12 @@ export default class extends Vue {
                     .catch((err) => {
                       this.$message.error(err.error_message);
                       loading.close();
-                      console.log(err);
                     });
                 }
               }
             }
           } catch (e) {
             loading.close();
-            console.log(e);
           }
         } else {
           return false;
@@ -2064,10 +2041,7 @@ export default class extends Vue {
         const res = await snsGovernanceService.getNervousSystemParameters(
           governanceId
         );
-        console.log(governanceId);
-        console.log(res);
         this.$set(this.SNSNeuronsList[index], 'nervousSystemParameters', res);
-        console.log(this.SNSNeuronsList);
       } catch (e) {
         return null;
       }
@@ -2089,7 +2063,6 @@ export default class extends Vue {
       if (!this.getCheckAuth) {
         getTokenBalance({ icrc1: null }, neuron.SNSNeuronOfId).then(
           (balance) => {
-            console.log(balance);
             this.stakeNeuronOfTokenBalance = balance;
           }
         );
@@ -2120,12 +2093,10 @@ export default class extends Vue {
           BigInt(this.stakeMaturityValue)
         )
         .then((res) => {
-          console.log(res);
           if (res && res.command) {
             const type = Object.keys(res.command[0])[0];
             if (type === 'Error') {
               const err = Object.values(res.command[0])[0] as GovernanceError;
-              console.log(err);
               this.$message.error(err.error_message);
             } else {
               this.$message.success('Stake Maturity Success');
@@ -2144,7 +2115,6 @@ export default class extends Vue {
           loading.close();
         });
     } catch (e) {
-      console.log(e);
       loading.close();
       this.$message.success('Stake Maturity Error');
     }
@@ -2166,12 +2136,10 @@ export default class extends Vue {
           neuronInfo.SNSNeurons[this.currentNeuronIndex].id[0].id
         )
         .then((res) => {
-          console.log(res);
           if (res && res.command) {
             const type = Object.keys(res.command[0])[0];
             if (type === 'Error') {
               const err = Object.values(res.command[0])[0] as GovernanceError;
-              console.log(err);
               this.$message.error(err.error_message);
             } else {
               this.$message.success('change Auto Stake Maturity Success');
@@ -2187,7 +2155,6 @@ export default class extends Vue {
           loading.close();
         });
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -2235,7 +2202,6 @@ export default class extends Vue {
         this.SNSNeuronsList[SNSIndex].SNSNeuronOfGovernanceId,
         this.SNSNeuronsList[SNSIndex].SNSNeurons[index].id[0].id
       );
-      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -2249,7 +2215,6 @@ export default class extends Vue {
         this.$message.error('Disburse Maturity Error');
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -2281,7 +2246,6 @@ export default class extends Vue {
     SNSIndex: number,
     index: number
   ): Promise<void> {
-    console.log(SNSIndex);
     this.currentNeuron = neuron;
     this.currentNeuronInfoIndex = SNSIndex;
     this.currentNeuronIndex = index;
@@ -2316,7 +2280,6 @@ export default class extends Vue {
         this.$message.error('Disburse Neuron Error');
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -2328,7 +2291,6 @@ export default class extends Vue {
     try {
       this.deployedSnses = await this.SNSWasmService.listDeployedSnses();
       loading.close();
-      console.log(this.deployedSnses);
       let canisterIds: Array<string> = [];
       // this.currentNeuronInfoIndex = 0;
       let ICLIndex = null;
@@ -2407,7 +2369,6 @@ export default class extends Vue {
         this.initConnected(this.deployedSnses);
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -2432,7 +2393,6 @@ export default class extends Vue {
         [],
         this.currentNeuronInfoIndex
       );
-      console.log(this.SNSNeuronsList);
       let deployedSns: DeployedSns;
       this.deployedSnses.some((item) => {
         if (
@@ -2479,7 +2439,6 @@ export default class extends Vue {
         }
       });
     } catch (e) {
-      console.log(e);
     }
   }
   private async initConnected(
@@ -2582,7 +2541,6 @@ export default class extends Vue {
         }
       }
     );
-    console.log(this.SNSNeuronsList);
     localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     let tokenId = this.$route.query.id as string;
     if (tokenId) {
@@ -2600,7 +2558,6 @@ export default class extends Vue {
         break;
       }
     }
-    console.log(this.currentNeuronInfoIndex);
     if (!this.currentNeuronInfoIndex) {
       this.currentNeuronInfoIndex = 0;
     }
@@ -2610,15 +2567,12 @@ export default class extends Vue {
       [],
       this.currentNeuronInfoIndex
     );
-    console.log(this.SNSNeuronsList);
   }
   private async loadMore(): Promise<void> {
-    console.log('loadMore');
     const lastId =
       this.SNSNeuronsList[this.currentNeuronInfoIndex].SNSNeurons[
         this.SNSNeuronsList[this.currentNeuronInfoIndex].SNSNeurons.length - 1
       ].id;
-    console.log(lastId);
     const res = await this.getNeurons(
       this.deployedSnses[
         this.currentNeuronInfoIndex
@@ -2626,7 +2580,6 @@ export default class extends Vue {
       4,
       lastId
     );
-    console.log(res);
     if (
       res.length <
       this.SNSNeuronsList[this.currentNeuronInfoIndex].SNSNeuronPageSize
@@ -2648,7 +2601,6 @@ export default class extends Vue {
     index: number
   ): Promise<void> {
     const res = await this.getNeurons(governanceId, limit, startPageAt);
-    console.log(res);
     const snsNeuron: SNSNeuronsInfo = {
       SNSNeuronOfSNSTokenInfo:
         this.SNSNeuronsList[index].SNSNeuronOfSNSTokenInfo,
@@ -2714,7 +2666,6 @@ export default class extends Vue {
           .SNSNeuronOfGovernanceId,
         neuronId
       );
-      console.log(res, neuronId, this.currentNeuronInfoIndex);
       if (res.result) {
         const type = Object.keys(res.result[0])[0];
         if (type === 'Neuron') {
@@ -2724,11 +2675,9 @@ export default class extends Vue {
           this.SNSNeuronsList[this.currentNeuronInfoIndex].SNSNeurons.unshift(
             neuron
           );
-          console.log(neuron);
         }
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async refreshNeurons(
@@ -2759,7 +2708,6 @@ export default class extends Vue {
       governanceCanisterId,
       request
     );
-    console.log(res);
     if (res) {
       // return res.neurons;
       return this.filterNeuron(res.neurons);
@@ -2800,7 +2748,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .voting-power-title-main {
   margin-right: 5px;

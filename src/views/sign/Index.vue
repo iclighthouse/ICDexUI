@@ -163,7 +163,6 @@
     ></switch-plug-account>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import { decrypt } from '@/ic/utils';
@@ -182,7 +181,6 @@ import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { getNFIDIdentity, NFIDLogin, NFIDLogout } from '@/ic/NFIDAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
-
 @Component({
   name: 'Index',
   components: { SwitchPlugAccount }
@@ -205,7 +203,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.loginType = this.$route.params.type;
     this.selectedAccount = localStorage.getItem('principal');
     this.hostname = window.location.hostname;
-    console.log(window.parent.origin);
   }
   public reset(): void {
     localStorage.removeItem('principal');
@@ -231,7 +228,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       mnemonic = await decrypt(data, this.password, salt);
     } catch (e) {
       this.spinning = false;
-      console.log(e);
       this.$message.config({ top: '40%' });
       this.$message.error("Password doesn't match");
       return;
@@ -301,7 +297,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     this.spinning = false;
   }
@@ -338,14 +333,12 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     this.spinning = false;
   }
   private async authNFIDClient(type: string): Promise<void> {
     this.spinning = true;
     const signerAgent = await NFIDLogin(type === 'SignerNFID');
-    console.log(signerAgent);
     let principal;
     if (type === 'SignerNFID') {
       principal = await signerAgent.getPrincipal();
@@ -434,7 +427,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       // sessionStorage.setItem('identity', JSON.stringify(identity));
       this.spinning = false;
       this.setCheckAuth(false);
-      console.log(this.$route.query.redirect);
       if (this.$route.query.redirect) {
         this.$router.push(this.$route.query.redirect as any).catch(() => {
           return;
@@ -446,7 +438,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       }
     } catch (e) {
       this.spinning = false;
-      console.log(e);
       this.$message.config({ top: '45%' });
       this.$message.error("Password doesn't match");
     }
@@ -497,13 +488,11 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         });
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
 }
 </script>
-
 <style scoped lang="scss">
 .main {
   display: flex;
@@ -596,7 +585,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
 .sign-spinning {
   margin: -40px -50px -50px;
 }
-
 .sign-input-password {
   margin: 20px 0 40px;
 }

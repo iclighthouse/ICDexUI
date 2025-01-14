@@ -86,7 +86,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Identity } from '@dfinity/agent';
@@ -103,7 +102,6 @@ import { Txid } from '@/ic/ICLighthouseToken/model';
 import { checkAuth } from '@/ic/CheckAuth';
 import { hexToBytes } from '@/ic/converter';
 import { validateAccount, validatePrincipal } from '@/ic/utils';
-
 @Component({
   name: 'TransferBatch',
   components: {}
@@ -127,14 +125,12 @@ export default class extends Vue {
     this.isIcx = !!(window as any).icx;
   }
   private onAmountChange(): void {
-    console.log(this.transferForm.amount);
     let amount = this.transferForm.amount.split(/[(\r\n)\r\n]+/);
     let flag = false;
     const decimals = this.currentToken.decimals;
     const reg = new RegExp(`^\\d+\\.?\\d{0,${decimals}}$`);
     let totalAmount = '0';
     for (let i = 0; i < amount.length; i++) {
-      console.log(reg.test(amount[i]));
       if (amount[i] && !reg.test(amount[i]) && !flag) {
         flag = true;
         this.amountError = `Line${i + 1}: invalid amount`;
@@ -163,11 +159,8 @@ export default class extends Vue {
     if (account.length === amount.length && this.toError) {
       this.toError = '';
     }
-    console.log(amount);
-    console.log(this.amountError);
   }
   private onToChange(): void {
-    console.log(this.transferForm.to);
     let account = this.transferForm.to.split(/[(\r\n)\r\n]+/);
     let flag = false;
     for (let i = 0; i < account.length; i++) {
@@ -196,8 +189,6 @@ export default class extends Vue {
     if (account.length === amount.length && this.toError) {
       this.toError = '';
     }
-    console.log(account);
-    console.log(this.toError);
   }
   public async init(token: AddTokenItem): Promise<void> {
     if (
@@ -262,7 +253,6 @@ export default class extends Vue {
         this.gas = await this.DRC20TokenService.gas(
           this.currentToken.canisterId.toString()
         );
-        console.log(this.gas);
         fee = (this.gas as { token: bigint }).token;
       } catch (e) {
         fee = await this.DRC20TokenService.fee(
@@ -309,14 +299,12 @@ export default class extends Vue {
           if (item.lastIndexOf('.') === item.length - 1) {
             item = item + '0';
           }
-          console.log(item);
           batchAmount.push(
             BigInt(
               new BigNumber(item).times(10 ** Number(decimals)).toString(10)
             )
           );
         });
-        console.log(batchAmount);
         const principal = localStorage.getItem('principal');
         if (this.currentToken.standard === TokenStandard.DRC20) {
           const nonceRes = await this.DRC20TokenService.txnQuery(
@@ -344,7 +332,6 @@ export default class extends Vue {
             0,
             data
           );
-          console.log(res);
           if (
             res.length &&
             (
@@ -362,7 +349,6 @@ export default class extends Vue {
         }
         loading.close();
       } catch (e) {
-        console.log(e);
         loading.close();
         this.$message.error('Transfer fail');
       }
@@ -379,7 +365,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .transfer-submit {
   margin-top: 20px;

@@ -1427,7 +1427,6 @@
     ></pro-wallet-swap>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {
@@ -1477,9 +1476,7 @@ import { SysConfig } from '@/ic/ICDexRouter/model';
 import { getTokenBalance } from '@/ic/getTokenBalance';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
-
 const ProSubaccountId = 1;
-
 @Component({
   name: 'proOrder',
   components: { ProWalletSwap },
@@ -1547,7 +1544,6 @@ export default class extends Vue {
   private dexRole!: DexRole;
   @Prop({ type: String, default: () => '' })
   private feeRebate!: string;
-
   private type = 'create';
   private soid: bigint;
   private status: STStatus;
@@ -1811,7 +1807,6 @@ export default class extends Vue {
       (this.$refs.VWAPForm as any).validateField(
         'quantityPerOrder',
         (errorMessage) => {
-          console.log(errorMessage);
         }
       );
     }
@@ -1868,7 +1863,6 @@ export default class extends Vue {
       (this.$refs.TWAPForm as any).validateField(
         'quantityPerOrder',
         (errorMessage) => {
-          console.log(errorMessage);
         }
       );
     }
@@ -2061,7 +2055,6 @@ export default class extends Vue {
       (this.$refs.iceForm as any).validateField(
         'quantityPerOrder',
         (errorMessage) => {
-          console.log(errorMessage);
         }
       );
     }
@@ -2391,7 +2384,6 @@ export default class extends Vue {
       this.setTimeIntervalList();
       this.soid = item.soid;
       this.status = item.status;
-      console.log(item);
       const decimals =
         this.tokens[this.currentPair[1][0].token1[0].toString()].decimals;
       const token0Decimals =
@@ -2662,12 +2654,9 @@ export default class extends Vue {
       return true;
     }
     const sysToken = this.sysConfig.sysToken.toString();
-    console.log(this.sysConfig);
-    console.log(this.stoConfig);
     if (!this.stoConfig.poFee1) {
       return true;
     }
-    console.log(this.tokens[sysToken]);
     const currentDrc20Token = new DRC20TokenService();
     const principal = localStorage.getItem('principal');
     const res = await currentDrc20Token.icrc2_allowance(sysToken, {
@@ -2680,13 +2669,11 @@ export default class extends Vue {
         subaccount: []
       }
     });
-    console.log(res.allowance);
     let fee = new BigNumber(this.stoConfig.poFee1.toString(10));
     if (this.type === 'update') {
       fee = fee.times(0.05);
     }
     fee = fee.plus(this.sysConfig.sysTokenFee.toString(10));
-    console.log(fee.toString(10));
     let ICLBalance = await getTokenBalance(
       { icrc1: null },
       sysToken,
@@ -2699,7 +2686,6 @@ export default class extends Vue {
       fee = fee.plus(this.sysConfig.sysTokenFee.toString(10));
     }
     let balance = new BigNumber(ICLBalance).minus(tokenFee);
-    console.log(balance.toString(10));
     if (balance.lt(fee)) {
       // const ICLBalance0 = await getTokenBalance({ icrc1: null }, sysToken);
       if (new BigNumber(balance).lt(fee)) {
@@ -2721,7 +2707,7 @@ export default class extends Vue {
         return false;
       } else {
         // const amount = new BigNumber(fee).minus(balance).toString(10);
-        // console.log(amount);
+        // 
         // await currentDrc20Token.icrc1Transfer(sysToken, BigInt(amount), {
         //   owner: Principal.fromText(principal),
         //   subaccount: [fromSubAccountId(ProSubaccountId)]
@@ -2746,7 +2732,6 @@ export default class extends Vue {
   }
   private onSubmitVWAP(): void {
     (this.$refs.VWAPForm as any).validate(async (valid: any) => {
-      console.log(this.VWAPForm);
       if (valid) {
         const loading = this.$loading({
           lock: true,
@@ -2863,7 +2848,6 @@ export default class extends Vue {
           amountPerTrigger: amountPerTriggerArg,
           triggerVol: vol
         };
-        console.log(VWAPSetting);
         try {
           const currentICDexService = new ICDexService();
           let res;
@@ -2906,7 +2890,6 @@ export default class extends Vue {
   }
   private onSubmitTWAP(): void {
     (this.$refs.TWAPForm as any).validate(async (valid: any) => {
-      console.log(this.TWAPForm);
       if (valid) {
         const loading = this.$loading({
           lock: true,
@@ -3005,7 +2988,6 @@ export default class extends Vue {
             amountPerTrigger: amountPerTriggerArg,
             triggerInterval: timeInterval
           };
-          console.log(TWAPSetting);
           let res;
           if (this.type === 'create') {
             res = await currentICDexService.sto_createProOrder(
@@ -3046,7 +3028,6 @@ export default class extends Vue {
   }
   private onSubmitIce(): void {
     (this.$refs.iceForm as any).validate(async (valid: any) => {
-      console.log(this.iceForm);
       if (valid) {
         const flag = this.canRun();
         if (!flag) {
@@ -3121,8 +3102,6 @@ export default class extends Vue {
           };
           let res;
           if (this.type === 'create') {
-            console.log('sto_createProOrder');
-            console.log(IcebergOrder);
             res = await currentICDexService.sto_createProOrder(
               this.currentPair[0].toString(),
               {
@@ -3131,8 +3110,6 @@ export default class extends Vue {
               ProSubaccountId
             );
           } else {
-            console.log('sto_updateProOrder');
-            console.log(IcebergOrder);
             res = await currentICDexService.sto_updateProOrder(
               this.currentPair[0].toString(),
               this.soid,
@@ -3153,7 +3130,6 @@ export default class extends Vue {
             this.$message.error('Error');
           }
         } catch (e) {
-          console.log(e);
           if (toHttpRejectError(e)) {
             this.$message.error(toHttpRejectError(e));
           } else {
@@ -3238,7 +3214,6 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-
     await checkAuth();
     const canSubmit = await this.stoFee();
     if (!canSubmit) {
@@ -3317,11 +3292,9 @@ export default class extends Vue {
       spread: spread,
       amount: amount
     };
-    console.log(gridOrderConfig);
     try {
       let res;
       if (this.type === 'create') {
-        console.log('sto_createProOrder');
         res = await currentICDexService.sto_createProOrder(
           this.currentPair[0].toString(),
           {
@@ -3330,7 +3303,6 @@ export default class extends Vue {
           ProSubaccountId
         );
       } else {
-        console.log('sto_updateProOrder');
         const gridOrderConfigUpdate: GridOrderConfigUpdate = {
           status: [],
           lowerLimit: [BigInt(lowerLimit)],
@@ -3355,7 +3327,6 @@ export default class extends Vue {
         this.$message.error('Error');
       }
     } catch (e) {
-      console.log(e);
       if (toHttpRejectError(e)) {
         this.$message.error(toHttpRejectError(e));
       } else {
@@ -3388,14 +3359,11 @@ export default class extends Vue {
         new Uint8Array(fromSubAccountId(ProSubaccountId))
       )
     );
-    console.log(res);
     if (res && res.pairId === this.currentPair[0].toString()) {
       return res.accountSetting;
     }
   }
   private afterClose(): void {
-    console.log('afterClose');
-    console.log(this.proType);
     if (this.proType === 'Grid') {
       this.lower = '';
       this.upper = '';
@@ -3416,12 +3384,10 @@ export default class extends Vue {
     if (this.proType === 'VWAP') {
       (this.$refs.VWAPForm as any).resetFields();
       this.spread = GridModeEnum.Arithmetic;
-      console.log(this.VWAPForm);
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .time-Label {
   display: flex;

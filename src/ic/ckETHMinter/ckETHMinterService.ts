@@ -27,7 +27,6 @@ import {
 } from '@/ic/converter';
 import { Icrc1Account, Time } from '@/ic/common/icType';
 import { createService } from '@/ic/createService';
-
 export class ckETHMinterService {
   private check = async (renew = true, isUpdate = true): Promise<Service> => {
     return await createService<Service>(
@@ -56,7 +55,6 @@ export class ckETHMinterService {
         return null;
       }
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -65,7 +63,6 @@ export class ckETHMinterService {
     try {
       return await service.get_minter_address();
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -86,7 +83,6 @@ export class ckETHMinterService {
       });
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -96,7 +92,6 @@ export class ckETHMinterService {
       const res = await service.get_tx(txIndex);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -122,7 +117,6 @@ export class ckETHMinterService {
         return null;
       }
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -146,7 +140,6 @@ export class ckETHMinterService {
       );
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -166,7 +159,6 @@ export class ckETHMinterService {
       });
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -184,7 +176,6 @@ export class ckETHMinterService {
         return null;
       }
     } catch (e) {
-      console.log(e);
     }
     return null;
   };
@@ -198,9 +189,9 @@ export class ckETHMinterService {
       if (subAccountId) {
         subAccount = [fromSubAccountId(subAccountId)];
       }
-      return await service.cover_tx(txIndex, subAccount);
+      const res = await service.cover_tx(txIndex, subAccount);
+      return res;
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -210,7 +201,6 @@ export class ckETHMinterService {
       const res = await service.update_retrievals();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -220,7 +210,6 @@ export class ckETHMinterService {
       const res = await service.get_ck_tokens();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -240,7 +229,7 @@ export class ckETHMinterService {
   //       subaccount: subAccount
   //     });
   //   } catch (e) {
-  //     console.log(e);
+  //     
   //     return null;
   //   }
   // };
@@ -263,7 +252,6 @@ export class ckETHMinterService {
       ]);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -286,7 +274,6 @@ export class ckETHMinterService {
       ]);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -296,7 +283,6 @@ export class ckETHMinterService {
       const res = await service.get_minter_info();
       return res as MinterInfo;
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -308,7 +294,6 @@ export class ckETHMinterService {
       const res = await service.get_account_events(account);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -334,7 +319,6 @@ export class ckETHMinterService {
       );
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -346,7 +330,6 @@ export class ckETHMinterService {
       const res = await service.get_mode2_pending_deposit_txn(txHash);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -355,7 +338,6 @@ export class ckETHMinterService {
     try {
       return service.update_claims();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -378,7 +360,6 @@ export class ckETHMinterService {
       ]);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

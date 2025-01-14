@@ -774,7 +774,6 @@
     ></approve-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -809,7 +808,6 @@ import ConnectPlug, { needConnectPlug } from '@/ic/ConnectPlug';
 import ConnectInfinity, { needConnectInfinity } from '@/ic/ConnectInfinity';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 const commonModule = namespace('common');
-
 @Component({
   name: 'Tokens',
   components: {
@@ -989,7 +987,6 @@ export default class extends Mixins(BalanceMixin) {
   private async approvals(): Promise<void> {
     const principal = localStorage.getItem('principal');
     const res = await this.DRC20TokenService.approvals(principal);
-    console.log(res);
     const remaining = res.reduce((remaining, item) => {
       return BigInt(
         new BigNumber(remaining.toString(10))
@@ -997,7 +994,6 @@ export default class extends Mixins(BalanceMixin) {
           .toString(10)
       );
     }, BigInt('0'));
-    console.log(remaining);
   }
   private async getAllowance(): Promise<void> {
     this.allowance = await this.DRC20TokenService.drc20_allowance(
@@ -1020,7 +1016,6 @@ export default class extends Mixins(BalanceMixin) {
         });
         await checkAuth();
         const principal = localStorage.getItem('principal');
-        console.log(this.createTokenForm);
         const fee = BigInt(
           new BigNumber(this.createTokenForm.gasNum)
             .times(10 ** this.createTokenForm.decimals)
@@ -1060,7 +1055,6 @@ export default class extends Mixins(BalanceMixin) {
           founder: [principal],
           symbol: [this.createTokenForm.symbol]
         };
-        console.log(initArgs);
         try {
           const res = await this.ICTokenService.create(initArgs);
           this.createTokenSuccess(res.toString());
@@ -1093,7 +1087,6 @@ export default class extends Mixins(BalanceMixin) {
           });
           // this.getBalance();
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpError(e).message);
           loading.close();
         }
@@ -1103,7 +1096,6 @@ export default class extends Mixins(BalanceMixin) {
   private async showCreateToken(): Promise<void> {
     this.loading = true;
     await this.getAllowance();
-    console.log(this.allowance);
     if (
       this.allowance ||
       (this.allowance !== null && Number(this.allowance) === 0)
@@ -1143,7 +1135,6 @@ export default class extends Mixins(BalanceMixin) {
         this.deleteVisible = false;
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -1250,7 +1241,6 @@ export default class extends Mixins(BalanceMixin) {
       }
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   private handleUpdateMetadata(token: Token): void {
@@ -1307,7 +1297,6 @@ export default class extends Mixins(BalanceMixin) {
         }
       };
       const res = await this.ICManagementService.updateSettings(request);
-      console.log(res);
       this.$message.success('update Controllers Success');
       this.updateControllersVisible = false;
       await this.readState(this.currentToken);
@@ -1317,7 +1306,6 @@ export default class extends Mixins(BalanceMixin) {
       if (httpError.code === 403) {
         this.$message.error('Your are not the controller of this token');
       } else {
-        console.log(e);
       }
       loading.close();
     }
@@ -1365,14 +1353,10 @@ export default class extends Mixins(BalanceMixin) {
       token.owner = owner.toString();
       this.$forceUpdate();
     } catch (e) {
-      console.log(e);
     }
   }
   private async readState(token: Token): Promise<void> {
-    console.log(token);
     const state = await readState(token.tokenId.toString());
-    console.log(token.tokenId.toString());
-    console.log(state);
     if (state) {
       // isICTokenController is false, can not call TokenFactory methods
       const isICTokenController =
@@ -1444,7 +1428,6 @@ export default class extends Mixins(BalanceMixin) {
     this.getSymbol(token);
     this.getDecimals(token);
     this.totalSupply(token);
-    console.log(token);
   }
   private async getName(token: Token): Promise<void> {
     token.name = await this.DRC20TokenService.name(token.tokenId.toString());
@@ -1549,7 +1532,6 @@ export default class extends Mixins(BalanceMixin) {
     this.updateOwnerVisible = true;
   }
   private onchangeOwner(): void {
-    console.log(this.currentToken.owner);
     if (!validatePrincipal(this.owner)) {
       this.$message.error('Invalid principal');
       return;
@@ -1579,7 +1561,6 @@ export default class extends Mixins(BalanceMixin) {
       }
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   private async modifyOwner(): Promise<void> {
@@ -1601,7 +1582,6 @@ export default class extends Mixins(BalanceMixin) {
       }
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
   private async update(token: Token): Promise<void> {
@@ -1610,7 +1590,6 @@ export default class extends Mixins(BalanceMixin) {
         lock: true,
         background: 'rgba(0, 0, 0, 0.5)'
       });
-      console.log(token);
       try {
         await this.ICTokenService.update(token.tokenId, {
           fee: (token.gas as { token: bigint }).token,
@@ -1623,7 +1602,6 @@ export default class extends Mixins(BalanceMixin) {
         });
         this.$message.success('Success');
       } catch (e) {
-        console.log(e);
         this.$message.error('Error');
       }
       loading.close();
@@ -1642,7 +1620,6 @@ export default class extends Mixins(BalanceMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .token-wrap-common {
   width: 100%;
@@ -1714,7 +1691,6 @@ export default class extends Mixins(BalanceMixin) {
     padding: 0;
   }
 }
-
 .tokens-title {
   margin-top: 20px;
   font-size: 20px;

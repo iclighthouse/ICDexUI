@@ -171,7 +171,6 @@
     </a-spin>-->
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -186,7 +185,6 @@ import {
 import { StableTokensMixin } from '@/mixins';
 import { currentPageConnectPlug, needConnectPlug } from '@/ic/ConnectPlug';
 import { checkAuth } from '@/ic/CheckAuth';
-
 @Component({
   name: 'Index',
   components: {},
@@ -256,11 +254,9 @@ export default class extends Mixins(StableTokensMixin) {
     try {
       this.collaterals = await this.ICStableService.collaterals();
     } catch (e) {
-      console.log(e);
     }
     loading.close();
     this.tableSpinning = false;
-    console.log(this.collaterals);
     const canisterIds = [];
     this.collaterals.forEach((item) => {
       canisterIds.push(item[0].toString());
@@ -283,11 +279,9 @@ export default class extends Mixins(StableTokensMixin) {
   private async getConfig(): Promise<void> {
     const res = await this.ICStableService.getConfig();
     this.config = res[1];
-    console.log(this.config);
   }
   private async getStats(): Promise<void> {
     this.stats = await this.ICStableService.stats();
-    console.log(this.stats);
     this.stats.assets.forEach((res) => {
       this.assetsStats[res[0].tokenId.toString()] = res[0];
     });
@@ -301,7 +295,6 @@ export default class extends Mixins(StableTokensMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .ic-stable-main {
   margin-top: 20px;

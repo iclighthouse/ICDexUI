@@ -12,7 +12,6 @@ import {
   TransferError
 } from '@/ic/ICDex/model';
 import { Config, PoolBalance } from '@/ic/makerPool/model';
-
 export type NFT = [User, TokenIdentifier, BigInt, NFTType];
 export type User = { principal: Principal; address: string };
 export type NFTType =
@@ -478,7 +477,6 @@ export interface TransferFromArgs {
   created_at_time: [] | [bigint];
   amount: bigint;
 }
-
 export default interface Service {
   NFTDeposit(
     principal: Principal,

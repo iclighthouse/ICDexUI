@@ -38,14 +38,12 @@ import mavonEditor from 'mavon-editor';
 import JsonViewer from 'vue-json-viewer';
 import VueTour from 'vue-tour';
 import 'vue-tour/dist/vue-tour.css';
-
 Vue.use(VueTour);
 Vue.use(JsonViewer);
 Vue.use(infiniteScroll);
 Vue.use(VueCookies, { expires: '30d', sameSite: 'Strict' });
 // import VConsole from 'vconsole';
 // new VConsole();
-
 echarts.use([
   ToolboxComponent,
   TooltipComponent,
@@ -98,23 +96,19 @@ Spin.setDefaultIndicator({
 Vue.use(Loading.directive);
 Vue.use(Slider);
 Vue.prototype.$loading = Loading.service;
-
 Vue.use(VueClipboard);
 Vue.use(Antd);
 // Vue.use(senCssMore);
 Vue.use(mavonEditor);
 Vue.config.productionTip = false;
-
 // Register global filter functions
 Object.keys(filters).forEach((key) => {
-  console.log(key, filters);
   Vue.filter(key, filters[key]);
 });
 // Register global directives
 Object.keys(directives).forEach((key) => {
   Vue.directive(key, (directives as { [key: string]: DirectiveOptions })[key]);
 });
-
 VueMarkdown.props.anchorAttributes.default = () => ({
   target: '_blank',
   rel: 'nofollow noreferrer noopener'
@@ -132,7 +126,6 @@ VueMarkdown.props.prerender.default = (content: string): string => {
   }
   return content;
 };
-
 Vue.component('VueMarkdown', VueMarkdown);
 Vue.component('copyAccount', copyAccount);
 Vue.component('RecycleScroller', RecycleScroller);

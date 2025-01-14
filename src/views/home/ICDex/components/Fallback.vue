@@ -269,7 +269,6 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { PendingList, TxAccount } from '@/ic/ICDex/model';
@@ -290,9 +289,7 @@ import { getCompetitionsBalance, getDepositing } from '@/ic/getTokenBalance';
 import { checkAuth } from '@/ic/CheckAuth';
 import { getFee } from '@/ic/getTokenFee';
 import { toHttpRejectError } from '@/ic/httpError';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Fallback',
   components: {}
@@ -369,7 +366,6 @@ export default class extends Vue {
         this.currentPair[0].toString(),
         subAccountId
       );
-      console.log(res);
       if (
         res &&
         res.length &&
@@ -449,7 +445,6 @@ export default class extends Vue {
         this.currentPair[0].toString(),
         BigInt(nonce)
       );
-      console.log(res);
       if (res) {
         const txAccount = this.getTxidAccount(nonce);
         this.$set(
@@ -470,7 +465,6 @@ export default class extends Vue {
       loading.close();
     } catch (e) {
       loading.close();
-      console.log(e);
       // this.$message.error(e);
       this.$message.error(toHttpRejectError(e));
     }
@@ -521,7 +515,6 @@ export default class extends Vue {
       }
       this.$set(this.tokenBalance[txAccount[1]], tokenId, balance);
     } catch (e) {
-      console.log(e);
     }
   }
   private getTxidAccount(nonce: number): [Icrc1Account, string] {
@@ -560,7 +553,6 @@ export default class extends Vue {
     try {
       if (this.currentPair[0].toString() !== 'scjza-fiaaa-aaaak-ac2kq-cai') {
         const prepare = await this.getTxAccount();
-        console.log(prepare);
         this.nonce = Number(prepare[2]) + 2;
       } else {
         this.nonce = 50;
@@ -598,7 +590,6 @@ export default class extends Vue {
       }
       await Promise.all(promiseAll);
     } catch (e) {
-      console.log(e);
     }
     this.tableSpinning = false;
   }
@@ -616,7 +607,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .deposit-info {
   background: #11171d;

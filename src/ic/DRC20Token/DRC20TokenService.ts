@@ -51,9 +51,7 @@ import { isInfinity } from '@/ic/isInfinity';
 import { isPlug } from '@/ic/isPlug';
 import { Allowance, AllowanceArgs, SendICPTsRequest } from '@/ic/ledger/model';
 import { createService } from '@/ic/createService';
-
 const OGYTokenId = 'jwcfb-hyaaa-aaaaj-aac4q-cai';
-
 export class DRC20TokenService {
   private check = async (
     canisterId: string,
@@ -278,7 +276,6 @@ export class DRC20TokenService {
       created_at_time: created_at_time,
       amount: amount
     };
-    console.log(transferArgs);
     // const args = IDL.encode(
     //   [
     //     IDL.Record({
@@ -302,10 +299,9 @@ export class DRC20TokenService {
     //   'icrc1_transfer',
     //   args
     // ).then((res) => {
-    //   console.log(toHexString(new Uint8Array(res)));
+    //   
     // });
     const res = await service.icrc1_transfer(transferArgs);
-    console.log(res);
     return SerializableIC(res);
   };
   public icrc1_balance_of = async (
@@ -341,10 +337,8 @@ export class DRC20TokenService {
         memo: memo,
         created_at_time: []
       };
-      console.log(request);
       return await service.send_dfx(request);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -368,7 +362,6 @@ export class DRC20TokenService {
     try {
       return await service.icrc2_approve(approveArgs);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -380,7 +373,6 @@ export class DRC20TokenService {
     try {
       return await service.icrc2_allowance(allowanceArgs);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -389,7 +381,6 @@ export class DRC20TokenService {
     try {
       return await service.standard();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -400,7 +391,6 @@ export class DRC20TokenService {
     try {
       return await service.icrc1_supported_standards();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -413,7 +403,6 @@ export class DRC20TokenService {
     canisterId = IC_LIGHTHOUSE_TOKEN_CANISTER_ID
   ): Promise<TxnResult> => {
     const service = await this.check(canisterId);
-    console.log(service);
     let subAccount = [];
     if (subAccountId || subAccountId === 0) {
       subAccount = [fromSubAccountId(subAccountId)];
@@ -524,7 +513,6 @@ export class DRC20TokenService {
       );
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

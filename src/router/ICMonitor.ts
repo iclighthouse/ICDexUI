@@ -11,5 +11,4 @@ const ICMonitorRouter: RouteConfig[] = [
     }
   }
 ];
-
 export default ICMonitorRouter;

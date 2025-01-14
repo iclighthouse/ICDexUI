@@ -35,5 +35,4 @@ const welcomeRouter: RouteConfig[] = [
     ]
   }
 ];
-
 export default welcomeRouter;

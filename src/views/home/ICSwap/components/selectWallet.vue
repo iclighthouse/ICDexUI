@@ -26,11 +26,9 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { validateCyclesWalletCanister } from '@/utils/validate';
-
 @Component({
   name: 'selectWallet',
   components: {}
@@ -64,7 +62,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .other-cycles-modal {
   ::v-deep .ant-modal-body {

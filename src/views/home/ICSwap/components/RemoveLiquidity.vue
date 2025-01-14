@@ -309,7 +309,6 @@
     ></top-up>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
@@ -335,7 +334,6 @@ import { readState } from '@/ic/readState';
 import { WalletService } from '@/ic/wallet/walletService';
 import { ICManagementService } from '@/ic/ICManagement/ICManagementService';
 import TopUp from '@/components/topUp/Index.vue';
-
 @Component({
   name: 'RemoveLiquidity',
   components: {
@@ -550,21 +548,18 @@ export default class extends Vue {
   }
   private onchange(): void {
     this.autoWithdraw = !this.autoWithdraw;
-    console.log(this.autoWithdraw);
   }
   public async getAutoWithdrawal(swapId: string): Promise<void> {
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       this.autoWithdraw = true;
     } else {
       const principal = localStorage.getItem('principal');
-      console.log(swapId, principal);
       const currentICSwapService = new ICSwapService();
       this.autoWithdraw = await currentICSwapService.autoWithdrawal(
         swapId,
         principal
       );
     }
-    console.log(this.autoWithdraw);
   }
   private connectWallet(): void {
     this.$router.push({
@@ -619,7 +614,6 @@ export default class extends Vue {
   }
   private async claim(): Promise<void> {
     const principal = localStorage.getItem('principal');
-    console.time();
     const swapId = this.currentPool[0].toString();
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       const nonce = await this.getCount(Principal.fromText(principal));
@@ -630,7 +624,6 @@ export default class extends Vue {
           this.removeLiquidityVisible = false;
         })
         .catch((e) => {
-          console.log(e);
           // this.$message.error(e.message);
           this.removeLiquidityVisible = false;
         });
@@ -653,9 +646,7 @@ export default class extends Vue {
         }
         this.shares = '';
         this.setCyclesCanister();
-        console.timeEnd();
       } catch (e) {
-        console.log(e);
         this.removeLiquidityVisible = false;
         this.setCyclesCanister();
       }
@@ -688,7 +679,6 @@ export default class extends Vue {
           cycles = status.cycles;
         }
       } catch (e) {
-        console.log(e);
       }
     }
     if (!cycles) {
@@ -696,11 +686,9 @@ export default class extends Vue {
       try {
         state = await readState(this.cyclesCanister.trim());
       } catch (e) {
-        console.log(e);
       }
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const that = this;
-      console.log(state);
       if (!state || (state && !state.moduleHash)) {
         flag = false;
         this.$info({
@@ -754,7 +742,6 @@ export default class extends Vue {
     const principal = localStorage.getItem('principal');
     this.removeLiquidityVisible = true;
     this.removeLiquidityStep = 0;
-    console.time();
     const swapId = this.currentPool[0].toString();
     const shares = BigInt(
       new BigNumber(this.shares).times(10 ** this.currentPool[4]).toString(10)
@@ -809,9 +796,7 @@ export default class extends Vue {
           this.removeLiquidityVisible = false;
           this.setCyclesCanister();
         }
-        console.timeEnd();
       } catch (e) {
-        console.log(e);
         this.removeLiquidityVisible = false;
         this.setCyclesCanister();
       }
@@ -819,7 +804,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .exchange-swap-item-bottom {
   display: flex;
@@ -836,7 +820,6 @@ export default class extends Vue {
     width: 300px;
   }
 }
-
 .swap-item-top-left {
   cursor: default !important;
   .swap-item-top-left-name {

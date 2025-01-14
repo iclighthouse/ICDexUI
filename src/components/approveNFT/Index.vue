@@ -57,7 +57,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { NftService } from '@/ic/nft/Service';
@@ -73,7 +72,6 @@ import NFTIdl from '@/ic/nft/erc721.did';
 import { isPlug } from '@/ic/isPlug';
 import { checkAuth } from '@/ic/CheckAuth';
 import { isInfinity } from '@/ic/isInfinity';
-
 @Component({
   name: 'Index',
   components: {}
@@ -115,7 +113,6 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     await checkAuth();
-
     if (isPlug()) {
       const approve = {
         idl: NFTIdl,
@@ -151,7 +148,6 @@ export default class extends Vue {
       };
       const plugIc = (window as any).ic.plug;
       const res = await plugIc.batchTransactions([approve]);
-      console.log(res);
     } else if (isInfinity()) {
       const approve = {
         idl: NFTIdl,
@@ -187,7 +183,6 @@ export default class extends Vue {
       };
       const Ic = (window as any).ic.infinityWallet;
       const res = await Ic.batchTransactions([approve]);
-      console.log(res);
     } else {
       try {
         const res = await this.NftService.approve(approveRequest);
@@ -209,7 +204,6 @@ export default class extends Vue {
         }
       } catch (e) {
         this.$message.error('Approve error');
-        console.log(e);
       }
       loading.close();
     }
@@ -225,7 +219,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 button {
   height: 36px;

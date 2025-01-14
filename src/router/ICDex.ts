@@ -109,5 +109,4 @@ const ICDexRouter: RouteConfig[] = [
     }
   }
 ];
-
 export default ICDexRouter;

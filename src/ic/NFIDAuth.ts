@@ -6,7 +6,6 @@ import { SignerAgent } from '@slide-computer/signer-agent';
 import { Signer } from '@slide-computer/signer';
 import { PostMessageTransport } from '@slide-computer/signer-web';
 import { Principal } from '@dfinity/principal';
-
 let nfid: NFID | null = null;
 const ONE_MINUTE_MILLIS = 60 * 1000;
 const SESSION_TIMEOUT = BigInt('7200000000000'); // 120 mins
@@ -14,7 +13,6 @@ const APPLICATION_NAME = 'ICLight';
 const APPLICATION_LOGO_URL = 'https://iclight.house/img/logo.png';
 let signer: Signer | null = null;
 let signerAgent: SignerAgent<Signer> | null = null;
-
 export const NFIDLogin = async (
   isSigner = false
 ): Promise<SignerAgent<Signer>> => {
@@ -23,14 +21,12 @@ export const NFIDLogin = async (
     if (process.env.NODE_ENV !== 'production') {
       derivationOrigin = window.location.origin;
     }
-    console.log(nfid);
     try {
       if (nfid && nfid.isAuthenticated) {
         if (nfid.getIdentity()) {
           const durationUntilSessionExpiresMs = getTimeUntilSessionExpiryMs(
             nfid.getIdentity()
           );
-          console.log(durationUntilSessionExpiresMs);
           if (
             durationUntilSessionExpiresMs ||
             durationUntilSessionExpiresMs === 0
@@ -39,8 +35,8 @@ export const NFIDLogin = async (
               durationUntilSessionExpiresMs - ONE_MINUTE_MILLIS;
             if (durationUntilLogoutMs <= 0) {
               // logout().then((r) => {
-              //   console.log(r);
-              //   console.log(nfid);
+              //   
+              //   
               // });
             } else {
               setIdentity(
@@ -48,7 +44,6 @@ export const NFIDLogin = async (
                 nfid.getIdentity(),
                 isSigner
               );
-              console.log(nfid.getIdentity());
               if (isSigner) {
                 await createSignerAgent(nfid.getIdentity().getPrincipal());
               }
@@ -67,29 +62,24 @@ export const NFIDLogin = async (
         delegationIdentity,
         isSigner
       );
-      console.log(delegationIdentity.getPrincipal().toString());
       if (isSigner) {
         await createSignerAgent(nfid.getIdentity().getPrincipal());
       }
       return signerAgent;
     } catch (e) {
-      console.log(e);
       // Vue.prototype.$message.error('NFID login error.');
     }
     return signerAgent;
   } catch (e) {
-    console.log(e);
     // Vue.prototype.$message.error('NFID login error.');
   }
 };
 export const NFIDLogout = async (): Promise<void> => {
   try {
-    console.log('NFIDLogout');
     if (nfid) {
       await nfid.logout();
     }
   } catch (e) {
-    console.log(e);
   }
 };
 const setIdentity = (
@@ -97,7 +87,6 @@ const setIdentity = (
   identity: Identity,
   isSigner: boolean
 ): void => {
-  console.log(principal);
   localStorage.setItem('principal', principal);
   store.commit('common/SET_PRINCIPAL_ID', principal);
   const principalList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -146,7 +135,6 @@ export const getNFIDIdentity = (): Identity => {
   try {
     return nfid.getIdentity();
   } catch (e) {
-    console.log(e);
     return null;
   }
 };
@@ -154,7 +142,6 @@ export const getNFIDSignerAgent = () => {
   return signerAgent;
 };
 export const createSignerAgent = async (account: Principal) => {
-  console.log(account.toString());
   const transport = new PostMessageTransport({
     url: 'https://nfid.one/rpc',
     disconnectTimeout: 1000 * 1000
@@ -162,7 +149,6 @@ export const createSignerAgent = async (account: Principal) => {
   signer = new Signer({
     transport: transport
   });
-  console.log(signer);
   // if (transport.connection && !transport.connection.connected) {
   //   await transport.connection.connect();
   // }
@@ -172,7 +158,6 @@ export const createSignerAgent = async (account: Principal) => {
     signer: signer,
     account: account
   });
-  console.log(signerAgent);
   // const principalList = JSON.parse(localStorage.getItem('priList')) || {};
   // principalList[account.toString()] = 'NFID';
   // localStorage.setItem('priList', JSON.stringify(principalList));

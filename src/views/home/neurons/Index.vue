@@ -20,12 +20,10 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { Menu } from './model';
-
 @Component({
   name: 'Index',
   components: { AccountInfo }
@@ -53,7 +51,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .icsns-menu {
   display: flex;

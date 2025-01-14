@@ -12,7 +12,6 @@ import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { TokenIdentifier } from '@/ic/nft/model';
 import { AccountId, Time } from '@/ic/common/icType';
 import { createService } from '@/ic/createService';
-
 export class ICDexRouterService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -39,10 +38,8 @@ export class ICDexRouterService {
         tokenIdentifier,
         subAccount
       );
-      console.log(res);
       return true;
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -64,10 +61,8 @@ export class ICDexRouterService {
         accountId,
         subAccount
       );
-      console.log(res);
       return true;
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -76,7 +71,6 @@ export class ICDexRouterService {
     try {
       return await this.service.NFTBalance(address);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -98,7 +92,6 @@ export class ICDexRouterService {
       }
       return await this.service.NFTWithdraw(tokenIdentifier, subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -110,7 +103,6 @@ export class ICDexRouterService {
       const res = await this.service.NFTBindingMakers(tokenIdentifier);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -126,17 +118,14 @@ export class ICDexRouterService {
       if (subaccountId !== 0) {
         subAccount = [fromSubAccountId(subaccountId)];
       }
-      console.log(tokenIdentifier, pair.toString(), accountId);
       const res = await this.service.NFTUnbindMaker(
         tokenIdentifier,
         pair,
         accountId,
         subAccount
       );
-      console.log(res);
       return true;
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -150,7 +139,6 @@ export class ICDexRouterService {
       const res = await this.service.maker_getPublicMakers(pair, page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -168,7 +156,6 @@ export class ICDexRouterService {
       );
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -177,7 +164,6 @@ export class ICDexRouterService {
     try {
       return await this.service.sys_getConfig();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

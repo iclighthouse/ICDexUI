@@ -30,13 +30,11 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import BigNumber from 'bignumber.js';
 import { CompResult } from '@/ic/ICDex/model';
-
 @Component({
   name: 'TradingCompetitions',
   components: {}
@@ -75,7 +73,6 @@ export default class extends Vue {
     this.canTradeCompetitions = false;
     const currentICDexService = new ICDexService();
     const res = await currentICDexService.comp_round(this.pairId);
-    console.log(res);
     const now = new Date().getTime();
     if (
       res &&
@@ -164,7 +161,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .trading-competitions-info {
   display: flex;

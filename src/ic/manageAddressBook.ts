@@ -3,7 +3,6 @@ import {
   Result,
   Operation
 } from '@/ic/ICLighthouse/model';
-
 export const manageAddressBook = async (
   ICLighthouseService: ICLighthouseService,
   operation: Operation,

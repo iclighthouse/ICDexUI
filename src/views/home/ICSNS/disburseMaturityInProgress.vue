@@ -3,12 +3,10 @@
     {{ countdown }}
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
 const dayjs = require('dayjs');
-
 @Component({
   name: 'disburseMaturityInProgress',
   components: {}
@@ -26,7 +24,6 @@ export default class extends Vue {
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
-    console.log(this.timer);
   }
   mounted(): void {
     if (this.timer) {
@@ -71,5 +68,4 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss"></style>

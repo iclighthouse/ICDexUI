@@ -24,7 +24,6 @@ export const onlyNumber: DirectiveOptions = {
     });
   }
 };
-
 export const onlyFloat: DirectiveOptions = {
   bind(el: HTMLInputElement, binding: DirectiveBinding, vnode: any) {
     let input = vnode.elm;

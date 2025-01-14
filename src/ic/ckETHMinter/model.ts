@@ -1,6 +1,5 @@
 import { Icrc1Account, SubAccount, Time, TokenInfo } from '@/ic/common/icType';
 import { Principal } from '@dfinity/principal/lib/cjs';
-
 export type EthAddress = string;
 export type DepositRes = { Ok: DepositResult } | { Err: ResultError };
 export interface DepositResult {
@@ -33,6 +32,8 @@ export interface TxStatus {
   rpcRequestId: Array<RpcId>;
   txIndex?: bigint;
   block_height?: number;
+  time?: string;
+  type?: string;
 }
 export type KytRequestId = bigint;
 export type RpcId = bigint;
@@ -142,9 +143,9 @@ export interface RetrieveStatus {
   status?: Status;
   txHash?: Array<string>;
   time?: number;
+  type?: string;
 }
 export type BlockHeight = bigint;
-
 export interface MinterInfo {
   gasPrice: Wei;
   owner: Principal;
@@ -1075,7 +1076,6 @@ export type icETHEvent =
       };
     }
   | { suspend: { message: [] | [string] } };
-
 export default interface Service {
   get_deposit_address(request: Icrc1Account): Promise<string>;
   get_minter_address(): Promise<[string, BigInt]>;

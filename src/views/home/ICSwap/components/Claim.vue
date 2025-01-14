@@ -473,7 +473,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -496,7 +495,6 @@ import { principalToAccountIdentifier } from '@/ic/converter';
 import { ManageWalletResponse } from '@/ic/ICLighthouse/model';
 import { validateCyclesWalletCanister } from '@/utils/validate';
 import { checkAuth } from '@/ic/CheckAuth';
-
 @Component({
   name: 'Claim',
   components: {
@@ -576,7 +574,6 @@ export default class extends Vue {
     return flag;
   }
   public init(): void {
-    console.log(this.currentPool);
     this.cyclesFinanceService = new CyclesFinanceService();
     this.ICLighthouseService = new ICLighthouseService();
     this.feeStatus = null;
@@ -634,7 +631,6 @@ export default class extends Vue {
       const currentSwapService = new ICSwapService();
       this.feeStatus = await currentSwapService.feeStatus(swapId);
     }
-    console.log(this.feeStatus);
   }
   private async getLpRewards(): Promise<void> {
     const principal = localStorage.getItem('principal');
@@ -646,7 +642,6 @@ export default class extends Vue {
       const currentSwapService = new ICSwapService();
       this.lpRewards = await currentSwapService.lpRewards(swapId, principal);
     }
-    console.log(this.lpRewards);
   }
   private async getCount(principal: Principal): Promise<bigint> {
     return await this.cyclesFinanceService.getCount([
@@ -658,7 +653,6 @@ export default class extends Vue {
     const principal = localStorage.getItem('principal');
     this.claimLiquidityVisible = true;
     this.claimLiquidityStep = 0;
-    console.time();
     const swapId = this.currentPool[0].toString();
     if (swapId === CYCLES_FINANCE_CANISTER_ID) {
       const nonce = await this.getCount(Principal.fromText(principal));
@@ -673,7 +667,6 @@ export default class extends Vue {
           this.getLpRewards();
         })
         .catch((e) => {
-          console.log(e);
           this.$message.error(e.message);
           this.claimLiquidityVisible = false;
           this.setCyclesCanister();
@@ -699,9 +692,7 @@ export default class extends Vue {
           this.setCyclesCanister();
           this.$message.error((res as { err: SwapTxnResultErr }).err.message);
         }
-        console.timeEnd();
       } catch (e) {
-        console.log(e);
         this.claimLiquidityVisible = false;
         this.setCyclesCanister();
       }
@@ -709,7 +700,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .your-rewards {
   display: flex;

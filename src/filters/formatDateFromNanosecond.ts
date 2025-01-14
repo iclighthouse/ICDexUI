@@ -51,7 +51,6 @@ export const formatDateFromSecondUTCMD = (timestamp: bigint): string => {
   }
   return '';
 };
-
 export const formatDateFromSecondUTCToHour = (timestamp: bigint): string => {
   if (timestamp) {
     return formatDateTOSecondUTCToHour(new Date(Number(timestamp)));

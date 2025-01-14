@@ -2,10 +2,8 @@ import { AuthClient } from '@dfinity/auth-client';
 import { Identity } from '@dfinity/agent';
 import { DelegationIdentity } from '@dfinity/identity';
 import store from '@/store';
-
 const ONE_MINUTE_MILLIS = 60 * 1000;
 const SESSION_TIMEOUT = BigInt('7200000000000'); // 120 mins
-
 /**
  * authenticated with the Internet Identity
  */
@@ -63,7 +61,6 @@ export default class AuthClientAPi {
           resolve(true);
         },
         onError: (error?: string) => {
-          console.log(error);
           reject(error);
         }
       });
@@ -79,7 +76,6 @@ export default class AuthClientAPi {
     try {
       await this.authClient.logout();
     } catch (e) {
-      console.log(e);
     }
   };
   /**
@@ -115,7 +111,6 @@ export default class AuthClientAPi {
           .reduce((current, next) => (next < current ? next : current)) /
           BigInt(1_000_000)
       );
-
       return expiryDateTimestampMs - Date.now();
     }
     return null;
@@ -126,9 +121,7 @@ export default class AuthClientAPi {
       const durationUntilLogoutMs =
         durationUntilSessionExpiresMs - ONE_MINUTE_MILLIS;
       if (durationUntilLogoutMs <= 0) {
-        console.log(durationUntilSessionExpiresMs);
         this.logout().then((r) => {
-          console.log(r);
         });
       } else {
         // Log the user out 1 minute before their session expires

@@ -227,7 +227,6 @@
     ></nft-balance>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { MiningService } from '@/ic/Mining/miningService';
@@ -244,9 +243,7 @@ import { TokenInfo } from '@/ic/common/icType';
 import { NftService } from '@/ic/nft/Service';
 import { PairsData, TrieListData1 } from '@/ic/ICSwapRouter/model';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Mining',
   components: {
@@ -326,7 +323,6 @@ export default class extends Vue {
       flag = this.miningPairs.some((item) => {
         return item[0].toString() === this.currentPairId;
       });
-      console.log(flag);
     }
     return flag;
   }
@@ -363,7 +359,6 @@ export default class extends Vue {
       [],
       []
     );
-    console.log(res);
     let pairs = [];
     if (this.currentRound && this.currentRound.data.length) {
       const info = this.currentRound.data[0];
@@ -395,7 +390,6 @@ export default class extends Vue {
         });
       }
       this.miningPairs = pairs;
-      console.log(this.miningPairs);
     }
   }
   private showInfo(): void {
@@ -438,7 +432,6 @@ export default class extends Vue {
     ];
     for (let i = miningList.length - 1; i >= 0; i--) {
       const round = await this.MiningService.getRound(miningList[i].canisterId);
-      console.log(round);
       let isEnd = false;
       let isStart = false;
       if (round) {
@@ -478,7 +471,6 @@ export default class extends Vue {
           isStart = true;
         }
       }
-      console.log(isStart, isEnd);
       if (isStart && !isEnd) {
         this.currentMining = miningList[i].canisterId;
         this.symbol = miningList[i].symbol;
@@ -487,9 +479,7 @@ export default class extends Vue {
         break;
       }
     }
-    console.log(this.currentRound);
     if (!this.miningPairs.length) {
-      console.log(this.type);
       await this.getPairs();
     }
     if (this.currentRound) {
@@ -570,16 +560,13 @@ export default class extends Vue {
   private async getTokensExt(): Promise<void> {
     try {
       const res = await this.NftService.tokens_ext();
-      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
         }
       ).ok;
-      console.log(tokensExt);
       this.nfts = tokensExt;
     } catch (e) {
-      console.log(e);
     }
   }
   private NFTWithdrawSuccess(): void {
@@ -613,7 +600,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .mining-points {
   margin-top: 10px;

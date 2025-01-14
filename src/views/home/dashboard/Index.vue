@@ -871,7 +871,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
@@ -918,9 +917,7 @@ import {
 import { ckBTCMinterService } from '@/ic/ckbtcMinter/ckBTCMinterService';
 import { icBTCEvent } from '@/ic/ckbtcMinter/model';
 import { toHexString } from '@/ic/converter';
-
 const ICLighthouseRoot = 'hjcnr-bqaaa-aaaaq-aacka-cai';
-
 @Component({
   name: 'Index',
   components: {
@@ -1072,7 +1069,6 @@ export default class extends Vue {
         this.getIcBTCSeriousEvents(++page);
       }
     }
-    console.log(this.icBTCSeriousEvents);
   }
   private async getIcBTCEvents(): Promise<void> {
     this.spinningICBTC = true;
@@ -1107,7 +1103,6 @@ export default class extends Vue {
         this.getIcETHSeriousEvents(++page);
       }
     }
-    console.log(this.icETHSeriousEvents);
   }
   private async getIcETHEvents(): Promise<void> {
     this.spinningICETH = true;
@@ -1115,7 +1110,6 @@ export default class extends Vue {
       [BigInt(this.pageIcETHEvent)],
       [BigInt(30)]
     );
-    console.log(res);
     if (res && res.data && res.data.length) {
       this.icETHEvents = res.data;
       if (!this.eventIcETHTotal) {
@@ -1149,8 +1143,6 @@ export default class extends Vue {
       [BigInt(this.pageEvent)],
       [BigInt(30)]
     );
-    console.log('getEvents');
-    console.log(res);
     if (res && res.data && res.data.length) {
       this.events = res.data;
       if (!this.eventTotal) {
@@ -1189,7 +1181,6 @@ export default class extends Vue {
       const res = await axios.get(
         'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
       );
-      console.log(res);
       if (res && res.data) {
         for (let key in res.data) {
           const totalVol = res.data[key].usd_volume;
@@ -1200,7 +1191,6 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
     this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
@@ -1210,7 +1200,6 @@ export default class extends Vue {
       const res = await axios.get(
         'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/pools/tvls'
       );
-      console.log(res);
       let total = '0';
       if (res && res.data && res.data.pairs) {
         res.data.pairs.forEach((res) => {
@@ -1222,7 +1211,6 @@ export default class extends Vue {
         this.totalTVL = new BigNumber(total).decimalPlaces(0).toString(10);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getPools(
@@ -1235,7 +1223,6 @@ export default class extends Vue {
       [BigInt(page)],
       [BigInt(100)]
     );
-    console.log(res);
     if (res && res.data && res.data.length) {
       pools = pools.concat(res.data);
     } else {
@@ -1266,7 +1253,6 @@ export default class extends Vue {
       );
     });
     const res = await Promise.all(promiseValue);
-    console.log(res);
     let chunk = [];
     const chunkSize = 5;
     res.forEach((item, index) => {
@@ -1276,7 +1262,6 @@ export default class extends Vue {
         chunk = [];
       }
     });
-    console.log(pairs);
     const promiseValuePool = [];
     this.pools.forEach((pool) => {
       promiseValuePool.push(
@@ -1288,7 +1273,6 @@ export default class extends Vue {
       );
     });
     const resPool = await Promise.all(promiseValuePool);
-    console.log(resPool);
     let chunkPool = [];
     const chunkSizePool = 5;
     resPool.forEach((item, index) => {
@@ -1298,7 +1282,6 @@ export default class extends Vue {
         chunkPool = [];
       }
     });
-    console.log(pools);
     let paused = 0;
     let TOs = 0;
     let TTs = 0;
@@ -1453,7 +1436,6 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     const SNSList = await this.SNSWasmService.listDeployedSnses();
-
     const promiseValue = [];
     SNSList.forEach((item) => {
       if (item.root_canister_id[0].toString() === ICLighthouseRoot) {
@@ -1507,9 +1489,6 @@ export default class extends Vue {
       );
     });
     await Promise.all(promiseValue);
-    console.log(this.SNSList);
-    console.log(this.SNSList.length);
-    console.log(this.SNSDappsForDappAll);
   }
   private async getMetadata(governance: string, root: string): Promise<void> {
     const res = await this.SNSGovernanceService.getMetadata(governance);
@@ -1656,10 +1635,8 @@ export default class extends Vue {
             if (type === 'stopped') {
               ++this.stopped;
             }
-            //30 days
-            const min = new BigNumber(
-              item.status[0].idle_cycles_burned_per_day.toString(10)
-            ).times(30);
+            // 5T
+            const min = new BigNumber(5 * 10 ** 12);
             if (min.gt(item.status[0].cycles.toString(10))) {
               ++this.insufficient;
             }
@@ -1670,7 +1647,6 @@ export default class extends Vue {
     if (this.snsNumber && this.SNSList.length === this.snsNumber) {
       loading.close();
     }
-    console.log(this.snsNumber);
   }
   private changeSNS(val: GetMetadataResponse): void {
     this.currentSNS = val.name[0];
@@ -1832,10 +1808,8 @@ export default class extends Vue {
       this.currentRoot
     ].filter((item) => {
       if (item.status && item.status.length) {
-        //30 days
-        const min = new BigNumber(
-          item.status[0].idle_cycles_burned_per_day.toString(10)
-        ).times(30);
+        // 5T
+        const min = new BigNumber(5 * 10 ** 12);
         return min.gt(item.status[0].cycles.toString(10));
       }
     });
@@ -1843,7 +1817,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .dashboard-main {
   margin-top: 40px;
@@ -1859,7 +1832,6 @@ export default class extends Vue {
       width: 50%;
     }
   }
-
   .dashboard-sns-item-bold {
     margin-bottom: 10px;
     font-size: 18px;

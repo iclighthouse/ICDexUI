@@ -2427,7 +2427,6 @@
     ></nft-balance>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { MarketMenu, NFTRole } from '@/views/home/ICDex/model';
@@ -2476,11 +2475,9 @@ import { formatAmount } from '@/filters';
 import { ValidationRule } from 'ant-design-vue/types/form/form';
 import { validateAccount } from '@/ic/utils';
 import { validateCanister } from '@/utils/validate';
-
 const commonModule = namespace('common');
 const canMakerCreateNft = ['NEPTUNE', 'URANUS', 'SATURN'];
 const vipMakerNFT = ['NEPTUNE'];
-
 @Component({
   name: 'Info',
   components: {
@@ -2727,7 +2724,6 @@ export default class extends Vue {
     const res = await axios.get(
       'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/stats'
     );
-    console.log(res);
     if (res && res.data && res.data.result && res.data.result.length) {
       this.$nextTick(() => {
         this.tvlChart = echarts.init(document.getElementById('info-chart-tvl'));
@@ -2852,8 +2848,6 @@ export default class extends Vue {
             }
           ]
         };
-        console.log(maxVolTotal);
-        console.log(minVolTotal);
         this.tvlChart.setOption(tvlOption);
         const volOption = {
           title: {
@@ -2991,7 +2985,6 @@ export default class extends Vue {
             }
           ]
         };
-        console.log(volData);
         this.volChart.setOption(volOption);
         window.addEventListener('resize', () => {
           this.tvlChart.resize();
@@ -3116,7 +3109,6 @@ export default class extends Vue {
         this.nft[0].toString(10)
       );
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -3141,7 +3133,6 @@ export default class extends Vue {
     });
     const res: Array<{ pairId: string; makerList: TrieList_3 }> =
       await Promise.all(promiseAll);
-    console.log(res);
     res.forEach((item) => {
       this.makerInfo[item.pairId] = {};
       item.makerList.data.forEach((data) => {
@@ -3149,7 +3140,6 @@ export default class extends Vue {
         this.makerInfo[item.pairId][address] = data[1];
       });
     });
-    console.log(this.makerInfo);
   }
   private async getMakerList(
     pair: string
@@ -3159,10 +3149,8 @@ export default class extends Vue {
   private async getBindingMakers(): Promise<void> {
     const makers = [];
     const pairs = [];
-
     this.bindingMakersLoad = true;
     const res = await this.ICDexRouterService.getVipMakers([]);
-    console.log(res);
     if (res && res.length) {
       res.forEach((maker) => {
         if (!pairs.includes(maker[0].toString())) {
@@ -3173,7 +3161,6 @@ export default class extends Vue {
     }
     for (let i = 0; i < this.nftBalanceVip.length; i++) {
       const NFTId = this.nftBalanceVip[i][1];
-      console.log(NFTId);
       const res = await this.ICDexRouterService.NFTBindingMakers(NFTId);
       if (res && res.length) {
         res.forEach((maker) => {
@@ -3186,8 +3173,6 @@ export default class extends Vue {
         });
       }
     }
-    console.log(this.bindingMakersByNFT);
-    console.log(pairs);
     this.makersPairs = pairs;
     this.onMakerList(pairs);
     this.bindingMakersAll = makers;
@@ -3225,21 +3210,17 @@ export default class extends Vue {
   private async getTokensExt(): Promise<void> {
     try {
       const res = await this.NftService.tokens_ext();
-      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
         }
       ).ok;
-      console.log(tokensExt);
       this.nfts = tokensExt;
       if (tokensExt && tokensExt.length) {
-        console.log(tokensExt);
         for (let i = 0; i < tokensExt.length; i++) {
           const info = this.getExtInfo(tokensExt[i][2]);
           if (info.attributes && info.attributes.length) {
             info.attributes.forEach((item) => {
-              console.log(item);
               if (
                 item.trait_type.trim() === 'listing referrer' &&
                 item.value.trim() === 'Yes'
@@ -3255,7 +3236,6 @@ export default class extends Vue {
         this.tokensExtPool = tokensExt.filter((item) => {
           const info = this.getExtInfo(item[2]);
           let flag = false;
-          console.log(info);
           if (info.name) {
             // 'NEPTUNE', 'URANUS', 'SATURN'
             if (
@@ -3268,12 +3248,10 @@ export default class extends Vue {
           }
           return flag;
         });
-        console.log(this.tokensExtPool);
       } else {
         //
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async NFTBalance(): Promise<void> {
@@ -3288,8 +3266,6 @@ export default class extends Vue {
       const type = Object.keys(item[3])[0];
       return vipMakerNFT.includes(type);
     });
-    console.log(this.nftBalancePool);
-    console.log(this.nftBalanceVip);
     this.nftBalanceListingReferrer =
       await this.ICSwapRouterFiduciaryService.NFTBalance(principal);
   }
@@ -3306,7 +3282,7 @@ export default class extends Vue {
   //       await this.ICSwapRouterFiduciaryService.listingReferrer(
   //         Principal.fromText(principal)
   //       );
-  //     console.log(this.listingReferrer);
+  //     
   //     if (!this.listingReferrer[0]) {
   //       await this.getTokensExt();
   //       if (!this.nft) {
@@ -3328,7 +3304,6 @@ export default class extends Vue {
       ['icdex'],
       [Principal.fromText(this.getPrincipalId)]
     );
-    console.log(res);
     if (res && res.data && res.data.length) {
       this.pairsOwner = res.data.sort((a, b) => {
         return Number(a[1].score) - Number(b[1].score);
@@ -3342,7 +3317,6 @@ export default class extends Vue {
       const res = await axios.get(
         'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/pools/tvls'
       );
-      console.log(res);
       let total = '0';
       if (res && res.data && res.data.pairs) {
         res.data.pairs.forEach((res) => {
@@ -3354,7 +3328,6 @@ export default class extends Vue {
         this.totalTVL = new BigNumber(total).decimalPlaces(0).toString(10);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private onSort(type: string): void {
@@ -3666,24 +3639,20 @@ export default class extends Vue {
       fetch('https://pncff-zqaaa-aaaai-qnp3a-cai.raw.ic0.app/16')
     ];
     const fetchResPromise = await Promise.all(promiseValue);
-    console.log(fetchResPromise);
     const fetchRes = fetchResPromise[0];
     if (fetchRes && fetchRes.status === 200) {
       const icpRes = await fetchRes.json();
       this.icpPrice = (icpRes as any).success[0].rate;
-      console.log(this.icpPrice);
     }
     const BTCfetchRes = fetchResPromise[1];
     if (BTCfetchRes && BTCfetchRes.status === 200) {
       const BTCRes = await BTCfetchRes.json();
       this.BTCPrice = (BTCRes as any).success[0].rate;
-      console.log(this.BTCPrice);
     }
     const ETHfetchRes = fetchResPromise[2];
     if (ETHfetchRes && ETHfetchRes.status === 200) {
       const ETHRes = await ETHfetchRes.json();
       this.ETHPrice = (ETHRes as any).success[0].rate;
-      console.log(this.ETHPrice);
     }
     const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
     if (res && res.data && res.data.length) {
@@ -3748,7 +3717,6 @@ export default class extends Vue {
         const res = await axios.get(
           'https://gwhbq-7aaaa-aaaar-qabya-cai.raw.icp0.io/v1/latest'
         );
-        console.log(res);
         if (res && res.data) {
           for (let key in res.data) {
             const totalVol = res.data[key].usd_volume;
@@ -3759,19 +3727,15 @@ export default class extends Vue {
           }
         }
       } catch (e) {
-        console.log(e);
       }
       this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
       this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
-      console.log(this.Vol24);
       this.getIDOs();
       this.getStats();
     } else {
       this.pairs = [];
       this.pairsMaker = [];
     }
-    console.log(this.otherTokenPrice);
-    console.log(this.pairs);
     this.spinning = false;
     this.busy = false;
     this.getBrokerList();
@@ -3785,7 +3749,6 @@ export default class extends Vue {
       promiseValue.push(this.brokerList(item[0].toString()));
     });
     await Promise.all(promiseValue);
-    console.log(this.brokerListAllL);
     this.brokerListAll = this.brokerListAllL;
     this.bindingBrokersLoad = false;
   }
@@ -3828,7 +3791,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(this.IDOs);
   }
   private async getIDOConfig(pair: PairTrie): Promise<void> {
     const res = await this.ICDexService.IDO_getConfig(pair[0].toString());
@@ -4005,7 +3967,6 @@ export default class extends Vue {
       const res = await this.ICSwapRouterFiduciaryService.listingReferrer(
         Principal.fromText(this.getPrincipalId)
       );
-      console.log(res);
       this.listingReferrer = res;
     }
   }
@@ -4015,7 +3976,6 @@ export default class extends Vue {
       return;
     }
     if (!this.busyMakers) {
-      console.log('handleInfiniteOnLoadMakers');
       this.busyMakers = true;
       if (this.pageMakers * 10 < this.bindingMakers.length) {
         setTimeout(() => {
@@ -4034,7 +3994,6 @@ export default class extends Vue {
       return;
     }
     if (!this.busyLaunch) {
-      console.log('handleInfiniteOnLoad');
       this.busyLaunch = true;
       if (this.pageLaunch * 10 < this.launches.length) {
         setTimeout(() => {
@@ -4053,7 +4012,6 @@ export default class extends Vue {
       return;
     }
     if (!this.busyIDOs) {
-      console.log('handleInfiniteOnLoad');
       this.busyIDOs = true;
       if (this.pageIDOS * 10 < this.IDOs.length) {
         setTimeout(() => {
@@ -4072,7 +4030,6 @@ export default class extends Vue {
       return;
     }
     if (!this.busy) {
-      console.log('handleInfiniteOnLoad');
       this.busy = true;
       if (this.page * 10 < this.pairs.length) {
         setTimeout(() => {
@@ -4159,7 +4116,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .makers-header {
   display: flex;
@@ -4328,51 +4284,41 @@ tbody {
   ::v-deep .ant-steps-item-title {
     color: #b4bacd !important;
   }
-
   ::v-deep .ant-steps-item-process .ant-steps-item-title {
     color: #e7eaf1 !important;
   }
-
   ::v-deep .ant-steps-item-finish .ant-steps-item-description {
     color: #777d90 !important;
   }
-
   ::v-deep .ant-steps-item-process .ant-steps-item-description {
     color: #e7eaf1 !important;
   }
-
   ::v-deep .ant-steps-item-wait .ant-steps-item-description {
     color: #777d90 !important;
   }
-
   ::v-deep .ant-steps-item-icon {
     width: 30px;
     height: 30px;
     line-height: 30px;
     background: transparent;
   }
-
   ::v-deep .ant-steps-item-finish .ant-steps-item-icon {
     border-color: #21c77d;
     background: #21c77d;
   }
-
   ::v-deep .ant-steps-item-process .ant-steps-item-icon {
     border-color: #21c77d;
     background: #21c77d;
   }
-
   ::v-deep .ant-steps-item-finish .ant-steps-item-title::after {
     background: #21c77d;
   }
   ::v-deep .ant-steps-item-finish .ant-steps-item-tail::after {
     background: #21c77d;
   }
-
   ::v-deep .ant-steps-icon {
     color: #fff;
   }
-
   ::v-deep .ant-steps-item-wait .ant-steps-item-icon {
     border-color: #777d90;
   }

@@ -1,6 +1,5 @@
 import { Principal } from '@dfinity/principal';
 import { WalletResultCreate } from '@/ic/ICLighthouse/model';
-
 export interface AddressEntry {
   id: Principal;
   kind: Kind;
@@ -58,7 +57,6 @@ export type EventKind =
   | { AddressRemoved: { id: Principal } }
   | { WalletDeployed: { canister: Principal } }
   | { AddressAdded: { id: Principal; name: Array<string>; role: Role } };
-
 export type EventType =
   | 'CyclesReceived'
   | 'CanisterCreated'
@@ -67,7 +65,6 @@ export type EventType =
   | 'AddressRemoved'
   | 'WalletDeployed'
   | 'AddressAdded';
-
 export default interface Service {
   'wallet_balance'(): Promise<{ amount: bigint }>;
   'list_addresses'(): Promise<Array<AddressEntry>>;

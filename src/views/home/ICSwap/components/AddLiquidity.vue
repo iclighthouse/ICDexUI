@@ -915,7 +915,6 @@
     ></top-up>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import { PairsMixin } from '@/mixins';
@@ -946,7 +945,6 @@ import { hexToBytes, principalToAccountIdentifier } from '@/ic/converter';
 import { getFee } from '@/ic/getTokenFee';
 import { swapTokenIdToIcpOrCycles } from '@/ic/icSwapUtils';
 import { WalletCallRequest } from '@/ic/wallet/model';
-
 @Component({
   name: 'AddLiquidity',
   components: {}
@@ -1344,10 +1342,6 @@ export default class extends Mixins(PairsMixin) {
       if (this.tokenSwapTo[0].toString() === LEDGER_CANISTER_ID) {
         tokenSwapToDebitRecord = tokenSwapToDebitRecord.plus(10000);
       }
-      console.log(
-        tokenSwapFromDebitRecord.toString(),
-        tokenSwapToDebitRecord.toString()
-      );
       if (tokenSwapToDebitRecord.gt(0)) {
         this.swapToAmount = new BigNumber(tokenSwapToDebitRecord)
           .div(10 ** this.tokenSwapTo[3].decimals)
@@ -1401,10 +1395,6 @@ export default class extends Mixins(PairsMixin) {
       if (fromStd === 'icp') {
         tokenSwapFromDebitRecord = tokenSwapFromDebitRecord.plus(10000);
       }
-      console.log(
-        tokenSwapFromDebitRecord.toString(),
-        tokenSwapToDebitRecord.toString()
-      );
       if (tokenSwapFromDebitRecord.gt(0)) {
         this.swapFromAmount = new BigNumber(tokenSwapFromDebitRecord)
           .div(10 ** this.tokenSwapFrom[3].decimals)
@@ -1423,7 +1413,6 @@ export default class extends Mixins(PairsMixin) {
     ]);
   }
   private async addCyclesFinanceLiquidity(): Promise<void> {
-    console.time();
     try {
       const flag = await this.checkCycles(this.cyclesCanister.trim());
       if (!flag) {
@@ -1446,7 +1435,6 @@ export default class extends Mixins(PairsMixin) {
         cycles = this.swapFromAmount;
       }
       const deptTotal = this.getTokenDepositingAndPairBalance(icpToken);
-      console.log(deptTotal.toString(10));
       if (deptTotal.div(10 ** icpToken[3].decimals).lt(icp)) {
         let swapFromAmount: string;
         if (
@@ -1471,7 +1459,6 @@ export default class extends Mixins(PairsMixin) {
           swapFromAmount,
           this.depositAccountId
         );
-        console.log(blockHeight);
       }
       this.addLiquidityStep = 1;
       const nonce = await this.getCount(
@@ -1494,7 +1481,6 @@ export default class extends Mixins(PairsMixin) {
       this.walletService
         .walletCall(walletCallRequest, this.cyclesCanister.trim())
         .then(async (res) => {
-          console.log(res);
           if ((res as { Ok: { return: Array<number> } }).Ok) {
             this.addLiquidityStep = 2;
             this.$message.success('Add liquidity Success');
@@ -1510,20 +1496,17 @@ export default class extends Mixins(PairsMixin) {
             this.addSuccess();
             this.$message.error('Add liquidity fail');
           }
-          console.timeEnd();
         })
         .catch(() => {
           this.addSuccess();
           this.$message.error('Add liquidity fail');
         });
     } catch (e) {
-      console.log(e);
       this.addLiquidityVisible = false;
       this.$message.success(e.message);
     }
   }
   private async onAddLiquidity(): Promise<void> {
-    console.time();
     this.addLiquidityVisible = true;
     this.addLiquidityStep = 0;
     const currentSwapService = new ICSwapService();
@@ -1539,8 +1522,6 @@ export default class extends Mixins(PairsMixin) {
       this.tokenSwapFrom
     );
     const toDeptTotal = this.getTokenDepositingAndPairBalance(this.tokenSwapTo);
-    console.log(fromDeptTotal.toString(10));
-    console.log(toDeptTotal.toString(10));
     const promiseAll = [];
     if (
       tokenFromStd === PairTokenStdMenu.icp ||
@@ -1573,7 +1554,6 @@ export default class extends Mixins(PairsMixin) {
             .div(10 ** this.tokenSwapFrom[3].decimals)
             .toString(10);
         }
-        console.log(swapFromAmount);
         if (tokenFromStd === PairTokenStdMenu.icp) {
           promiseAll.push(
             await this.ledgerService.sendIcp(
@@ -1642,7 +1622,6 @@ export default class extends Mixins(PairsMixin) {
             .div(10 ** this.tokenSwapTo[3].decimals)
             .toString(10);
         }
-        console.log(swapToAmount);
         if (tokenToStd === PairTokenStdMenu.icp) {
           promiseAll.push(
             await this.ledgerService.sendIcp(
@@ -1700,7 +1679,6 @@ export default class extends Mixins(PairsMixin) {
       value0 = toAmount;
     }
     const flag = await Promise.all(promiseAll);
-    console.log(flag);
     if (flag && flag[0] && flag[1]) {
       canAdd = true;
     }
@@ -1717,7 +1695,6 @@ export default class extends Mixins(PairsMixin) {
           0,
           [hexToBytes(_data)]
         );
-        console.log(res);
         if (
           (
             res as {
@@ -1736,13 +1713,11 @@ export default class extends Mixins(PairsMixin) {
           this.swapFromAmount = '';
           this.addSuccess();
           // this.liquidity = await this.getLiquidity(this.swapId);
-          console.timeEnd();
         } else {
           this.$message.error((res as { err: SwapTxnResultErr }).err.message);
           this.addSuccess();
         }
       } catch (e) {
-        console.log(e);
         this.$message.error('Add liquidity err');
         this.addSuccess();
       }
@@ -1761,7 +1736,6 @@ export default class extends Mixins(PairsMixin) {
       this.getPairBalance();
       this.getCurrentDepositing();
     } catch (e) {
-      console.log(e);
     }
   }
   private async approve(
@@ -1797,7 +1771,6 @@ export default class extends Mixins(PairsMixin) {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     } else {
@@ -1835,14 +1808,12 @@ export default class extends Mixins(PairsMixin) {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .add-liquidity-icon {
   .swap-icon {

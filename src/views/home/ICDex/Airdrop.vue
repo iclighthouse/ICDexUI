@@ -242,7 +242,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { validateCanister } from '@/utils/validate';
@@ -254,7 +253,6 @@ import { Principal } from '@dfinity/principal';
 import { getTokenIdentifier, hexToBytes } from '@/ic/converter';
 import { AirDrop, ClaimLog, ClaimWithNftLog } from '@/ic/airdrop/model';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
-
 @Component({
   name: 'Airdrop',
   components: { AccountInfo }
@@ -357,11 +355,9 @@ export default class extends Vue {
     const time = 1711612800000;
     const now = new Date().getTime();
     this.canClaim = now > time;
-    console.log(this.canClaim);
     if (!this.canClaim) {
       this.deadline = time;
     }
-    console.log(this.deadline);
   }
   private queryAirdrop(): void {
     this.queryIcl = null;
@@ -381,10 +377,8 @@ export default class extends Vue {
             Principal.fromText(this.queryForm.owner),
             subaccount
           );
-          console.log(res);
           this.queryIcl = res;
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpRejectError(e));
         }
         loading.close();
@@ -407,14 +401,12 @@ export default class extends Vue {
             Principal.fromText(this.claimForm.owner),
             subaccount
           );
-          console.log(res);
           if (typeof res === 'bigint' && res === BigInt(0)) {
             this.$message.error('0 ICL available');
           } else {
             this.$message.success('Success');
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpRejectError(e));
         }
         loading.close();
@@ -434,10 +426,8 @@ export default class extends Vue {
           const res = await this.airdropService.checkAirDropWithNft(
             getTokenIdentifier(NFT_CANISTER_ID, this.queryNFTForm.NFTId)
           );
-          console.log(res);
           this.queryNFTIcl = res;
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpRejectError(e));
         }
         loading.close();
@@ -461,14 +451,12 @@ export default class extends Vue {
             Principal.fromText(this.claimNFTForm.owner),
             subaccount
           );
-          console.log(res);
           if (typeof res === 'bigint' && res === BigInt(0)) {
             this.$message.error('0 ICL available');
           } else {
             this.$message.success('Success');
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpRejectError(e));
         }
         loading.close();
@@ -486,7 +474,6 @@ export default class extends Vue {
         subaccount
       );
     } catch (e) {
-      console.log(e);
     }
   }
   private async getClaimNFTLog(): Promise<void> {
@@ -496,7 +483,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .airdrops-main {
   margin-top: 40px;

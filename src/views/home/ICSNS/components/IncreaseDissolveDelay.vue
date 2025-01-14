@@ -123,7 +123,6 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { SNSNeuronsInfo } from '@/views/home/ICSNS/model';
@@ -132,11 +131,8 @@ import BigNumber from 'bignumber.js';
 import { toHexString } from '@/ic/converter';
 import { checkAuth } from '@/ic/CheckAuth';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
-
 const dayjs = require('dayjs');
-
 const year = 365.25;
-
 @Component({
   name: 'IncreaseDissolveDelay',
   components: {}
@@ -370,11 +366,9 @@ export default class extends Vue {
     this.index = index;
     const SNSNeurons = SNSNeuronsList[SNSIndex];
     const neuron = SNSNeurons.SNSNeurons[index];
-    console.log(neuron.dissolve_state[0]);
     this.visible = true;
     this.SNSNeurons = SNSNeurons;
     this.neuron = neuron;
-    console.log(this.SNSNeurons);
     const staked_maturity_e8s_equivalent =
       neuron.staked_maturity_e8s_equivalent[0] || BigInt(0);
     this.balance = new BigNumber(neuron.cached_neuron_stake_e8s.toString(10))
@@ -472,7 +466,6 @@ export default class extends Vue {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
           const err = Object.values(res.command[0])[0] as GovernanceError;
-          console.log(err);
           this.$message.error(err.error_message);
         } else {
           this.$message.success('Set Dissolve Delay Success');
@@ -481,7 +474,6 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -493,7 +485,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .dissolve-delay-item {
   display: flex;

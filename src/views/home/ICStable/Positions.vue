@@ -308,7 +308,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -328,7 +327,6 @@ import {
 import { StableTokensMixin } from '@/mixins';
 import { TokenId } from '@/ic/common/icType';
 import { formatDateToSecondUTC, toHexString } from '@/ic/converter';
-
 @Component({
   name: 'Positions',
   components: {},
@@ -484,16 +482,13 @@ export default class extends Mixins(StableTokensMixin) {
     collaterals.forEach((item) => {
       this.$set(this.collaterals, item[0].toString(), item);
     });
-    console.log(this.collaterals);
   }
   private async getPrice(): Promise<void> {
     this.price = await this.ICStableService.getPrice();
-    console.log(this.price);
   }
   private async getConfig(): Promise<void> {
     const res = await this.ICStableService.getConfig();
     this.config = res[1];
-    console.log(res);
   }
   private async getBorrower(): Promise<void> {
     const principal = localStorage.getItem('principal');
@@ -503,13 +498,11 @@ export default class extends Mixins(StableTokensMixin) {
     this.tableSpinning = true;
     try {
       const res = await this.ICStableService.borrower(principal);
-      console.log(res);
       if (res && res.length) {
         this.positions = res[1].slice().reverse();
         this.positionsLog = res[2].slice().reverse();
       }
     } catch (e) {
-      console.log(e);
     }
     this.tableSpinning = false;
   }
@@ -518,7 +511,6 @@ export default class extends Mixins(StableTokensMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .table-container {
   border-radius: 10px;

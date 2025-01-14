@@ -1,6 +1,5 @@
 import { LocalPool, LocalSwapPair, Pool } from '@/views/home/ICSwap/model';
 import { CYCLES_FINANCE_CANISTER_ID, LEDGER_CANISTER_ID } from '@/ic/utils';
-
 const toLocalPool = (pool: Pool): LocalPool => {
   const localSwapPair: LocalSwapPair = {
     feeRate: pool[1][0].feeRate,
@@ -25,7 +24,6 @@ const toLocalPool = (pool: Pool): LocalPool => {
     pool[4]
   ];
 };
-
 const swapTokenIdToIcpOrCycles = (tokenId: string): string => {
   if (!tokenId) {
     return '';
@@ -38,7 +36,6 @@ const swapTokenIdToIcpOrCycles = (tokenId: string): string => {
   }
   return tokenId;
 };
-
 const icpOrCyclesToSwapTokenId = (tokenId: string): string => {
   if (!tokenId) {
     return '';
@@ -51,5 +48,4 @@ const icpOrCyclesToSwapTokenId = (tokenId: string): string => {
   }
   return tokenId;
 };
-
 export { toLocalPool, swapTokenIdToIcpOrCycles, icpOrCyclesToSwapTokenId };

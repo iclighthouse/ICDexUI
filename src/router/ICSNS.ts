@@ -105,5 +105,4 @@ const ICSNSRouter: RouteConfig[] = [
     ]
   }
 ];
-
 export default ICSNSRouter;

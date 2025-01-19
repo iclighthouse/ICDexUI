@@ -34,5 +34,4 @@ const ICStableRouter: RouteConfig[] = [
     }
   }
 ];
-
 export default ICStableRouter;

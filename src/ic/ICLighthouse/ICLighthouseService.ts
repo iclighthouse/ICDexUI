@@ -15,7 +15,6 @@ import ICLighthouseIDL from '@/ic/ICLighthouse/ICLighthouse.did';
 import { IC_CANISTER_ID } from '@/ic/utils';
 import { hexToBytes, SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class ICLighthouseService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -123,7 +122,6 @@ export class ICLighthouseService {
     operation: Operation
   ): Promise<boolean> => {
     await this.check();
-    console.log(this.service);
     return await this.service.manageToken(
       tokenId,
       symbol,
@@ -140,7 +138,6 @@ export class ICLighthouseService {
     try {
       return await this.service.getFavorites(Principal.fromText(principalId));
     } catch (e) {
-      console.log(e);
       return [];
     }
   };
@@ -149,7 +146,6 @@ export class ICLighthouseService {
     try {
       return await this.service.addFavorites(pairId);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -158,7 +154,6 @@ export class ICLighthouseService {
     try {
       return await this.service.removeFavorites(pairId);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -169,7 +164,6 @@ export class ICLighthouseService {
     try {
       return await this.service.updateFavoritesListOrder(pairList);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -180,7 +174,6 @@ export class ICLighthouseService {
     try {
       return await this.service.getAccountName(account);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -189,7 +182,6 @@ export class ICLighthouseService {
     try {
       return await this.service.updateAccountlName(name);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

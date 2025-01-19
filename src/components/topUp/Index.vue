@@ -58,7 +58,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
@@ -76,7 +75,6 @@ import { validateCanister } from '@/utils/validate';
 import { CyclesMintingService } from '@/ic/cyclesMinting/cyclesMintingService';
 import { checkAuth } from '@/ic/CheckAuth';
 import { NotifyError, NotifyTopUpArg } from '@/ic/cyclesMinting/model';
-
 @Component({
   name: 'Index',
   components: {}
@@ -149,7 +147,6 @@ export default class extends Vue {
       this.icpToCyclesConversionRate =
         await this.cyclesMintingService.getIcpToCyclesConversionRate();
     } catch (e) {
-      console.log(e);
     }
   }
   public async topUp(): Promise<void> {
@@ -177,9 +174,7 @@ export default class extends Vue {
             canister_id: Principal.fromText(this.topUpForm.to),
             block_index: BigInt(blockHeight)
           };
-          console.log(notifyArg);
           const res = await this.cyclesMintingService.notify_top_up(notifyArg);
-          console.log(res);
           if ((res as { Ok: bigint }).Ok) {
             this.visibleTopUp = false;
             this.$message.success('Top-up Success');
@@ -195,7 +190,6 @@ export default class extends Vue {
           loading.close();
         } catch (e) {
           loading.close();
-          console.log(e);
         }
       }
     });
@@ -215,7 +209,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .transfer-modal {
   .transfer-submit {

@@ -5,14 +5,12 @@ import randomBytes from 'randombytes';
 import CryptoJS from 'crypto-js';
 import { Icrc1Account } from '@/ic/common/icType';
 import BigNumber from 'bignumber.js';
-
 const pbkdf2 = require('pbkdf2');
 const sjcl = require('sjcl');
 let ethereum = (window as any).ethereum;
 if (ethereum && ethereum.providers) {
   ethereum = ethereum.providers.find((provider) => provider.isMetaMask);
 }
-
 const LEDGER_CANISTER_ID = 'ryjl3-tyaaa-aaaaa-aaaba-cai';
 const LEDGER_CANDID_CANISTER_ID = 'ockk2-xaaaa-aaaai-aaaua-cai';
 const GOVERNANCE_CANISTER_ID = 'rrkah-fqaaa-aaaaa-aaaaq-cai';
@@ -207,7 +205,6 @@ const ICLighthouseNeuronId =
   '78ea67a9a0e03055e76cf71380f3bdb9d83ec19552e5cc58d6c596173a72156c';
 const ICLighthouseCHATNeuronId =
   '68f6723cf5d95cd320baf016b1d85cf58cda88301b1fa867c527699de746555b';
-
 const getEthereumAccount = async (): Promise<string> => {
   const accounts: string[] = await ethereum.request({
     method: 'eth_accounts'
@@ -252,7 +249,6 @@ const to32bits = (num: number): number[] => {
   new DataView(b).setUint32(0, num);
   return Array.from(new Uint8Array(b));
 };
-
 const encrypt = (
   message: string,
   password: string,
@@ -297,7 +293,6 @@ const decrypt = (
   if (salt === 'ICLightHouse' && process.env.NODE_ENV === 'production') {
     iterations = 10000;
   }
-  console.log(data, salt);
   return new Promise((resolve, reject) => {
     pbkdf2.pbkdf2(
       password,
@@ -335,7 +330,6 @@ const encryptMessage = (msg: string, key: string): string => {
   );
   return encryptedData.ciphertext.toString();
 };
-
 /**
  * decrypt
  * @param msg base64
@@ -461,7 +455,6 @@ const buildMemo = (nonce: bigint): bigint => {
   }
   return BigInt(memo);
 };
-
 export {
   LEDGER_CANISTER_ID,
   GOVERNANCE_CANISTER_ID,

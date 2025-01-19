@@ -40,7 +40,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { DisburseRequest } from '@/ic/governance/model';
@@ -112,7 +111,6 @@ export default class extends Vue {
             this.$message.success('Disburse Success');
             this.visible = false;
           } catch (e) {
-            console.log(e);
           }
           loading.close();
         }
@@ -128,7 +126,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .disburse-modal {
   button {

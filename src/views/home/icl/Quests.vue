@@ -116,7 +116,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { IcMiningService } from '@/ic/icMining/icMiningService';
@@ -126,7 +125,6 @@ import { CyclesFinanceService } from '@/ic/cyclesFinance/cyclesFinanceService';
 import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { Principal } from '@dfinity/principal';
 import BigNumber from 'bignumber.js';
-
 @Component({
   name: 'Quests',
   components: {}
@@ -198,7 +196,6 @@ export default class extends Vue {
       'k7tml-iaaaa-aaaak-aecgq-cai',
       [principalId]
     );
-    console.log(res);
     this.isCkBTCCanClaim = new BigNumber(
       res.tokenLiquidity.vol.value1.toString(10)
     )
@@ -232,7 +229,6 @@ export default class extends Vue {
         this.$message.error('You have claimed the reward.');
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -251,7 +247,6 @@ export default class extends Vue {
         this.$message.error('You have claimed the reward.');
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -270,14 +265,12 @@ export default class extends Vue {
         this.$message.error('You have claimed the reward.');
       }
     } catch (e) {
-      console.log(e);
       loading.close();
       this.$message.error('Error');
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .icl-task-item {
   background: #141b23;

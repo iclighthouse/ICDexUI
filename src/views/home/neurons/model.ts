@@ -1,6 +1,5 @@
 import { Ballot, Neuron, NeuronState } from '@/ic/governance/model';
 import { NeuronId } from '@/ic/common/icType';
-
 export interface Menu {
   path: string;
   value: string;
@@ -11,7 +10,6 @@ export interface NeuronBallot {
   vote: bigint;
   voting_power: string;
 }
-
 export interface NeuronFullInfo extends Neuron {
   neuronId: NeuronId;
   dissolveDelaySeconds: BigInt;
@@ -26,9 +24,7 @@ export enum PeriodList {
   Months = 'Months',
   Years = 'Years'
 }
-
 export type Period = keyof typeof PeriodList;
-
 export enum Topic {
   /// The `Unspecified` topic is used as a fallback when
   /// following. That is, if no followees are specified for a given

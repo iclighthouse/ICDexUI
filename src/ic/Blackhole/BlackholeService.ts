@@ -3,7 +3,6 @@ import { createService } from '@/ic/createService';
 import ICTokenIDL from './Blackhole.did';
 import { BLACKHOLE_CANISTER_ID } from '@/ic/utils';
 import { Principal } from '@dfinity/principal';
-
 export class BlackholeService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {

@@ -71,7 +71,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
@@ -94,7 +93,6 @@ import { namespace } from 'vuex-class';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { PropType } from 'vue';
 const commonModule = namespace('common');
-
 @Component({
   name: 'Index',
   components: {}
@@ -239,12 +237,10 @@ export default class extends Vue {
       loading.close();
     } catch (e) {
       loading.close();
-      console.log(e);
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .transfer-balance-right {
   margin-top: 10px;

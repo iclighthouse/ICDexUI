@@ -10,5 +10,4 @@ const dappsRouter: RouteConfig[] = [
     }
   }
 ];
-
 export default dappsRouter;

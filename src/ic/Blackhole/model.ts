@@ -20,7 +20,6 @@ export interface CanisterStatus {
   };
   module_hash: Array<Array<number>>;
 }
-
 export default interface Service {
   canister_status(res: { canister_id: Principal }): Promise<CanisterStatus>;
 }

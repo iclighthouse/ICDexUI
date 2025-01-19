@@ -1,5 +1,4 @@
 import { DirectiveOptions } from 'vue/types/options';
-
 export const debounce: DirectiveOptions = {
   bind(el, binding) {
     let timer: number;
@@ -9,4 +8,3 @@ export const debounce: DirectiveOptions = {
     });
   },
 };
-

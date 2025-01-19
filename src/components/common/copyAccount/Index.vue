@@ -40,11 +40,9 @@
     </div>
   </a-tooltip>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { type } from 'os';
-
 @Component({
   name: 'Index',
   components: {}
@@ -68,11 +66,9 @@ export default class extends Vue {
     this.$message.success(`${this.copyText} Copied`);
   }
   private onError(): void {
-    console.log('err');
   }
 }
 </script>
-
 <style scoped lang="scss">
 .copy-account-main {
   display: flex;

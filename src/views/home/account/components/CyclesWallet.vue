@@ -308,7 +308,6 @@
     </a-modal>
   </tr>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Identity } from '@dfinity/agent';
@@ -529,7 +528,6 @@ export default class extends Vue {
     this.ICLighthouseService = new ICLighthouseService();
     const width = document.documentElement.clientWidth;
     this.isH5 = width <= 768;
-    console.log('created');
     this.init();
     this.getCyclesWalletBalance();
   }
@@ -580,7 +578,6 @@ export default class extends Vue {
         } catch (e) {
           loading.close();
           this.$message.error(toHttpError(e).message);
-          console.log(e);
         }
       }
     });
@@ -620,7 +617,6 @@ export default class extends Vue {
     } catch (e) {
       loading.close();
       this.$message.error(toHttpError(e).message);
-      console.log(e);
     }
   }
   private async addController(): Promise<void> {
@@ -640,17 +636,14 @@ export default class extends Vue {
     } catch (e) {
       loading.close();
       this.$message.error(toHttpError(e).message);
-      console.log(e);
     }
   }
   private async getControllers(): Promise<void> {
     this.walletControllers = await this.walletService.getControllers(
       this.wallet.walletId.toString()
     );
-    console.log(this.walletControllers);
   }
   private onCyclesController(type: string) {
-    console.log(type);
     if (type === 'add') {
       this.cyclesController = 'Add Controller';
     } else {
@@ -682,7 +675,6 @@ export default class extends Vue {
         removeWhitelist(this.wallet.walletId.toString());
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
     this.removeVisible = false;
@@ -709,7 +701,6 @@ export default class extends Vue {
       );
       this.events = this.events.slice().reverse();
     } catch (e) {
-      console.log(e);
     }
     this.loading = false;
   }
@@ -722,7 +713,6 @@ export default class extends Vue {
         this.page.total = events[events.length - 1].id + 1;
       }
     } catch (e) {
-      console.log(e);
       // this.$message.error(toHttpError(e).message);
     }
   }
@@ -769,7 +759,6 @@ export default class extends Vue {
         this.$emit('setDefaultSuccess');
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -799,7 +788,6 @@ export default class extends Vue {
       try {
         state = await readState(this.wallet.walletId.toString());
       } catch (err) {
-        console.log(err);
       }
       if (!state || (state && !state.moduleHash)) {
         const flag = await this.ICLighthouseService.manageWallet(
@@ -813,7 +801,6 @@ export default class extends Vue {
           removeWhitelist(this.wallet.walletId.toString());
         }
       }
-      console.log(e);
     }
   }
   private onWalletName(): void {
@@ -838,7 +825,6 @@ export default class extends Vue {
           this.getWalletName();
           this.$message.success('set wallet name Success');
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpError(e).message);
           loading.close();
         }
@@ -856,7 +842,6 @@ export default class extends Vue {
         this.$forceUpdate();
       }
     } catch (e) {
-      console.log(e);
     }
   }
   public async onCreateWallet(): Promise<void> {
@@ -865,7 +850,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .balance-main {
   width: 400px;

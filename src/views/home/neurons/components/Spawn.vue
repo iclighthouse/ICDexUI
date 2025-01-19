@@ -30,7 +30,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
@@ -73,7 +72,6 @@ export default class extends Vue {
             this.$message.success('spawn Success');
             this.visible = false;
           } catch (e) {
-            console.log(e);
             this.$message.error(e.error_message);
           }
           loading.close();
@@ -86,7 +84,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .disburse-modal {
   button {

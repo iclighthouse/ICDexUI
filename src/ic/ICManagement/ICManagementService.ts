@@ -6,7 +6,6 @@ import { UpdateSettingsRequest } from '@/ic/ICManagement/model';
 import { TokenStatus } from '@/ic/ICTokens/model';
 import { SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class ICManagementService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {
@@ -24,7 +23,6 @@ export class ICManagementService {
     try {
       return await this.service.update_settings(request);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

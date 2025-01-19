@@ -3,7 +3,6 @@ import IDL from './cyclesMinting.did.js';
 import { buildService } from '../Service';
 import { CYCLES_MINTING_CANISTER_ID } from '@/ic/utils';
 const CYCLES_PER_XDR = BigInt(1_000_000_000_000);
-
 export class CyclesMintingService {
   private service: Service;
   private check = async (): Promise<void> => {

@@ -4,7 +4,6 @@ import { IC_TOKEN_CANISTER_ID } from '@/ic/utils';
 import Service, { InitArgs, TokenItem, TokenStatus } from '@/ic/ICTokens/model';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class ICTokenService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {

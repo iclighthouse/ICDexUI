@@ -274,7 +274,6 @@
     ></claim>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -305,7 +304,6 @@ import {
   toLocalPool
 } from '@/ic/icSwapUtils';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
-
 @Component({
   name: 'IcSwapLiquidity',
   components: { AddLiquidity, Yield, Claim, RemoveLiquidity }
@@ -464,7 +462,6 @@ export default class extends Vue {
           this.onGetPairs();
         }
       } catch (e) {
-        console.log(e);
       }
       // loading.close();
     }
@@ -921,7 +918,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .liquidity-container {
   padding-bottom: 20px;

@@ -3,7 +3,6 @@ import airdropIDL from './airdrop.did';
 import { AIRDROP_CANISTER_ID } from '@/ic/utils';
 import { Principal } from '@dfinity/principal';
 import { buildService } from '@/ic/Service';
-
 export class AirdropService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {

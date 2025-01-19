@@ -454,7 +454,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import { NeuronId } from '@/ic/common/icType';
@@ -488,9 +487,7 @@ import Following from '@/views/home/neurons/components/Following.vue';
 import HotKey from '@/views/home/neurons/components/HotKey.vue';
 import { checkAuth } from '@/ic/CheckAuth';
 import { connectIcx } from '@/ic/connectIcx';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'MyNeurons',
   components: {
@@ -532,7 +529,6 @@ export default class extends Mixins(BalanceMixin) {
   private stakeMaturityVisible = false;
   private stakeMaturityValue = 0;
   private listKnownNeurons: ListKnownNeuronsResponse = null;
-
   async created(): Promise<void> {
     const width = document.documentElement.clientWidth;
     this.isH5 = width <= 768;
@@ -649,7 +645,6 @@ export default class extends Mixins(BalanceMixin) {
   private async getNetworkEconomicsParameters(): Promise<void> {
     this.networkEconomicsParameters =
       await this.governanceService.getNetworkEconomicsParameters();
-    console.log(this.networkEconomicsParameters);
   }
   private minStakeSplittable(): string {
     const fee = BigInt(10000);
@@ -672,7 +667,6 @@ export default class extends Mixins(BalanceMixin) {
       await this.getNeuronIds();
       this.$message.success('Spawn Success');
     } catch (e) {
-      console.log(e);
       if (e && e.error_message) {
         this.$message.error(e.error_message);
       }
@@ -816,7 +810,6 @@ export default class extends Mixins(BalanceMixin) {
     this.neuronList.push(neuronInfo);
   }
   public spawnSuccess(id: NeuronId): void {
-    console.log(id);
   }
   public async transferSuccess(): Promise<void> {
     const loading = this.$loading({
@@ -847,7 +840,6 @@ export default class extends Mixins(BalanceMixin) {
       this.onIncreaseDissolveDelay(this.neuronList[0], 0);
       this.getBalance();
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -888,7 +880,6 @@ export default class extends Mixins(BalanceMixin) {
       this.getBalance();
       this.$message.success('Disburse Success');
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -903,7 +894,6 @@ export default class extends Mixins(BalanceMixin) {
       await this.governanceService.stopDissolving(neuron.id[0].id);
       this.refreshNeuron(this.neuronId);
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -918,7 +908,6 @@ export default class extends Mixins(BalanceMixin) {
       await this.governanceService.startDissolving(neuron.id[0].id);
       this.refreshNeuron(this.neuronId);
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -938,7 +927,6 @@ export default class extends Mixins(BalanceMixin) {
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });
-    console.log(res);
     if (res && res.full_neurons) {
       this.neuronList = res.full_neurons
         .filter((neuron) => {
@@ -962,7 +950,6 @@ export default class extends Mixins(BalanceMixin) {
             .toNumber();
         });
     }
-    console.log(this.neuronList);
     this.spinning = false;
   }
   public async getFullNeuron(neuronId: NeuronId): Promise<Neuron> {
@@ -990,7 +977,6 @@ export default class extends Mixins(BalanceMixin) {
       this.$message.success('Stake Maturity Success');
       this.stakeMaturityVisible = false;
     } catch (e) {
-      console.log(e);
       if (e && e.error_message) {
         this.$message.error(e.error_message);
       }
@@ -1013,7 +999,6 @@ export default class extends Mixins(BalanceMixin) {
         neuronId,
         !auto_stake_maturity
       );
-      console.log(res);
       await this.refreshNeuron(neuronId);
       if (res && res.command && res.command[0]) {
         const type = Object.keys(res.command[0])[0];
@@ -1026,7 +1011,6 @@ export default class extends Mixins(BalanceMixin) {
         this.$message.error('Error');
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -1058,7 +1042,6 @@ export default class extends Mixins(BalanceMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .voting-power-title-main {
   margin-right: 5px;

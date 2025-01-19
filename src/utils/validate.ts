@@ -5,7 +5,6 @@ import {
   validateCyclesWallet,
   isHexString
 } from '@/ic/utils';
-
 export const validateCanister = (
   rule: ValidationRule,
   value: string,

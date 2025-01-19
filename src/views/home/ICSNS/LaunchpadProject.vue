@@ -786,7 +786,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins, Vue } from 'vue-property-decorator';
 import { SNSWasmService } from '@/ic/SNSWasm/SNSWasmService';
@@ -837,12 +836,10 @@ import {
 import { questsService } from '@/ic/quests/questsService';
 import { toHttpRejectError } from '@/ic/httpError';
 import axios from 'axios';
-
 const dayjs = require('dayjs');
 const commonModule = namespace('common');
 const defaultLength = 100;
 const defaultTotalLength = 1000;
-
 @Component({
   name: 'LaunchpadProject',
   components: {},
@@ -960,7 +957,6 @@ export default class extends Mixins(BalanceMixin) {
           .times(10 ** 8)
           .lt(this.currentToken.params[0].max_participant_icp_e8s.toString(10));
     }
-    console.log(this.buyerAmount, this.refundIcp);
     return flag;
   }
   get showRefundIcp(): boolean {
@@ -980,7 +976,6 @@ export default class extends Mixins(BalanceMixin) {
           ) &&
         this.filterState(this.currentToken) === 'Open';
     }
-    console.log(this.buyerAmount, this.refundIcp);
     return flag;
   }
   get getCurrentCompleted(): string {
@@ -1040,7 +1035,6 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async listDeployedSnses(): Promise<void> {
@@ -1117,7 +1111,6 @@ export default class extends Mixins(BalanceMixin) {
         this.initConnected(listDeployedSnses, loading);
       }
     } catch (e) {
-      console.log(e);
       loading.close();
     }
   }
@@ -1125,7 +1118,6 @@ export default class extends Mixins(BalanceMixin) {
     listDeployedSnses: Array<DeployedSns>,
     loading
   ): Promise<void> {
-    console.log(listDeployedSnses);
     let governanceId;
     let swapId;
     const tokenId = this.$route.params.tokenId.trim();
@@ -1147,11 +1139,9 @@ export default class extends Mixins(BalanceMixin) {
           }
         }
       }
-      console.log(governanceId);
       this.governanceId = governanceId;
       this.currentToken = await this.getSNSTokenInfo(swapId);
       this.getDerivedState(swapId);
-      console.log(this.currentToken);
     } else {
       await this.getUpcomingProposalInfo();
     }
@@ -1159,7 +1149,6 @@ export default class extends Mixins(BalanceMixin) {
     this.$nextTick(() => {
       let cellChild = (this.$refs as any).infoItem;
       if (cellChild) {
-        console.log(cellChild.scrollHeight, cellChild.offsetHeight);
         this.hasMoreArrow = cellChild.scrollHeight > cellChild.offsetHeight;
       }
     });
@@ -1175,7 +1164,6 @@ export default class extends Mixins(BalanceMixin) {
     const proposalRes = await governanceService.getProposalInfo(
       BigInt(proposalId)
     );
-    console.log(proposalRes);
     if (
       proposalRes &&
       proposalRes[0] &&
@@ -1221,7 +1209,6 @@ export default class extends Mixins(BalanceMixin) {
           neurons_fund_investment_icp:
             swapParameters.neurons_fund_investment_icp[0].e8s[0]
         };
-        console.log(params);
         const tokenInfo = createServiceNervousSystem.ledger_parameters[0];
         this.currentToken = {
           tokenId: null,
@@ -1290,10 +1277,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async getInit(tokenId: string): Promise<Init> {
     const snsSwapService = new SNSSwapService();
-    console.time('getInit');
     const res = await snsSwapService.getInit(tokenId);
-    console.log(res);
-    console.time('getInit');
     if (res && res.init && res.init[0]) {
       if (
         res.init[0].restricted_countries &&
@@ -1312,12 +1296,10 @@ export default class extends Mixins(BalanceMixin) {
   }
   private iplocation(iso_codes: Array<string>): void {
     axios.get('https://api.iplocation.net/?cmd=get-ip').then((res) => {
-      console.log(res);
       const ip = res.data.ip;
       axios
         .get(`https://api.iplocation.net/?cmd=ip-country&ip=${ip}`)
         .then((country) => {
-          console.log(country.data);
           this.restricted =
             iso_codes.includes(country.data.country_code2) ||
             iso_codes.includes(country.data.country_name);
@@ -1333,10 +1315,7 @@ export default class extends Mixins(BalanceMixin) {
       return info.params;
     }
     const snsSwapService = new SNSSwapService();
-    console.time('getParams');
     const res = await snsSwapService.getSaleParameters(swap);
-    console.log(res);
-    console.time('getParams');
     if (
       res.params.length &&
       res.params[0].max_direct_participation_icp_e8s &&
@@ -1357,13 +1336,10 @@ export default class extends Mixins(BalanceMixin) {
       return info.lifecycle;
     }
     const snsSwapService = new SNSSwapService();
-    console.time('getLifecycle');
     const res = await snsSwapService.getLifecycle(swap);
-    console.timeEnd('getLifecycle');
     return res.lifecycle;
   }
   private async getProposalParams(swapId: string): Promise<Array<Params>> {
-    console.time('getProposalParams');
     try {
       const governanceService = new GovernanceService();
       const proposalRes = await governanceService.listProposals({
@@ -1378,7 +1354,6 @@ export default class extends Mixins(BalanceMixin) {
         include_status: [1],
         include_all_manage_neuron_proposals: []
       });
-      console.log(proposalRes);
       if (
         proposalRes &&
         proposalRes.proposal_info &&
@@ -1417,9 +1392,7 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
     }
-    console.timeEnd('getProposalParams');
     return null;
   }
   /**
@@ -1436,7 +1409,6 @@ export default class extends Mixins(BalanceMixin) {
     const snsSwapService = new SNSSwapService();
     const request = { limit: [BigInt(length)], offset: [BigInt(start)] };
     const res = await snsSwapService.listDirectParticipants(tokenId, request);
-    console.log(start, length, res);
     if (res.participants.length) {
       if (res.participants.length === 1) {
         this.getBuyersTotal(tokenId, start, defaultTotalLength);
@@ -1449,7 +1421,6 @@ export default class extends Mixins(BalanceMixin) {
           );
         } else {
           this.totalBuyers = start + res.participants.length;
-          console.log(this.totalBuyers);
           this.listDirectParticipants(tokenId, 'init');
         }
       }
@@ -1485,7 +1456,6 @@ export default class extends Mixins(BalanceMixin) {
           );
         } else {
           this.totalNeuronRecipes = start + res.sns_neuron_recipes.length;
-          console.log(this.totalNeuronRecipes);
           this.listSnsNeuronRecipes(tokenId, 'init');
         }
       }
@@ -1506,7 +1476,6 @@ export default class extends Mixins(BalanceMixin) {
     type?: string
   ): Promise<void> {
     const snsSwapService = new SNSSwapService();
-    console.time('listDirectParticipants');
     if (!this.loadMoreBuyers) {
       this.busyBuyers = false;
       return;
@@ -1526,7 +1495,6 @@ export default class extends Mixins(BalanceMixin) {
         length = this.totalBuyers - this.buyers.length;
       }
     }
-    console.log(start, length);
     try {
       const res = await snsSwapService.listDirectParticipants(tokenId, {
         limit: [BigInt(length)],
@@ -1543,11 +1511,8 @@ export default class extends Mixins(BalanceMixin) {
         });
       });
       this.buyers = this.buyers.concat(buyers);
-      console.timeEnd('listDirectParticipants');
     } catch (e) {
-      console.log(e);
     }
-    console.log(this.buyers);
     this.busyBuyers = false;
   }
   private async listSnsNeuronRecipes(
@@ -1555,7 +1520,6 @@ export default class extends Mixins(BalanceMixin) {
     type?: string
   ): Promise<void> {
     const snsSwapService = new SNSSwapService();
-    console.time('listSnsNeuronRecipes');
     if (!this.loadMoreNeuronRecipes) {
       this.busyNeuronRecipes = false;
       return;
@@ -1575,7 +1539,6 @@ export default class extends Mixins(BalanceMixin) {
         length = this.totalNeuronRecipes - this.neuronRecipes.length;
       }
     }
-    console.log(start, length);
     try {
       const res = await snsSwapService.listSnsNeuronRecipes(tokenId, {
         limit: [BigInt(length)],
@@ -1592,26 +1555,20 @@ export default class extends Mixins(BalanceMixin) {
         });
       });
       this.neuronRecipes = this.neuronRecipes.concat(neuronRecipes);
-      console.timeEnd('listSnsNeuronRecipes');
     } catch (e) {
-      console.log(e);
     }
-    console.log(this.neuronRecipes);
     this.busyNeuronRecipes = false;
   }
   private async listCommunityFundParticipants(
     tokenId: string
   ): Promise<Array<CfParticipant>> {
     const snsSwapService = new SNSSwapService();
-    console.time('listCommunityFundParticipants');
     const res = await snsSwapService.listCommunityFundParticipants(tokenId);
-    console.timeEnd('listCommunityFundParticipants');
     return res.cf_participants;
   }
   private async getDerivedState(tokenId: string): Promise<void> {
     const snsSwapService = new SNSSwapService();
     const res = await snsSwapService.getDerivedState(tokenId);
-    console.log(res);
     if (
       (res as GetDerivedStateResponse1).direct_participant_count &&
       (res as GetDerivedStateResponse1).direct_participant_count[0]
@@ -1632,7 +1589,6 @@ export default class extends Mixins(BalanceMixin) {
         .div(10 ** 8)
         .toString(10);
     }
-    console.log(this.currentToken);
     if (this.currentToken) {
       this.$set(this.currentToken, 'buyersTotal', res.buyer_total_icp_e8s[0]);
       if (
@@ -1655,10 +1611,7 @@ export default class extends Mixins(BalanceMixin) {
   }
   private async getSNSTokenSwapState(tokenId: string): Promise<void> {
     const snsSwapService = new SNSSwapService();
-    console.time('2');
     const res = await snsSwapService.getState(tokenId);
-    console.log(res);
-    console.timeEnd('2');
     try {
       this.proposalId =
         res.swap[0].open_sns_token_swap_proposal_id[0].toString(10);
@@ -1681,7 +1634,6 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getProposalInfo(): Promise<void> {
@@ -1690,7 +1642,6 @@ export default class extends Mixins(BalanceMixin) {
       const proposalRes = await governanceService.getProposalInfo(
         BigInt(this.proposalId)
       );
-      console.log(proposalRes);
       if (proposalRes && proposalRes.length) {
         const executedTime = proposalRes[0].executed_timestamp_seconds;
         if (proposalRes[0].decided_timestamp_seconds) {
@@ -1706,7 +1657,6 @@ export default class extends Mixins(BalanceMixin) {
             .times(1000)
             .decimalPlaces(0)
             .toNumber();
-          console.log(this.deadline);
         }
       }
     }
@@ -1775,7 +1725,6 @@ export default class extends Mixins(BalanceMixin) {
         .decimalPlaces(2)
         .toString(10);
       let communityFund = '0';
-      console.log(this.currentToken.cf_participants);
       if (
         !this.paramsCommunityFund &&
         this.currentToken.params[0].neurons_fund_investment_icp
@@ -1797,7 +1746,6 @@ export default class extends Mixins(BalanceMixin) {
           .div(10 ** 8)
           .toString(10);
       }
-      console.log(this.getCommunityFund);
     }
     this.setCountDown();
     this.getBuyerState().then();
@@ -1805,14 +1753,12 @@ export default class extends Mixins(BalanceMixin) {
   }
   private handleInfiniteOnLoadNeuronRecipes(): void {
     if (!this.busyNeuronRecipes) {
-      console.log('handleInfiniteOnLoadNeuronRecipes');
       this.busyNeuronRecipes = true;
       this.listSnsNeuronRecipes(this.currentToken.swapId);
     }
   }
   private handleInfiniteOnLoadBuyers(): void {
     if (!this.busyBuyers) {
-      console.log('handleInfiniteOnLoadBuyers');
       this.busyBuyers = true;
       this.listDirectParticipants(this.currentToken.swapId);
     }
@@ -1848,7 +1794,6 @@ export default class extends Mixins(BalanceMixin) {
       const res = await snsSwapService.getBuyerState(this.currentToken.swapId, {
         principal_id: [Principal.fromText(this.getPrincipalId)]
       });
-      console.log(res);
       if (
         res &&
         res.buyer_state &&
@@ -1878,7 +1823,6 @@ export default class extends Mixins(BalanceMixin) {
         this.currentToken.tokenId
       );
       // this.currentToken.lifecycle = lifecycle;
-      console.log(lifecycle);
       this.$set(this.currentToken, 'lifecycle', lifecycle);
       if (Number(lifecycle[0]) === 1) {
         window.setTimeout(() => {
@@ -1886,7 +1830,6 @@ export default class extends Mixins(BalanceMixin) {
         }, 1000);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async onFinish(): Promise<void> {
@@ -1897,7 +1840,6 @@ export default class extends Mixins(BalanceMixin) {
         this.currentToken.tokenId
       );
       // this.currentToken.lifecycle = lifecycle;
-      console.log(lifecycle);
       this.$set(this.currentToken, 'lifecycle', lifecycle);
       if (Number(lifecycle[0]) === 5) {
         window.setTimeout(() => {
@@ -1907,7 +1849,6 @@ export default class extends Mixins(BalanceMixin) {
         this.pendingLoading = false;
       }
     } catch (e) {
-      console.log(e);
       this.pendingLoading = false;
     }
   }
@@ -2014,7 +1955,6 @@ export default class extends Mixins(BalanceMixin) {
             }
             this.getRefundIcp();
             loading.close();
-            console.log(e);
           }
           this.swapVisible = false;
         }
@@ -2028,7 +1968,6 @@ export default class extends Mixins(BalanceMixin) {
         Principal.fromText(this.getPrincipalId)
       );
     } catch (e) {
-      console.log(e);
     }
   }
   private async refreshState(): Promise<void> {
@@ -2065,7 +2004,6 @@ export default class extends Mixins(BalanceMixin) {
     try {
       await this.refreshBuyerToken();
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -2091,7 +2029,6 @@ export default class extends Mixins(BalanceMixin) {
           confirmation_text: confirmationText
         }
       );
-      console.log(res);
       if (res && res.icp_accepted_participation_e8s) {
         this.$message.success('Success');
         if (this.currentToken.symbol === 'CHAT') {
@@ -2104,7 +2041,6 @@ export default class extends Mixins(BalanceMixin) {
       if (toHttpRejectError(e)) {
         this.$message.error(toHttpRejectError(e));
       }
-      console.log(e);
     }
     this.refreshState();
     this.getRefundIcp();
@@ -2117,11 +2053,9 @@ export default class extends Mixins(BalanceMixin) {
     await checkAuth();
     try {
       const snsSwapService = new SNSSwapService();
-      console.log(this.currentToken.swapId);
       const res = await snsSwapService.refundIcp(this.currentToken.swapId, {
         source_principal_id: [Principal.fromText(this.getPrincipalId)]
       });
-      console.log(res);
       if (res.result) {
         const type = Object.keys(res.result[0])[0];
         if (type === 'Ok') {
@@ -2129,7 +2063,6 @@ export default class extends Mixins(BalanceMixin) {
           this.getRefundIcp();
         } else {
           const message = Object.values(res.result[0] as { Err: Err })[0];
-          console.log(message);
           if (message.description.length) {
             this.$message.error(message.description[0]);
           } else {
@@ -2138,7 +2071,6 @@ export default class extends Mixins(BalanceMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
       this.$message.error('Refund error');
     }
     loading.close();
@@ -2148,7 +2080,6 @@ export default class extends Mixins(BalanceMixin) {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .launch-pad-modal-title {
   display: flex;

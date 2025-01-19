@@ -654,7 +654,6 @@
     ></approve-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {
@@ -696,9 +695,7 @@ import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { NFTRole } from '@/views/home/ICDex/model';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'NFTBalance',
   components: { ApproveModal }
@@ -717,7 +714,6 @@ export default class extends Vue {
   private pairsMaker!: Array<PairTrie>;
   @Prop({ type: Array, default: () => null })
   private listingReferrer!: [boolean, boolean];
-
   private visible = false;
   private visiblePropose = false;
   private extPage = 0;
@@ -900,7 +896,6 @@ export default class extends Vue {
       const res = await this.ICSwapRouterFiduciaryService.NFTStaked(
         this.getPrincipalId
       );
-      console.log(res);
       if (res && res.length) {
         this.NFTStaked = res;
         const now = new Date().getTime();
@@ -965,7 +960,6 @@ export default class extends Vue {
       this.getNFTStaked();
       this.visiblePropose = true;
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -995,7 +989,6 @@ export default class extends Vue {
         }
       }
     );
-    console.log(res);
     if (res) {
       return res.allowance;
     } else {
@@ -1035,7 +1028,6 @@ export default class extends Vue {
     });
     await this.getSysConfig();
     const allowance = await this.getAllowance();
-    console.log(allowance);
     let tokenInfo = this.tokens[this.sysConfig.sysToken.toString()];
     if (!tokenInfo) {
       tokenInfo = await getTokenInfo(this.sysConfig.sysToken, {
@@ -1145,13 +1137,11 @@ export default class extends Vue {
         to = principalAndAccountId.accountId;
       }
     }
-    console.log(this.pairsMaker, this.bindMakerForm.pair, hexToBytes(to));
     const res = await this.ICDexRouterService.NFTBindMaker(
       this.bindNftTokenId,
       pair,
       hexToBytes(to)
     );
-    console.log(res);
     if (res) {
       this.$message.success('Success');
       this.bindMakerVisible = false;
@@ -1182,9 +1172,7 @@ export default class extends Vue {
       return;
     }
     (this.$refs.createMakerPoolForm as any).validate(async (valid: any) => {
-      console.log(valid);
       if (valid) {
-        console.log(this.pairsMaker[this.createMakerPoolForm.pair][1]);
         const loading = this.$loading({
           lock: true,
           background: 'rgba(0, 0, 0, 0.5)'
@@ -1259,7 +1247,6 @@ export default class extends Vue {
           threshold: BigInt(threshold),
           volFactor: BigInt(this.createMakerPoolForm.volFactor)
         };
-        console.log(makerCreateArg);
         try {
           const res = await this.ICDexRouterService.maker_create(
             makerCreateArg
@@ -1347,7 +1334,6 @@ export default class extends Vue {
             this.$message.error('Error');
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpRejectError(e));
         }
         loading.close();
@@ -1375,7 +1361,6 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     await checkAuth();
-
     if (isPlug()) {
       const approve = {
         idl: NFTIdl,
@@ -1404,7 +1389,6 @@ export default class extends Vue {
       };
       const plugIc = (window as any).ic.plug;
       const res = await plugIc.batchTransactions([approve]);
-      console.log(res);
     } else if (isInfinity()) {
       const approve = {
         idl: NFTIdl,
@@ -1433,7 +1417,6 @@ export default class extends Vue {
       };
       const Ic = (window as any).ic.infinityWallet;
       const res = await Ic.batchTransactions([approve]);
-      console.log(res);
     } else {
       try {
         const res = await this.NftService.approve(approveRequest);
@@ -1451,7 +1434,6 @@ export default class extends Vue {
         }
       } catch (e) {
         this.$message.error('Approve error');
-        console.log(e);
         loading.close();
       }
     }
@@ -1618,7 +1600,6 @@ export default class extends Vue {
         okText: 'Confirm',
         cancelText: 'Cancel',
         onOk() {
-          console.log(nft[1]);
           const loading = that.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
@@ -1728,7 +1709,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .nft-modal {
   ::v-deep .ant-modal-body {

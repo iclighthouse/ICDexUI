@@ -84,7 +84,6 @@
     </div>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import {
@@ -106,9 +105,7 @@ import {
 import { Principal } from '@dfinity/principal';
 import { namespace } from 'vuex-class';
 import BigNumber from 'bignumber.js';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'MakerProposal',
   components: {}
@@ -177,11 +174,9 @@ export default class extends Vue {
     preview: true
   };
   private functionId: { [key: string]: number } = {};
-
   @Watch('actionInput', { deep: true })
   private onActionInput() {
     const labels = document.getElementsByTagName('label') as any;
-    console.log(labels);
     if (labels && labels.length) {
       labels.forEach((item) => {
         if (item.innerText === 'function_name') {
@@ -189,7 +184,6 @@ export default class extends Vue {
           if (!custom) {
             const dom = document.createElement('div');
             const popup_form = document.querySelector('.popup-form');
-            console.log(popup_form);
             if (popup_form) {
               const firstChild: any =
                 popup_form.firstElementChild || popup_form.firstChild;
@@ -235,7 +229,6 @@ export default class extends Vue {
                   items.classList.add('select-hide');
                 });
               });
-
               document.addEventListener('click', function (e) {
                 if (e.target !== selected && e.target !== items) {
                   items.classList.add('select-hide');
@@ -247,7 +240,6 @@ export default class extends Vue {
       });
     }
   }
-
   private async submit(): Promise<void> {
     if (!this.neuronId) {
       this.$message.error('Please select a neuron');
@@ -257,16 +249,13 @@ export default class extends Vue {
       this.$message.error('Please enter title');
       return;
     }
-    console.log(this.actionInput);
     let parse;
     try {
       parse = this.actionInput.parse();
     } catch (e) {
-      console.log(e);
       this.$message.error('Please select action');
       return;
     }
-    console.log(parse);
     const actionInput = this.initBlobParams(parse);
     if (actionInput && actionInput.ExecuteGenericNervousSystemFunction) {
       if (
@@ -284,8 +273,6 @@ export default class extends Vue {
         };
       }
     }
-    console.log(actionInput);
-    console.log(this.summary);
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -299,13 +286,11 @@ export default class extends Vue {
         action: [actionInput],
         summary: this.summary
       };
-      console.log(proposal);
       const res = await snsGovernanceService.makerProposal(
         this.currentSNS.governanceId,
         Array.from(hexToBytes(this.neuronId)),
         proposal
       );
-      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -320,11 +305,9 @@ export default class extends Vue {
         this.$message.error('Make Proposal Error');
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
-
   private initBlobParams(val: any): any {
     if (typeof val === 'object') {
       if (Object.prototype.toString.call(val) === '[object Object]') {
@@ -355,9 +338,7 @@ export default class extends Vue {
       return val;
     }
   }
-
   private async init(): Promise<void> {
-    console.log(this.currentSNS);
     this.getNeurons();
     const params = await getCandidInterfaceTmpHack(
       this.currentSNS.governanceId
@@ -378,21 +359,17 @@ export default class extends Vue {
             this.currentSNS.listTypes &&
             this.currentSNS.listTypes.length
           ) {
-            console.log(item[1]._fields);
             const functionIds = {};
             this.currentSNS.listTypes.sort((a, b) => {
               return a.name.localeCompare(b.name);
             });
-            console.log(this.currentSNS);
             this.currentSNS.listTypes.forEach((item) => {
               if (item.id >= 1000) {
                 this.functionId[item.name] = item.id;
                 functionIds[item.name] = new IDL.RecordClass();
               }
             });
-            console.log(functionIds);
             const a = new IDL.VariantClass(functionIds);
-            console.log(a);
             item[1]._fields[0][0] = 'function_name';
             item[1]._fields[0][1] = IDL.Variant(functionIds);
           }
@@ -410,10 +387,8 @@ export default class extends Vue {
     );
     this.$nextTick(() => {
       this.actionInput.render(this.$refs.action as HTMLElement);
-      console.log(this.actionInput);
     });
   }
-
   private async getNeurons(): Promise<void> {
     const snsGovernanceService = new SNSGovernanceService();
     const request: ListNeurons = {
@@ -425,7 +400,6 @@ export default class extends Vue {
       this.currentSNS.governanceId,
       request
     );
-    console.log(res);
     if (res) {
       this.SNSNeurons = this.filterNeuron(res.neurons);
     } else {
@@ -437,7 +411,6 @@ export default class extends Vue {
       this.neuronId = '';
     }
   }
-
   private getVotingPower(SNSNeuron: SNSNeuron): string {
     const dissolveState = SNSNeuron.dissolve_state;
     let dissolveDelay = 0;
@@ -515,7 +488,6 @@ export default class extends Vue {
       .decimalPlaces(2, 1)
       .toString(10);
   }
-
   private getVoteBalance(SNSNeuron: SNSNeuron): string {
     const staked_maturity_e8s_equivalent =
       SNSNeuron.staked_maturity_e8s_equivalent[0] || BigInt(0);
@@ -524,7 +496,6 @@ export default class extends Vue {
       .div(10 ** this.currentSNS.decimals)
       .toString(10);
   }
-
   private canVote(SNSNeuron: SNSNeuron, type: number): boolean {
     let flag = false;
     for (let i = 0; i < SNSNeuron.permissions.length; i++) {
@@ -541,7 +512,6 @@ export default class extends Vue {
     }
     return flag;
   }
-
   private filterNeuron(SNSNeurons: Array<SNSNeuron>): Array<SNSNeuron> {
     SNSNeurons = SNSNeurons.filter((SNSNeuron) => {
       const votingPower = this.getVotingPower(SNSNeuron);
@@ -553,7 +523,6 @@ export default class extends Vue {
     });
     return SNSNeurons;
   }
-
   private hasBalance(SNSNeuron: SNSNeuron): boolean {
     // const staked_maturity_e8s_equivalent =
     //   SNSNeuron.staked_maturity_e8s_equivalent[0] || BigInt(0);
@@ -568,7 +537,6 @@ export default class extends Vue {
         )
     );
   }
-
   private setParams(idType: Type): Type {
     if (
       idType instanceof IDL.RecClass ||
@@ -590,9 +558,7 @@ export default class extends Vue {
       if (idType instanceof IDL.RecClass) {
         idlType = new IDL.RecClass();
       } else if (idType instanceof IDL.VecClass) {
-        console.log(idType);
         idlType = new IDL.VecClass(idType['_type']);
-        console.log(idlType);
       } else if (idType instanceof IDL.OptClass) {
         idlType = new IDL.OptClass(idType['_type']);
       }
@@ -641,7 +607,6 @@ export default class extends Vue {
       return idType;
     }
   }
-
   private afterClose(): void {
     this.SNSNeurons = [];
     this.neuronId = '';
@@ -650,40 +615,33 @@ export default class extends Vue {
     this.summary = '';
     (this.$refs.action as HTMLElement).innerHTML = '';
   }
-
   private arrayToString(val: Array<number>): string {
     return toHexString(new Uint8Array(val));
   }
 }
 </script>
-
 <style lang="scss" scoped>
 .maker-proposal-item-neuron {
   width: 100%;
 }
-
 .proposal-model {
   ::v-deep {
     .ant-modal-footer {
       padding: 0 55px;
       border: none;
     }
-
     .ant-modal-body {
       max-height: fit-content;
     }
   }
 }
-
 .maker-proposal-item {
   margin-bottom: 20px;
 }
-
 .maker-proposal-label {
   margin-bottom: 10px;
   font-size: 16px;
 }
-
 .maker-proposal-item-action {
   ::v-deep > span {
     > span {
@@ -691,7 +649,6 @@ export default class extends Vue {
       border-left: 1px solid #666;
     }
   }
-
   ::v-deep .popup-form {
     > span {
       > span {
@@ -702,35 +659,29 @@ export default class extends Vue {
       }
     }
   }
-
   ::v-deep {
     span {
       display: block;
       margin-top: 5px;
-
       &.status {
         line-height: 1.2;
         color: #f5222d;
         font-size: 12px;
       }
-
       label {
         display: block;
         margin-bottom: 5px;
         color: #666;
       }
-
       input {
         width: 100%;
         vertical-align: middle;
         padding-left: 11px;
       }
-
       input[type='checkbox'] {
         height: auto !important;
         width: auto;
       }
-
       /*input[placeholder='nat8'] {
 				width: 20px;
 			}*/
@@ -753,7 +704,6 @@ export default class extends Vue {
   background: #141b23;
   border: 1px solid #464648;
 }
-
 .custom-select {
   position: relative;
   z-index: 9999;
@@ -775,21 +725,17 @@ export default class extends Vue {
   box-shadow: 1px 2px 8px rgba(7, 7, 7, 0.5);
   transition: all 0.3s;
 }
-
 .select-hide {
   display: none;
 }
-
 .select-items {
   div {
     padding: 4px 16px;
     cursor: pointer;
-
     &:hover {
       background: #ffffff14;
       color: #51b7c3;
     }
-
     &.active {
       background: #ffffff14;
       color: #51b7c3;

@@ -171,7 +171,6 @@
     ></switch-plug-account>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator';
 import { decrypt, plugWhitelist } from '@/ic/utils';
@@ -187,10 +186,8 @@ import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { getNFIDIdentity, NFIDLogin } from '@/ic/NFIDAuth';
-
 const commonModule = namespace('common');
 const ethers = require('ethers');
-
 @Component({
   name: 'index',
   components: { SwitchPlugAccount }
@@ -282,7 +279,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       mnemonic = await decrypt(data, this.password, salt);
     } catch (e) {
       this.spinning = false;
-      console.log(e);
       this.$message.config({ top: '40%' });
       this.$message.error("Password doesn't match");
       return;
@@ -334,7 +330,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     this.selectedAccount = selectedAccount;
   }
   private onDeleteAccount(account: string): void {
-    console.log(account);
     this.deleteAccount = account;
     this.visible = true;
   }
@@ -344,7 +339,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   private async authNFIDClient(type: string): Promise<void> {
     this.spinning = true;
     const signerAgent = await NFIDLogin(type === 'SignerNFID');
-    console.log(signerAgent);
     let principal;
     if (type === 'SignerNFID') {
       principal = await signerAgent.getPrincipal();
@@ -430,7 +424,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     this.spinning = false;
   }
@@ -467,7 +460,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     this.spinning = false;
   }
@@ -507,14 +499,12 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       }
     } catch (e) {
       this.spinning = false;
-      console.log(e);
       this.$message.config({ top: '45%' });
       this.$message.error("Password doesn't match");
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .main {
   display: flex;

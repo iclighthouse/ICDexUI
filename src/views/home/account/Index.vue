@@ -771,7 +771,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Mixins, Watch } from 'vue-property-decorator';
 import MetaMaskOnboarding from '@metamask/onboarding';
@@ -858,13 +857,11 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { ckETHMinterDfiService } from '@/ic/ckETHMinter/ckETHMinterDfiService';
 import AccountInfo from '@/views/home/components/AccountInfo.vue';
 // const plugIc = (window as any).ic;
-
 const commonModule = namespace('common');
 let ethereum = (window as any).ethereum;
 if (ethereum && ethereum.providers) {
   ethereum = ethereum.providers.find((provider) => provider.isMetaMask);
 }
-
 @Component({
   name: 'Index',
   components: {
@@ -1008,6 +1005,15 @@ export default class extends Mixins(BalanceMixin) {
     }
     return '';
   }
+  created(): void {
+    if (this.$route.fullPath.toLocaleLowerCase().includes('icrouter')) {
+      this.currentWalletMenu = 'icRouter';
+    } else if (this.$route.fullPath.toLocaleLowerCase().includes('pro')) {
+      this.currentWalletMenu = 'proWallet';
+    } else {
+      this.currentWalletMenu = 'wallet';
+    }
+  }
   async mounted(): Promise<void> {
     this.ICLighthouseService = new ICLighthouseService();
     this.ckETHMinterService = new ckETHMinterService();
@@ -1019,13 +1025,6 @@ export default class extends Mixins(BalanceMixin) {
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const principal = localStorage.getItem('principal');
-    if (this.$route.fullPath.toLocaleLowerCase().includes('icrouter')) {
-      this.currentWalletMenu = 'icRouter';
-    } else if (this.$route.fullPath.toLocaleLowerCase().includes('pro')) {
-      this.currentWalletMenu = 'proWallet';
-    } else {
-      this.currentWalletMenu = 'wallet';
-    }
     if ((window as any).icx) {
       this.isIcx = !!(window as any).icx;
       EventBus.$on('initSuccess', async () => {
@@ -1120,7 +1119,6 @@ export default class extends Mixins(BalanceMixin) {
       symbol: this.tokens[tokenId].symbol,
       standard: standard
     });
-    console.log(this.currentToken);
     (this.$refs as any).transferToken.transferForm.to =
       this.currentPair[0] + '.' + currentAddress;
     if (this.currentWalletMenu === 'proWallet') {
@@ -1225,7 +1223,6 @@ export default class extends Mixins(BalanceMixin) {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     } else if (
@@ -1263,7 +1260,6 @@ export default class extends Mixins(BalanceMixin) {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     } else {
@@ -1290,7 +1286,6 @@ export default class extends Mixins(BalanceMixin) {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     }
@@ -1402,12 +1397,8 @@ export default class extends Mixins(BalanceMixin) {
     } else {
       return 'ErrAddress';
     }
-    console.time('deposit');
-    console.log(token);
-    console.log('amount: ' + amount);
     const dexId = currentPair[0].toString();
     await this.ICDexService.deposit(dexId, token, amount, subAccount);
-    console.timeEnd('deposit');
   }
   private showTraderAccounts(): void {
     this.pairListPage = 1;
@@ -1418,7 +1409,6 @@ export default class extends Mixins(BalanceMixin) {
     this.traderAccountsModal = true;
   }
   private async getPairs(): Promise<void> {
-    console.log('getPairs');
     if (this.pairList.length) {
       return;
     }
@@ -1491,7 +1481,6 @@ export default class extends Mixins(BalanceMixin) {
     } else {
       this.pairList = [];
     }
-    console.log(this.pairList);
   }
   private async getTokenBalance(): Promise<void> {
     this.spinning = true;
@@ -1508,8 +1497,6 @@ export default class extends Mixins(BalanceMixin) {
     });
     await Promise.all(promiseValue);
     this.spinning = false;
-    console.log(this.mainTokensBalance);
-    console.log(this.proTokensBalance);
   }
   private onWithdraw(pair, isToken0 = true): void {
     let subaccountId = 0;
@@ -1637,7 +1624,6 @@ export default class extends Mixins(BalanceMixin) {
     this.nftSpinning = true;
     try {
       const res = await this.NftService.tokens_ext();
-      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
@@ -1645,12 +1631,10 @@ export default class extends Mixins(BalanceMixin) {
       ).ok;
       if (tokensExt && tokensExt.length) {
         this.tokensExt = tokensExt;
-        console.log(tokensExt.length);
       } else {
         this.tokensExt = [];
       }
     } catch (e) {
-      console.log(e);
     }
     this.nftSpinning = false;
   }
@@ -1733,7 +1717,6 @@ export default class extends Mixins(BalanceMixin) {
           this.$notification.close('cw');
         } else {
           const Err = (walletResult as { Err: string }).Err;
-          console.log(Err);
           if (Err.includes('wallet has been created')) {
             this.$message.error(`${Err}, please contact administrator`);
           } else {
@@ -1761,7 +1744,6 @@ export default class extends Mixins(BalanceMixin) {
   }
   public async getNotice(): Promise<void> {
     const res = await this.ICLighthouseService.getNotice();
-    console.log(res);
   }
   public afterNftClose(): void {
     this.$refs.transferNFTForm.resetFields();
@@ -1827,7 +1809,6 @@ export default class extends Mixins(BalanceMixin) {
         onOk() {
           connectPlug.addWhitelist(walletId.toString()).then(() => {
             _that.getBalance();
-            _that.$refs.ledger.getBalance();
           });
         }
       });
@@ -1846,23 +1827,19 @@ export default class extends Mixins(BalanceMixin) {
         onOk() {
           connectInfinity.addWhitelist(walletId.toString()).then(() => {
             _that.getBalance();
-            _that.$refs.ledger.getBalance();
           });
         }
       });
     } else {
       if ((window as any).icx) {
-        console.log('connectIcx');
         await addIcxWhitelist(walletId.toString());
       }
       this.getBalance();
-      this.$refs.ledger.getBalance();
     }
   }
   private showTransferToken(NFTIndex: bigint): void {
     this.NFTIndex = Number(NFTIndex);
     this.visibleTransferNFT = true;
-    console.log(getTokenIdentifier(NFT_CANISTER_ID, this.NFTIndex));
   }
   private async transferNFT(): Promise<void> {
     this.$refs.transferNFTForm.validate(async (valid: any) => {
@@ -1913,7 +1890,6 @@ export default class extends Mixins(BalanceMixin) {
             };
             const plugIc = (window as any).ic.plug;
             const res = await plugIc.batchTransactions([transfer]);
-            console.log(res);
           } else if (isInfinity()) {
             const transfer = {
               idl: NFTIdl,
@@ -1930,7 +1906,6 @@ export default class extends Mixins(BalanceMixin) {
             };
             const Ic = (window as any).ic.infinityWallet;
             const res = await Ic.batchTransactions([transfer]);
-            console.log(res);
           } else {
             const res = await this.NftService.transfer(transferRequest);
             this.transferNFTSuccess(res);
@@ -1938,7 +1913,6 @@ export default class extends Mixins(BalanceMixin) {
           }
         } catch (e) {
           loading.close();
-          console.log(e);
         }
       }
     });
@@ -1970,7 +1944,6 @@ export default class extends Mixins(BalanceMixin) {
   }
   private removeWalletSuccess(index): void {
     // this.wallets.splice(index, 1);
-    console.log(index);
     this.getWallets();
   }
   public onManageWallet(): void {
@@ -2019,7 +1992,6 @@ export default class extends Mixins(BalanceMixin) {
                         Principal.fromText(_that.manageWalletForm.wallet)
                       );
                     } catch (e) {
-                      console.log(e);
                     }
                     loading.close();
                   });
@@ -2054,7 +2026,6 @@ export default class extends Mixins(BalanceMixin) {
                         Principal.fromText(_that.manageWalletForm.wallet)
                       );
                     } catch (e) {
-                      console.log(e);
                     }
                     loading.close();
                   });
@@ -2066,7 +2037,6 @@ export default class extends Mixins(BalanceMixin) {
               background: 'rgba(0, 0, 0, 0.5)'
             });
             if ((window as any).icx) {
-              console.log('connectIcx');
               const isConnect = await addIcxWhitelist(
                 this.manageWalletForm.wallet
               );
@@ -2085,7 +2055,6 @@ export default class extends Mixins(BalanceMixin) {
           }
         } catch (e) {
           loading && loading.close();
-          console.log(e);
           if (toHttpError(e).message.includes('Only a controller')) {
             this.$message.error('You must be the cycles wallet controller');
           } else {
@@ -2150,14 +2119,12 @@ export default class extends Mixins(BalanceMixin) {
         });
       } else {
         if ((window as any).icx) {
-          console.log('connectIcx');
           await addIcxWhitelist(wallet.toString());
         }
         this.visibleManageWallet = false;
       }
       // this.getWallets();
     } catch (e) {
-      console.log(e);
     }
   }
   private createWalletWithAccount(): void {
@@ -2201,7 +2168,6 @@ export default class extends Mixins(BalanceMixin) {
         return cur;
       }, []);
     } catch (e) {
-      console.log(e);
     }
     this.walletSpinning = false;
     this.connectPlug();
@@ -2215,7 +2181,6 @@ export default class extends Mixins(BalanceMixin) {
       ),
       this.ckETHMinterDfiService.get_minter_info(CK_ETH_MINTER_CANISTER_ID)
     ]);
-    console.log(promise);
     const tokens = promise[0];
     const ckETHTokens = promise[1];
     const canisterIdsIdl = [];
@@ -2270,7 +2235,6 @@ export default class extends Mixins(BalanceMixin) {
     canisterIds = [...new Set(canisterIds)];
     await checkAuth();
     const flag = needConnectPlug(canisterIds);
-    console.log(flag, this.$route);
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     const connectInfinity = await needConnectInfinity(canisterIds);
     if (
@@ -2309,7 +2273,6 @@ export default class extends Mixins(BalanceMixin) {
       });
     } else {
       if ((window as any).icx) {
-        console.log('connectIcx');
         const icxCanisterIds: Array<string> =
           JSON.parse(localStorage.getItem('icxCanisterIds')) || [];
         const newIcxCanisterIds: Array<string> = [
@@ -2405,7 +2368,6 @@ export default class extends Mixins(BalanceMixin) {
           );
         }
       } catch (error) {
-        console.log(error);
       }
     }
   }
@@ -2431,7 +2393,6 @@ export default class extends Mixins(BalanceMixin) {
   // }
 }
 </script>
-
 <style scoped lang="scss">
 .wallet-main {
   margin-top: 80px;

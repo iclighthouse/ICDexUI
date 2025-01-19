@@ -52,14 +52,12 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { validateCanister } from '@/utils/validate';
 import { Neuron } from '@/ic/governance/model';
 import { GovernanceService } from '@/ic/governance/governanceService';
 import { GovernanceError } from '@/ic/SNSGovernance/model';
-
 @Component({
   name: 'HotKey',
   components: {}
@@ -87,7 +85,6 @@ export default class extends Vue {
     this.visible = true;
     this.neuron = neuron;
     this.index = index;
-    console.log(this.neuron, this.index);
   }
   private async addHotkey(): Promise<void> {
     (this.$refs.hotkeysForm as Vue & { validate: any }).validate(
@@ -101,7 +98,6 @@ export default class extends Vue {
             this.neuron.id[0].id,
             this.hotkeysForm.principal
           );
-          console.log(res);
           if (res && res.command) {
             const type = Object.keys(res.command[0])[0];
             if (type === 'Error') {
@@ -129,7 +125,6 @@ export default class extends Vue {
       this.neuron.id[0].id,
       principal
     );
-    console.log(res);
     if (res && res.command) {
       const type = Object.keys(res.command[0])[0];
       if (type === 'Error') {
@@ -149,7 +144,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .hotkey-main {
   p {

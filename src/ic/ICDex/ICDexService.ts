@@ -63,9 +63,7 @@ import { validatePrincipal } from '@/ic/utils';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
 import { createService } from '@/ic/createService';
-
 const ProSubaccountId = 1;
-
 export class ICDexService {
   private check = async (
     canisterId: string,
@@ -199,7 +197,6 @@ export class ICDexService {
     // if (this.isPlug() && nonce && Number(nonce[0]) === 0) {
     //   nonce = [];
     // }
-    console.log(nonce);
     const res = await service.cancel(nonce, subAccount);
     return SerializableIC(res);
   };
@@ -301,7 +298,6 @@ export class ICDexService {
     canisterId: string
   ): Promise<{ pairId: string; dexInfo: DexInfo }> => {
     const service = await this.check(canisterId, false, false);
-    console.log(service);
     try {
       const res = await service.drc205_dexInfo();
       return {
@@ -309,7 +305,6 @@ export class ICDexService {
         dexInfo: SerializableIC(res)
       };
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -522,7 +517,6 @@ export class ICDexService {
   ): Promise<boolean> => {
     const service = await this.check(canisterId);
     const subAccount = [[]];
-    console.log(address, entity);
     return await service.ta_setReferrer(address, entity, subAccount);
   };
   public ta_ambassador = async (
@@ -548,7 +542,6 @@ export class ICDexService {
     try {
       return await service.comp_fallback(subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -564,7 +557,6 @@ export class ICDexService {
     try {
       return await service.comp_withdraw(subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -580,7 +572,6 @@ export class ICDexService {
         openingTime: res.openingTime
       };
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -606,7 +597,6 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -622,7 +612,6 @@ export class ICDexService {
         accountSetting: SerializableIC(res)
       };
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -640,7 +629,6 @@ export class ICDexService {
       }
       return await service.accountConfig(mode, keeping, subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -669,7 +657,6 @@ export class ICDexService {
       }
       return await service.depositFallback(subAccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -684,7 +671,6 @@ export class ICDexService {
     if (subAccountId) {
       subAccount = [fromSubAccountId(subAccountId)];
     }
-    console.log(service);
     return await service.withdraw(token0Amount, token1Amount, subAccount);
   };
   public getRole = async (
@@ -699,7 +685,6 @@ export class ICDexService {
         dexRole: SerializableIC(res)
       };
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -749,7 +734,6 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -764,7 +748,6 @@ export class ICDexService {
         stoSetting: SerializableIC(res)
       };
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -781,7 +764,6 @@ export class ICDexService {
         makerList: SerializableIC(res)
       };
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -805,7 +787,6 @@ export class ICDexService {
         };
       }
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -862,7 +843,6 @@ export class ICDexService {
         return null;
       }
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -875,7 +855,6 @@ export class ICDexService {
       const res = await service.sto_getStratOrder(soid);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -885,7 +864,6 @@ export class ICDexService {
       const res = await service.IDO_getConfig();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -897,7 +875,6 @@ export class ICDexService {
     try {
       return await service.IDO_qualification(address);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -909,7 +886,6 @@ export class ICDexService {
     try {
       return await service.IDO_updateQualification(subaccount);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -920,7 +896,6 @@ export class ICDexService {
     try {
       return await service.ictc_getAdmins();
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -932,7 +907,6 @@ export class ICDexService {
       const res = await service.getAuctionMode();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -946,7 +920,6 @@ export class ICDexService {
       const res = await service.brokerList(page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -956,7 +929,6 @@ export class ICDexService {
       const res = await service.ictc_getTOCount();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -970,7 +942,6 @@ export class ICDexService {
       const res = await service.ictc_getTTs(page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -984,7 +955,6 @@ export class ICDexService {
       const res = await service.ictc_getTTErrors(page, size);
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -996,7 +966,6 @@ export class ICDexService {
       const res = await service.ictc_getTOPool();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

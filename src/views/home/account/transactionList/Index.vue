@@ -68,7 +68,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { principalToAccountIdentifier } from '@/ic/converter';
@@ -77,7 +76,6 @@ import RosettaApi, { Transaction } from '@/ic/RosettaApi';
 import BigNumber from 'bignumber.js';
 import { formatDateFromNanosecondUTC } from '@/filters';
 const rosettaApi = new RosettaApi();
-
 @Component({
   name: 'Index',
   components: {}
@@ -184,7 +182,6 @@ export default class extends Vue {
         this.getTransactionList();
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getTransactionList(): Promise<void> {
@@ -216,17 +213,13 @@ export default class extends Vue {
               transactions: Array<Transaction>;
             }
           ).transactions;
-          console.log(this.transactionList);
         }
-        console.log(res);
       } catch (e) {
-        console.log(e);
       }
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .transaction-main {
   margin-top: 20px;

@@ -1,6 +1,5 @@
 import { Principal } from '@dfinity/principal';
 import { Icrc1Account, Time } from '@/ic/common/icType';
-
 export interface ClaimLog {
   status:
     | {
@@ -25,7 +24,6 @@ export interface AirDrop {
   credit: bigint;
   message: string;
 }
-
 export default interface Service {
   checkAirDrop(
     owner: Principal,

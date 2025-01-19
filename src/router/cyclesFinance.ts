@@ -12,5 +12,4 @@ const cyclesFinanceRouter: RouteConfig[] = [
     }
   }
 ];
-
 export default cyclesFinanceRouter;

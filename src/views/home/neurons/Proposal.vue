@@ -447,7 +447,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import EventBus from '@/utils/Event';
@@ -466,7 +465,6 @@ import {
 import { GovernanceService } from '@/ic/governance/governanceService';
 import { NeuronBallot } from '@/views/home/neurons/model';
 import { nnsDappService } from '@/ic/governance/nnsDappService';
-
 const commonModule = namespace('common');
 // 4 days
 const initialVotingPeriod = 86400 * 4;
@@ -478,7 +476,6 @@ const proposalStatusInfo = {
   4: 'Executed',
   5: 'Failed'
 };
-
 @Component({
   name: 'Proposal',
   components: {},
@@ -560,7 +557,6 @@ export default class extends Vue {
   }
   private handleInfiniteOnLoad(): void {
     if (!this.busy) {
-      console.log('handleInfiniteOnLoad');
       this.busy = true;
     }
   }
@@ -584,12 +580,10 @@ export default class extends Vue {
         this.vote,
         this.proposal.id
       );
-      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
           const err = Object.values(res.command[0])[0] as GovernanceError;
-          console.log(err.error_message);
         } else {
           //
         }
@@ -597,7 +591,6 @@ export default class extends Vue {
         // this.$message.error('Vote Error');
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async onVote(): Promise<void> {
@@ -612,22 +605,18 @@ export default class extends Vue {
       for (let i = 0; i < this.checked.length; i++) {
         promiseValue.push(this.registerVote(this.checked[i]));
         if (promiseValue.length === MAX_COCURRENCY) {
-          console.log(i);
           await Promise.all(promiseValue);
           promiseValue = [];
         }
         if (i === this.checked.length - 1 && promiseValue.length) {
-          console.log(i);
           await Promise.all(promiseValue);
         }
       }
-      console.log(this.checked);
       this.voteVisible = false;
       await this.getProposal();
       this.neurons = this.filterNeuron(this.allNeurons);
       this.$message.success('Vote Success');
     } catch (e) {
-      console.log(e);
       this.$message.error('Vote Error');
     }
     loading.close();
@@ -712,7 +701,6 @@ export default class extends Vue {
       neuron_ids: neuronIdList,
       include_neurons_readable_by_caller: false
     });
-    console.log(res);
     const proposalId = this.$route.params.proposalId.trim();
     res.neuron_infos.forEach((item: [bigint, NeuronInfo]) => {
       item[1].recent_ballots.some((val: BallotInfo) => {
@@ -722,15 +710,12 @@ export default class extends Vue {
         return val.proposal_id[0].id.toString() === proposalId;
       });
     });
-    console.log(this.listKnownNeuronsBallots);
   }
   private async getProposalPayload(): Promise<void> {
     const proposalId = this.$route.params.proposalId.trim();
     const res = await this.nnsDappService.getProposalPayload(
       BigInt(proposalId)
     );
-    console.log(BigInt(proposalId));
-    console.log(res);
     if (res) {
       const type = Object.keys(res)[0];
       if (type === 'Ok') {
@@ -750,9 +735,7 @@ export default class extends Vue {
         this.proposal = res[0];
       }
     } catch (e) {
-      console.log(e);
     }
-    console.log(this.proposal);
     if (this.proposal) {
       if (Number(this.proposal.reward_status) === 1) {
         this.deadline = Number(
@@ -813,13 +796,11 @@ export default class extends Vue {
         });
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getNeurons(): Promise<Array<bigint>> {
     if (this.getPrincipalId) {
       const neuronIds = await this.governanceService.getNeuronIds();
-      console.log(neuronIds);
       return neuronIds;
     } else {
       return [];
@@ -864,13 +845,10 @@ export default class extends Vue {
     if (this.hasBallots.length) {
       this.showNeurons = true;
     }
-    console.log(this.hasBallots);
-    console.log(this.checked);
     return newNeurons;
   }
 }
 </script>
-
 <style scoped lang="scss">
 .proposal-main {
   margin-top: 30px;

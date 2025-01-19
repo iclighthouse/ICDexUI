@@ -6,7 +6,6 @@ import Service, {
   ListSnsCanistersResponse
 } from '@/ic/SNSRoot/model';
 import { SerializableIC } from '@/ic/converter';
-
 export class SNSRootService {
   private check = async (
     canisterId: string,

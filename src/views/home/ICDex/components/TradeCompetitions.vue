@@ -1291,7 +1291,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -1319,9 +1318,7 @@ import { getCompetitionsBalance } from '@/ic/getTokenBalance';
 import { validateCanisterOrAccount } from '@/utils/validate';
 import { namespace } from 'vuex-class';
 import { readState } from '@/ic/readState';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'TradeCompetitions',
   components: {},
@@ -1523,7 +1520,7 @@ export default class extends Vue {
     return flag;
   }
   created(): void {
-    // console.log(this.tokens);
+    // 
     // const principal = localStorage.getItem('principal');
     // if (principal) {
     //   this.accountId = principalToAccountIdentifier(
@@ -1543,7 +1540,6 @@ export default class extends Vue {
         );
       }
       this.locationHost = window.location.origin;
-      console.log(menu);
       if (menu === TradeCompetitionsEnum.Info) {
         const promiseValue = [
           this.getInfo(this.currentPair[0].toString()),
@@ -1615,7 +1611,6 @@ export default class extends Vue {
         this.referrerForm.referrerValue = '';
       }
     } catch (e) {
-      console.log(e);
     }
     loading && loading.close();
   }
@@ -1702,7 +1697,6 @@ export default class extends Vue {
             this.referrerForm.referrerValue.trim(),
             entity
           );
-          console.log(res);
           if (res) {
             this.$message.success('Success');
             this.visible = false;
@@ -1710,7 +1704,6 @@ export default class extends Vue {
             this.$message.error('Error');
           }
         } catch (e) {
-          console.log(e);
           this.$message.error('Error');
         }
         this.ta_getReferrer();
@@ -1749,10 +1742,8 @@ export default class extends Vue {
         );
         this.getTextHeight();
         this.getDepositAccount([res.compRoundResponse[0]]);
-        console.log(this.compRoundInfo);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getDepositAccount(round: Array<bigint>): Promise<void> {
@@ -1769,7 +1760,6 @@ export default class extends Vue {
         dexId,
         principal
       );
-      console.log(account);
       this.getEquity(account, round);
     }
   }
@@ -1791,7 +1781,6 @@ export default class extends Vue {
       token1Id,
       account.balance
     );
-    console.log(this.currentPair);
     const total = new BigNumber(token0Balance)
       .times(this.currentPair[2].price)
       .plus(token1Balance)
@@ -1801,8 +1790,6 @@ export default class extends Vue {
       value0: BigInt(token0Balance),
       value1: BigInt(token1Balance)
     };
-    console.log(token0Balance, token1Balance);
-    console.log(total);
     this.getCompResult(round);
   }
   private async ta_ambassador(): Promise<void> {
@@ -1813,15 +1800,12 @@ export default class extends Vue {
       const res = await currentICDexService.ta_ambassador(dexId, principal);
       if (res && res.pairId === dexId) {
         this.ambassador = res.ambassador;
-        console.log(this.ambassador);
         this.entity = this.ambassador[1];
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getCompResult(round: Array<bigint> = []): Promise<void> {
-    console.log(round);
     if (
       round.length &&
       this.compRoundResult &&
@@ -1849,7 +1833,6 @@ export default class extends Vue {
       ) {
         const assetValue =
           this.compRoundResult[round[0].toString(10)].assetValue;
-        console.log(assetValue);
         this.equity = {
           total: new BigNumber(this.currentEquity.total)
             .plus(assetValue[0].total)
@@ -1867,7 +1850,6 @@ export default class extends Vue {
         };
       }
     }
-    console.log(this.compRoundResult);
     this.loading && this.loading.close();
   }
   private async getLiquidity(): Promise<void> {
@@ -1878,7 +1860,6 @@ export default class extends Vue {
     if (res && res.pairId === this.currentPair[0].toString()) {
       this.liquidity = res.tokenLiquidity;
     }
-    console.log(this.liquidity);
   }
   private async comp_register(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1923,7 +1904,6 @@ export default class extends Vue {
     const dexId = this.currentPair[0].toString();
     const principal = localStorage.getItem('principal');
     const res = await currentICDexService.ta_getReferrer(dexId, principal);
-    console.log(res);
     if (res && res.pairId === dexId && res.referrer[0] && res.referrer[0][0]) {
       this.referrer = res.referrer[0][0];
     }
@@ -1935,7 +1915,6 @@ export default class extends Vue {
     if (res && res.pairId === dexId) {
       this.description = res.ta_description;
     }
-    console.log(this.description);
   }
   private async getTotalSupply(): Promise<void> {
     const DRC20Token = new DRC20TokenService();
@@ -1967,8 +1946,6 @@ export default class extends Vue {
   private async getTotalSupplyToken1(): Promise<void> {
     const DRC20Token = new DRC20TokenService();
     const tokenId = this.currentPair[1][0].token1[0].toString();
-    console.log(tokenId);
-    console.log(this.currentPair[1][0].token1);
     const std = Object.keys(this.currentPair[1][0].token1[2])[0];
     if (std.toLocaleLowerCase() === 'drc20') {
       this.totalSupplyToken1 = await DRC20Token.totalSupply(tokenId);
@@ -2003,7 +1980,6 @@ export default class extends Vue {
     } else {
       this.dexInfo = null;
     }
-    console.log(this.dexInfo);
   }
   private async getTokenState(tokenId: string): Promise<void> {
     try {
@@ -2019,7 +1995,6 @@ export default class extends Vue {
         }
       });
     } catch (e) {
-      console.log(e);
     }
   }
   private async auctionMode(pairId: string): Promise<void> {
@@ -2053,7 +2028,6 @@ export default class extends Vue {
         this.$set(this.dexInfo, 'moduleHash', state.moduleHash);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private arrayToString(val: Array<number>): string {
@@ -2066,11 +2040,9 @@ export default class extends Vue {
     this.$emit('infoBack');
   }
   private onError(): void {
-    console.log('err');
   }
 }
 </script>
-
 <style scoped lang="scss">
 .set-referrer-button {
   height: 36px;

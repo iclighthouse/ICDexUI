@@ -3,7 +3,6 @@ import { Principal } from '@dfinity/principal';
 import questsIDL from '@/ic/quests/quests.did';
 import { QUESTS_CANISTER_ID } from '@/ic/utils';
 import { createService } from '@/ic/createService';
-
 export class questsService {
   private service: Service;
   private check = async (renew = true, isUpdate = true): Promise<void> => {

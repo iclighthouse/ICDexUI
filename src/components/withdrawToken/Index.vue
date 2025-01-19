@@ -67,7 +67,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import {
@@ -87,7 +86,6 @@ import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { TokenInfo } from '@/ic/common/icType';
 import { getFee } from '@/ic/getTokenFee';
 import { toHttpError } from '@/ic/httpError';
-
 @Component({
   name: 'Index',
   components: {}
@@ -97,7 +95,6 @@ export default class extends Vue {
   public currentPair!: DePairs;
   @Prop({ type: Boolean, default: false })
   public isWallets!: boolean;
-
   private DRC20TokenService: DRC20TokenService;
   private currentICDexService: ICDexService;
   private visibleTransfer = false;
@@ -142,7 +139,6 @@ export default class extends Vue {
             .plus(this.fee)
             .times(10 ** Number(this.currentToken.decimals))
             .toString(10);
-          console.log(amount);
           try {
             const res = await this.currentICDexService.withdraw(
               this.currentPair[0].toString(),
@@ -150,7 +146,6 @@ export default class extends Vue {
               this.isToken0 ? [BigInt(0)] : [BigInt(amount)],
               this.subaccountId
             );
-            console.log(res);
             if (
               res &&
               res.length &&
@@ -163,7 +158,6 @@ export default class extends Vue {
             this.visibleTransfer = false;
             this.$emit('withdrawSuccess', this.isToken0, this.subaccountId);
           } catch (e) {
-            console.log(e);
             this.$message.error(toHttpError(e).message);
           }
           loading.close();
@@ -254,7 +248,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .withdraw-token-list {
   display: flex;

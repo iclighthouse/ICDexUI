@@ -369,7 +369,6 @@
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Launch from '@/views/home/ICDex/components/Launch.vue';
@@ -407,9 +406,7 @@ import { NFT, NFTType } from '@/ic/ICDexRouter/model';
 import { ICSwapRouterFiduciaryService } from '@/ic/ICSwapRouter/ICSwapRouterFiduciaryService';
 import BigNumber from 'bignumber.js';
 import { StakedNFT } from '@/ic/ICSwapRouter/model';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'NFT',
   components: { Launch, AccountInfo }
@@ -467,7 +464,6 @@ export default class extends Vue {
       const res = await this.ICSwapRouterFiduciaryService.NFTStaked(
         this.getPrincipalId
       );
-      console.log(res);
       if (res && res.length) {
         this.NFTStaked = res;
         const now = new Date().getTime();
@@ -495,14 +491,12 @@ export default class extends Vue {
   }
   private async getTokensExtICDedRouter(): Promise<void> {
     const res = await this.ICDexRouterService.NFTBalance(this.getPrincipalId);
-    console.log(res);
     this.nftICDexRouter = res;
   }
   private async getTokensExt(): Promise<void> {
     this.nftSpinning = true;
     try {
       const res = await this.NftService.tokens_ext();
-      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
@@ -510,12 +504,10 @@ export default class extends Vue {
       ).ok;
       if (tokensExt && tokensExt.length) {
         this.tokensExt = tokensExt;
-        console.log(tokensExt.length);
       } else {
         this.tokensExt = [];
       }
     } catch (e) {
-      console.log(e);
     }
     this.nftSpinning = false;
   }
@@ -529,7 +521,6 @@ export default class extends Vue {
     this.extPage = page - 1;
   }
   private onWithdrawDexAggregator(nft: NFT): void {
-    console.log(nft[1]);
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
@@ -614,7 +605,6 @@ export default class extends Vue {
         okText: 'Confirm',
         cancelText: 'Cancel',
         onOk() {
-          console.log(nft[1]);
           const loading = that.$loading({
             lock: true,
             background: 'rgba(0, 0, 0, 0.5)'
@@ -651,13 +641,11 @@ export default class extends Vue {
       if (res) {
         this.depositDexAggregator(loading, NFTIndex);
       } else {
-        console.log(res);
         this.$message.error('Approve error');
         loading.close();
       }
     } catch (e) {
       this.$message.error('Approve error');
-      console.log(e);
       loading.close();
     }
   }
@@ -690,17 +678,14 @@ export default class extends Vue {
     });
     try {
       const res = await this.NftService.approve(approveRequest);
-      console.log(res);
       if (res) {
         this.deposit(loading, NFTIndex);
       } else {
-        console.log(res);
         this.$message.error('Approve error');
         loading.close();
       }
     } catch (e) {
       this.$message.error('Approve error');
-      console.log(e);
       loading.close();
     }
   }
@@ -722,7 +707,6 @@ export default class extends Vue {
   private showTransferToken(NFTIndex: bigint): void {
     this.NFTIndex = Number(NFTIndex);
     this.visibleTransferNFT = true;
-    console.log(getTokenIdentifier(NFT_CANISTER_ID, this.NFTIndex));
   }
   private getExtInfo(val: Array<Array<number>>): any {
     if (val && val.length) {
@@ -785,7 +769,6 @@ export default class extends Vue {
             };
             const plugIc = (window as any).ic.plug;
             const res = await plugIc.batchTransactions([transfer]);
-            console.log(res);
           } else if (isInfinity()) {
             const transfer = {
               idl: NFTIdl,
@@ -802,7 +785,6 @@ export default class extends Vue {
             };
             const Ic = (window as any).ic.infinityWallet;
             const res = await Ic.batchTransactions([transfer]);
-            console.log(res);
           } else {
             const res = await this.NftService.transfer(transferRequest);
             this.transferNFTSuccess(res);
@@ -810,7 +792,6 @@ export default class extends Vue {
           }
         } catch (e) {
           loading.close();
-          console.log(e);
         }
       }
     });
@@ -869,7 +850,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .home-header {
   top: 14px;
@@ -957,7 +937,6 @@ table {
   border-radius: 3px;
   background: #adb3c4;
 }
-
 @media screen and (max-width: 768px) {
   .home-header {
     ul {

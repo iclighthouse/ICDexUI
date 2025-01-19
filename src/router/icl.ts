@@ -58,5 +58,4 @@ const iclRouter: RouteConfig[] = [
     ]
   }
 ];
-
 export default iclRouter;

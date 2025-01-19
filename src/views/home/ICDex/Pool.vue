@@ -1198,7 +1198,6 @@
     ></nft-balance>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { Menu } from '@/components/menu/model';
@@ -1260,9 +1259,7 @@ import { checkAuth } from '@/ic/CheckAuth';
 import { isPlug } from '@/ic/isPlug';
 import drc20TokenIDL from '@/ic/DRC20Token/DRC20Token.did';
 import { isSigner } from '@/ic/isSigner';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Pool',
   components: { AccountInfo, TransferToken, NftBalance, Launch },
@@ -1392,7 +1389,6 @@ export default class extends Vue {
   private currentEventPage = 1;
   private events: Array<[PoolEvent, Time]> = [];
   private plugBatch = true;
-
   get buttonDisabledRemove(): boolean {
     let flag = false;
     if (this.pool[1] && this.pool[1].sysTransactionLock) {
@@ -1602,12 +1598,10 @@ export default class extends Vue {
   deactivated(): void {
     window.clearInterval(this.timer);
     this.timer = null;
-    console.log(this.timer);
   }
   beforeDestroy(): void {
     window.clearInterval(this.timer);
     this.timer = null;
-    console.log(this.timer);
   }
   private async created(): Promise<void> {
     this.makerPoolService = new makerPoolService();
@@ -1618,7 +1612,6 @@ export default class extends Vue {
     this.ICSwapRouterFiduciaryService = new ICSwapRouterFiduciaryService();
     this.SNSWasmService = new SNSWasmService();
     this.tokens = JSON.parse(localStorage.getItem('tokens')) || {};
-    console.log(this.$route.query);
     if (this.$route.params.type) {
       this.type = this.$route.params.type as 'Add' | 'Remove';
     } else {
@@ -1663,7 +1656,6 @@ export default class extends Vue {
   }
   private async getPairs(): Promise<void> {
     const res = await this.ICSwapRouterFiduciaryService.getPairs2(['icdex']);
-    console.log(res);
     if (res && res.data && res.data.length) {
       this.pairsMaker = res.data.sort((a, b) => {
         return a[1].pair.token0[1].localeCompare(b[1].pair.token0[1]);
@@ -1682,7 +1674,6 @@ export default class extends Vue {
       ids.push(pair[1].pair.token1[0].toString());
     });
     ids = [...new Set(ids)];
-    console.log(ids);
     await checkAuth();
     const flag = needConnectPlug(ids);
     const connectInfinity = await needConnectInfinity(ids);
@@ -1737,7 +1728,6 @@ export default class extends Vue {
     // this.getEvents(this.$route.params.poolId);
   }
   private async getEvents(pool: string): Promise<void> {
-    console.log(pool);
     const accountId = hexToBytes(
       principalToAccountIdentifier(Principal.fromText(this.getPrincipalId))
     );
@@ -1761,20 +1751,17 @@ export default class extends Vue {
   private async getTokensExt(): Promise<void> {
     try {
       const res = await this.NftService.tokens_ext();
-      console.log(res);
       const tokensExt = (
         res as {
           ok: TokensExt;
         }
       ).ok;
-      console.log(tokensExt);
       if (tokensExt && tokensExt.length) {
         this.nfts = tokensExt;
       } else {
         this.nfts = [];
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getRole(pair: string, pool: string): Promise<void> {
@@ -1846,7 +1833,6 @@ export default class extends Vue {
   private async getUnitNetValues(): Promise<void> {
     const poolId = this.$route.params.poolId;
     const res = await this.makerPoolService.getUnitNetValues(poolId);
-    console.log(res);
   }
   private async onRemove(): Promise<void> {
     const loading = this.$loading({
@@ -1870,7 +1856,6 @@ export default class extends Vue {
         this.getPoolInfo(poolId);
       }
     } catch (e) {
-      console.log(e);
       if (toHttpRejectError(e).includes('401')) {
         this.$message.error(
           'The system is processing, please try again later.'
@@ -1952,7 +1937,6 @@ export default class extends Vue {
         .times(10 ** this.tokens[token1Id].decimals)
         .toString(10);
     }
-    console.time();
     let promiseValue = [];
     let batchTransactions = [];
     if (
@@ -1968,11 +1952,9 @@ export default class extends Vue {
             methodName: 'drc20_approve',
             args: [poolId, BigInt(needTransferToken0), [], [], []],
             onSuccess: async () => {
-              console.log('successfully');
             },
             onFail: (res) => {
               this.plugBatch = false;
-              console.log('error', res);
             }
           };
           batchTransactions.push(approve);
@@ -1997,11 +1979,9 @@ export default class extends Vue {
             methodName: 'icrc2_approve',
             args: [approveArgs],
             onSuccess: async () => {
-              console.log('successfully');
             },
             onFail: (res) => {
               this.plugBatch = false;
-              console.log('error', res);
             }
           };
           batchTransactions.push(approve);
@@ -2040,11 +2020,9 @@ export default class extends Vue {
           methodName: 'icrc1_transfer',
           args: [transferArgs],
           onSuccess: async () => {
-            console.log('successfully');
           },
           onFail: (res) => {
             this.plugBatch = false;
-            console.log('error', res);
           }
         };
         batchTransactions.push(transfer);
@@ -2086,11 +2064,9 @@ export default class extends Vue {
           methodName: 'icrc1_transfer',
           args: [transferArgs],
           onSuccess: async () => {
-            console.log('successfully');
           },
           onFail: (res) => {
             this.plugBatch = false;
-            console.log('error', res);
           }
         };
         batchTransactions.push(transfer);
@@ -2119,7 +2095,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(batchTransactions);
     if (
       token1StdString.toLocaleLowerCase() === 'drc20' ||
       token1StdString.toLocaleLowerCase() === 'icrc2'
@@ -2132,11 +2107,9 @@ export default class extends Vue {
             methodName: 'drc20_approve',
             args: [poolId, BigInt(needTransferToken1), [], [], []],
             onSuccess: async () => {
-              console.log('successfully');
             },
             onFail: (res) => {
               this.plugBatch = false;
-              console.log('error', res);
             }
           };
           batchTransactions.push(approve);
@@ -2161,11 +2134,9 @@ export default class extends Vue {
             methodName: 'icrc2_approve',
             args: [approveArgs],
             onSuccess: async () => {
-              console.log('successfully');
             },
             onFail: (res) => {
               this.plugBatch = false;
-              console.log('error', res);
             }
           };
           batchTransactions.push(approve);
@@ -2204,11 +2175,9 @@ export default class extends Vue {
           methodName: 'icrc1_transfer',
           args: [transferArgs],
           onSuccess: async () => {
-            console.log('successfully');
           },
           onFail: (res) => {
             this.plugBatch = false;
-            console.log('error', res);
           }
         };
         batchTransactions.push(transfer);
@@ -2250,11 +2219,9 @@ export default class extends Vue {
           methodName: 'icrc1_transfer',
           args: [transferArgs],
           onSuccess: async () => {
-            console.log('successfully');
           },
           onFail: (res) => {
             this.plugBatch = false;
-            console.log('error', res);
           }
         };
         batchTransactions.push(transfer);
@@ -2283,27 +2250,22 @@ export default class extends Vue {
         }
       }
     }
-    console.log(promiseValue);
-    console.log(batchTransactions);
     if (isPlug()) {
       try {
         const plugIc = (window as any).ic.plug;
         await plugIc.batchTransactions(batchTransactions);
-        console.log(this.plugBatch);
         if (!this.plugBatch) {
           loading.close();
           this.$message.error('Approve error');
           return;
         }
       } catch (e) {
-        console.log(e);
         loading.close();
         this.$message.error('Approve error');
         return;
       }
     } else if (!isSigner()) {
       const res = await Promise.all(promiseValue);
-      console.log(res);
       if (res && (!res[0] || !res[1])) {
         this.$message.error('Error');
         loading.close();
@@ -2313,13 +2275,10 @@ export default class extends Vue {
     loading.setText(
       'step2: Adding liquidity.\n(It could take a minute. You can leave this page and the result will be updated soon.)'
     );
-    console.timeEnd();
-    console.time();
     let flag = false;
     this.makerPoolService
       .add(poolId, BigInt(token0Amount), BigInt(token1Amount))
       .then((res) => {
-        console.timeEnd();
         if (res) {
           this.$message.success('Success');
           this.initAdd();
@@ -2332,7 +2291,6 @@ export default class extends Vue {
         }
       })
       .catch((e) => {
-        console.log(e);
         this.getTokenBalance(token0Id, this.tokens[token0Id].tokenStd);
         this.getTokenBalance(token1Id, this.tokens[token1Id].tokenStd);
         if (toHttpRejectError(e).includes('401')) {
@@ -2399,7 +2357,6 @@ export default class extends Vue {
   ): Promise<boolean> {
     const currentDrc20Token = new DRC20TokenService();
     const res = await currentDrc20Token.icrc1Transfer(tokenId, amount, to);
-    console.log(res);
     if (res) {
       return Object.keys(res)[0] !== 'Err';
     }
@@ -2434,7 +2391,6 @@ export default class extends Vue {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     } else if (tokenStd.toLocaleLowerCase() === 'icrc2') {
@@ -2468,7 +2424,6 @@ export default class extends Vue {
           return false;
         }
       } catch (e) {
-        console.log(e);
         return false;
       }
     }
@@ -2481,7 +2436,6 @@ export default class extends Vue {
     this.poolStats(poolId);
     this.getAccountShares(poolId);
     this.getMakerConfig(poolId);
-    console.log(this.pool);
     window.clearInterval(this.timer);
     this.timer = null;
     this.timer = window.setInterval(() => {
@@ -2511,7 +2465,6 @@ export default class extends Vue {
         this.$set(this.makerConfigure, 'moduleHash', state.moduleHash);
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getPairPrice(pair: string): Promise<void> {
@@ -2521,7 +2474,6 @@ export default class extends Vue {
         this.pairPrice = res.stats.price;
       }
     }
-    console.log(this.pairPrice);
   }
   private async getPairInfo(pair: string): Promise<void> {
     if (this.getPrincipalId) {
@@ -2559,7 +2511,6 @@ export default class extends Vue {
       poolId,
       this.getPrincipalId
     );
-    console.log(this.depositAccount);
   }
   private async getDepositAccountBalance(): Promise<void> {
     if (this.getPrincipalId) {
@@ -2579,7 +2530,6 @@ export default class extends Vue {
         this.depositAccountBalance[this.pool[1].pairInfo.token1[0].toString()] =
           res;
       });
-      console.log(this.depositAccountBalance);
     }
   }
   private async getPoolInfo(poolId: string): Promise<void> {
@@ -2670,7 +2620,6 @@ export default class extends Vue {
       if (SNSGovernance) {
         const snsGovernanceService = new SNSGovernanceService();
         const metadata = await snsGovernanceService.getMetadata(SNSGovernance);
-        console.log(metadata);
         if (metadata && metadata.logo && metadata.logo.length) {
           logo = metadata.logo[0];
           this.$set(this.tokens[token.toString()], 'logo', logo);
@@ -3013,7 +2962,6 @@ export default class extends Vue {
     try {
       const poolId = this.$route.params.poolId;
       const res = await this.makerPoolService.fallback(poolId);
-      console.log(res);
       if (res) {
         this.$message.success('Success');
       } else {
@@ -3021,7 +2969,6 @@ export default class extends Vue {
       }
       this.getDepositAccountBalance();
     } catch (e) {
-      console.log(e);
       this.$message.error(e);
     }
     loading.close();
@@ -3031,7 +2978,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .pool-item-l {
   display: flex;

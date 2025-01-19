@@ -199,7 +199,6 @@
     ></make-proposal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import {
@@ -214,7 +213,6 @@ import { GovernanceService } from '@/ic/governance/governanceService';
 import EventBus from '@/utils/Event';
 import { initIcx } from '@/ic/connectIcx';
 import MakeProposal from '@/views/home/neurons/components/MakeProposal.vue';
-
 const commonModule = namespace('common');
 const allTopicsIdExcludeRate = AllTopicsIdExcludeRate;
 const proposalStatusInfo = {
@@ -224,7 +222,6 @@ const proposalStatusInfo = {
   4: 'Executed',
   5: 'Failed'
 };
-
 @Component({
   name: 'Proposals',
   components: {
@@ -299,7 +296,6 @@ export default class extends Vue {
     }
   }
   mounted(): void {
-    console.log('mounted');
     // this.governanceService = new GovernanceService();
   }
   private makeProposalSuccess(): void {
@@ -338,7 +334,6 @@ export default class extends Vue {
   }
   private handleInfiniteOnLoad(): void {
     if (!this.busy) {
-      console.log('handleInfiniteOnLoad');
       this.busy = true;
       this.loading = true;
       this.getListProposals();
@@ -370,13 +365,11 @@ export default class extends Vue {
   private holdFilter(): void {
     this.topics = this.checkTopics;
     this.topicsVisible = false;
-    console.log(this.topics);
     this.initProposals();
   }
   private holdFilterStatus(): void {
     this.proposalStatusFilter = this.checkStatus;
     this.statusVisible = false;
-    console.log(this.proposalStatusFilter);
     this.initProposals();
   }
   private initProposals(): void {
@@ -421,19 +414,14 @@ export default class extends Vue {
         include_reward_status: include_reward_status,
         include_all_manage_neuron_proposals: [true]
       };
-      console.log(request);
       const res = await this.governanceService.listProposals(request);
-      console.log(res);
       if (res && res.proposal_info && res.proposal_info.length < 100) {
         this.loadMore = false;
       }
       this.proposals = this.proposals.concat(res.proposal_info);
-      console.log(this.proposals);
       this.filterStill();
     } catch (e) {
-      console.log(e);
     }
-    console.log('end');
     this.busy = false;
     this.loading = false;
     this.proposalLoading = false;
@@ -475,7 +463,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .proposals-main {
   position: relative;

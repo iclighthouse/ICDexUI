@@ -40,7 +40,6 @@ export interface Allowance {
   allowance: bigint;
   expires_at: Array<bigint>;
 }
-
 export default interface Service {
   account_balance_dfx(
     request: GetBalancesRequest

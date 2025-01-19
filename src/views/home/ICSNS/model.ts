@@ -13,7 +13,6 @@ import {
   Participant,
   SnsNeuronRecipe
 } from '@/ic/SNSSwap/model';
-
 export interface SNSToken {
   fee?: bigint;
   totalSupply?: bigint;
@@ -45,7 +44,6 @@ export interface SNSToken {
   init?: Init;
   direct_participation_icp_e8s?: bigint;
 }
-
 export interface SNSNeuronsInfo {
   SNSNeuronOfSNSTokenInfo: TokenInfo;
   SNSNeuronOfId: string;
@@ -57,14 +55,12 @@ export interface SNSNeuronsInfo {
   listNervousSystemFunctions: ListNervousSystemFunctionsResponse;
   lifecycle?: Array<bigint>;
 }
-
 export enum SNSNeuronStatus {
   Unspecified = 'Unspecified',
   Locked = 'Locked',
   Dissolving = 'Dissolving',
   Dissolved = 'Dissolved'
 }
-
 export enum NeuronPermissionEnum {
   // Unused, here for PB lint purposes.
   Unspecified = 0,
@@ -99,13 +95,11 @@ export enum NeuronPermissionEnum {
   ManageVotingPermission = 10
 }
 export type NeuronPermissionType = keyof typeof NeuronPermissionEnum;
-
 export interface neuronSystemPermissionsType {
   id: number;
   name: NeuronPermissionType;
   description: string;
 }
-
 export interface proposalsNeurons {
   tokenId: string;
   governanceId: string;

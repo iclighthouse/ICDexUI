@@ -21,7 +21,6 @@ import { Address } from '@/ic/DRC20Token/model';
 import { isPlug } from '@/ic/isPlug';
 import { isInfinity } from '@/ic/isInfinity';
 import { createService } from '@/ic/createService';
-
 export class ICSwapService {
   private check = async (
     canisterId: string,
@@ -36,7 +35,6 @@ export class ICSwapService {
       const res = await service.drc205_dexInfo();
       return SerializableIC(res);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

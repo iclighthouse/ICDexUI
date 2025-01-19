@@ -322,7 +322,6 @@
     </a-spin>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { IcMiningService } from '@/ic/icMining/icMiningService';
@@ -354,9 +353,7 @@ import {
   currentPageConnectInfinity,
   needConnectInfinity
 } from '@/ic/ConnectInfinity';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'Mining',
   components: {},
@@ -408,7 +405,6 @@ const commonModule = namespace('common');
           .div(1000)
           .integerValue(1)
           .toNumber();
-
         let text = '';
         d && (text += `${d} days`);
         h && (text += `${h} hours`);
@@ -501,7 +497,6 @@ export default class extends Vue {
       const cycles = new BigNumber(this.cycles)
         .minus(this.freezingThreshold)
         .toString(10);
-      console.log(this.cycles, this.freezingThreshold, cycles);
       if (new BigNumber(cycles).lt(0)) {
         callback(`Insufficient cycles`);
       } else {
@@ -724,7 +719,6 @@ export default class extends Vue {
         } catch (e) {
           loading.close();
           this.$message.error(toHttpError(e).message);
-          console.log(e);
         }
       }
     });
@@ -838,7 +832,6 @@ export default class extends Vue {
         this.refreshCyclesLoading = false;
         this.cycles = '-';
         this.freezingThreshold = '0';
-        console.log(e);
       }
     } else {
       this.cycles = '-';
@@ -1217,7 +1210,6 @@ export default class extends Vue {
         promiseAllValue.push(this.getConfigLog(BigInt(i)));
       }
       this.phaseConfigs = await Promise.all(promiseAllValue);
-      console.log(this.phaseConfigs);
       this.currentPhase = Number(this.miningStatus.currentPhase);
     } else {
       const currentPhaseConfig = await this.getConfigLog(
@@ -1253,8 +1245,7 @@ export default class extends Vue {
     } else {
       this.currentRound = this.miningStatus.currentRound;
     }
-    console.log('roundCount: ' + this.roundCount(), this.miningStatus);
-    // console.log(this.miningStatus);
+    // 
     // this.currentRound = BigInt(this.roundCount());
     this.userHistory = await this.getUserHistory(
       this.miningStatus.currentPhase,
@@ -1307,13 +1298,12 @@ export default class extends Vue {
         this.updateStatus();
       }
     } catch (e) {
-      console.log(e);
     }
     this.phaseSpinning = false;
     this.$nextTick(() => {
       this.initEcharts(this.currentPhase);
     });
-    // console.log(this.phaseConfigs, this.historyList, this.userHistory);
+    // 
   }
   private async updateStatus(): Promise<void> {
     await this.IcMiningService.updateStatus();
@@ -1352,7 +1342,6 @@ export default class extends Vue {
           undefined;
       }
     } catch (e) {
-      console.log(e);
     }
   }
   private async getHistory(phase: bigint, round: bigint): Promise<RoundStatus> {
@@ -1373,12 +1362,10 @@ export default class extends Vue {
           undefined;
       }
     } catch (e) {
-      console.log(e);
     }
   }
 }
 </script>
-
 <style scoped lang="scss">
 .mining-phase-main {
   width: 100%;
@@ -1413,7 +1400,6 @@ export default class extends Vue {
     }
   }
 }
-
 .mining-status-main {
   margin-top: 10px;
   color: #666;

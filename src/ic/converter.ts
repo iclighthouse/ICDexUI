@@ -11,13 +11,11 @@ import {
   validateAccount,
   validatePrincipal
 } from '@/ic/utils';
-
 /**
  * uint8ArrayToBigInt
  * @param array: Uint8Array
  * @return bigint
  */
-
 const uint8ArrayToBigInt = (array: Uint8Array): bigint => {
   const view = new DataView(array.buffer, array.byteOffset, array.byteLength);
   if (typeof view.getBigUint64 === 'function') {
@@ -25,7 +23,6 @@ const uint8ArrayToBigInt = (array: Uint8Array): bigint => {
   } else {
     const high = BigInt(view.getUint32(0));
     const low = BigInt(view.getUint32(4));
-
     return (high << BigInt(32)) + low;
   }
 };
@@ -39,13 +36,11 @@ const bigIntToUint8Array = (value: bigint): Uint8Array => {
     view.setUint32(0, Number(value >> BigInt(32)));
     view.setUint32(4, Number(value % TWO_TO_THE_32));
   }
-
   return array;
 };
 const asciiStringToByteArray = (text: string): Array<number> => {
   return Array.from(text).map((c) => c.charCodeAt(0));
 };
-
 const principalToAccountIdentifier = (
   principal: Principal,
   subAccount?: Uint8Array
@@ -86,7 +81,6 @@ const toHexString = (bytes: Uint8Array): string => {
     ''
   );
 };
-
 // 4 bytes
 const calculateCrc32 = (bytes: Uint8Array): Uint8Array => {
   const checksumArrayBuf = new ArrayBuffer(4);
@@ -151,7 +145,6 @@ const formatDateToDay = (date: Date): string => {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-
   return year + '-' + Appendzero(month) + '-' + Appendzero(day);
 };
 const formatDateToSecond = (date: Date): string => {
@@ -161,7 +154,6 @@ const formatDateToSecond = (date: Date): string => {
   const hour = date.getHours();
   const minute = date.getMinutes();
   const second = date.getSeconds();
-
   return (
     year +
     '-' +
@@ -183,7 +175,6 @@ const formatDateToSecondUTC = (date: Date): string => {
   const hour = date.getUTCHours();
   const minute = date.getUTCMinutes();
   const second = date.getUTCSeconds();
-
   return (
     year +
     '-' +
@@ -204,7 +195,6 @@ const formatDateToSecondUTCM = (date: Date): string => {
   const day = date.getUTCDate();
   const hour = date.getUTCHours();
   const minute = date.getUTCMinutes();
-
   return (
     Appendzero(month) +
     '-' +
@@ -220,13 +210,11 @@ const formatDateToSecondUTCD = (date: Date): string => {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-
   return year + '-' + Appendzero(month) + '-' + Appendzero(day);
 };
 const formatDateToSecondUTCMD = (date: Date): string => {
   const month = date.getMonth() + 1;
   const day = date.getDate();
-
   return Appendzero(month) + '-' + Appendzero(day);
 };
 const formatDateTOSecondUTCToHour = (date: Date): string => {
@@ -317,8 +305,6 @@ const generateMeatMaskSeed = (
     ])
   );
   const hash = new Uint8Array(shaObj.digest());
-  console.log(hash);
-  console.log([...Buffer.from(hash)].slice(0, 16));
   return new Uint8Array([...Buffer.from(hash)].slice(0, 16));
 };
 const toPrincipalAndAccountId = (
@@ -389,7 +375,6 @@ const toPrincipalAndAccountId = (
       };
     }
   } catch (e) {
-    console.log(e);
     return {
       principal: null,
       subaccount: null,
@@ -397,7 +382,6 @@ const toPrincipalAndAccountId = (
     };
   }
 };
-
 const SerializableIC = (x) => {
   if (x === undefined || x === null) return x;
   if (ArrayBuffer.isView(x) || x instanceof ArrayBuffer) {
@@ -419,7 +403,6 @@ const SerializableIC = (x) => {
   }
   return x;
 };
-
 const compute_distribution_subaccount_bytes = (
   principal: Principal,
   nonce: number
@@ -436,7 +419,6 @@ const compute_distribution_subaccount_bytes = (
   );
   return new Uint8Array(shaObj.digest());
 };
-
 export {
   bigIntToUint8Array,
   uint8ArrayToBigInt,

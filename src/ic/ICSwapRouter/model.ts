@@ -33,7 +33,6 @@ export interface TrieListData1SwapPair {
 }
 export type TrieListData1 = [SwapCanister, TrieListData1SwapPair];
 export type TrieListData = [SwapCanister, [SwapPair, bigint]];
-
 export type SwapCanister = Principal;
 export interface SwapPair {
   feeRate: string;
@@ -168,7 +167,6 @@ export interface SwapConfig {
   ORACLE: Principal;
 }
 export type StakedNFT = [string, TokenIdentifier, Time];
-
 export default interface Service {
   getTokens(dexName: Array<DexName>): Promise<Array<SwapTokenInfo>>;
   getPairs(

@@ -76,7 +76,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import { Principal } from '@dfinity/principal';
@@ -92,7 +91,6 @@ import { IDL } from '@dfinity/candid';
 import { validateCanister } from '@/utils/validate';
 import { checkAuth } from '@/ic/CheckAuth';
 import { toHttpError } from '@/ic/httpError';
-
 @Component({
   name: 'Index',
   components: {}
@@ -150,14 +148,14 @@ export default class extends Vue {
   //     this.walletId = this.wallets[0].walletId.toString();
   //     this.initWallet();
   //   }
-  //   console.log(this.walletId);
+  //   
   // }
   // private async handleChange(val: string): Promise<void> {
   //   this.walletId = val;
   //   this.initWallet();
   // }
   // private initWallet(): void {
-  //   console.log(this.walletService);
+  //   
   //   this.getWalletBalance();
   // }
   private getWalletBalance(): void {
@@ -202,7 +200,6 @@ export default class extends Vue {
               walletSendRequest,
               this.walletId
             );
-            console.log(res);
             if (res && Object.keys(res)[0] === 'Ok') {
               this.$message.success('Success');
               this.getWalletBalance();
@@ -237,7 +234,6 @@ export default class extends Vue {
             }
           }
         } catch (e) {
-          console.log(e);
           this.$message.error(toHttpError(e).message);
         }
         loading.close();
@@ -246,7 +242,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .transfer-submit {
   margin-top: 20px;

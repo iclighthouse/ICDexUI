@@ -267,7 +267,6 @@
     </a-spin>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -295,9 +294,7 @@ import { toHttpRejectError } from '@/ic/httpError';
 import { readState } from '@/ic/readState';
 import { BlackholeService } from '@/ic/Blackhole/BlackholeService';
 import { checkAuth } from '@/ic/CheckAuth';
-
 const commonModule = namespace('common');
-
 @Component({
   name: 'TokenList',
   components: {},
@@ -378,7 +375,6 @@ export default class extends Vue {
         this.getAddedTokens();
       }
     } catch (e) {
-      console.log(e);
     }
     this.spinning = false;
   }
@@ -403,7 +399,6 @@ export default class extends Vue {
     } else {
       this.starTokens = [];
     }
-    console.log(this.starTokens);
   }
   private async handleStar(tokenItem: TokenList): Promise<void> {
     this.spinning = true;
@@ -427,19 +422,16 @@ export default class extends Vue {
               new BigNumber(tokenItem[3].toString()).plus(1).toString(10)
             );
           } catch (e) {
-            console.log(e);
             this.$message.error(toHttpRejectError(e));
           }
           this.spinning = false;
         } else {
-          console.log(res);
           this.$message.error('Approve Error');
           this.spinning = false;
         }
       }
     } catch (e) {
       this.spinning = false;
-      console.log(e);
     }
   }
   private async getTokenList(type?: string): Promise<void> {
@@ -459,9 +451,7 @@ export default class extends Vue {
           this.lastPage = parseInt((this.total / this.size).toString());
         }
       }
-      console.log(this.lastPage);
     }
-    console.log(this.total);
     this.showMore = res.length && res.length >= this.size;
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
@@ -507,7 +497,6 @@ export default class extends Vue {
                 that.readState(tokenList[i]);
               }
               that.tokenList = tokenList;
-              console.log(tokenList);
             } else {
               that.tokenList = [];
             }
@@ -548,7 +537,6 @@ export default class extends Vue {
                 that.readState(tokenList[i]);
               }
               that.tokenList = tokenList;
-              console.log(tokenList);
             } else {
               that.tokenList = [];
             }
@@ -568,7 +556,6 @@ export default class extends Vue {
           this.readState(tokenList[i]);
         }
         this.tokenList = tokenList;
-        console.log(tokenList);
       } else {
         this.tokenList = [];
       }
@@ -591,16 +578,12 @@ export default class extends Vue {
     const res = await this.blackholeService.canister_status({
       canister_id: token[0]
     });
-    console.log(res);
     if (res && res.cycles) {
       this.$set(token, 11, res.cycles);
     }
   }
   private async readState(token: TokenList): Promise<void> {
-    console.log(token);
     const state = await readState(token[0].toString());
-    console.log(token[0].toString());
-    console.log(state);
     if (state && state.controllers && state.controllers.length) {
       this.$set(token, 10, state.controllers);
       if (state.controllers.includes(BLACKHOLE_CANISTER_ID)) {
@@ -617,7 +600,6 @@ export default class extends Vue {
         this.$set(token, 8, val.content);
       }
     });
-    console.log(metadataType);
     // todo
     if (!metadataType.includes('webUrl')) {
       metadata.push({ name: 'webUrl', content: '' });
@@ -699,7 +681,6 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss">
 .ic-token-list-wrap {
   width: 100%;

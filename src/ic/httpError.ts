@@ -3,14 +3,12 @@ export type HttpError = {
   code: number;
   message: string;
 };
-
 export function toHttpError(error: Error): HttpError {
   let code = 500;
   const statusLine = error.message
     .split('\n')
     .map((l) => l.trim().toLowerCase())
     .find((l) => l.startsWith('code:') || l.startsWith('http status code:'));
-
   if (statusLine) {
     const parts = statusLine.split(':');
     if (parts && parts.length > 1) {
@@ -25,14 +23,12 @@ export function toHttpError(error: Error): HttpError {
       }
     }
   }
-
   return {
     kind: 'httpError',
     code: code,
     message: error.message
   };
 }
-
 export function toHttpRejectError(error: Error): string {
   try {
     return error.message
@@ -42,7 +38,6 @@ export function toHttpRejectError(error: Error): string {
         (l) => l.startsWith('reject text:') || l.startsWith('"reject message":')
       );
   } catch (e) {
-    console.log(e);
     return null;
   }
 }

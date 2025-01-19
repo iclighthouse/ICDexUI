@@ -66,7 +66,6 @@
     </a-form-model>
   </a-modal>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
@@ -78,7 +77,6 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { hexToBytes } from '@/ic/converter';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { PropType } from 'vue';
-
 @Component({
   name: 'Index',
   components: {}
@@ -213,7 +211,6 @@ export default class extends Vue {
             0,
             this.tokenId
           );
-          console.log(res);
           if (
             (
               res as {
@@ -229,7 +226,6 @@ export default class extends Vue {
           }
           loading.close();
         } catch (e) {
-          console.log(e);
           loading.close();
         }
       }
@@ -237,5 +233,4 @@ export default class extends Vue {
   }
 }
 </script>
-
 <style scoped lang="scss"></style>

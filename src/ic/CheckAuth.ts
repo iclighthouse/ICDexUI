@@ -5,7 +5,6 @@ import { plugWhitelist } from '@/ic/utils';
 import router from '@/router';
 import { createSignerAgent, getNFIDSignerAgent } from '@/ic/NFIDAuth';
 import { Principal } from '@dfinity/principal';
-
 export interface CommonState {
   common: {
     showCheckAuth: boolean;
@@ -55,7 +54,7 @@ export const checkAuth = (
         resolve(true);
       } else {
         // const signerAgent = getNFIDSignerAgent();
-        // console.log(signerAgent);
+        // 
         refreshingPlugOrInfinity(resolve);
       }
     } else if (
@@ -66,7 +65,6 @@ export const checkAuth = (
       const localWhitelist =
         JSON.parse(localStorage.getItem('whitelist')) || {};
       const whitelist: string[] = localWhitelist[principal] || plugWhitelist;
-      console.log((window as any).ic.plug.agent);
       if (
         ((window as any).ic &&
           (!(window as any).ic.plug.agent ||
@@ -79,7 +77,6 @@ export const checkAuth = (
           (window as any).ic.plug.agent
             .getPrincipal()
             .then((currentPrincipal) => {
-              console.log(currentPrincipal.toString());
               if (currentPrincipal.toString() !== principal) {
                 // router.go(0);
                 resolve(false);
@@ -136,7 +133,6 @@ export const checkAuth = (
     }
   });
 };
-
 function refreshingPlugOrInfinity(resolve) {
   if (!isRefreshing) {
     isRefreshing = true;

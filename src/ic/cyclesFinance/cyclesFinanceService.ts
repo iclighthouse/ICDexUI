@@ -17,7 +17,6 @@ import { isInfinity } from '@/ic/isInfinity';
 import { isPlug } from '@/ic/isPlug';
 import { SerializableIC } from '@/ic/converter';
 import { createService } from '@/ic/createService';
-
 export class CyclesFinanceService {
   private check = async (renew = true, isUpdate = true): Promise<Service> => {
     return await createService<Service>(
@@ -108,7 +107,7 @@ export class CyclesFinanceService {
   // ): Promise<Array<TxnRecord>> => {
   //   await this.check();
   //   const txids = await this.lastTxids(accountId);
-  //   console.log(txids);
+  //   
   //   let recordList: Array<TxnRecord> = [];
   //   const promiseAllValue = [];
   //   for (let i = 0; i < txids.length; i++) {

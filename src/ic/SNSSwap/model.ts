@@ -1,6 +1,5 @@
 import { Principal } from '@dfinity/principal';
 import { Icrc1Account } from '@/ic/common/icType';
-
 export interface GetStateResponse {
   swap: Array<Swap>;
   derived: Array<DerivedState>;
@@ -170,7 +169,6 @@ export interface DerivedState {
   direct_participant_count?: Array<bigint>;
   cf_neuron_count?: Array<bigint>;
 }
-
 export interface GetBuyersTotalResponse {
   buyers_total: bigint;
 }
@@ -332,7 +330,6 @@ export interface LinearScalingCoefficient {
 export interface Countries {
   iso_codes: Array<string>;
 }
-
 export default interface Service {
   get_state({}): Promise<GetStateResponse>;
   get_buyers_total({}): Promise<GetBuyersTotalResponse>;

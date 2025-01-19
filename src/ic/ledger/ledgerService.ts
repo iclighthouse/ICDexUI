@@ -62,7 +62,6 @@ export class LedgerService {
       memo: memo,
       created_at_time: []
     };
-    console.log(request);
     return await this.service.send_dfx(request);
     // if (isPlug()) {
     //   const params = {
@@ -74,9 +73,9 @@ export class LedgerService {
     //     }
     //   };
     //   const Ic = (window as any).ic.plug;
-    //   console.log(params);
+    //   
     //   const res = await Ic.requestTransfer(params);
-    //   console.log(res);
+    //   
     //   if (res.height) {
     //     if (typeof res.height === 'object' && res.height.height) {
     //       return res.height.height;
@@ -96,7 +95,7 @@ export class LedgerService {
     //     memo: memo,
     //     created_at_time: []
     //   };
-    //   console.log(request);
+    //   
     //   return await this.service.send_dfx(request);
     // }
   };
@@ -130,7 +129,6 @@ export class LedgerService {
     try {
       return await this.service.icrc2_approve(approveArgs);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -141,7 +139,6 @@ export class LedgerService {
     try {
       return await this.service.icrc2_allowance(allowanceArgs);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };
@@ -163,7 +160,6 @@ export class LedgerService {
     try {
       return await this.service.icrc2_transfer_from(approveArgs);
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

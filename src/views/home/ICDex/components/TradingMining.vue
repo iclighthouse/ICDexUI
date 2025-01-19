@@ -209,7 +209,6 @@
     ></approve-nft>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import BigNumber from 'bignumber.js';
@@ -233,7 +232,6 @@ import { ICDexService } from '@/ic/ICDex/ICDexService';
 import { namespace } from 'vuex-class';
 import { checkAuth } from '@/ic/CheckAuth';
 const commonModule = namespace('common');
-
 @Component({
   name: 'TradingMining',
   components: {
@@ -262,7 +260,6 @@ export default class extends Vue {
   get canRegistered(): boolean {
     let flag = false;
     if (this.setting) {
-      console.log(this.setting);
       const time = new Date().getTime();
       if (
         new BigNumber(time)
@@ -333,7 +330,6 @@ export default class extends Vue {
     let flag = false;
     if (this.setting) {
       let isTrading: boolean;
-      console.log(this.pairId);
       isTrading = this.setting.pairs.some((pair) => {
         return pair[0].toString() === this.pairId;
       });
@@ -409,12 +405,10 @@ export default class extends Vue {
     await checkAuth();
     try {
       const res = await this.tradingMiningService.tmClaim();
-      console.log(res);
       this.$message.success('Claim Success');
       this.init();
       this.claimVisible = false;
     } catch (e) {
-      console.log(e);
       this.$message.success('Claim error');
     }
     loading.close();
@@ -432,7 +426,6 @@ export default class extends Vue {
         const res = await this.tradingMiningService.tmRegister(
           getTokenIdentifier(NFT_CANISTER_ID, Number(nftId))
         );
-        console.log(res);
         if (res) {
           this.$message.success('Register Success');
           localStorage.removeItem('approveNft');
@@ -443,7 +436,6 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();
@@ -451,7 +443,6 @@ export default class extends Vue {
   }
   private async getTmSetting(): Promise<void> {
     this.setting = await this.tradingMiningService.tmSetting();
-    console.log(this.setting);
     this.setDownTime();
   }
   private async getNFTAllowance(): Promise<void> {
@@ -468,12 +459,10 @@ export default class extends Vue {
         spender: Principal.fromText(IC_MINING_CANISTER_ID)
       };
       const res = await this.NftService.allowance(allowanceRequest);
-      console.log(res);
       if ((res as { ok: bigint }).ok) {
         this.hasAllowance = true;
       }
     }
-    console.log(this.hasAllowance);
   }
   private async onApprove(): Promise<void> {
     (this.$refs as any).approveNft.visible = true;
@@ -490,7 +479,6 @@ export default class extends Vue {
       ).ok;
       if (tokensExt && tokensExt.length) {
         this.tokensExt = tokensExt;
-        console.log(tokensExt);
       } else {
         this.tokensExt = [];
       }
@@ -529,7 +517,6 @@ export default class extends Vue {
       await checkAuth();
       try {
         const res = await this.tradingMiningService.tmRegister2();
-        console.log(res);
         if (res) {
           this.$message.success('Register Success');
           this.getStatus();
@@ -537,7 +524,6 @@ export default class extends Vue {
           this.$message.error('Register error');
         }
       } catch (e) {
-        console.log(e);
         this.$message.error('Register error');
       }
       loading.close();
@@ -549,7 +535,6 @@ export default class extends Vue {
       this.tmNFTBalance = await this.tradingMiningService.tmNFTBalance(
         principal
       );
-      console.log(this.tmNFTBalance);
     }
   }
   private async getLiquidity(swapId: string, weight: bigint): Promise<string> {
@@ -559,7 +544,6 @@ export default class extends Vue {
       try {
         const currentICDexService = new ICDexService();
         const res = await currentICDexService.liquidity(swapId, [principal]);
-        console.log(res);
         if (res && res.pairId === swapId) {
           volume = new BigNumber(res.tokenLiquidity.vol.value1.toString(10))
             .times(weight.toString(10))
@@ -567,7 +551,6 @@ export default class extends Vue {
             .toString(10);
         }
       } catch (e) {
-        console.log(e);
       }
     }
     return volume;
@@ -579,7 +562,6 @@ export default class extends Vue {
       if (status && status[0] && status[0].length) {
         this.status = status;
         const haveNft = this.status[1];
-        console.log(this.status);
         if (claim) {
           const currentStatus = Object.keys(this.status[0][0][3])[0];
           if (currentStatus === 'Active') {
@@ -588,7 +570,6 @@ export default class extends Vue {
               promiseAll.push(this.getLiquidity(pair[0].toString(), pair[1]));
             });
             const res = await Promise.all(promiseAll);
-            console.log(res);
             let totalVolume = '0';
             res.forEach((volume: string) => {
               if (volume) {
@@ -597,7 +578,6 @@ export default class extends Vue {
                   .toString(10);
               }
             });
-            console.log(totalVolume);
             this.volume = totalVolume;
             let speed = 100;
             if (haveNft) {
@@ -618,7 +598,6 @@ export default class extends Vue {
         }
       }
     }
-    console.log(this.status);
   }
   private getTime(): void {
     const time = new Date().getTime();
@@ -651,7 +630,6 @@ export default class extends Vue {
         .div(1000)
         .div(60 * 60)
         .toString(10);
-      console.log(parseInt(last));
       if (parseInt(last) > 1) {
         this.claimTime = `${parseInt(last)} h`;
         this.timer = window.setInterval(() => {
@@ -676,13 +654,11 @@ export default class extends Vue {
     try {
       await this.getStatus(true);
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
 }
 </script>
-
 <style scoped lang="scss">
 .trading-step-tokens {
   position: absolute;
@@ -767,7 +743,6 @@ export default class extends Vue {
   .ant-steps-item {
     height: 160px;
   }
-
   .step-button {
     position: absolute;
     bottom: 0;
@@ -775,52 +750,41 @@ export default class extends Vue {
 			bottom: 46px;
 		}*/
   }
-
   ::v-deep .ant-steps-item-title {
     color: #b4bacd !important;
   }
-
   ::v-deep .ant-steps-item-process .ant-steps-item-title {
     color: #e7eaf1 !important;
   }
-
   ::v-deep .ant-steps-item-finish .ant-steps-item-description {
     color: #777d90 !important;
   }
-
   ::v-deep .ant-steps-item-process .ant-steps-item-description {
     color: #e7eaf1 !important;
   }
-
   ::v-deep .ant-steps-item-wait .ant-steps-item-description {
     color: #777d90 !important;
   }
-
   ::v-deep .ant-steps-item-icon {
     width: 30px;
     height: 30px;
     line-height: 30px;
     background: transparent;
   }
-
   ::v-deep .ant-steps-item-finish .ant-steps-item-icon {
     border-color: #21c77d;
     background: #21c77d;
   }
-
   ::v-deep .ant-steps-item-process .ant-steps-item-icon {
     border-color: #21c77d;
     background: #21c77d;
   }
-
   ::v-deep .ant-steps-item-finish .ant-steps-item-title::after {
     background: #21c77d;
   }
-
   ::v-deep .ant-steps-icon {
     color: #fff;
   }
-
   ::v-deep .ant-steps-item-wait .ant-steps-item-icon {
     border-color: #777d90;
   }

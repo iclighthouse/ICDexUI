@@ -57,7 +57,7 @@ export type UpdateBalanceError =
       };
     };
 export type Subaccount = Array<Uint8Array>;
-export interface MinterInfo {
+export interface MinterInfoBTC {
   btcFee: bigint;
   minVisitInterval: bigint;
   btcRetrieveFee: bigint;
@@ -69,7 +69,10 @@ export interface MinterInfo {
   btcMinAmount: bigint;
   minter_address: string;
   enDebug: boolean;
-  minConfirmations: bigint;
+  minConfirmations?: bigint;
+  min_confirmations?: bigint;
+  kyt_fee?: bigint;
+  retrieve_btc_min_amount?: bigint;
   paused: boolean;
 }
 export type Network =
@@ -195,7 +198,7 @@ export default interface Service {
   retrieve_btc_status(request: BlockIndex): Promise<RetrieveBtcStatus>;
   update_balance(request: BTCAddressReq): Promise<UpdateBalanceRes>;
   batch_send(request: Array<bigint>): Promise<boolean>;
-  get_minter_info(): Promise<MinterInfo>;
+  get_minter_info(): Promise<MinterInfoBTC>;
   retrieval_log(blockIndex: Array<number>): Promise<Array<RetrieveStatus>>;
   estimate_withdrawal_fee(request: {
     amount: Array<bigint>;

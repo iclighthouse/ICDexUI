@@ -338,7 +338,6 @@
     </a-modal>
   </div>
 </template>
-
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { SNSNeuronsInfo } from '@/views/home/ICSNS/model';
@@ -353,7 +352,6 @@ import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { hexToBytes, toHexString } from '@/ic/converter';
 import { checkAuth } from '@/ic/CheckAuth';
 import { ICLighthouseCHATNeuronId, ICLighthouseNeuronId } from '@/ic/utils';
-
 @Component({
   name: 'Following',
   components: {}
@@ -400,7 +398,6 @@ export default class extends Vue {
     this.SNSNeurons = SNSNeuronsList[SNSIndex];
     this.neuron = this.SNSNeurons.SNSNeurons[index];
     this.visible = true;
-    console.log(this.neuron);
     if (!this.SNSNeurons.listNervousSystemFunctions) {
       await this.getListNervousSystemFunctions();
     } else {
@@ -412,7 +409,6 @@ export default class extends Vue {
       return this.functionsName[follow[0].toString(10)] && follow[1];
     });
     // this.$forceUpdate();
-    console.log(this.followees);
   }
   private async getListNervousSystemFunctions(): Promise<void> {
     const loading = this.$loading({
@@ -433,7 +429,6 @@ export default class extends Vue {
       );
       this.getFunctionsName();
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -474,7 +469,6 @@ export default class extends Vue {
       JSON.stringify(this.followees[this.functionId.toString(10)].followees)
     );
     followees.splice(index, 1);
-    console.log(followees);
     this.setFollowees(followees, 'delete');
   }
   private async deleteAllFollowee(): Promise<void> {
@@ -484,7 +478,6 @@ export default class extends Vue {
     });
     await checkAuth();
     try {
-      console.log(this.SNSNeurons.listNervousSystemFunctions);
       const followeesValue: Array<bigint> = [];
       const MAX_COCURRENCY = 40;
       this.SNSNeurons.listNervousSystemFunctions.functions.forEach((item) => {
@@ -497,19 +490,16 @@ export default class extends Vue {
       for (let i = 0; i < followeesValue.length; i++) {
         promiseValue.push(this.removeFollowees(followeesValue[i]));
         if (promiseValue.length === MAX_COCURRENCY) {
-          console.log(i);
           await Promise.all(promiseValue);
           promiseValue = [];
         }
         if (i === followeesValue.length - 1 && promiseValue.length) {
-          console.log(i);
           await Promise.all(promiseValue);
         }
       }
       this.$message.success('Success');
       this.$emit('followNeuronSuccess', this.SNSIndex, this.index);
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -523,7 +513,6 @@ export default class extends Vue {
         []
       );
     } catch (e) {
-      console.log(e);
     }
   }
   private followNeuron(): void {
@@ -564,7 +553,6 @@ export default class extends Vue {
             background: 'rgba(0, 0, 0, 0.5)'
           });
           await checkAuth();
-          console.log(loading);
           try {
             const snsGovernanceService = new SNSGovernanceService();
             const res = await snsGovernanceService.getNeuron(
@@ -586,7 +574,6 @@ export default class extends Vue {
                     hexToBytes(this.newFolloweeForm.neuronId.trim())
                   )
                 });
-                console.log(followees);
                 this.setFollowees(followees);
               } else {
                 this.$message.error(
@@ -596,7 +583,6 @@ export default class extends Vue {
             }
           } catch (e) {
             loading.close();
-            console.log(e);
           }
         }
       }
@@ -611,7 +597,6 @@ export default class extends Vue {
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
-    console.log(loading);
     await checkAuth();
     try {
       const res = await snsGovernanceService.setFollowees(
@@ -620,7 +605,6 @@ export default class extends Vue {
         this.functionId,
         followees
       );
-      console.log(res);
       if (res && res.command) {
         const type = Object.keys(res.command[0])[0];
         if (type === 'Error') {
@@ -643,7 +627,6 @@ export default class extends Vue {
         }
       }
     } catch (e) {
-      console.log(e);
     }
     loading.close();
   }
@@ -662,11 +645,9 @@ export default class extends Vue {
     this.$message.success('Copied');
   }
   private onError(): void {
-    console.log('err');
   }
 }
 </script>
-
 <style scoped lang="scss">
 .add-remove-title {
   display: flex;

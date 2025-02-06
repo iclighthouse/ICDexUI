@@ -45,8 +45,8 @@
             <span>Created</span>
             <span class="margin-left-auto">
               {{
-                proposal.proposal_creation_timestamp_seconds
-                  | formatDateFromSecondUTC
+                proposal.proposal_creation_timestamp_seconds |
+                  formatDateFromSecondUTC
               }}
             </span>
           </div>
@@ -95,8 +95,8 @@
               class="margin-left-auto"
             >
               {{
-                nervousSystemParameters.reject_cost_e8s
-                  | bigintToFloat(tokenInfo.decimals, tokenInfo.decimals)
+                nervousSystemParameters.reject_cost_e8s |
+                  bigintToFloat(tokenInfo.decimals, tokenInfo.decimals)
               }}
               {{ tokenInfo.symbol }}
             </span>
@@ -189,9 +189,9 @@
                 <div>Voting Power</div>
                 <div v-if="tokenInfo" class="voting-power-num">
                   {{
-                    proposal.latest_tally[0].yes
-                      | bigintToFloat(2, tokenInfo.decimals)
-                      | formatNum
+                    proposal.latest_tally[0].yes |
+                      bigintToFloat(2, tokenInfo.decimals) |
+                      formatNum
                   }}
                 </div>
               </div>
@@ -211,9 +211,9 @@
                 <div>Voting Power</div>
                 <div v-if="tokenInfo" class="voting-power-num">
                   {{
-                    proposal.latest_tally[0].no
-                      | bigintToFloat(2, tokenInfo.decimals)
-                      | formatNum
+                    proposal.latest_tally[0].no |
+                      bigintToFloat(2, tokenInfo.decimals) |
+                      formatNum
                   }}
                 </div>
               </div>
@@ -287,9 +287,9 @@
                 <div class="margin-left-auto">
                   <span v-if="tokenInfo">
                     {{
-                      Ballots[1].voting_power
-                        | bigintToFloat(2, tokenInfo.decimals, 0)
-                        | formatNum
+                      Ballots[1].voting_power |
+                        bigintToFloat(2, tokenInfo.decimals, 0) |
+                        formatNum
                     }}
                   </span>
                   <span
@@ -350,14 +350,14 @@
               <div style="margin-right: 10px">
                 <span class="pc-show">
                   {{
-                    item.ballot.cast_timestamp_seconds
-                      | formatDateFromSecondUTCM
+                    item.ballot.cast_timestamp_seconds |
+                      formatDateFromSecondUTCM
                   }}
                 </span>
                 <span class="h5-show">
                   {{
-                    item.ballot.cast_timestamp_seconds
-                      | formatDateFromSecondUTCMD
+                    item.ballot.cast_timestamp_seconds |
+                      formatDateFromSecondUTCMD
                   }}
                 </span>
               </div>
@@ -365,9 +365,9 @@
               <div class="margin-left-auto">
                 <span v-if="tokenInfo">
                   {{
-                    item.ballot.voting_power
-                      | bigintToFloat(2, tokenInfo.decimals, 0)
-                      | formatNum
+                    item.ballot.voting_power |
+                      bigintToFloat(2, tokenInfo.decimals, 0) |
+                      formatNum
                   }}
                 </span>
                 <span
@@ -494,6 +494,7 @@ import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import {
   Ballot,
+  ExecuteGenericNervousSystemFunction,
   GovernanceError,
   ListNeurons,
   ListProposals,
@@ -509,6 +510,7 @@ import { Principal } from '@dfinity/principal';
 import { TokenInfo } from '@/ic/common/icType';
 import { namespace } from 'vuex-class';
 import { checkAuth } from '@/ic/CheckAuth';
+import { IDL } from '@dfinity/candid';
 const commonModule = namespace('common');
 @Component({
   name: 'Proposal',
@@ -665,8 +667,7 @@ export default class extends Vue {
         return 'Vote Error';
         // this.$message.error('Vote Error');
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async onVote(): Promise<void> {
     const loading = this.$loading({
@@ -968,6 +969,69 @@ export default class extends Vue {
         this.proposalIsLarge = false;
       }
     }
+    if (
+      this.proposal &&
+      this.proposal.payload_text_rendering &&
+      this.proposal.payload_text_rendering[0] &&
+      this.proposal.payload_text_rendering[0].includes(
+        'monitor_icp_to_cycles'
+      ) &&
+      this.proposal.payload_text_rendering[0].includes(
+        '## Payload:\n' + '\n' + '()'
+      )
+    ) {
+      if (
+        this.proposal.proposal &&
+        this.proposal.proposal[0] &&
+        this.proposal.proposal[0].action[0]
+      ) {
+        const value = Object.values(
+          this.proposal.proposal[0].action[0]
+        )[0] as ExecuteGenericNervousSystemFunction;
+        if (value && value.payload) {
+          const res = IDL.decode([IDL.Nat], new Uint8Array(value.payload));
+          if (res && res[0]) {
+            this.proposal.payload_text_rendering[0] =
+              this.proposal.payload_text_rendering[0].replace(
+                '## Payload:\n' + '\n' + '()',
+                '## Payload:\n' + '\n' + `(${res[0]})`
+              );
+          }
+        }
+      }
+    }
+    if (
+      this.proposal &&
+      this.proposal.payload_text_rendering &&
+      this.proposal.payload_text_rendering[0] &&
+      this.proposal.payload_text_rendering[0].includes('monitor_send_cycles') &&
+      this.proposal.payload_text_rendering[0].includes(
+        '## Payload:\n' + '\n' + '()'
+      )
+    ) {
+      if (
+        this.proposal.proposal &&
+        this.proposal.proposal[0] &&
+        this.proposal.proposal[0].action[0]
+      ) {
+        const value = Object.values(
+          this.proposal.proposal[0].action[0]
+        )[0] as ExecuteGenericNervousSystemFunction;
+        if (value && value.payload) {
+          const res = IDL.decode(
+            [IDL.Principal, IDL.Nat],
+            new Uint8Array(value.payload)
+          );
+          if (res && res.length) {
+            this.proposal.payload_text_rendering[0] =
+              this.proposal.payload_text_rendering[0].replace(
+                '## Payload:\n' + '\n' + '()',
+                '## Payload:\n' + '\n' + `(${res.join(', ')})`
+              );
+          }
+        }
+      }
+    }
     if (this.proposal && this.proposal.wait_for_quiet_state.length) {
       this.deadline =
         Number(
@@ -1014,6 +1078,7 @@ export default class extends Vue {
         });
       }
     } catch (e) {
+      //
     }
     const now = new Date().getTime();
     if (now < this.deadline) {

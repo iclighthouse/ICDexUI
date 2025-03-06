@@ -137,7 +137,8 @@
           }
         }
       ],
-      "no-debugger": "off"
+      "no-debugger": "off",
+      "no-empty": ["error", { "allowEmptyCatch": true }]
     }
   },
   "browserslist": {

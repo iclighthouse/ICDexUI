@@ -2327,18 +2327,94 @@
               />
             </a-form-model-item>
           </a-form-model>
-          <div class="mint-button">
+          <div class="mint-button" v-show="!ethereumIsUnlocked">
+            <button class="primary w100" type="button" @click="connectMetaMask">
+              Connect MetaMask
+            </button>
+          </div>
+          <div
+            class="mint-button"
+            v-show="
+              ethereumIsUnlocked &&
+              icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai' &&
+              icNetworkTokens.tokenId !== 'apia6-jaaaa-aaaar-qabma-cai'
+            "
+          >
             <button
+              class="primary w100"
+              type="button"
+              v-show="
+                tokenAllowance === '0' ||
+                (ethereumIsUnlocked && tokenAllowance - erc20Form.amount < 0)
+              "
+              @click="approveErc20"
+            >
+              <img alt="" src="@/assets/img/MetaMask.png" /> Approve
+              {{ icNetworkTokens.icTokenInfo.symbol }}
+            </button>
+            <button
+              v-show="
+                tokenAllowance !== '0' &&
+                ethereumIsUnlocked &&
+                tokenAllowance - erc20Form.amount >= 0
+              "
               @click="transferFromMetaMaskCK"
               class="primary w100"
               type="button"
             >
-              <img alt="" src="@/assets/img/MetaMask.png" /> Send with MetaMask
+              <img alt="" src="@/assets/img/MetaMask.png" /> Deposit
+              {{ icNetworkTokens.icTokenInfo.symbol }}
+            </button>
+          </div>
+          <div
+            v-show="
+              ethereumIsUnlocked &&
+              (tokenAllowance === '0' ||
+                tokenAllowance - erc20Form.amount < 0) &&
+              icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai' &&
+              icNetworkTokens.tokenId !== 'apia6-jaaaa-aaaar-qabma-cai'
+            "
+            class="base-font-title"
+          >
+            Approve to helper smart contract:
+            <a
+              :href="`${ckEthLink}/address/0x18901044688d3756c35ed2b36d93e6a5b8e00e68#code`"
+              class="link"
+              rel="nofollow noreferrer noopener"
+              target="_blank"
+              >{{ depositHelperContractAddress }}</a
+            >
+          </div>
+          <div
+            class="mint-button"
+            v-show="
+              (ethereumIsUnlocked &&
+                icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai') ||
+              icNetworkTokens.tokenId === 'apia6-jaaaa-aaaar-qabma-cai'
+            "
+          >
+            <button
+              v-show="
+                icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai' ||
+                icNetworkTokens.tokenId === 'apia6-jaaaa-aaaar-qabma-cai'
+              "
+              @click="transferFromMetaMaskCK"
+              class="primary w100"
+              type="button"
+            >
+              <img alt="" src="@/assets/img/MetaMask.png" /> Deposit
+              {{ icNetworkTokens.icTokenInfo.symbol }}
             </button>
           </div>
         </div>
         <div class="forge-right retrieve-btc-status" v-show="mintStep === 2">
           <div class="pc-show">
+            <div>
+              Already deposit? If not updated automatically,
+              <span @click="addTxHash" class="main-color pointer"
+                >add the TxHash manually</span
+              >.
+            </div>
             <table>
               <thead>
                 <tr>
@@ -4860,6 +4936,43 @@
         </div>
       </div>
     </a-modal>
+    <a-modal
+      :after-close="afterAddTxHashForm"
+      title="Add the txHash manually"
+      :footer="null"
+      :keyboard="false"
+      :maskClosable="false"
+      centered
+      class="delete-modal"
+      v-model="showAddTxHashForm"
+      width="550px"
+    >
+      <div>
+        <a-form-model
+          :model="addTxHashForm"
+          :rules="addTxHashFormRules"
+          ref="addTxHashForm"
+        >
+          <a-form-model-item label="TxHash" prop="txHash">
+            <a-input
+              placeholder="Please enter txHash"
+              autocomplete="off"
+              type="text"
+              v-model="addTxHashForm.txHash"
+            />
+          </a-form-model-item>
+          <div class="mint-button">
+            <button
+              @click="confirmAddTxHash"
+              class="primary w100 retrieve-button"
+              type="button"
+            >
+              Confirm
+            </button>
+          </div>
+        </a-form-model>
+      </div>
+    </a-modal>
     <approve-icrc2
       :balance="balance"
       @approveIcrc2Success="approveIcrc2Success"
@@ -5092,6 +5205,8 @@ export default class extends Vue {
   private ERC20Balance: { [key: string]: string } = {};
   private ERC20EthereumBalance: { [key: string]: string } = {};
   private ethereumIsConnected = false;
+  private ethereumIsUnlocked = false;
+  private tokenAllowance = '0';
   private forgeTitleETH = 'Mint';
   private dissolveTitleETH = 'Retrieve';
   private retrieveTitleETH = 'Retrieve';
@@ -5303,6 +5418,19 @@ export default class extends Vue {
     BTCBlock?: number;
     amount?: string;
   }> = [];
+  private showAddTxHashForm = false;
+  private addTxHashForm = {
+    txHash: ''
+  };
+  private addTxHashFormRules = {
+    txHash: [
+      {
+        required: true,
+        message: 'Please enter txHash',
+        trigger: 'change'
+      }
+    ]
+  };
   get toMint(): boolean {
     if (
       this.depositMethod === 1 &&
@@ -5502,6 +5630,129 @@ export default class extends Vue {
         }
       });
     }
+  }
+  private addTxHash(): void {
+    this.showAddTxHashForm = true;
+  }
+  private confirmAddTxHash(): void {
+    (this.$refs as any).addTxHashForm.validate(async (valid: any) => {
+      if (valid) {
+        this.checkDepositTxHash(this.addTxHashForm.txHash);
+      }
+    });
+  }
+  private async checkDepositTxHash(txHash: string): Promise<void> {
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      const flag = this.ckETHMint.some((item) => {
+        return item.txHash === txHash;
+      });
+      if (flag) {
+        this.$message.error('Record already exists.');
+        loading.close();
+        return;
+      }
+      const Receipt = await this.getEthTransactionReceipt(
+        txHash,
+        0,
+        0,
+        ETHHttpsMainnet
+      );
+      let topics = [];
+      let data = '';
+      let time = '';
+      if (
+        Receipt &&
+        Receipt.data.result &&
+        Receipt.data.result.logs[0] &&
+        this.icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai'
+      ) {
+        topics = Receipt.data.result.logs[0].topics.slice(1);
+        data = Receipt.data.result.logs[0].data;
+        time = Number(Receipt.data.result.logs[0].blockTimestamp).toString(10);
+      }
+      if (
+        Receipt &&
+        Receipt.data.result &&
+        Receipt.data.result.logs[0] &&
+        Receipt.data.result.logs[1] &&
+        this.icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai'
+      ) {
+        topics = Receipt.data.result.logs[1].topics.slice(1);
+        data = Receipt.data.result.logs[1].data;
+        time = Number(Receipt.data.result.logs[1].blockTimestamp).toString(10);
+      }
+      if (topics.length && data) {
+        const web3 = new Web3();
+        const res = web3.eth.abi.decodeLog(
+          [
+            {
+              indexed: true,
+              internalType: 'address',
+              name: 'erc20ContractAddress',
+              type: 'address'
+            },
+            {
+              indexed: true,
+              internalType: 'address',
+              name: 'owner',
+              type: 'address'
+            },
+            {
+              indexed: true,
+              internalType: 'bytes32',
+              name: 'principal',
+              type: 'bytes32'
+            }
+          ],
+          Receipt.data.result.logsBloom,
+          topics
+        );
+        const decodedData = web3.eth.abi.decodeParameters(
+          ['uint256', 'bytes32'],
+          data
+        );
+        if (
+          res.erc20ContractAddress &&
+          res.erc20ContractAddress.toLocaleLowerCase() ===
+            this.icNetworkTokens.id.toLocaleLowerCase()
+        ) {
+          const _principalHex = principalToBytes32(this.principal);
+          if (
+            res.principal &&
+            res.principal.toLocaleLowerCase() ===
+              _principalHex.toLocaleLowerCase()
+          ) {
+            this.ckETHMint.unshift({
+              txHash: txHash,
+              amount: decodedData[0].toString(10),
+              blockNum: Number(Receipt.data.result.blockNumber).toString(10),
+              time: time
+            });
+            const currentInfo =
+              JSON.parse(localStorage.getItem(this.principal)) || {};
+            if (!currentInfo['ckETHMint-' + this.icNetworkTokens.id]) {
+              currentInfo['ckETHMint-' + this.icNetworkTokens.id] = {};
+            }
+            currentInfo['ckETHMint-' + this.icNetworkTokens.id][
+              this.icNetworkTokens.tokenId
+            ] = this.ckETHMint;
+            localStorage.setItem(this.principal, JSON.stringify(currentInfo));
+            this.$message.success('Success.');
+            this.showAddTxHashForm = false;
+            loading.close();
+            return;
+          }
+        }
+      }
+    } catch (e) {}
+    this.$message.error(
+      'This txn is not a compliant transaction, is there a mistake?'
+    );
+    loading.close();
   }
   public async transferSuccess(): Promise<void> {
     this.$emit('getBalance');
@@ -8350,6 +8601,54 @@ export default class extends Vue {
       }
     }
   }
+  private async getTokenAllowance(
+    owner: string,
+    spender: string,
+    id: string,
+    ETHHttpsNum?: number,
+    retry = 0,
+    ETHHttpsKeys: Array<string> = ETHHttpsMainnet
+  ): Promise<any> {
+    try {
+      if (!ETHHttpsNum && ETHHttpsNum !== 0) {
+        ETHHttpsNum = Math.floor(Math.random() * ETHHttpsKeys.length);
+      } else {
+        if (ETHHttpsNum + 1 >= ETHHttpsKeys.length) {
+          ETHHttpsNum = 0;
+        } else {
+          ETHHttpsNum += 1;
+        }
+      }
+      const functionSelector = '0xdd62ed3e';
+      return await axios.post(ETHHttpsKeys[ETHHttpsNum], {
+        id: 1,
+        jsonrpc: '2.0',
+        params: [
+          {
+            to: id,
+            data: `${functionSelector}${owner
+              .replace(/^0x/, '')
+              .padStart(64, '0')}${spender
+              .replace(/^0x/, '')
+              .padStart(64, '0')}`
+          },
+          'latest'
+        ],
+        method: 'eth_call'
+      });
+    } catch (e) {
+      if (retry < ETHHttpsKeys.length) {
+        await this.getTokenAllowance(
+          owner,
+          spender,
+          id,
+          ETHHttpsNum,
+          ++retry,
+          ETHHttpsKeys
+        );
+      }
+    }
+  }
   private async getMintDepositing(): Promise<void> {
     this.getBalanceInit();
     if (this.depositMethod === 1) {
@@ -9287,8 +9586,65 @@ export default class extends Vue {
     this.forgeModalCKETH = true;
     this.initCKETHMint();
   }
+  private async getAllowance(
+    icNetworkTokens: ICNetworkTokensInterface
+  ): Promise<void> {
+    if (
+      this.ethereumIsUnlocked &&
+      icNetworkTokens.icTokenInfo.type &&
+      icNetworkTokens.icTokenInfo.type === 'dfinityERC20'
+    ) {
+      if (
+        icNetworkTokens.tokenId !== CK_ETH_LEDGER_CANISTER_ID &&
+        icNetworkTokens.tokenId !== ckETHSep
+      ) {
+        const accounts = await this.getRequestAccounts();
+        const res = await this.getTokenAllowance(
+          accounts[0],
+          this.depositHelperContractAddress,
+          icNetworkTokens.id
+        );
+        if (res.data.result) {
+          const allowanceStr = Number(res.data.result);
+          if (isNaN(allowanceStr)) {
+            this.tokenAllowance = '0';
+          } else {
+            this.tokenAllowance = new BigNumber(allowanceStr)
+              .div(10 ** this.icNetworkTokens.icTokenInfo.decimals)
+              .toString(10);
+          }
+        }
+      }
+    }
+  }
+  private async getEthereumIsUnlocked(): Promise<void> {
+    if (ethereum && ethereum.isConnected()) {
+      const isUnlocked = await ethereum._metamask.isUnlocked();
+      if (isUnlocked) {
+        const res = await ethereum.request({
+          method: 'wallet_getPermissions',
+          params: []
+        });
+        if (res && res.length) {
+          const ethChainId =
+            this.icNetworkTokens.networkId === '1' ||
+            this.icNetworkTokens.networkToIcId === '1'
+              ? '0x1'
+              : '0xaa36a7';
+          const chainId = await ethereum.request({ method: 'eth_chainId' });
+          if (Number(chainId) === Number(ethChainId)) {
+            this.ethereumIsUnlocked = true;
+            this.getAllowance(this.icNetworkTokens);
+            return;
+          }
+        }
+      }
+    }
+    this.ethereumIsUnlocked = false;
+  }
   private initCKETHMint(): void {
     if (this.principal && this.icNetworkTokens) {
+      this.getEthereumIsUnlocked();
       const id = this.icNetworkTokens.id;
       const tokenId = this.icNetworkTokens.tokenId;
       const currentInfo =
@@ -9350,6 +9706,9 @@ export default class extends Vue {
     this.ckETHTimer = window.setInterval(() => {
       if (this.principal) {
         if (this.$route.name === 'Account') {
+          if (this.ethereumIsUnlocked) {
+            this.getAllowance(this.icNetworkTokens);
+          }
           this.getCkETHMintBlockNum(
             icNetworkTokens.id,
             icNetworkTokens.tokenId
@@ -11034,6 +11393,7 @@ export default class extends Vue {
     this.ckETHTimer = null;
   }
   private afterForgeCloseCKETH(): void {
+    this.tokenAllowance = '0';
     this.mintStep = 1;
     this.ckETHMintPage = 1;
     (this.$refs as any).erc20Form &&
@@ -11071,6 +11431,12 @@ export default class extends Vue {
     this.depositingInfo = null;
     this.depositInfo = [];
     this.depositing = [];
+  }
+  private afterAddTxHashForm(): void {
+    if ((this.$refs as any).addTxHashForm) {
+      (this.$refs as any).addTxHashForm.resetFields();
+      this.addTxHashForm.txHash = '';
+    }
   }
   private clearTime(): void {
     window.clearInterval(this.balanceTimer);
@@ -11430,6 +11796,73 @@ export default class extends Vue {
       }
     });
   }
+  private async connectMetaMask(): Promise<void> {
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    try {
+      const accounts = await this.getRequestAccounts();
+      this.ethereumIsUnlocked = true;
+      this.getAllowance(this.icNetworkTokens);
+    } catch (e) {
+      //
+    }
+    loading.close();
+  }
+  private approveErc20(): void {
+    (this.$refs as any).erc20Form.validate(async (valid: any) => {
+      if (valid) {
+        if (!this.isMetaMaskInstalled()) {
+          this.metaMaskVisible = true;
+        } else {
+          const loading = this.$loading({
+            lock: true,
+            background: 'rgba(0, 0, 0, 0.5)'
+          });
+          try {
+            const accounts = await this.getRequestAccounts();
+            (loading as any).setText(
+              `Approve ${this.icNetworkTokens.icTokenInfo.symbol} ...`
+            );
+            const web3 = new Web3(ethereum);
+            const tokenContract = new web3.eth.Contract(
+              abi,
+              this.icNetworkTokens.id
+            );
+            const amount =
+              '0x' +
+              new BigNumber(this.erc20Form.amount)
+                .times(10 ** this.tokens[this.icNetworkTokens.tokenId].decimals)
+                .toString(16);
+            const approveRes = await tokenContract.methods
+              .approve(this.depositHelperContractAddress, amount)
+              .send({ from: accounts[0] });
+            this.getAllowance(this.icNetworkTokens);
+          } catch (e) {}
+          loading.close();
+        }
+      }
+    });
+  }
+  private async getRequestAccounts(): Promise<string[]> {
+    const ethChainId =
+      this.icNetworkTokens.networkId === '1' ||
+      this.icNetworkTokens.networkToIcId === '1'
+        ? '0x1'
+        : '0xaa36a7';
+    const chainId = await ethereum.request({ method: 'eth_chainId' });
+    if (chainId !== ethChainId) {
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: ethChainId }]
+      });
+    }
+    const accounts: string[] = await ethereum.request({
+      method: 'eth_requestAccounts'
+    });
+    return accounts;
+  }
   private transferFromMetaMaskCK(): void {
     (this.$refs as any).erc20Form.validate(async (valid: any) => {
       if (valid) {
@@ -11441,24 +11874,12 @@ export default class extends Vue {
             background: 'rgba(0, 0, 0, 0.5)'
           });
           try {
-            const ethChainId =
-              this.icNetworkTokens.networkId === '1' ||
-              this.icNetworkTokens.networkToIcId === '1'
-                ? '0x1'
-                : '0xaa36a7';
-            const chainId = await ethereum.request({ method: 'eth_chainId' });
-            if (chainId !== ethChainId) {
-              await ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: ethChainId }]
-              });
-            }
-            const accounts: string[] = await ethereum.request({
-              method: 'eth_requestAccounts'
-            });
+            const accounts = await this.getRequestAccounts();
             const amount =
               '0x' +
-              new BigNumber(this.erc20Form.amount).times(10 ** 18).toString(16);
+              new BigNumber(this.erc20Form.amount)
+                .times(10 ** this.icNetworkTokens.icTokenInfo.decimals)
+                .toString(16);
             const _principalHex = principalToBytes32(this.principal);
             const subaccount =
               '0x' + toHexString(new Uint8Array(fromSubAccountId(0)));
@@ -11544,24 +11965,15 @@ export default class extends Vue {
               this.changeMintStepCK(2);
               this.onGetMintCKETHPending();
             } else {
-              (loading as any).setText(
-                `Approve ${this.icNetworkTokens.icTokenInfo.symbol} ...`
-              );
-              const web3 = new Web3(ethereum);
-              const tokenContract = new web3.eth.Contract(
-                abi,
-                this.icNetworkTokens.id
-              );
-              const amount =
-                '0x' +
-                new BigNumber(this.erc20Form.amount)
-                  .times(
-                    10 ** this.tokens[this.icNetworkTokens.tokenId].decimals
-                  )
-                  .toString(16);
-              const approveRes = await tokenContract.methods
-                .approve(this.depositHelperContractAddress, amount)
-                .send({ from: accounts[0] });
+              await this.getAllowance(this.icNetworkTokens);
+              if (
+                new BigNumber(this.tokenAllowance).lt(this.erc20Form.amount)
+              ) {
+                this.$message.error(
+                  `Need approve ${this.icNetworkTokens.symbol} first.`
+                );
+                return;
+              }
               (loading as any).setText(
                 `Deposit ${this.icNetworkTokens.icTokenInfo.symbol} ...`
               );
@@ -11606,6 +12018,7 @@ export default class extends Vue {
                 this.icNetworkTokens.tokenId
               ] = this.ckETHMint;
               localStorage.setItem(this.principal, JSON.stringify(currentInfo));
+              this.getAllowance(this.icNetworkTokens);
               this.changeMintStepCK(2);
               this.onGetMintCKETHPending();
             }

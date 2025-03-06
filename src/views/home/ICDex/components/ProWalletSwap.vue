@@ -45,7 +45,12 @@
                 tokensBalanceSto[tokenId] |
                   bigintToFloat(8, tokens[tokenId].decimals)
               }}
-              {{ tokens[tokenId].symbol }})</span
+              {{ tokens[tokenId].symbol }})
+              <span
+                class="base-tip-size base-font-tip"
+                v-if="tokenId === 'hhaaz-2aaaa-aaaaq-aacla-cai'"
+                >(Reserved {{ minICLProWallet }} ICL)</span
+              ></span
             ></span
           >
         </span>
@@ -194,6 +199,7 @@ import { Principal } from '@dfinity/principal';
 import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { IcrcTransferError } from '@/ic/DRC20Token/model';
+import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
 @Component({
   name: 'ProWalletSwap',
   components: {}
@@ -215,6 +221,7 @@ export default class extends Vue {
     amount: ''
   };
   private showSwap = true;
+  private minICLProWallet = 100;
   private transferFormRules = {
     amount: [
       { required: true, message: 'Please enter Amount', trigger: 'change' },
@@ -236,6 +243,11 @@ export default class extends Vue {
       balance = new BigNumber(this.tokensBalanceSto[this.tokenId])
         .div(10 ** this.tokens[this.tokenId].decimals)
         .toString(10);
+      if (this.tokenId === IC_LIGHTHOUSE_TOKEN_CANISTER_ID) {
+        balance = new BigNumber(balance)
+          .minus(this.minICLProWallet)
+          .toString(10);
+      }
     }
     const fee = new BigNumber(getFee(this.tokens[this.tokenId]).toString(10))
       .div(10 ** this.tokens[this.tokenId].decimals)
@@ -385,8 +397,7 @@ export default class extends Vue {
                 this.$message.error(err);
               }
             }
-          } catch (e) {
-          }
+          } catch (e) {}
           loading.close();
         }
       }
@@ -412,6 +423,11 @@ export default class extends Vue {
       balance = new BigNumber(this.tokensBalanceSto[this.tokenId])
         .div(10 ** this.tokens[this.tokenId].decimals)
         .toString(10);
+      if (this.tokenId === IC_LIGHTHOUSE_TOKEN_CANISTER_ID) {
+        balance = new BigNumber(balance)
+          .minus(this.minICLProWallet)
+          .toString(10);
+      }
     }
     const fee = new BigNumber(getFee(this.tokens[this.tokenId]).toString(10))
       .div(10 ** this.tokens[this.tokenId].decimals)

@@ -708,6 +708,7 @@ export default class extends Vue {
       }
       this.proposals = this.proposals.concat(res.proposals);
     } catch (e) {
+      console.error(e);
     }
     this.busy = false;
     this.loading = false;

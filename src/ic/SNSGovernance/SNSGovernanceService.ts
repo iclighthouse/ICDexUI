@@ -18,7 +18,6 @@ import Service, {
   SNSManageNeuronResponse,
   SNSNeuronId
 } from '@/ic/SNSGovernance/model';
-import SNSGovernanceIDL from './SNSGovernance.did';
 import SNSGovernanceSNS1IDL from './SNSGovernanceSNS1.did';
 import { fromSubAccountId, SerializableIC } from '@/ic/converter';
 import { Principal } from '@dfinity/principal';

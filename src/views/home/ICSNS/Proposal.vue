@@ -1552,7 +1552,8 @@ export default class extends Vue {
 </style>
 <style lang="scss">
 .markdown-info {
-  word-break: break-word;
+  word-break: normal;
+  word-wrap: break-word;
   line-height: 18px;
   h1,
   h2,
@@ -1569,6 +1570,18 @@ export default class extends Vue {
   }
   img {
     max-width: 100%;
+  }
+  table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow: auto;
+    th,
+    td {
+      border: 1px solid #d0d7de;
+    }
   }
 }
 .voting-power-countdown-proposal {

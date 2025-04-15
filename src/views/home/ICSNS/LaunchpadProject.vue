@@ -1034,8 +1034,7 @@ export default class extends Mixins(BalanceMixin) {
           this.totalSupply = res;
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async listDeployedSnses(): Promise<void> {
     const loading = this.$loading({
@@ -1229,51 +1228,57 @@ export default class extends Mixins(BalanceMixin) {
     }
   }
   private async getSNSTokenInfo(swapId: string): Promise<SNSToken> {
-    const tokenId = this.$route.params.tokenId.trim();
-    const promiseAll = [];
-    const governanceCanisterId = this.governanceId;
-    promiseAll.push(
-      this.getSNSTokenGovernanceInfo(governanceCanisterId.toString(), tokenId),
-      this.getCurrentTokenInfo(tokenId),
-      this.getLifecycle(swapId, tokenId),
-      this.getParams(swapId, tokenId),
-      this.listCommunityFundParticipants(swapId),
-      this.getInit(swapId)
-    );
-    // Buyers total length
-    this.getBuyersTotal(swapId, 3000, 1);
-    this.getNeuronRecipesTotal(swapId, 3000, 1);
-    const res = await Promise.all(promiseAll);
-    let params = res[3];
-    if (!params || (params && !params.length)) {
-      params = await this.getProposalParams(swapId);
-    }
-    if (res[2] && res[2][0]) {
-      if (Number(res[2][0]) === 1) {
-        // LIFECYCLE_PENDING
-        this.getProposalInfo();
-        window.clearInterval(this.timer1);
-        this.timer1 = window.setInterval(() => {
-          if (!this.getCheckAuth) {
-            this.getProposalInfo();
-          }
-        }, 60 * 1000);
-      } else {
-        this.getSNSTokenSwapState(swapId);
+    try {
+      const tokenId = this.$route.params.tokenId.trim();
+      const promiseAll = [];
+      const governanceCanisterId = this.governanceId;
+      promiseAll.push(
+        this.getSNSTokenGovernanceInfo(
+          governanceCanisterId.toString(),
+          tokenId
+        ),
+        this.getCurrentTokenInfo(tokenId),
+        this.getLifecycle(swapId, tokenId),
+        this.getParams(swapId, tokenId),
+        this.listCommunityFundParticipants(swapId),
+        this.getInit(swapId)
+      );
+      // Buyers total length
+      this.getBuyersTotal(swapId, 3000, 1);
+      this.getNeuronRecipesTotal(swapId, 3000, 1);
+      const res = await Promise.all(promiseAll);
+      let params = res[3];
+      if (!params || (params && !params.length)) {
+        params = await this.getProposalParams(swapId);
       }
+      if (res[2] && res[2][0]) {
+        if (Number(res[2][0]) === 1) {
+          // LIFECYCLE_PENDING
+          this.getProposalInfo();
+          window.clearInterval(this.timer1);
+          this.timer1 = window.setInterval(() => {
+            if (!this.getCheckAuth) {
+              this.getProposalInfo();
+            }
+          }, 60 * 1000);
+        } else {
+          this.getSNSTokenSwapState(swapId);
+        }
+      }
+      return {
+        tokenId: tokenId,
+        swapId: swapId,
+        ...res[1],
+        ...res[0],
+        lifecycle: res[2],
+        params: params,
+        cf_participants: res[4],
+        // state: res[2]
+        // buyersTotal: res[2],
+        init: res[5]
+      };
+    } catch (e) {
     }
-    return {
-      tokenId: tokenId,
-      swapId: swapId,
-      ...res[1],
-      ...res[0],
-      lifecycle: res[2],
-      params: params,
-      cf_participants: res[4],
-      // state: res[2]
-      // buyersTotal: res[2],
-      init: res[5]
-    };
   }
   private async getInit(tokenId: string): Promise<Init> {
     const snsSwapService = new SNSSwapService();
@@ -1391,8 +1396,7 @@ export default class extends Mixins(BalanceMixin) {
           }
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     return null;
   }
   /**
@@ -1511,8 +1515,7 @@ export default class extends Mixins(BalanceMixin) {
         });
       });
       this.buyers = this.buyers.concat(buyers);
-    } catch (e) {
-    }
+    } catch (e) {}
     this.busyBuyers = false;
   }
   private async listSnsNeuronRecipes(
@@ -1555,8 +1558,7 @@ export default class extends Mixins(BalanceMixin) {
         });
       });
       this.neuronRecipes = this.neuronRecipes.concat(neuronRecipes);
-    } catch (e) {
-    }
+    } catch (e) {}
     this.busyNeuronRecipes = false;
   }
   private async listCommunityFundParticipants(
@@ -1633,8 +1635,7 @@ export default class extends Mixins(BalanceMixin) {
           this.getProposalInfo();
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async getProposalInfo(): Promise<void> {
     if (this.proposalId) {
@@ -1829,8 +1830,7 @@ export default class extends Mixins(BalanceMixin) {
           this.refreshPendingLifecycle();
         }, 1000);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async onFinish(): Promise<void> {
     this.pendingLoading = true;
@@ -1967,8 +1967,7 @@ export default class extends Mixins(BalanceMixin) {
         event,
         Principal.fromText(this.getPrincipalId)
       );
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async refreshState(): Promise<void> {
     // this.getBuyersTotal(this.currentToken.swapId.toString(), 3000, 1);
@@ -2003,8 +2002,7 @@ export default class extends Mixins(BalanceMixin) {
     });
     try {
       await this.refreshBuyerToken();
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private async refreshBuyerToken(): Promise<void> {

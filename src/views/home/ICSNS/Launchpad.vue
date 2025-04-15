@@ -877,7 +877,7 @@ export default class extends Vue {
         //     .times(1000)
         //     .decimalPlaces(0)
         //     .toNumber();
-        //   
+        //
         //   this.$set(res, 'deadline', deadline);
         // }
       }
@@ -890,110 +890,115 @@ export default class extends Vue {
     const localReject: Array<string> =
       JSON.parse(localStorage.getItem('rejectSNSTokens')) || [];
     this.SNSTokens.forEach((token) => {
-      if (token.lifecycle && token.lifecycle.length) {
-        if (
-          Number(token.lifecycle[0]) === 1 ||
-          Number(token.lifecycle[0]) === 5
-        ) {
-          this.SNSTokensPending.push(token);
-        }
-        if (Number(token.lifecycle[0]) === 2) {
-          this.SNSTokensOpen.push(token);
-        }
-        if (
-          Number(token.lifecycle[0]) === 3
-          // || Number(token.lifecycle[0]) === 4
-        ) {
-          this.SNSTokensCommitted.push(token);
-        }
-        if (Number(token.lifecycle[0]) !== 4) {
-          const sns =
-            JSON.parse(localStorage.getItem(`${token.tokenId}-SNS`)) || {};
-          localStorage.setItem(
-            `${token.tokenId}-SNS`,
-            JSON.stringify(Object.assign({}, sns, token), (key, value) =>
-              typeof value === 'bigint' ? value.toString(10) : value
-            )
-          );
-        }
-        if (Number(token.lifecycle[0]) === 4) {
+      if (token) {
+        if (token.lifecycle && token.lifecycle.length) {
+          if (
+            Number(token.lifecycle[0]) === 1 ||
+            Number(token.lifecycle[0]) === 5
+          ) {
+            this.SNSTokensPending.push(token);
+          }
+          if (Number(token.lifecycle[0]) === 2) {
+            this.SNSTokensOpen.push(token);
+          }
+          if (
+            Number(token.lifecycle[0]) === 3
+            // || Number(token.lifecycle[0]) === 4
+          ) {
+            this.SNSTokensCommitted.push(token);
+          }
+          if (Number(token.lifecycle[0]) !== 4) {
+            const sns =
+              JSON.parse(localStorage.getItem(`${token.tokenId}-SNS`)) || {};
+            localStorage.setItem(
+              `${token.tokenId}-SNS`,
+              JSON.stringify(Object.assign({}, sns, token), (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+              )
+            );
+          }
+          if (Number(token.lifecycle[0]) === 4) {
+            if (!localReject.includes(token.tokenId)) {
+              localReject.push(token.tokenId);
+            }
+          }
+        } else {
           if (!localReject.includes(token.tokenId)) {
             localReject.push(token.tokenId);
           }
         }
-      } else {
-        if (!localReject.includes(token.tokenId)) {
-          localReject.push(token.tokenId);
-        }
-      }
+			}
     });
     localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     this.loading = false;
   }
   private async getSNSTokenInfo(deployedSns: DeployedSns): Promise<SNSToken> {
-    const promiseAll = [];
-    const ledgerCanisterId = deployedSns.ledger_canister_id[0];
-    const governanceCanisterId = deployedSns.governance_canister_id[0];
-    const swapCanisterId = deployedSns.swap_canister_id[0];
-    promiseAll.push(
-      this.getSNSTokenGovernanceInfo(
-        governanceCanisterId.toString(),
-        ledgerCanisterId.toString()
-      ),
-      this.getCurrentTokenInfo(ledgerCanisterId),
-      this.getLifecycle(swapCanisterId.toString(), ledgerCanisterId.toString()),
-      this.getParams(swapCanisterId.toString(), ledgerCanisterId.toString()),
-      this.getDerivedState(swapCanisterId.toString())
-      // this.listCommunityFundParticipants(swapCanisterId.toString())
-    );
-    const res = await Promise.all(promiseAll);
-    let params = res[3];
-    let proposalId = null;
-    let deadline = null;
-    if (res[2] && res[2][0] && Number(res[2][0]) === 5) {
-      try {
-        const res = await this.getSNSTokenSwapState(swapCanisterId.toString());
-        proposalId = res.swap[0].open_sns_token_swap_proposal_id[0];
-        if (
-          res &&
-          res.swap &&
-          res.swap.length &&
-          res.swap[0].init &&
-          res.swap[0].init.length &&
-          res.swap[0].init[0].swap_start_timestamp_seconds &&
-          res.swap[0].init[0].swap_start_timestamp_seconds.length
-        ) {
-          deadline = new BigNumber(
-            res.swap[0].init[0].swap_start_timestamp_seconds[0].toString(10)
-          )
-            .times(1000)
-            .toNumber();
+    try {
+      const promiseAll = [];
+      const ledgerCanisterId = deployedSns.ledger_canister_id[0];
+      const governanceCanisterId = deployedSns.governance_canister_id[0];
+      const swapCanisterId = deployedSns.swap_canister_id[0];
+      promiseAll.push(
+        this.getSNSTokenGovernanceInfo(
+          governanceCanisterId.toString(),
+          ledgerCanisterId.toString()
+        ),
+        this.getCurrentTokenInfo(ledgerCanisterId),
+        this.getLifecycle(swapCanisterId.toString(), ledgerCanisterId.toString()),
+        this.getParams(swapCanisterId.toString(), ledgerCanisterId.toString()),
+        this.getDerivedState(swapCanisterId.toString())
+        // this.listCommunityFundParticipants(swapCanisterId.toString())
+      );
+      const res = await Promise.all(promiseAll);
+      let params = res[3];
+      let proposalId = null;
+      let deadline = null;
+      if (res[2] && res[2][0] && Number(res[2][0]) === 5) {
+        try {
+          const res = await this.getSNSTokenSwapState(swapCanisterId.toString());
+          proposalId = res.swap[0].open_sns_token_swap_proposal_id[0];
+          if (
+            res &&
+            res.swap &&
+            res.swap.length &&
+            res.swap[0].init &&
+            res.swap[0].init.length &&
+            res.swap[0].init[0].swap_start_timestamp_seconds &&
+            res.swap[0].init[0].swap_start_timestamp_seconds.length
+          ) {
+            deadline = new BigNumber(
+              res.swap[0].init[0].swap_start_timestamp_seconds[0].toString(10)
+            )
+              .times(1000)
+              .toNumber();
+          }
+        } catch (e) {
         }
-      } catch (e) {
       }
+      // let communityFund = '0';
+      // if (res[5]) {
+      //   res[5].forEach((participant) => {
+      //     participant.cf_neurons.forEach((neuron) => {
+      //       communityFund = new BigNumber(neuron.amount_icp_e8s.toString(10))
+      //         .plus(communityFund)
+      //         .toString(10);
+      //     });
+      //   });
+      // }
+      const buyersTotal = new BigNumber(res[4].toString(10)).toString(10);
+      return {
+        tokenId: ledgerCanisterId.toString(),
+        swapId: swapCanisterId.toString(),
+        ...res[1],
+        ...res[0],
+        lifecycle: res[2],
+        params: params,
+        proposalId: proposalId,
+        buyersTotal: BigInt(buyersTotal),
+        deadline: deadline
+      };
+    } catch (e) {
     }
-    // let communityFund = '0';
-    // if (res[5]) {
-    //   res[5].forEach((participant) => {
-    //     participant.cf_neurons.forEach((neuron) => {
-    //       communityFund = new BigNumber(neuron.amount_icp_e8s.toString(10))
-    //         .plus(communityFund)
-    //         .toString(10);
-    //     });
-    //   });
-    // }
-    const buyersTotal = new BigNumber(res[4].toString(10)).toString(10);
-    return {
-      tokenId: ledgerCanisterId.toString(),
-      swapId: swapCanisterId.toString(),
-      ...res[1],
-      ...res[0],
-      lifecycle: res[2],
-      params: params,
-      proposalId: proposalId,
-      buyersTotal: BigInt(buyersTotal),
-      deadline: deadline
-    };
   }
   private async listCommunityFundParticipants(
     tokenId: string

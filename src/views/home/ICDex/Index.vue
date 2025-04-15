@@ -13034,6 +13034,7 @@
       @gridDepositKeepingBalance="gridDepositKeepingBalance"
       @transferICLToPro="transferICLToPro"
       @toTradeICL="toTradeICL"
+      @refreshBalance="refreshBalance"
     ></pro-order>
     <pro-wallet-swap
       v-if="currentPair"
@@ -15789,6 +15790,7 @@ export default class extends Vue {
       //   return;
       // }
     }
+    this.transferICLToPro();
     (this.$refs as any).proOrder.init(this.currentProOrderMenu);
   }
   private showProOrderMenu(): void {
@@ -18212,6 +18214,13 @@ export default class extends Vue {
     ];
     this.getTokenBalance(tokenInfo);
     this.getTokenBalanceSto(tokenInfo);
+  }
+  private refreshBalance(token: SwapTokenInfo): void {
+    this.getTokenBalance(token).then(() => {
+      this.getTokenBalanceSto(token).then(() => {
+        (this.$refs as any).proOrder.refreshBalanceICLSuccess();
+      });
+    });
   }
   private proWalletSwapSuccess(): void {
     const token0Info = this.currentPair[1][0].token0;

@@ -144,7 +144,7 @@ export default class extends Vue {
     //     (this.$refs.passwordForm as FormModel).validateField(
     //       'checkPassword',
     //       (errorMessage) => {
-    //         
+    //
     //       }
     //     );
     //   }

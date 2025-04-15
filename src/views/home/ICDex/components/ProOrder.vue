@@ -1423,7 +1423,8 @@
       :tokens="tokens"
       ref="proWalletSwap"
       @proWalletSwapSuccess="proWalletSwapSuccess"
-			@toTradeICL="toTradeICL"
+			@refreshBalance="refreshBalance"
+      @toTradeICL="toTradeICL"
     ></pro-wallet-swap>
   </div>
 </template>
@@ -1476,6 +1477,7 @@ import { SysConfig } from '@/ic/ICDexRouter/model';
 import { getTokenBalance } from '@/ic/getTokenBalance';
 import ProWalletSwap from '@/views/home/ICDex/components/ProWalletSwap.vue';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
+import { SwapTokenInfo } from '@/ic/ICSwapRouter/model';
 const ProSubaccountId = 1;
 @Component({
   name: 'proOrder',
@@ -1806,8 +1808,7 @@ export default class extends Vue {
     if (value && this.VWAPForm.quantityPerOrder !== '') {
       (this.$refs.VWAPForm as any).validateField(
         'quantityPerOrder',
-        (errorMessage) => {
-        }
+        (errorMessage) => {}
       );
     }
     if (
@@ -1862,8 +1863,7 @@ export default class extends Vue {
     if (value && this.TWAPForm.quantityPerOrder !== '') {
       (this.$refs.TWAPForm as any).validateField(
         'quantityPerOrder',
-        (errorMessage) => {
-        }
+        (errorMessage) => {}
       );
     }
     if (
@@ -2054,8 +2054,7 @@ export default class extends Vue {
     if (value && this.iceForm.quantityPerOrder !== '') {
       (this.$refs.iceForm as any).validateField(
         'quantityPerOrder',
-        (errorMessage) => {
-        }
+        (errorMessage) => {}
       );
     }
     if (
@@ -2248,6 +2247,9 @@ export default class extends Vue {
     this.TWAPTokenLimit = TokenEnum.Token0;
     this.setTimeIntervalList();
   }
+  private refreshBalanceICLSuccess(): void {
+    (this.$refs as any).proWalletSwap.refreshBalanceICLSuccess();
+	}
   private setTimeInterval(time: string): void {
     this.TWAPForm.timeInterval = time;
     (this.$refs as any).TWAPForm.clearValidate('timeInterval');
@@ -2707,7 +2709,7 @@ export default class extends Vue {
         return false;
       } else {
         // const amount = new BigNumber(fee).minus(balance).toString(10);
-        // 
+        //
         // await currentDrc20Token.icrc1Transfer(sysToken, BigInt(amount), {
         //   owner: Principal.fromText(principal),
         //   subaccount: [fromSubAccountId(ProSubaccountId)]
@@ -3344,6 +3346,9 @@ export default class extends Vue {
   }
   private proWalletSwapSuccess(): void {
     this.$emit('transferICLToPro');
+  }
+  private refreshBalance(token: SwapTokenInfo): void {
+    this.$emit('refreshBalance', token);
   }
   private toTradeICL(): void {
     this.$emit('toTradeICL');

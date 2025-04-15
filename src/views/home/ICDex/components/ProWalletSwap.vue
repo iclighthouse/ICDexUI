@@ -156,6 +156,17 @@
               }}
             </span>
             {{ tokens[tokenId].symbol }}
+            <a-icon
+              @click="refreshBalance"
+              v-show="!refreshBalanceLoading"
+              type="reload"
+              class="reload-icon"
+            />
+            <a-icon
+              v-show="refreshBalanceLoading"
+              type="loading"
+              class="reload-icon"
+            />
           </p>
           <p>
             Fee:
@@ -200,6 +211,7 @@ import { Txid, TxnResultErr } from '@/ic/ICLighthouseToken/model';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
 import { IcrcTransferError } from '@/ic/DRC20Token/model';
 import { IC_LIGHTHOUSE_TOKEN_CANISTER_ID } from '@/ic/utils';
+import { SwapTokenInfo } from '@/ic/ICSwapRouter/model';
 @Component({
   name: 'ProWalletSwap',
   components: {}
@@ -229,6 +241,7 @@ export default class extends Vue {
     ]
   };
   private isH5 = true;
+  private refreshBalanceLoading = false;
   private validateAmount(
     rule: ValidationRule,
     value: number,
@@ -402,6 +415,18 @@ export default class extends Vue {
         }
       }
     );
+  }
+  private refreshBalance(): void {
+    this.refreshBalanceLoading = true;
+    const token: SwapTokenInfo = [
+      Principal.fromText(this.tokenId),
+      this.tokens[this.tokenId].symbol,
+      this.tokens[this.tokenId].tokenStd
+    ];
+    this.$emit('refreshBalance', token);
+  }
+  private refreshBalanceICLSuccess(): void {
+    this.refreshBalanceLoading = false;
   }
   private changeType(): void {
     if (this.type === 'toPro') {

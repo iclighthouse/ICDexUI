@@ -854,42 +854,44 @@ export default class extends Vue {
       index += res.length;
     }
     this.SNSTokens = this.SNSTokens.filter((SNSToken: proposalsNeurons) => {
-      if (
-        (SNSToken.lifecycle &&
-          SNSToken.lifecycle.length &&
-          Number(SNSToken.lifecycle[0]) === 4) ||
-        (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
-      ) {
-        if (!localReject.includes(SNSToken.tokenId)) {
-          localReject.push(SNSToken.tokenId);
+      if (SNSToken && SNSToken.lifecycle) {
+        if (
+          (SNSToken.lifecycle &&
+            SNSToken.lifecycle.length &&
+            Number(SNSToken.lifecycle[0]) === 4) ||
+          (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
+        ) {
+          if (!localReject.includes(SNSToken.tokenId)) {
+            localReject.push(SNSToken.tokenId);
+          }
         }
-      }
-      if (
-        SNSToken.lifecycle &&
-        SNSToken.lifecycle.length &&
-        Number(SNSToken.lifecycle[0]) !== 4
-      ) {
-        const sns =
-          JSON.parse(localStorage.getItem(`${SNSToken.tokenId}-SNS`)) || {};
-        localStorage.setItem(
-          `${SNSToken.tokenId}-SNS`,
-          JSON.stringify(
-            Object.assign({}, sns, {
-              url: SNSToken.url,
-              logo: SNSToken.logo,
-              name: SNSToken.name,
-              description: SNSToken.description,
-              lifecycle: SNSToken.lifecycle,
-              nervousSystemParameters: SNSToken.nervousSystemParameters,
-              listNervousSystemFunctionsResponse:
+        if (
+          SNSToken.lifecycle &&
+          SNSToken.lifecycle.length &&
+          Number(SNSToken.lifecycle[0]) !== 4
+        ) {
+          const sns =
+            JSON.parse(localStorage.getItem(`${SNSToken.tokenId}-SNS`)) || {};
+          localStorage.setItem(
+            `${SNSToken.tokenId}-SNS`,
+            JSON.stringify(
+              Object.assign({}, sns, {
+                url: SNSToken.url,
+                logo: SNSToken.logo,
+                name: SNSToken.name,
+                description: SNSToken.description,
+                lifecycle: SNSToken.lifecycle,
+                nervousSystemParameters: SNSToken.nervousSystemParameters,
+                listNervousSystemFunctionsResponse:
                 SNSToken.listNervousSystemFunctionsResponse
-            }),
-            (key, value) =>
-              typeof value === 'bigint' ? value.toString(10) : value
-          )
-        );
-        return true;
-      }
+              }),
+              (key, value) =>
+                typeof value === 'bigint' ? value.toString(10) : value
+            )
+          );
+          return true;
+        }
+			}
     });
     localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     this.setCurrentIndex();
@@ -920,54 +922,57 @@ export default class extends Vue {
     deployedSns: DeployedSns,
     init = false
   ): Promise<proposalsNeurons> {
-    const promiseAll = [];
-    const ledgerCanisterId = deployedSns.ledger_canister_id[0];
-    const governanceCanisterId = deployedSns.governance_canister_id[0];
-    const swapCanisterId = deployedSns.swap_canister_id[0];
-    promiseAll.push(
-      this.getSNSTokenGovernanceInfo(
-        governanceCanisterId.toString(),
-        ledgerCanisterId.toString(),
-        init
-      ),
-      this.getNervousSystemParameters(
-        governanceCanisterId.toString(),
-        ledgerCanisterId.toString(),
-        init
-      ),
-      this.getDecimals(ledgerCanisterId.toString(), init),
-      this.getListNervousSystemFunctions(governanceCanisterId.toString()),
-      this.getName(ledgerCanisterId.toString(), init),
-      this.getLifecycle(
-        swapCanisterId.toString(),
-        ledgerCanisterId.toString(),
-        init
-      )
-    );
-    const res = await Promise.all(promiseAll);
-    let allTopics = [];
-    let types = {};
-    let listTypes = [];
-    if (res[3] && res[3].functions) {
-      res[3].functions.forEach((item) => {
-        types[item.id.toString(10)] = item;
-        if (Number(item.id) !== 0) {
-          listTypes.push(item);
-          allTopics.push(item.id);
-        }
-      });
+    try {
+      const promiseAll = [];
+      const ledgerCanisterId = deployedSns.ledger_canister_id[0];
+      const governanceCanisterId = deployedSns.governance_canister_id[0];
+      const swapCanisterId = deployedSns.swap_canister_id[0];
+      promiseAll.push(
+        this.getSNSTokenGovernanceInfo(
+          governanceCanisterId.toString(),
+          ledgerCanisterId.toString(),
+          init
+        ),
+        this.getNervousSystemParameters(
+          governanceCanisterId.toString(),
+          ledgerCanisterId.toString(),
+          init
+        ),
+        this.getDecimals(ledgerCanisterId.toString(), init),
+        this.getListNervousSystemFunctions(governanceCanisterId.toString()),
+        this.getName(ledgerCanisterId.toString(), init),
+        this.getLifecycle(
+          swapCanisterId.toString(),
+          ledgerCanisterId.toString(),
+          init
+        )
+      );
+      const res = await Promise.all(promiseAll);
+      let allTopics = [];
+      let types = {};
+      let listTypes = [];
+      if (res[3] && res[3].functions) {
+        res[3].functions.forEach((item) => {
+          types[item.id.toString(10)] = item;
+          if (Number(item.id) !== 0) {
+            listTypes.push(item);
+            allTopics.push(item.id);
+          }
+        });
+      }
+      return {
+        tokenId: ledgerCanisterId.toString(),
+        governanceId: governanceCanisterId.toString(),
+        ...res[0],
+        types: types,
+        allTopics: allTopics, // allTypes
+        listTypes: listTypes,
+        nervousSystemParameters: res[1],
+        decimals: res[2],
+        lifecycle: res[5]
+      };
+    } catch (e) {
     }
-    return {
-      tokenId: ledgerCanisterId.toString(),
-      governanceId: governanceCanisterId.toString(),
-      ...res[0],
-      types: types,
-      allTopics: allTopics, // allTypes
-      listTypes: listTypes,
-      nervousSystemParameters: res[1],
-      decimals: res[2],
-      lifecycle: res[5]
-    };
   }
   private async getSNSTokenGovernanceInfo(
     governance: string,
@@ -1063,8 +1068,7 @@ export default class extends Vue {
       return await snsGovernanceService.listNervousSystemFunctions(
         governanceCanisterId
       );
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private onCheckChangeTopics(): void {
     this.checkAllTopics =

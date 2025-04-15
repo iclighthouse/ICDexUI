@@ -43,9 +43,9 @@
           <div v-if="token" class="sns-token-list-item-balance">
             <span class="token-balance">
               {{
-                token.balance
-                  | bigintToFloat(token.decimals, token.decimals)
-                  | formatNum
+                token.balance |
+                  bigintToFloat(token.decimals, token.decimals) |
+                  formatNum
               }}</span
             ><span class="token-symbol">{{ token.symbol }} </span>
           </div>
@@ -173,8 +173,7 @@ export default class extends Vue {
   private async transferTokenSuccess(): Promise<void> {
     try {
       this.getICRCBalance(this.currentIndex);
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async getICRCBalance(index: number): Promise<void> {
     const res = await getTokenBalance(
@@ -299,30 +298,32 @@ export default class extends Vue {
       }
     }
     this.SNSTokens = snsTokens.filter((SNSToken: SNSToken) => {
-      if (
-        (SNSToken.lifecycle &&
-          SNSToken.lifecycle.length &&
-          Number(SNSToken.lifecycle[0]) === 4) ||
-        (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
-      ) {
-        if (!localReject.includes(SNSToken.tokenId)) {
-          localReject.push(SNSToken.tokenId);
+      if (SNSToken) {
+        if (
+          (SNSToken.lifecycle &&
+            SNSToken.lifecycle.length &&
+            Number(SNSToken.lifecycle[0]) === 4) ||
+          (SNSToken.lifecycle && SNSToken.lifecycle.length === 0)
+        ) {
+          if (!localReject.includes(SNSToken.tokenId)) {
+            localReject.push(SNSToken.tokenId);
+          }
         }
-      }
-      if (
-        SNSToken.lifecycle &&
-        SNSToken.lifecycle.length &&
-        Number(SNSToken.lifecycle[0]) !== 4
-      ) {
-        const sns =
-          JSON.parse(localStorage.getItem(`${SNSToken.tokenId}-SNS`)) || {};
-        localStorage.setItem(
-          `${SNSToken.tokenId}-SNS`,
-          JSON.stringify(Object.assign({}, sns, SNSToken), (key, value) =>
-            typeof value === 'bigint' ? value.toString(10) : value
-          )
-        );
-        return true;
+        if (
+          SNSToken.lifecycle &&
+          SNSToken.lifecycle.length &&
+          Number(SNSToken.lifecycle[0]) !== 4
+        ) {
+          const sns =
+            JSON.parse(localStorage.getItem(`${SNSToken.tokenId}-SNS`)) || {};
+          localStorage.setItem(
+            `${SNSToken.tokenId}-SNS`,
+            JSON.stringify(Object.assign({}, sns, SNSToken), (key, value) =>
+              typeof value === 'bigint' ? value.toString(10) : value
+            )
+          );
+          return true;
+        }
       }
     });
     localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
@@ -376,45 +377,51 @@ export default class extends Vue {
     }, 5000);
   }
   private async getSNSTokenInfo(deployedSns: DeployedSns): Promise<SNSToken> {
-    const promiseAll = [];
-    const ledgerCanisterId = deployedSns.ledger_canister_id[0];
-    const governanceCanisterId = deployedSns.governance_canister_id[0];
-    const swapCanisterId = deployedSns.swap_canister_id[0];
-    promiseAll.push(
-      this.getSNSTokenGovernanceInfo(
-        governanceCanisterId.toString(),
-        ledgerCanisterId.toString()
-      ),
-      this.getCurrentTokenInfo(ledgerCanisterId),
-      this.getLifecycle(swapCanisterId.toString(), ledgerCanisterId.toString())
-    );
-    const info = JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
-    if (
-      !(
+    try {
+      const promiseAll = [];
+      const ledgerCanisterId = deployedSns.ledger_canister_id[0];
+      const governanceCanisterId = deployedSns.governance_canister_id[0];
+      const swapCanisterId = deployedSns.swap_canister_id[0];
+      promiseAll.push(
+        this.getSNSTokenGovernanceInfo(
+          governanceCanisterId.toString(),
+          ledgerCanisterId.toString()
+        ),
+        this.getCurrentTokenInfo(ledgerCanisterId),
+        this.getLifecycle(
+          swapCanisterId.toString(),
+          ledgerCanisterId.toString()
+        )
+      );
+      const info = JSON.parse(localStorage.getItem(this.getPrincipalId)) || {};
+      if (
+        !(
+          info &&
+          info.tokensBalance &&
+          info.tokensBalance[ledgerCanisterId.toString()]
+        )
+      ) {
+        promiseAll.unshift(
+          getTokenBalance({ icrc1: null }, ledgerCanisterId.toString())
+        );
+      }
+      const res = await Promise.all(promiseAll);
+      if (
         info &&
         info.tokensBalance &&
         info.tokensBalance[ledgerCanisterId.toString()]
-      )
-    ) {
-      promiseAll.unshift(
-        getTokenBalance({ icrc1: null }, ledgerCanisterId.toString())
-      );
+      ) {
+        res.unshift(info.tokensBalance[ledgerCanisterId.toString()]);
+      }
+      return {
+        tokenId: ledgerCanisterId.toString(),
+        balance: res[0],
+        lifecycle: res[3],
+        ...res[2],
+        ...res[1]
+      };
+    } catch (e) {
     }
-    const res = await Promise.all(promiseAll);
-    if (
-      info &&
-      info.tokensBalance &&
-      info.tokensBalance[ledgerCanisterId.toString()]
-    ) {
-      res.unshift(info.tokensBalance[ledgerCanisterId.toString()]);
-    }
-    return {
-      tokenId: ledgerCanisterId.toString(),
-      balance: res[0],
-      lifecycle: res[3],
-      ...res[2],
-      ...res[1]
-    };
   }
   private async getCurrentTokenInfo(tokenId: Principal): Promise<TokenInfo> {
     if (!this.tokens[tokenId.toString()]) {

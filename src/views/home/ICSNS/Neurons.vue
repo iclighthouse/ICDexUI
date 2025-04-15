@@ -2622,21 +2622,25 @@ export default class extends Vue {
     index: number,
     isInit = false
   ): Promise<void> {
-    const swapId = deployedSns.swap_canister_id[0].toString();
-    const tokenId = deployedSns.ledger_canister_id[0].toString();
-    const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
-    const completed = [3, 4];
-    if (
-      !isInit &&
-      info &&
-      info.lifecycle &&
-      completed.includes(Number(info.lifecycle))
-    ) {
-      this.$set(this.SNSNeuronsList[index], 'lifecycle', info.lifecycle);
-    } else {
-      const snsSwapService = new SNSSwapService();
-      const res = await snsSwapService.getLifecycle(swapId);
-      this.$set(this.SNSNeuronsList[index], 'lifecycle', res.lifecycle);
+    try {
+      const swapId = deployedSns.swap_canister_id[0].toString();
+      const tokenId = deployedSns.ledger_canister_id[0].toString();
+      const info = JSON.parse(localStorage.getItem(`${tokenId}-SNS`)) || {};
+      const completed = [3, 4];
+      if (
+        !isInit &&
+        info &&
+        info.lifecycle &&
+        completed.includes(Number(info.lifecycle))
+      ) {
+        this.$set(this.SNSNeuronsList[index], 'lifecycle', info.lifecycle);
+      } else {
+        const snsSwapService = new SNSSwapService();
+        const res = await snsSwapService.getLifecycle(swapId);
+        this.$set(this.SNSNeuronsList[index], 'lifecycle', res.lifecycle);
+      }
+    } catch (e) {
+			//
     }
   }
   private async getCurrentTokenInfo(
@@ -2644,16 +2648,20 @@ export default class extends Vue {
     index: number,
     isInit = false
   ): Promise<void> {
-    const tokenId = deployedSns.ledger_canister_id[0];
-    if (isInit || !this.tokens[tokenId.toString()]) {
-      const res = await getTokenInfo(tokenId, { icrc1: null });
-      this.$set(this.SNSNeuronsList[index], 'SNSNeuronOfSNSTokenInfo', res);
-    } else {
-      this.$set(
-        this.SNSNeuronsList[index],
-        'SNSNeuronOfSNSTokenInfo',
-        this.tokens[tokenId.toString()]
-      );
+    try {
+      const tokenId = deployedSns.ledger_canister_id[0];
+      if (isInit || !this.tokens[tokenId.toString()]) {
+        const res = await getTokenInfo(tokenId, { icrc1: null });
+        this.$set(this.SNSNeuronsList[index], 'SNSNeuronOfSNSTokenInfo', res);
+      } else {
+        this.$set(
+          this.SNSNeuronsList[index],
+          'SNSNeuronOfSNSTokenInfo',
+          this.tokens[tokenId.toString()]
+        );
+      }
+    } catch (e) {
+			//
     }
   }
   private async createNeuronSuccess(

@@ -2224,7 +2224,14 @@
       <div class="modal-title-info" slot="title">
         <div class="modal-title-main">{{ forgeTitleETH }}</div>
       </div>
-      <div class="step-list">
+      <div
+        class="step-list"
+        v-show="
+          icNetworkTokens &&
+          icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai' &&
+          icNetworkTokens.tokenId !== 'apia6-jaaaa-aaaar-qabma-cai'
+        "
+      >
         <span
           :class="{ active: mintStep > 1 }"
           @click="previousMintStepCK()"
@@ -2240,7 +2247,7 @@
           @click="changeMintStepCK(1)"
           class="pointer"
         >
-          <span class="step-list-num">1</span><span>Send</span>
+          <span class="step-list-num">1</span><span>Approve</span>
         </div>
         <div
           :class="{ active: mintStep === 2 }"
@@ -2248,13 +2255,67 @@
           class="pointer step-list-center"
         >
           <span class="step-list-line"></span>
-          <span class="step-list-center-t">
-            <span class="step-list-num">2</span><span>Records</span></span
+          <span class="step-list-center-t"
+            ><span class="step-list-num">2</span>Send</span
           >
+          <span class="step-list-line"></span>
+        </div>
+        <div
+          :class="{ active: mintStep === 3 }"
+          @click="changeMintStepCK(3)"
+          class="pointer"
+        >
+          <span class="step-list-num">3</span><span>Record</span>
         </div>
         <span
-          :class="{ active: mintStep < 2 }"
-          @click="nextMintStepCK(2)"
+          :class="{ active: mintStep < 3 }"
+          @click="nextMintStepCK(3)"
+          class="step-next pc-show"
+        >
+          <a-tooltip placement="top">
+            <template slot="title">Next</template>
+            <a-icon type="double-right" />
+          </a-tooltip>
+        </span>
+      </div>
+      <div
+        class="step-list"
+        v-show="
+          icNetworkTokens &&
+          (icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai' ||
+            icNetworkTokens.tokenId === 'apia6-jaaaa-aaaar-qabma-cai')
+        "
+      >
+        <span
+          :class="{ active: mintStep > 2 }"
+          @click="previousMintStepCK()"
+          class="step-previous pc-show"
+        >
+          <a-tooltip placement="top">
+            <template slot="title">Previous</template>
+            <a-icon type="double-left" />
+          </a-tooltip>
+        </span>
+        <div
+          :class="{ active: mintStep === 2 }"
+          @click="changeMintStepCK(2)"
+          class="pointer step-list-center"
+        >
+          <span class="step-list-center-t"
+            ><span class="step-list-num">1</span>Send</span
+          >
+          <span class="step-list-line"></span>
+        </div>
+        <div
+          :class="{ active: mintStep === 3 }"
+          @click="changeMintStepCK(3)"
+          class="pointer"
+        >
+          <span class="step-list-num">2</span><span>Record</span>
+        </div>
+        <span
+          :class="{ active: mintStep < 3 }"
+          @click="nextMintStepCK(3)"
           class="step-next pc-show"
         >
           <a-tooltip placement="top">
@@ -2265,7 +2326,7 @@
       </div>
       <div
         class="ckEth-mint-top"
-        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo && mintStep === 2"
+        v-if="icNetworkTokens && icNetworkTokens.icTokenInfo && mintStep === 3"
       >
         <div class="base-color-w">
           Balance:
@@ -2302,7 +2363,14 @@
         class="forge-main"
         v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
       >
-        <div class="forge-left" v-show="mintStep === 1">
+        <div
+          class="forge-left"
+          v-show="
+            mintStep === 1 &&
+            icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai' &&
+            icNetworkTokens.tokenId !== 'apia6-jaaaa-aaaar-qabma-cai'
+          "
+        >
           <a-form-model
             :model="erc20Form"
             :rules="erc20FormRules"
@@ -2310,7 +2378,7 @@
             v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           >
             <a-form-model-item
-              :label="`Transfer ${icNetworkTokens.icTokenInfo.symbol} (${
+              :label="`Approve ${icNetworkTokens.icTokenInfo.symbol} (${
                 networkIds[otherNetworkTokens.networkId]
               }) amount`"
               prop="amount"
@@ -2332,51 +2400,14 @@
               Connect MetaMask
             </button>
           </div>
-          <div
-            class="mint-button"
-            v-show="
-              ethereumIsUnlocked &&
-              icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai' &&
-              icNetworkTokens.tokenId !== 'apia6-jaaaa-aaaar-qabma-cai'
-            "
-          >
-            <button
-              class="primary w100"
-              type="button"
-              v-show="
-                tokenAllowance === '0' ||
-                (ethereumIsUnlocked && tokenAllowance - erc20Form.amount < 0)
-              "
-              @click="approveErc20"
-            >
+          <div class="mint-button" v-show="ethereumIsUnlocked">
+            <button class="primary w100" type="button" @click="approveErc20">
               <img alt="" src="@/assets/img/MetaMask.png" /> Approve
               {{ icNetworkTokens.icTokenInfo.symbol }}
             </button>
-            <button
-              v-show="
-                tokenAllowance !== '0' &&
-                ethereumIsUnlocked &&
-                tokenAllowance - erc20Form.amount >= 0
-              "
-              @click="transferFromMetaMaskCK"
-              class="primary w100"
-              type="button"
-            >
-              <img alt="" src="@/assets/img/MetaMask.png" /> Deposit
-              {{ icNetworkTokens.icTokenInfo.symbol }}
-            </button>
           </div>
-          <div
-            v-show="
-              ethereumIsUnlocked &&
-              (tokenAllowance === '0' ||
-                tokenAllowance - erc20Form.amount < 0) &&
-              icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai' &&
-              icNetworkTokens.tokenId !== 'apia6-jaaaa-aaaar-qabma-cai'
-            "
-            class="base-font-title"
-          >
-            Approve to helper smart contract:
+          <div class="base-font-title">
+            Approve {{ icNetworkTokens.icTokenInfo.symbol }} token for trade on:
             <a
               :href="`${ckEthLink}/address/0x18901044688d3756c35ed2b36d93e6a5b8e00e68#code`"
               class="link"
@@ -2385,19 +2416,55 @@
               >{{ depositHelperContractAddress }}</a
             >
           </div>
-          <div
-            class="mint-button"
-            v-show="
-              (ethereumIsUnlocked &&
-                icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai') ||
-              icNetworkTokens.tokenId === 'apia6-jaaaa-aaaar-qabma-cai'
-            "
+        </div>
+        <div class="forge-left" v-show="mintStep === 2">
+          <a-form-model
+            :model="erc20Form"
+            :rules="erc20FormRules"
+            ref="erc20Form"
+            v-if="icNetworkTokens && icNetworkTokens.icTokenInfo"
           >
-            <button
+            <a-form-model-item
+              :label="`Send ${icNetworkTokens.icTokenInfo.symbol} (${
+                networkIds[otherNetworkTokens.networkId]
+              }) amount`"
+              prop="amount"
+            >
+              <a-input
+                :suffix="`${icNetworkTokens.icTokenInfo.symbol} (${
+                  networkIds[otherNetworkTokens.networkId]
+                })`"
+                autocomplete="off"
+                placeholder="0.00"
+                type="text"
+                v-model="erc20Form.amount"
+                v-only-float="Number(icNetworkTokens.icTokenInfo.decimals)"
+              />
+            </a-form-model-item>
+            <div
               v-show="
-                icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai' ||
-                icNetworkTokens.tokenId === 'apia6-jaaaa-aaaar-qabma-cai'
+                icNetworkTokens.tokenId !== 'ss2fx-dyaaa-aaaar-qacoq-cai' &&
+                icNetworkTokens.tokenId !== 'apia6-jaaaa-aaaar-qabma-cai'
               "
+              class="flex-center"
+              style="margin-top: -8px"
+            >
+              <div>
+                approved‌:
+                {{ tokenAllowance | formatAmount(8) }}
+              </div>
+              <div class="margin-left-auto pointer link" @click="setMaxBalance">
+                Send All
+              </div>
+            </div>
+          </a-form-model>
+          <div class="mint-button" v-show="!ethereumIsUnlocked">
+            <button class="primary w100" type="button" @click="connectMetaMask">
+              Connect MetaMask
+            </button>
+          </div>
+          <div class="mint-button" v-show="ethereumIsUnlocked">
+            <button
               @click="transferFromMetaMaskCK"
               class="primary w100"
               type="button"
@@ -2407,7 +2474,7 @@
             </button>
           </div>
         </div>
-        <div class="forge-right retrieve-btc-status" v-show="mintStep === 2">
+        <div class="forge-right retrieve-btc-status" v-show="mintStep === 3">
           <div class="pc-show">
             <div>
               Already deposit? If not updated automatically,
@@ -6371,7 +6438,7 @@ export default class extends Vue {
         this.mintStep = 1;
       } else {
         this.onContinue();
-        this.mintStep = 2;
+        this.mintStep = 3;
       }
       if (type === 'claim') {
         this.signatureForm.txHash = txHash;
@@ -9586,6 +9653,10 @@ export default class extends Vue {
     this.forgeModalCKETH = true;
     this.initCKETHMint();
   }
+  private setMaxBalance(): void {
+    this.erc20Form.amount = this.tokenAllowance;
+    (this.$refs as any).erc20Form.validateField('amount');
+  }
   private async getAllowance(
     icNetworkTokens: ICNetworkTokensInterface
   ): Promise<void> {
@@ -9634,7 +9705,15 @@ export default class extends Vue {
           const chainId = await ethereum.request({ method: 'eth_chainId' });
           if (Number(chainId) === Number(ethChainId)) {
             this.ethereumIsUnlocked = true;
-            this.getAllowance(this.icNetworkTokens);
+            this.getAllowance(this.icNetworkTokens).then(() => {
+              if (
+                this.tokenAllowance &&
+                new BigNumber(this.tokenAllowance).gt(0)
+              ) {
+                this.erc20Form.amount = this.tokenAllowance;
+                this.mintStep = 2;
+              }
+            });
             return;
           }
         }
@@ -9644,6 +9723,14 @@ export default class extends Vue {
   }
   private initCKETHMint(): void {
     if (this.principal && this.icNetworkTokens) {
+      if (
+        this.icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai' ||
+        this.icNetworkTokens.tokenId === 'apia6-jaaaa-aaaar-qabma-cai'
+      ) {
+        this.mintStep = 2;
+      } else {
+        this.mintStep = 1;
+      }
       this.getEthereumIsUnlocked();
       const id = this.icNetworkTokens.id;
       const tokenId = this.icNetworkTokens.tokenId;
@@ -11602,34 +11689,54 @@ export default class extends Vue {
   }
   private validateErc20Amount(
     rule: ValidationRule,
-    value: number,
+    value: string,
     callback: (arg0?: string) => void
   ): void {
-    const erc20TokenInfo = this.icNetworkTokens.icTokenInfo;
-    const minAmount = new BigNumber(erc20TokenInfo.minAmount.toString(10))
-      .div(10 ** erc20TokenInfo.decimals)
-      .toString(10);
-    const std = Object.keys(erc20TokenInfo.std)[0];
-    let fee = '0';
-    if (this.depositMethod === 1) {
-      fee = this.filterEstimatedFee(
-        erc20TokenInfo,
-        this.ethTokenInfo,
-        this.minterInfo
-      );
-    }
-    if (this.depositMethod === 2) {
-      fee = this.filterEstimatedFeeMode2(erc20TokenInfo);
-    }
-    const minAmountFee = new BigNumber(fee).plus(minAmount);
-    if (value && new BigNumber(value).lt(minAmountFee)) {
-      callback(
-        `Min amount is ${minAmountFee} ${
-          this.icNetworkTokens.icTokenInfo.symbol
-        } (${this.networkIds[this.otherNetworkTokens.networkId]})`
-      );
-    } else {
+    if (
+      this.icNetworkTokens &&
+      (this.icNetworkTokens.tokenId === 'ss2fx-dyaaa-aaaar-qacoq-cai' ||
+        this.icNetworkTokens.tokenId === 'apia6-jaaaa-aaaar-qabma-cai')
+    ) {
       callback();
+    } else {
+      if (this.mintStep === 2 && new BigNumber(this.tokenAllowance).lt(value)) {
+        callback(
+          `Max amount is ${this.tokenAllowance} ${
+            this.icNetworkTokens.icTokenInfo.symbol
+          } (${this.networkIds[this.otherNetworkTokens.networkId]})`
+        );
+      } else {
+        if (value && value === '0') {
+          callback(`Please enter Amount`);
+        } else {
+          const erc20TokenInfo = this.icNetworkTokens.icTokenInfo;
+          const minAmount = new BigNumber(erc20TokenInfo.minAmount.toString(10))
+            .div(10 ** erc20TokenInfo.decimals)
+            .toString(10);
+          const std = Object.keys(erc20TokenInfo.std)[0];
+          let fee = '0';
+          if (this.depositMethod === 1) {
+            fee = this.filterEstimatedFee(
+              erc20TokenInfo,
+              this.ethTokenInfo,
+              this.minterInfo
+            );
+          }
+          if (this.depositMethod === 2) {
+            fee = this.filterEstimatedFeeMode2(erc20TokenInfo);
+          }
+          const minAmountFee = new BigNumber(fee).plus(minAmount);
+          if (value && new BigNumber(value).lt(minAmountFee)) {
+            callback(
+              `Min amount is ${minAmountFee} ${
+                this.icNetworkTokens.icTokenInfo.symbol
+              } (${this.networkIds[this.otherNetworkTokens.networkId]})`
+            );
+          } else {
+            callback();
+          }
+        }
+      }
     }
   }
   private validateAmount(
@@ -11838,7 +11945,9 @@ export default class extends Vue {
             const approveRes = await tokenContract.methods
               .approve(this.depositHelperContractAddress, amount)
               .send({ from: accounts[0] });
-            this.getAllowance(this.icNetworkTokens);
+            await this.getAllowance(this.icNetworkTokens);
+            this.mintStep = 2;
+            this.erc20Form.amount = this.tokenAllowance;
           } catch (e) {}
           loading.close();
         }
@@ -11922,7 +12031,7 @@ export default class extends Vue {
                 this.icNetworkTokens.tokenId
               ] = this.ckETHMint;
               localStorage.setItem(this.principal, JSON.stringify(currentInfo));
-              this.changeMintStepCK(2);
+              this.changeMintStepCK(3);
               this.onGetMintCKETHPending();
             } else if (this.icNetworkTokens.tokenId === ckETHSep) {
               const ethContract = new web3.eth.Contract(
@@ -11962,7 +12071,7 @@ export default class extends Vue {
                 this.icNetworkTokens.tokenId
               ] = this.ckETHMint;
               localStorage.setItem(this.principal, JSON.stringify(currentInfo));
-              this.changeMintStepCK(2);
+              this.changeMintStepCK(3);
               this.onGetMintCKETHPending();
             } else {
               await this.getAllowance(this.icNetworkTokens);
@@ -12019,7 +12128,7 @@ export default class extends Vue {
               ] = this.ckETHMint;
               localStorage.setItem(this.principal, JSON.stringify(currentInfo));
               this.getAllowance(this.icNetworkTokens);
-              this.changeMintStepCK(2);
+              this.changeMintStepCK(3);
               this.onGetMintCKETHPending();
             }
           } catch (e) {

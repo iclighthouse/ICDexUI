@@ -444,6 +444,26 @@ export type Result_1 =
   | {
       Proposal: ProposalData;
     };
+export interface ListTopicsResponse {
+  uncategorized_functions: [Array<NervousSystemFunction>];
+  topics: [Array<TopicInfo>];
+}
+export interface TopicInfo {
+  native_functions: [] | [Array<NervousSystemFunction>];
+  topic: [] | [Topic];
+  is_critical: [] | [boolean];
+  name: [] | [string];
+  description: [] | [string];
+  custom_functions: [] | [Array<NervousSystemFunction>];
+}
+export type Topic =
+  | { DappCanisterManagement: null }
+  | { DaoCommunitySettings: null }
+  | { ApplicationBusinessLogic: null }
+  | { CriticalDappOperations: null }
+  | { TreasuryAssetManagement: null }
+  | { Governance: null }
+  | { SnsFrameworkManagement: null };
 export default interface Service {
   get_metadata({}): Promise<GetMetadataResponse>;
   list_neurons(request: ListNeurons): Promise<ListNeuronsResponse>;
@@ -455,4 +475,5 @@ export default interface Service {
   list_nervous_system_functions(): Promise<ListNervousSystemFunctionsResponse>;
   list_proposals(request: ListProposals): Promise<ListProposalsResponse>;
   get_proposal(request: GetProposal): Promise<GetProposalResponse>;
+  list_topics({}): Promise<ListTopicsResponse>;
 }

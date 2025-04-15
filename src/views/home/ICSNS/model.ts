@@ -3,7 +3,7 @@ import {
   ListNervousSystemFunctionsResponse,
   NervousSystemFunction,
   NervousSystemParameters,
-  SNSNeuron
+  SNSNeuron, TopicInfo
 } from '@/ic/SNSGovernance/model';
 import {
   BuyerState,

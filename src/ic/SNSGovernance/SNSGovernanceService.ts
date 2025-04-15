@@ -11,6 +11,7 @@ import Service, {
   ListNeuronsResponse,
   ListProposals,
   ListProposalsResponse,
+  ListTopicsResponse,
   NervousSystemParameters,
   Proposal,
   ProposalId,
@@ -267,6 +268,17 @@ export class SNSGovernanceService {
     const service = await this.check(canisterId, false, false);
     try {
       const res = await service.list_nervous_system_functions();
+      return SerializableIC(res);
+    } catch (e) {
+      return null;
+    }
+  };
+  public list_topics = async (
+    canisterId: string
+  ): Promise<ListTopicsResponse> => {
+    const service = await this.check(canisterId, false, false);
+    try {
+      const res = await service.list_topics({});
       return SerializableIC(res);
     } catch (e) {
       return null;

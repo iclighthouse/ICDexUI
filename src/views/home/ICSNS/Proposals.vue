@@ -351,6 +351,7 @@ import {
   GetMetadataResponse,
   ListNervousSystemFunctionsResponse,
   ListProposals,
+  ListTopicsResponse,
   NervousSystemParameters,
   ProposalData
 } from '@/ic/SNSGovernance/model';
@@ -883,7 +884,7 @@ export default class extends Vue {
                 lifecycle: SNSToken.lifecycle,
                 nervousSystemParameters: SNSToken.nervousSystemParameters,
                 listNervousSystemFunctionsResponse:
-                SNSToken.listNervousSystemFunctionsResponse
+                  SNSToken.listNervousSystemFunctionsResponse
               }),
               (key, value) =>
                 typeof value === 'bigint' ? value.toString(10) : value
@@ -891,7 +892,7 @@ export default class extends Vue {
           );
           return true;
         }
-			}
+      }
     });
     localStorage.setItem('rejectSNSTokens', JSON.stringify(localReject));
     this.setCurrentIndex();
@@ -971,8 +972,7 @@ export default class extends Vue {
         decimals: res[2],
         lifecycle: res[5]
       };
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async getSNSTokenGovernanceInfo(
     governance: string,
@@ -1059,6 +1059,14 @@ export default class extends Vue {
     const snsSwapService = new SNSSwapService();
     const res = await snsSwapService.getLifecycle(swapCanisterId);
     return res.lifecycle;
+  }
+  private async list_topics(
+    governanceCanisterId: string
+  ): Promise<ListTopicsResponse> {
+    try {
+      const snsGovernanceService = new SNSGovernanceService();
+      return await snsGovernanceService.list_topics(governanceCanisterId);
+    } catch (e) {}
   }
   private async getListNervousSystemFunctions(
     governanceCanisterId: string

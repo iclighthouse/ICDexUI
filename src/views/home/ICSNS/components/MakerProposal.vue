@@ -304,8 +304,7 @@ export default class extends Vue {
       } else {
         this.$message.error('Make Proposal Error');
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private initBlobParams(val: any): any {
@@ -344,50 +343,50 @@ export default class extends Vue {
       this.currentSNS.governanceId
     );
     this.actionParams = params.manage_neuron.argTypes;
-    const _type = (this.actionParams[0] as any)._fields[1][1]._type
-      ._fields[6][1]._fields[2][1]._type;
-    if (_type && _type._fields && _type._fields.length) {
-      _type._fields.some((item) => {
-        if (item && item[0] === 'ExecuteGenericNervousSystemFunction') {
-          if (
-            item[1] &&
-            item[1]._fields &&
-            item[1]._fields[0] &&
-            item[1]._fields[0][0] === 'function_id' &&
-            item[1]._fields[0][1] instanceof IDL.FixedNatClass &&
-            this.currentSNS &&
-            this.currentSNS.listTypes &&
-            this.currentSNS.listTypes.length
-          ) {
-            const functionIds = {};
-            this.currentSNS.listTypes.sort((a, b) => {
-              return a.name.localeCompare(b.name);
-            });
-            this.currentSNS.listTypes.forEach((item) => {
-              if (item.id >= 1000) {
-                this.functionId[item.name] = item.id;
-                functionIds[item.name] = new IDL.RecordClass();
+    (this.actionParams[0] as any)._fields[1][1]._type._fields.forEach(
+      (param) => {
+        console.log(param);
+        if (param[0] === 'MakeProposal') {
+          const _type = param[1]._fields[2][1]._type;
+          if (_type && _type._fields && _type._fields.length) {
+            _type._fields.some((item) => {
+              if (item && item[0] === 'ExecuteGenericNervousSystemFunction') {
+                if (
+                  item[1] &&
+                  item[1]._fields &&
+                  item[1]._fields[0] &&
+                  item[1]._fields[0][0] === 'function_id' &&
+                  item[1]._fields[0][1] instanceof IDL.FixedNatClass &&
+                  this.currentSNS &&
+                  this.currentSNS.listTypes &&
+                  this.currentSNS.listTypes.length
+                ) {
+                  const functionIds = {};
+                  this.currentSNS.listTypes.sort((a, b) => {
+                    return a.name.localeCompare(b.name);
+                  });
+                  this.currentSNS.listTypes.forEach((item) => {
+                    if (item.id >= 1000) {
+                      this.functionId[item.name] = item.id;
+                      functionIds[item.name] = new IDL.RecordClass();
+                    }
+                  });
+                  const a = new IDL.VariantClass(functionIds);
+                  item[1]._fields[0][0] = 'function_name';
+                  item[1]._fields[0][1] = IDL.Variant(functionIds);
+                }
+                return true;
               }
             });
-            const a = new IDL.VariantClass(functionIds);
-            item[1]._fields[0][0] = 'function_name';
-            item[1]._fields[0][1] = IDL.Variant(functionIds);
           }
-          return true;
+          this.setParams(_type);
+          this.actionInput = renderInput(_type);
+          this.$nextTick(() => {
+            this.actionInput.render(this.$refs.action as HTMLElement);
+          });
         }
-      });
-    }
-    this.setParams(
-      (this.actionParams[0] as any)._fields[1][1]._type._fields[6][1]
-        ._fields[2][1]._type
+      }
     );
-    this.actionInput = renderInput(
-      (this.actionParams[0] as any)._fields[1][1]._type._fields[6][1]
-        ._fields[2][1]._type
-    );
-    this.$nextTick(() => {
-      this.actionInput.render(this.$refs.action as HTMLElement);
-    });
   }
   private async getNeurons(): Promise<void> {
     const snsGovernanceService = new SNSGovernanceService();

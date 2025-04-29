@@ -200,13 +200,13 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                times2(pair[1].liquidity[0].vol.value1)
-                                  | bigintToFloat(
+                                times2(pair[1].liquidity[0].vol.value1) |
+                                  bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                             {{ pair[1].pair.token1[1] }}
@@ -217,13 +217,13 @@
                               class="table-number-color"
                             >
                               ≈ ${{
-                                times2(pair[1].liquidity[0].vol.value1)
-                                  | filterIcpVol(
+                                times2(pair[1].liquidity[0].vol.value1) |
+                                  filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
                                     getBasePrice(pair[1].pair.token1[1])
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                           </dt>
@@ -286,13 +286,13 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                times2(pair[3].vol24h.value1)
-                                  | bigintToFloat(
+                                times2(pair[3].vol24h.value1) |
+                                  bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                             {{ pair[1].pair.token1[1] }}
@@ -300,13 +300,13 @@
                           <dt>
                             <span v-if="pair[3]" class="table-number-color">
                               ≈ ${{
-                                times2(pair[3].vol24h.value1)
-                                  | filterIcpVol(
+                                times2(pair[3].vol24h.value1) |
+                                  filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
                                     getBasePrice(pair[1].pair.token1[1])
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                           </dt>
@@ -407,13 +407,13 @@
                       <dd>
                         <span class="table-number-color">
                           {{
-                            times2(pair[1].liquidity[0].vol.value1)
-                              | bigintToFloat(
+                            times2(pair[1].liquidity[0].vol.value1) |
+                              bigintToFloat(
                                 0,
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals
-                              )
-                              | formatAmount(0)
+                              ) |
+                              formatAmount(0)
                           }}
                         </span>
                         {{ pair[1].pair.token1[1] }}
@@ -424,13 +424,13 @@
                           class="table-number-color"
                         >
                           ≈ ${{
-                            times2(pair[1].liquidity[0].vol.value1)
-                              | filterIcpVol(
+                            times2(pair[1].liquidity[0].vol.value1) |
+                              filterIcpVol(
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals,
                                 getBasePrice(pair[1].pair.token1[1])
-                              )
-                              | formatAmount(0)
+                              ) |
+                              formatAmount(0)
                           }}
                         </span>
                       </dt>
@@ -595,13 +595,13 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                times2(pair[1].liquidity[0].vol.value1)
-                                  | bigintToFloat(
+                                times2(pair[1].liquidity[0].vol.value1) |
+                                  bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                             {{ pair[1].pair.token1[1] }}
@@ -612,13 +612,13 @@
                               class="table-number-color"
                             >
                               ≈ ${{
-                                times2(pair[1].liquidity[0].vol.value1)
-                                  | filterIcpVol(
+                                times2(pair[1].liquidity[0].vol.value1) |
+                                  filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
                                     getBasePrice(pair[1].pair.token1[1])
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                           </dt>
@@ -654,13 +654,13 @@
                           <dd>
                             <span class="table-number-color">
                               {{
-                                times2(pair[3].vol24h.value1)
-                                  | bigintToFloat(
+                                times2(pair[3].vol24h.value1) |
+                                  bigintToFloat(
                                     0,
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                             {{ pair[1].pair.token1[1] }}
@@ -668,13 +668,13 @@
                           <dt>
                             <span v-if="pair[3]" class="table-number-color">
                               ≈ ${{
-                                times2(pair[3].vol24h.value1)
-                                  | filterIcpVol(
+                                times2(pair[3].vol24h.value1) |
+                                  filterIcpVol(
                                     tokens[pair[1].pair.token1[0].toString()]
                                       .decimals,
                                     getBasePrice(pair[1].pair.token1[1])
-                                  )
-                                  | formatAmount(0)
+                                  ) |
+                                  formatAmount(0)
                               }}
                             </span>
                           </dt>
@@ -791,13 +791,13 @@
                       <dd>
                         <span class="table-number-color">
                           {{
-                            times2(pair[1].liquidity[0].vol.value1)
-                              | bigintToFloat(
+                            times2(pair[1].liquidity[0].vol.value1) |
+                              bigintToFloat(
                                 0,
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals
-                              )
-                              | formatAmount(0)
+                              ) |
+                              formatAmount(0)
                           }}
                         </span>
                         {{ pair[1].pair.token1[1] }}
@@ -808,13 +808,13 @@
                           class="table-number-color"
                         >
                           ≈ ${{
-                            times2(pair[1].liquidity[0].vol.value1)
-                              | filterIcpVol(
+                            times2(pair[1].liquidity[0].vol.value1) |
+                              filterIcpVol(
                                 tokens[pair[1].pair.token1[0].toString()]
                                   .decimals,
                                 getBasePrice(pair[1].pair.token1[1])
-                              )
-                              | formatAmount(0)
+                              ) |
+                              formatAmount(0)
                           }}
                         </span>
                       </dt>
@@ -950,16 +950,16 @@
                     <td>
                       <span v-if="pair[1] && pair[1][1]">
                         {{
-                          pair[1][1].IDOOpeningTime
-                            | formatDateFromNanosecondUTC
+                          pair[1][1].IDOOpeningTime |
+                            formatDateFromNanosecondUTC
                         }}
                       </span>
                     </td>
                     <td>
                       <span v-if="pair[1] && pair[1][1]">
                         {{
-                          pair[1][1].IDOClosingTime
-                            | formatDateFromNanosecondUTC
+                          pair[1][1].IDOClosingTime |
+                            formatDateFromNanosecondUTC
                         }}
                       </span>
                     </td>
@@ -985,8 +985,8 @@
                           <span>
                             Supply:
                             {{
-                              item.supply
-                                | bigintToFloat(
+                              item.supply |
+                                bigintToFloat(
                                   tokens[pair[0][1].pair.token0[0].toString()]
                                     .decimals,
                                   tokens[pair[0][1].pair.token0[0].toString()]
@@ -1026,8 +1026,8 @@
                         "
                       >
                         {{
-                          pair[1][1].IDOLimitPerAccount
-                            | bigintToFloat(
+                          pair[1][1].IDOLimitPerAccount |
+                            bigintToFloat(
                               tokens[pair[0][1].pair.token0[0].toString()]
                                 .decimals,
                               tokens[pair[0][1].pair.token0[0].toString()]
@@ -1180,8 +1180,8 @@
                         <span>
                           Supply:
                           {{
-                            item.supply
-                              | bigintToFloat(
+                            item.supply |
+                              bigintToFloat(
                                 tokens[pair[0][1].pair.token0[0].toString()]
                                   .decimals,
                                 tokens[pair[0][1].pair.token0[0].toString()]
@@ -1223,8 +1223,8 @@
                       "
                     >
                       {{
-                        pair[1][1].IDOLimitPerAccount
-                          | bigintToFloat(
+                        pair[1][1].IDOLimitPerAccount |
+                          bigintToFloat(
                             tokens[pair[0][1].pair.token0[0].toString()]
                               .decimals,
                             tokens[pair[0][1].pair.token0[0].toString()]
@@ -1452,16 +1452,16 @@
                           {{
                             makerInfo[item[0].toString()][
                               arrayToString(item[1])
-                            ].vol.value0
-                              | bigintToFloat(
+                            ].vol.value0 |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   pairToSymbol[
                                     item[0].toString()
                                   ].pair.token0[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                         </span>
@@ -1469,16 +1469,16 @@
                           {{
                             makerInfo[item[0].toString()][
                               arrayToString(item[1])
-                            ].vol.value1
-                              | bigintToFloat(
+                            ].vol.value1 |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   pairToSymbol[
                                     item[0].toString()
                                   ].pair.token1[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                         </span>
@@ -1509,16 +1509,16 @@
                           {{
                             makerInfo[item[0].toString()][
                               arrayToString(item[1])
-                            ].commission.value0
-                              | bigintToFloat(
+                            ].commission.value0 |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   pairToSymbol[
                                     item[0].toString()
                                   ].pair.token0[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                         </span>
@@ -1526,16 +1526,16 @@
                           {{
                             makerInfo[item[0].toString()][
                               arrayToString(item[1])
-                            ].commission.value1
-                              | bigintToFloat(
+                            ].commission.value1 |
+                              bigintToFloat(
                                 4,
                                 tokens[
                                   pairToSymbol[
                                     item[0].toString()
                                   ].pair.token1[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                         </span>
@@ -1624,32 +1624,32 @@
                     <span>
                       {{
                         makerInfo[item[0].toString()][arrayToString(item[1])]
-                          .vol.value0
-                          | bigintToFloat(
+                          .vol.value0 |
+                          bigintToFloat(
                             8,
                             tokens[
                               pairToSymbol[
                                 item[0].toString()
                               ].pair.token0[0].toString()
                             ].decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                     </span>
                     <span>
                       {{
                         makerInfo[item[0].toString()][arrayToString(item[1])]
-                          .vol.value1
-                          | bigintToFloat(
+                          .vol.value1 |
+                          bigintToFloat(
                             8,
                             tokens[
                               pairToSymbol[
                                 item[0].toString()
                               ].pair.token1[0].toString()
                             ].decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                     </span>
@@ -1680,32 +1680,32 @@
                       <span>
                         {{
                           makerInfo[item[0].toString()][arrayToString(item[1])]
-                            .commission.value0
-                            | bigintToFloat(
+                            .commission.value0 |
+                            bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[
                                   item[0].toString()
                                 ].pair.token0[0].toString()
                               ].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                         {{ pairToSymbol[item[0].toString()].pair.token0[1] }}
                       </span>
                       <span>
                         {{
                           makerInfo[item[0].toString()][arrayToString(item[1])]
-                            .commission.value1
-                            | bigintToFloat(
+                            .commission.value1 |
+                            bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[
                                   item[0].toString()
                                 ].pair.token1[0].toString()
                               ].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                         {{ pairToSymbol[item[0].toString()].pair.token1[1] }}
                       </span>
@@ -1833,31 +1833,31 @@
                       >
                         <span>
                           {{
-                            item[1].vol.value0
-                              | bigintToFloat(
+                            item[1].vol.value0 |
+                              bigintToFloat(
                                 8,
                                 tokens[
                                   pairToSymbol[
                                     item[2]
                                   ].pair.token0[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[2]].pair.token0[1] }}
                         </span>
                         <span>
                           {{
-                            item[1].vol.value1
-                              | bigintToFloat(
+                            item[1].vol.value1 |
+                              bigintToFloat(
                                 8,
                                 tokens[
                                   pairToSymbol[
                                     item[2]
                                   ].pair.token1[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[2]].pair.token1[1] }}
                         </span>
@@ -1879,31 +1879,31 @@
                       >
                         <span>
                           {{
-                            item[1].commission.value0
-                              | bigintToFloat(
+                            item[1].commission.value0 |
+                              bigintToFloat(
                                 8,
                                 tokens[
                                   pairToSymbol[
                                     item[2]
                                   ].pair.token0[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[2]].pair.token0[1] }}
                         </span>
                         <span>
                           {{
-                            item[1].commission.value1
-                              | bigintToFloat(
+                            item[1].commission.value1 |
+                              bigintToFloat(
                                 8,
                                 tokens[
                                   pairToSymbol[
                                     item[2]
                                   ].pair.token1[0].toString()
                                 ].decimals
-                              )
-                              | formatNum
+                              ) |
+                              formatNum
                           }}
                           {{ pairToSymbol[item[2]].pair.token1[1] }}
                         </span>
@@ -1976,27 +1976,27 @@
                     >
                       <span>
                         {{
-                          item[1].vol.value0
-                            | bigintToFloat(
+                          item[1].vol.value0 |
+                            bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[item[2]].pair.token0[0].toString()
                               ].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                         {{ pairToSymbol[item[2]].pair.token0[1] }}
                       </span>
                       <span>
                         {{
-                          item[1].vol.value1
-                            | bigintToFloat(
+                          item[1].vol.value1 |
+                            bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[item[2]].pair.token1[0].toString()
                               ].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                         {{ pairToSymbol[item[2]].pair.token1[1] }}
                       </span>
@@ -2019,27 +2019,27 @@
                     >
                       <span>
                         {{
-                          item[1].commission.value0
-                            | bigintToFloat(
+                          item[1].commission.value0 |
+                            bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[item[2]].pair.token0[0].toString()
                               ].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                         {{ pairToSymbol[item[2]].pair.token0[1] }}
                       </span>
                       <span>
                         {{
-                          item[1].commission.value1
-                            | bigintToFloat(
+                          item[1].commission.value1 |
+                            bigintToFloat(
                               8,
                               tokens[
                                 pairToSymbol[item[2]].pair.token1[0].toString()
                               ].decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                         {{ pairToSymbol[item[2]].pair.token1[1] }}
                       </span>
@@ -2737,15 +2737,15 @@ export default class extends Vue {
         let minVolTotal = '0';
         res.data.result.forEach((item) => {
           tvlData.push([
-            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            echarts.time.format(Number(item.time), '{yyyy}-{MM}-{dd}', false),
             item.usd_total_tvl
           ]);
           volData.push([
-            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            echarts.time.format(Number(item.time), '{yyyy}-{MM}-{dd}', false),
             item.usd_24h_vol
           ]);
           volDataTotal.push([
-            echarts.format.formatTime('yyyy-MM-dd', Number(item.time)),
+            echarts.time.format(Number(item.time), '{yyyy}-{MM}-{dd}', false),
             item.usd_total_vol
           ]);
           if (new BigNumber(item.usd_total_tvl).gt(maxTvl)) {
@@ -2797,7 +2797,7 @@ export default class extends Vue {
             },
             axisLabel: {
               formatter: function (value) {
-                return echarts.format.formatTime('dd', value);
+                return echarts.time.format(value, '{MM}', false);
               }
             },
             axisTick: {
@@ -2885,7 +2885,7 @@ export default class extends Vue {
             axisLabel: {
               interval: 'auto',
               formatter: function (value) {
-                return echarts.format.formatTime('dd', value);
+                return echarts.time.format(value, '{MM}', false);
               }
             },
             axisTick: {
@@ -3108,8 +3108,7 @@ export default class extends Vue {
         'icdex',
         this.nft[0].toString(10)
       );
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private changeMenu(menu: MarketMenu): void {
@@ -3251,8 +3250,7 @@ export default class extends Vue {
       } else {
         //
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async NFTBalance(): Promise<void> {
     const principal = localStorage.getItem('principal');
@@ -3282,7 +3280,7 @@ export default class extends Vue {
   //       await this.ICSwapRouterFiduciaryService.listingReferrer(
   //         Principal.fromText(principal)
   //       );
-  //     
+  //
   //     if (!this.listingReferrer[0]) {
   //       await this.getTokensExt();
   //       if (!this.nft) {
@@ -3327,8 +3325,7 @@ export default class extends Vue {
         });
         this.totalTVL = new BigNumber(total).decimalPlaces(0).toString(10);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private onSort(type: string): void {
     this.page = 1;
@@ -3726,8 +3723,7 @@ export default class extends Vue {
             total = new BigNumber(total).plus(totalVol).toString(10);
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
       this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
       this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
       this.getIDOs();

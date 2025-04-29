@@ -345,7 +345,6 @@ export default class extends Vue {
     this.actionParams = params.manage_neuron.argTypes;
     (this.actionParams[0] as any)._fields[1][1]._type._fields.forEach(
       (param) => {
-        console.log(param);
         if (param[0] === 'MakeProposal') {
           const _type = param[1]._fields[2][1]._type;
           if (_type && _type._fields && _type._fields.length) {

@@ -13,42 +13,58 @@
     >
       <div>
         <div class="base-font-tip">
-          Follow neurons to automate your voting, and receive the maximum voting
-          rewards. You can follow neurons on specific topics or all topics.
+          As an alternative to voting manually, you can delegate your voting
+          power to other neurons. To cover all proposals, make sure delegation
+          is set for each topic.
         </div>
         <div class="follow-Neuron-list">
           <p class="follow-Neuron-list-title">Currently Following</p>
           <div
             class="follow-Neuron-list-ul-main"
-            v-if="neuron && neuron.followees && neuron.followees.length"
+            v-if="
+              neuron &&
+              neuron.topic_followees &&
+              neuron.topic_followees[0] &&
+              neuron.topic_followees[0].topic_id_to_followees &&
+              neuron.topic_followees[0].topic_id_to_followees.length
+            "
           >
             <ul
               class="follow-Neuron-list-item"
-              v-for="item in neuron.followees"
-              :key="item[0].toString(10)"
+              v-for="item in neuron.topic_followees[0].topic_id_to_followees"
+              :key="item[0]"
             >
               <li>
-                <div class="follow-Neuron-list-item-name">
-                  {{ functionsName[item[0].toString(10)] }}
+                <div
+                  v-if="item[1].topic.length"
+                  class="follow-Neuron-list-item-name"
+                >
+                  {{ Object.keys(item[1].topic[0])[0] }}
                 </div>
                 <div class="follow-Neuron-list-item-ids">
                   <div
                     v-for="(followee, index) in item[1].followees"
                     :key="index"
                   >
-                    <a-tooltip placement="top">
+                    <a-tooltip placement="top" v-if="followee.neuron_id[0]">
                       <template slot="title">
-                        {{ arrayToString(followee.id) }}
+                        {{ arrayToString(followee.neuron_id[0].id) }}
                       </template>
                       <span
                         v-show="
                           SNSNeurons &&
                           ((SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
                             'SNS1' &&
-                            arrayToString(followee.id) === sns1Id) ||
+                            arrayToString(followee.neuron_id[0].id) ===
+                              sns1Id) ||
                             (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
                               'CHAT' &&
-                              arrayToString(followee.id) === chatId))
+                              arrayToString(followee.neuron_id[0].id) ===
+                                chatId) ||
+                            (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
+                              'ICL' &&
+                              arrayToString(followee.neuron_id[0].id) ===
+                                ICLId))
                         "
                         class="follow-Neuron-list-item-id"
                       >
@@ -60,15 +76,24 @@
                             SNSNeurons &&
                             ((SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
                               'SNS1' &&
-                              arrayToString(followee.id) === sns1Id) ||
+                              arrayToString(followee.neuron_id[0].id) ===
+                                sns1Id) ||
                               (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
                                 'CHAT' &&
-                                arrayToString(followee.id) === chatId))
+                                arrayToString(followee.neuron_id[0].id) ===
+                                  chatId) ||
+                              (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
+                                'ICL' &&
+                                arrayToString(followee.neuron_id[0].id) ===
+                                  ICLId))
                           )
                         "
                         class="follow-Neuron-list-item-id"
                       >
-                        {{ arrayToString(followee.id) | ellipsisAccount(6) }}
+                        {{
+                          arrayToString(followee.neuron_id[0].id) |
+                            ellipsisAccount(6)
+                        }}
                       </span>
                     </a-tooltip>
                   </div>
@@ -81,56 +106,70 @@
         <p class="add-remove-title">
           Add/Remove followees
           <button
-            v-if="neuron && neuron.followees && neuron.followees.length"
+            v-if="
+              neuron &&
+              neuron.topic_followees &&
+              neuron.topic_followees.length &&
+              neuron.topic_followees[0].topic_id_to_followees &&
+              neuron.topic_followees[0].topic_id_to_followees.length
+            "
             class="margin-left-auto primary"
             type="button"
             @click="deleteAllFollowee"
           >
             Remove All
           </button>
+          <button
+            v-else
+            class="margin-left-auto primary"
+            type="button"
+            @click="onAddAllFollowee"
+          >
+            Add All
+          </button>
         </p>
         <a-collapse
-          v-if="SNSNeurons && SNSNeurons.listNervousSystemFunctions"
+          v-if="
+            SNSNeurons &&
+            SNSNeurons.listTopics &&
+            SNSNeurons.listTopics.topics &&
+            SNSNeurons.listTopics.topics[0]
+          "
           expand-icon-position="right"
           class="follow-collapse-panel-main"
           v-model="activeKey"
         >
           <a-collapse-panel
-            v-for="list in SNSNeurons.listNervousSystemFunctions.functions.slice(
-              0,
-              1
-            )"
-            :key="list.id.toString(10)"
+            v-for="(list, index) in SNSNeurons.listTopics.topics[0]"
+            :key="index.toString(10)"
             class="follow-collapse-panel-item"
           >
             <div slot="header">
               <div class="follow-collapse-panel-header">
                 <div>
-                  <p class="system-name">{{ getSystemName(list) }}</p>
+                  <p class="system-name">{{ list.name[0] }}</p>
                   <div class="system-description">
                     {{ list.description[0] }}
                   </div>
                 </div>
-                <span class="follow-number">{{
-                  followees[list.id.toString(10)] &&
-                  followees[list.id.toString(10)].followees.length
-                    ? followees[list.id.toString(10)].followees.length
-                    : 0
-                }}</span>
+                <span class="follow-number">
+                  {{ list | filterFolloweesNumber(followees) }}
+                </span>
               </div>
             </div>
             <div>
               <p>Currently Following</p>
               <ul
                 v-if="
-                  followees[list.id.toString(10)] &&
-                  followees[list.id.toString(10)].followees.length
+                  followees[Object.keys(list.topic[0])[0]] &&
+                  followees[Object.keys(list.topic[0])[0]].length
                 "
                 class="followees-main"
               >
                 <li
-                  v-for="(followee, index) in followees[list.id.toString(10)]
-                    .followees"
+                  v-for="(followee, index) in followees[
+                    Object.keys(list.topic[0])[0]
+                  ]"
                   :key="index"
                   class="followees-item"
                 >
@@ -140,7 +179,9 @@
                       ((SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'SNS1' &&
                         arrayToString(followee.id) === sns1Id) ||
                         (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'CHAT' &&
-                          arrayToString(followee.id) === chatId))
+                          arrayToString(followee.id) === chatId) ||
+                        (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'ICL' &&
+                          arrayToString(followee.id) === ICLId))
                     "
                   >
                     ICLighthouse
@@ -161,7 +202,10 @@
                           arrayToString(followee.id) === sns1Id) ||
                           (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
                             'CHAT' &&
-                            arrayToString(followee.id) === chatId))
+                            arrayToString(followee.id) === chatId) ||
+                          (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol ===
+                            'ICL' &&
+                            arrayToString(followee.id) === ICLId))
                       )
                     "
                     :front="8"
@@ -169,7 +213,10 @@
                     copy-text="Neuron ID"
                   ></copy-account>
                   <span class="margin-left-auto">
-                    <a-icon @click="deleteFollowee(list, index)" type="close" />
+                    <a-icon
+                      @click="deleteFollowee(list, arrayToString(followee.id))"
+                      type="close"
+                    />
                   </span>
                 </li>
               </ul>
@@ -184,33 +231,35 @@
               </div>
             </div>
           </a-collapse-panel>
-          <a-collapse-panel class="follow-collapse-panel-main-advanced">
+          <!--<a-collapse-panel class="follow-collapse-panel-main-advanced">
             <div slot="header" class="base-color-w">Advanced</div>
             <a-collapse
-              v-if="SNSNeurons && SNSNeurons.listNervousSystemFunctions"
+              v-if="
+                SNSNeurons &&
+                SNSNeurons.listTopics &&
+                SNSNeurons.listTopics.topics &&
+                SNSNeurons.listTopics.topics[0]
+              "
               expand-icon-position="right"
               class="follow-collapse-panel-main"
               v-model="activeKeyAdvanced"
             >
               <a-collapse-panel
-                v-for="list in SNSNeurons.listNervousSystemFunctions.functions.slice(
-                  1
-                )"
-                :key="list.id.toString(10)"
+                v-for="(list, index) in SNSNeurons.listTopics.topics[0]"
+                :key="index"
                 class="follow-collapse-panel-item"
               >
                 <div slot="header">
                   <div class="follow-collapse-panel-header">
                     <div>
-                      <p class="system-name">{{ getSystemName(list) }}</p>
+                      <p class="system-name">{{ list.name[0] }}</p>
                       <div class="system-description">
                         {{ list.description[0] }}
                       </div>
                     </div>
                     <span class="follow-number">{{
-                      followees[list.id.toString(10)] &&
-                      followees[list.id.toString(10)].followees.length
-                        ? followees[list.id.toString(10)].followees.length
+                      followees[list.name[0]] && followees[list.name[0]].length
+                        ? followees[list.name[0]].length
                         : 0
                     }}</span>
                   </div>
@@ -219,15 +268,12 @@
                   <p>Currently Following</p>
                   <ul
                     v-if="
-                      followees[list.id.toString(10)] &&
-                      followees[list.id.toString(10)].followees.length
+                      followees[list.name[0]] && followees[list.name[0]].length
                     "
                     class="followees-main"
                   >
                     <li
-                      v-for="(followee, index) in followees[
-                        list.id.toString(10)
-                      ].followees"
+                      v-for="(followee, index) in followees[list.name[0]]"
                       :key="index"
                       class="followees-item"
                     >
@@ -269,7 +315,9 @@
                       ></copy-account>
                       <span class="margin-left-auto">
                         <a-icon
-                          @click="deleteFollowee(list, index)"
+                          @click="
+                            deleteFollowee(list, arrayToString(followee.id))
+                          "
                           type="close"
                         />
                       </span>
@@ -287,7 +335,7 @@
                 </div>
               </a-collapse-panel>
             </a-collapse>
-          </a-collapse-panel>
+          </a-collapse-panel>-->
         </a-collapse>
       </div>
     </a-modal>
@@ -317,7 +365,8 @@
             v-show="
               SNSNeurons &&
               (SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'SNS1' ||
-                SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'CHAT')
+                SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'CHAT' ||
+                SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'ICL')
             "
             @click="setICLighthouseId"
             class="pointer ICLighthouse-id"
@@ -342,19 +391,39 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { SNSNeuronsInfo } from '@/views/home/ICSNS/model';
 import {
-  Followees,
+  Followee,
+  FolloweesForTopic,
   GovernanceError,
-  NervousSystemFunction,
   SNSNeuron,
-  SNSNeuronId
+  SNSNeuronId,
+  Topic,
+  TopicInfo
 } from '@/ic/SNSGovernance/model';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import { hexToBytes, toHexString } from '@/ic/converter';
 import { checkAuth } from '@/ic/CheckAuth';
-import { ICLighthouseCHATNeuronId, ICLighthouseNeuronId } from '@/ic/utils';
+import {
+  ICLighthouseCHATNeuronId,
+  ICLighthouseNeuronId,
+  ICLNeuronId
+} from '@/ic/utils';
 @Component({
   name: 'Following',
-  components: {}
+  components: {},
+  filters: {
+    filterFolloweesNumber(
+      topicInfo: TopicInfo,
+      followees: { [key: string]: Array<SNSNeuronId> }
+    ): number {
+      if (topicInfo && topicInfo.topic && topicInfo.topic[0]) {
+        const topic = Object.keys(topicInfo.topic[0])[0];
+        if (followees[topic] && followees[topic].length) {
+          return followees[topic].length;
+        }
+      }
+      return 0;
+    }
+  }
 })
 export default class extends Vue {
   private visible = false;
@@ -365,6 +434,7 @@ export default class extends Vue {
     neuronId: ''
   };
   private functionId: bigint = null;
+  private topicName: string = null;
   private newFolloweeFormRules = {
     neuronId: [
       { required: true, message: 'Please enter neuron id', trigger: 'change' }
@@ -374,8 +444,9 @@ export default class extends Vue {
   private neuron: SNSNeuron = null;
   private SNSIndex: number;
   private index: number;
-  private followees: { [key: string]: Followees } = {};
+  private followees: { [key: string]: Array<SNSNeuronId> } = {};
   private functionsName: { [key: string]: string } = {};
+  private ICLId = ICLNeuronId;
   private sns1Id = ICLighthouseNeuronId;
   private chatId = ICLighthouseCHATNeuronId;
   private setICLighthouseId(): void {
@@ -385,6 +456,9 @@ export default class extends Vue {
     if (this.SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'CHAT') {
       this.newFolloweeForm.neuronId = ICLighthouseCHATNeuronId;
     }
+    if (this.SNSNeurons.SNSNeuronOfSNSTokenInfo.symbol === 'ICL') {
+      this.newFolloweeForm.neuronId = ICLNeuronId;
+    }
     (this.$refs.newFolloweeForm as any).validateField('neuronId');
   }
   private async init(
@@ -392,84 +466,95 @@ export default class extends Vue {
     SNSIndex: number,
     index: number
   ): Promise<void> {
-    // todo list_known_neurons Functions
     this.SNSIndex = SNSIndex;
     this.index = index;
     this.SNSNeurons = SNSNeuronsList[SNSIndex];
     this.neuron = this.SNSNeurons.SNSNeurons[index];
     this.visible = true;
-    if (!this.SNSNeurons.listNervousSystemFunctions) {
-      await this.getListNervousSystemFunctions();
-    } else {
-      this.getFunctionsName();
+    if (!this.SNSNeurons.listTopics) {
+      await this.getListTopics();
     }
     this.followees = {};
-    this.neuron.followees = this.neuron.followees.filter((follow) => {
-      this.followees[follow[0].toString(10)] = follow[1];
-      return this.functionsName[follow[0].toString(10)] && follow[1];
-    });
+    if (this.neuron.topic_followees && this.neuron.topic_followees[0]) {
+      this.neuron.topic_followees[0].topic_id_to_followees.forEach((item) => {
+        if (
+          item[1] &&
+          item[1].topic &&
+          item[1].topic[0] &&
+          item[1].followees &&
+          item[1].followees.length
+        ) {
+          const name = Object.keys(item[1].topic[0])[0];
+          if (!this.followees[name]) {
+            this.followees[name] = [];
+          }
+          item[1].followees.forEach((followee) => {
+            if (followee.neuron_id && followee.neuron_id[0]) {
+              this.followees[name].push(followee.neuron_id[0]);
+            }
+          });
+        }
+      });
+    }
     // this.$forceUpdate();
   }
-  private async getListNervousSystemFunctions(): Promise<void> {
+  private async getListTopics(): Promise<void> {
     const loading = this.$loading({
       lock: true,
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
       const snsGovernanceService = new SNSGovernanceService();
-      const listNervousSystemFunctions =
-        await snsGovernanceService.listNervousSystemFunctions(
-          this.SNSNeurons.SNSNeuronOfGovernanceId
-        );
-      this.SNSNeurons.listNervousSystemFunctions = listNervousSystemFunctions;
-      this.$emit(
-        'setListNervousSystemFunctions',
-        listNervousSystemFunctions,
-        this.SNSIndex
+      const listTopics = await snsGovernanceService.list_topics(
+        this.SNSNeurons.SNSNeuronOfGovernanceId
       );
-      this.getFunctionsName();
-    } catch (e) {
-    }
+      this.SNSNeurons.listTopics = listTopics;
+      this.$emit('setListTopics', listTopics, this.SNSIndex);
+    } catch (e) {}
     loading.close();
   }
-  private getFunctionsName(): void {
-    this.SNSNeurons.listNervousSystemFunctions.functions.forEach((item) => {
-      if (item.id === BigInt(0)) {
-        this.functionsName[item.id.toString(10)] = 'All topics';
-      } else {
-        if (item.name === 'Deegister Dapp Canisters') {
-          this.functionsName[item.id.toString(10)] =
-            'Deregister Dapp Canisters';
-        } else {
-          this.functionsName[item.id.toString(10)] = item.name;
-        }
-      }
-    });
-  }
-  private getSystemName(systemFunction: NervousSystemFunction): string {
-    if (systemFunction.id === BigInt(0)) {
-      return 'All topics';
-    }
-    if (systemFunction.name === 'Deegister Dapp Canisters') {
-      return 'Deregister Dapp Canisters';
-    } else {
-      return systemFunction.name;
-    }
-  }
-  private onAddFollowee(systemFunction: NervousSystemFunction): void {
-    this.functionId = systemFunction.id;
+  private onAddFollowee(topicInfo: TopicInfo): void {
+    this.topicName = Object.keys(topicInfo.topic[0])[0];
     this.newFolloweeVisible = true;
   }
-  private deleteFollowee(
-    systemFunction: NervousSystemFunction,
-    index: number
-  ): void {
-    this.functionId = systemFunction.id;
-    const followees = JSON.parse(
-      JSON.stringify(this.followees[this.functionId.toString(10)].followees)
-    );
-    followees.splice(index, 1);
-    this.setFollowees(followees, 'delete');
+  private deleteFollowee(listTopics: TopicInfo, neuronId: string): void {
+    if (listTopics.topic && listTopics.topic[0]) {
+      const listTopic = Object.keys(listTopics.topic[0])[0];
+      if (this.neuron.topic_followees && this.neuron.topic_followees[0]) {
+        const followeesForTopic: Array<FolloweesForTopic> = [];
+        this.neuron.topic_followees[0].topic_id_to_followees.forEach((item) => {
+          if (item[1].topic && item[1].topic[0]) {
+            const topic = Object.keys(item[1].topic[0])[0];
+            if (topic === listTopic) {
+              const topicFollowees = [];
+              item[1].followees.forEach((followee) => {
+                if (
+                  followee.neuron_id &&
+                  followee.neuron_id[0] &&
+                  followee.neuron_id[0].id
+                ) {
+                  const id = this.arrayToString(followee.neuron_id[0].id);
+                  if (id !== neuronId) {
+                    topicFollowees.push(followee);
+                  }
+                }
+              });
+              followeesForTopic.push({
+                topic: item[1].topic,
+                followees: topicFollowees
+              });
+            } else {
+              followeesForTopic.push(item[1]);
+            }
+          }
+        });
+        this.setFollowing(followeesForTopic, 'delete');
+      }
+    }
+  }
+  private async onAddAllFollowee(): Promise<void> {
+    this.topicName = null;
+    this.newFolloweeVisible = true;
   }
   private async deleteAllFollowee(): Promise<void> {
     const loading = this.$loading({
@@ -478,42 +563,22 @@ export default class extends Vue {
     });
     await checkAuth();
     try {
-      const followeesValue: Array<bigint> = [];
-      const MAX_COCURRENCY = 40;
-      this.SNSNeurons.listNervousSystemFunctions.functions.forEach((item) => {
-        const res = this.followees[item.id.toString(10)];
-        if (res && res.followees) {
-          followeesValue.push(item.id);
-        }
-      });
-      let promiseValue = [];
-      for (let i = 0; i < followeesValue.length; i++) {
-        promiseValue.push(this.removeFollowees(followeesValue[i]));
-        if (promiseValue.length === MAX_COCURRENCY) {
-          await Promise.all(promiseValue);
-          promiseValue = [];
-        }
-        if (i === followeesValue.length - 1 && promiseValue.length) {
-          await Promise.all(promiseValue);
-        }
+      const followees = [];
+      if (
+        this.SNSNeurons.listTopics.topics[0] &&
+        this.SNSNeurons.listTopics.topics[0]
+      ) {
+        this.SNSNeurons.listTopics.topics[0].forEach((item) => {
+          followees.push({
+            topic: item.topic,
+            followees: []
+          });
+        });
       }
-      this.$message.success('Success');
+      await this.setFollowing(followees, 'delete');
       this.$emit('followNeuronSuccess', this.SNSIndex, this.index);
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
-  }
-  private async removeFollowees(functionId: bigint): Promise<void> {
-    const snsGovernanceService = new SNSGovernanceService();
-    try {
-      await snsGovernanceService.setFollowees(
-        this.SNSNeurons.SNSNeuronOfGovernanceId,
-        this.neuron.id[0].id,
-        functionId,
-        []
-      );
-    } catch (e) {
-    }
   }
   private followNeuron(): void {
     (this.$refs.newFolloweeForm as Vue & { validate: any }).validate(
@@ -526,67 +591,217 @@ export default class extends Vue {
             this.$message.error("You can't add the same neuron as followee.");
             return;
           }
-          let followees: Array<SNSNeuronId> = [];
-          if (
-            this.followees[this.functionId.toString(10)] &&
-            this.followees[this.functionId.toString(10)].followees &&
-            this.followees[this.functionId.toString(10)].followees.length
-          ) {
-            followees = JSON.parse(
-              JSON.stringify(
-                this.followees[this.functionId.toString(10)].followees
-              )
-            );
-          }
-          const flag = followees.some((followee) => {
-            return (
-              this.newFolloweeForm.neuronId.trim() ===
-              this.arrayToString(followee.id)
-            );
-          });
-          if (flag) {
-            this.$message.error('You are already following this neuron.');
-            return;
-          }
-          const loading = this.$loading({
-            lock: true,
-            background: 'rgba(0, 0, 0, 0.5)'
-          });
-          await checkAuth();
-          try {
-            const snsGovernanceService = new SNSGovernanceService();
-            const res = await snsGovernanceService.getNeuron(
-              this.SNSNeurons.SNSNeuronOfGovernanceId,
-              [
-                {
-                  id: Array.from(
-                    hexToBytes(this.newFolloweeForm.neuronId.trim())
-                  )
+          if (!this.topicName) {
+            const loading = this.$loading({
+              lock: true,
+              background: 'rgba(0, 0, 0, 0.5)'
+            });
+            await checkAuth();
+            try {
+              const snsGovernanceService = new SNSGovernanceService();
+              const res = await snsGovernanceService.getNeuron(
+                this.SNSNeurons.SNSNeuronOfGovernanceId,
+                [
+                  {
+                    id: Array.from(
+                      hexToBytes(this.newFolloweeForm.neuronId.trim())
+                    )
+                  }
+                ]
+              );
+              if (res.result) {
+                const type = Object.keys(res.result[0])[0];
+                if (type === 'Neuron') {
+                  let topicFollowees: Array<FolloweesForTopic> = [];
+                  if (this.SNSNeurons.listTopics.topics[0]) {
+                    this.SNSNeurons.listTopics.topics[0].forEach((item) => {
+                      topicFollowees.unshift({
+                        topic: item.topic,
+                        followees: [
+                          {
+                            alias: [],
+                            neuron_id: [
+                              {
+                                id: Array.from(
+                                  hexToBytes(
+                                    this.newFolloweeForm.neuronId.trim()
+                                  )
+                                )
+                              }
+                            ]
+                          }
+                        ]
+                      });
+                    });
+                    this.setFollowing(topicFollowees);
+                  }
+                } else {
+                  this.$message.error(
+                    `Neuron with id ${this.newFolloweeForm.neuronId.trim()} does not exist.`
+                  );
                 }
-              ]
-            );
-            loading.close();
-            if (res.result) {
-              const type = Object.keys(res.result[0])[0];
-              if (type === 'Neuron') {
-                followees.unshift({
-                  id: Array.from(
-                    hexToBytes(this.newFolloweeForm.neuronId.trim())
-                  )
-                });
-                this.setFollowees(followees);
-              } else {
-                this.$message.error(
-                  `Neuron with id ${this.newFolloweeForm.neuronId.trim()} does not exist.`
-                );
               }
+            } catch (e) {
+              loading.close();
             }
-          } catch (e) {
-            loading.close();
+          } else {
+            let followees: Array<SNSNeuronId> = [];
+            if (
+              this.followees[this.topicName] &&
+              this.followees[this.topicName].length
+            ) {
+              followees = JSON.parse(
+                JSON.stringify(this.followees[this.topicName])
+              );
+            }
+            const flag = followees.some((followee) => {
+              return (
+                this.newFolloweeForm.neuronId.trim() ===
+                this.arrayToString(followee.id)
+              );
+            });
+            if (flag) {
+              this.$message.error('You are already following this neuron.');
+              return;
+            }
+            const loading = this.$loading({
+              lock: true,
+              background: 'rgba(0, 0, 0, 0.5)'
+            });
+            await checkAuth();
+            try {
+              const snsGovernanceService = new SNSGovernanceService();
+              const res = await snsGovernanceService.getNeuron(
+                this.SNSNeurons.SNSNeuronOfGovernanceId,
+                [
+                  {
+                    id: Array.from(
+                      hexToBytes(this.newFolloweeForm.neuronId.trim())
+                    )
+                  }
+                ]
+              );
+              loading.close();
+              if (res.result) {
+                const type = Object.keys(res.result[0])[0];
+                if (type === 'Neuron') {
+                  let topicFollowees: Array<FolloweesForTopic> = [];
+                  const followee: Followee = {
+                    alias: [],
+                    neuron_id: [
+                      {
+                        id: Array.from(
+                          hexToBytes(this.newFolloweeForm.neuronId.trim())
+                        )
+                      }
+                    ]
+                  };
+                  if (
+                    this.neuron.topic_followees[0] &&
+                    this.neuron.topic_followees[0].topic_id_to_followees &&
+                    this.neuron.topic_followees[0].topic_id_to_followees.length
+                  ) {
+                    let flag = false;
+                    this.neuron.topic_followees[0].topic_id_to_followees.forEach(
+                      (item) => {
+                        if (
+                          item.length &&
+                          item[1] &&
+                          item[1].topic &&
+                          item[1].topic[0]
+                        ) {
+                          const topic = Object.keys(item[1].topic[0])[0];
+                          if (topic === this.topicName) {
+                            flag = true;
+                            if (item[1].followees.length) {
+                              const newFollowee = JSON.parse(
+                                JSON.stringify(item[1].followees)
+                              );
+                              newFollowee.unshift(followee);
+                              topicFollowees.push({
+                                topic: item[1].topic,
+                                followees: newFollowee
+                              });
+                            } else {
+                              topicFollowees.push({
+                                topic: item[1].topic,
+                                followees: [followee]
+                              });
+                            }
+                          }
+                        }
+                      }
+                    );
+                    if (!flag) {
+                      const topic = { [this.topicName]: null } as Topic;
+                      topicFollowees.push({
+                        topic: [topic],
+                        followees: [followee]
+                      });
+                    }
+                  } else {
+                    const topic = { [this.topicName]: null } as Topic;
+                    topicFollowees = [
+                      {
+                        topic: [topic],
+                        followees: [followee]
+                      }
+                    ];
+                  }
+                  this.setFollowing(topicFollowees);
+                } else {
+                  this.$message.error(
+                    `Neuron with id ${this.newFolloweeForm.neuronId.trim()} does not exist.`
+                  );
+                }
+              }
+            } catch (e) {
+              loading.close();
+            }
           }
         }
       }
     );
+  }
+  private async setFollowing(
+    followees: Array<FolloweesForTopic>,
+    followeesType?: string
+  ): Promise<void> {
+    const snsGovernanceService = new SNSGovernanceService();
+    const loading = this.$loading({
+      lock: true,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+    await checkAuth();
+    try {
+      const res = await snsGovernanceService.setFollowing(
+        this.SNSNeurons.SNSNeuronOfGovernanceId,
+        this.neuron.id[0].id,
+        followees
+      );
+      if (res && res.command) {
+        const type = Object.keys(res.command[0])[0];
+        if (type === 'Error') {
+          const err = Object.values(res.command[0])[0] as GovernanceError;
+          this.$message.error(err.error_message);
+        } else {
+          if (followeesType) {
+            this.$message.success('Success');
+          } else {
+            this.$message.success('Success');
+            this.newFolloweeVisible = false;
+          }
+          this.$emit('followNeuronSuccess', this.SNSIndex, this.index);
+        }
+      } else {
+        if (followeesType) {
+          this.$message.error('Error');
+        } else {
+          this.$message.error('Follow Neuron Error');
+        }
+      }
+    } catch (e) {}
+    loading.close();
   }
   private async setFollowees(
     followees: Array<SNSNeuronId>,
@@ -626,8 +841,7 @@ export default class extends Vue {
           this.$message.error('Follow Neuron Error');
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private afterClose(): void {
@@ -645,6 +859,7 @@ export default class extends Vue {
     this.$message.success('Copied');
   }
   private onError(): void {
+    //
   }
 }
 </script>
@@ -656,7 +871,7 @@ export default class extends Vue {
   font-size: 16px;
   color: #fff;
   button {
-    width: auto;
+    width: 100px;
   }
 }
 .follow-Neuron-list {

@@ -325,6 +325,7 @@ export default ({ IDL }) => {
   const ProposalData = IDL.Record({
     id: IDL.Opt(ProposalId),
     payload_text_rendering: IDL.Opt(IDL.Text),
+    topic: IDL.Opt(Topic),
     action: IDL.Nat64,
     failure_reason: IDL.Opt(GovernanceError),
     action_auxiliary: IDL.Opt(ActionAuxiliary),
@@ -376,6 +377,17 @@ export default ({ IDL }) => {
     vote: IDL.Int32,
     proposal: IDL.Opt(ProposalId)
   });
+  const Followee = IDL.Record({
+    alias: IDL.Opt(IDL.Text),
+    neuron_id: IDL.Opt(NeuronId)
+  });
+  const FolloweesForTopic = IDL.Record({
+    topic: IDL.Opt(Topic),
+    followees: IDL.Vec(Followee)
+  });
+  const SetFollowing = IDL.Record({
+    topic_following: IDL.Vec(FolloweesForTopic)
+  });
   const FinalizeDisburseMaturity = IDL.Record({
     amount_to_be_disbursed_e8s: IDL.Nat64,
     to_account: IDL.Opt(Account)
@@ -409,6 +421,7 @@ export default ({ IDL }) => {
     DisburseMaturity: DisburseMaturity,
     Configure: Configure,
     RegisterVote: RegisterVote,
+    SetFollowing: SetFollowing,
     SyncCommand: IDL.Record({}),
     MakeProposal: Proposal,
     FinalizeDisburseMaturity: FinalizeDisburseMaturity,
@@ -443,6 +456,11 @@ export default ({ IDL }) => {
     maturity_e8s_equivalent: IDL.Nat64,
     cached_neuron_stake_e8s: IDL.Nat64,
     created_timestamp_seconds: IDL.Nat64,
+    topic_followees: IDL.Opt(
+      IDL.Record({
+        topic_id_to_followees: IDL.Vec(IDL.Tuple(IDL.Int32, FolloweesForTopic))
+      })
+    ),
     source_nns_neuron_id: IDL.Opt(IDL.Nat64),
     auto_stake_maturity: IDL.Opt(IDL.Bool),
     aging_since_timestamp_seconds: IDL.Nat64,
@@ -602,16 +620,19 @@ export default ({ IDL }) => {
     start_page_at: IDL.Opt(NeuronId)
   });
   const ListNeuronsResponse = IDL.Record({ neurons: IDL.Vec(Neuron) });
+  const TopicSelector = IDL.Record({ topic: IDL.Opt(Topic) });
   const ListProposals = IDL.Record({
     include_reward_status: IDL.Vec(IDL.Int32),
     before_proposal: IDL.Opt(ProposalId),
     limit: IDL.Nat32,
     exclude_type: IDL.Vec(IDL.Nat64),
+    include_topics: IDL.Opt(IDL.Vec(TopicSelector)),
     include_status: IDL.Vec(IDL.Int32)
   });
   const ListProposalsResponse = IDL.Record({
     include_ballots_by_caller: IDL.Opt(IDL.Bool),
-    proposals: IDL.Vec(ProposalData)
+    proposals: IDL.Vec(ProposalData),
+    include_topic_filtering: IDL.Opt(IDL.Bool)
   });
   const ListTopicsRequest = IDL.Record({});
   const TopicInfo = IDL.Record({
@@ -636,6 +657,7 @@ export default ({ IDL }) => {
     ClaimOrRefresh: ClaimOrRefresh,
     Configure: Configure,
     RegisterVote: RegisterVote,
+    SetFollowing: SetFollowing,
     MakeProposal: Proposal,
     StakeMaturity: StakeMaturity,
     RemoveNeuronPermissions: RemoveNeuronPermissions,
@@ -672,6 +694,7 @@ export default ({ IDL }) => {
     ClaimOrRefresh: ClaimOrRefreshResponse,
     Configure: IDL.Record({}),
     RegisterVote: IDL.Record({}),
+    SetFollowing: IDL.Record({}),
     MakeProposal: GetProposal,
     RemoveNeuronPermission: IDL.Record({}),
     StakeMaturity: StakeMaturityResponse,

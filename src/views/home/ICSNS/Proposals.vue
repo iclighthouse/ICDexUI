@@ -24,6 +24,16 @@
               SNSTokens[currentIndex].listTypes.length
             }})
           </button>
+          <!--<button
+            @click="onFilterNewTopics"
+            type="button"
+            class="proposals-button-filter"
+          >
+            <a-icon type="filter" />
+            Topics ({{ topics.length }}/{{
+              SNSTokens[currentIndex].listTypes.length
+            }})
+          </button>-->
           <button
             @click="filterStatus"
             type="button"
@@ -385,6 +395,10 @@ export default class extends Vue {
   private loadMore = true;
   private proposalLoading = false;
   private proposalOpeningLoading = false;
+  private topicsNew = [];
+  private checkTopicsNew = [];
+  private topicsVisibleNew = false;
+  private checkAllTopicsNew = false;
   private topics = [];
   private checkTopics = [];
   private topicsVisible = false;
@@ -427,7 +441,7 @@ export default class extends Vue {
         (this.$refs.infiniteScroll as any).scrollTop = 0;
       });
       this.$route.meta.isBack = false;
-      if (this.topics.length) {
+      if (this.topicsNew.length) {
         let tokenId = this.$route.query.id as string;
         if (tokenId) {
           localStorage.setItem('ICSNSToken', tokenId);
@@ -448,9 +462,33 @@ export default class extends Vue {
           //   }
           // });
         }
-        this.topics = this.SNSTokens[this.currentIndex].allTopics;
+        this.topicsNew = this.SNSTokens[this.currentIndex].allTopicsNew;
         this.initProposals();
       }
+      // if (this.topics.length) {
+      //   let tokenId = this.$route.query.id as string;
+      //   if (tokenId) {
+      //     localStorage.setItem('ICSNSToken', tokenId);
+      //   } else {
+      //     const localToken = localStorage.getItem('ICSNSToken');
+      //     if (localToken) {
+      //       tokenId = localToken;
+      //     }
+      //   }
+      //   if (tokenId && this.SNSTokens.length) {
+      //     this.setCurrentIndex();
+      //     // this.deployedSnses.forEach((item, index) => {
+      //     //   if (
+      //     //     tokenId &&
+      //     //     tokenId.trim() === item.ledger_canister_id.toString()
+      //     //   ) {
+      //     //     this.currentIndex = index;
+      //     //   }
+      //     // });
+      //   }
+      //   this.topics = this.SNSTokens[this.currentIndex].allTopics;
+      //   this.initProposals();
+      // }
     } else {
       this.getOpenProposals(null);
       this.$nextTick(() => {
@@ -568,6 +606,7 @@ export default class extends Vue {
     this.loadMore = true;
     this.proposalStatusFilter = this.proposalStatusIds;
     this.topics = this.SNSTokens[this.currentIndex].allTopics;
+    this.topicsNew = this.SNSTokens[this.currentIndex].allTopicsNew;
     this.getListProposals('init');
     this.getOpenProposals(null);
     let deployedSns: DeployedSns;
@@ -640,6 +679,7 @@ export default class extends Vue {
       limit: BigInt(10),
       exclude_type: [],
       include_status: [],
+      include_topics: [],
       include_reward_status: [1]
     };
     snsGovernanceService
@@ -698,6 +738,7 @@ export default class extends Vue {
         limit: BigInt(10),
         exclude_type: excludeType,
         include_status: this.proposalStatusFilter,
+        include_topics: [],
         include_reward_status: []
       };
       const res = await snsGovernanceService.listProposals(
@@ -898,6 +939,7 @@ export default class extends Vue {
     this.setCurrentIndex();
     loading.close();
     this.topics = this.SNSTokens[this.currentIndex].allTopics;
+    this.topicsNew = this.SNSTokens[this.currentIndex].allTopicsNew;
     this.getListProposals();
     this.getOpenProposals(null);
   }
@@ -946,10 +988,19 @@ export default class extends Vue {
           swapCanisterId.toString(),
           ledgerCanisterId.toString(),
           init
-        )
+        ),
+        this.list_topics(governanceCanisterId.toString())
       );
       const res = await Promise.all(promiseAll);
       let allTopics = [];
+      let allTopicsNew = [];
+      if (res[6] && res[6].topics && res[6].topics.length) {
+        res[6].topics.forEach((item) => {
+          if (item && item[0]) {
+            allTopicsNew.push(Object.keys(item[0])[0]);
+          }
+        });
+      }
       let types = {};
       let listTypes = [];
       if (res[3] && res[3].functions) {
@@ -968,6 +1019,7 @@ export default class extends Vue {
         types: types,
         allTopics: allTopics, // allTypes
         listTypes: listTypes,
+        allTopicsNew: allTopicsNew,
         nervousSystemParameters: res[1],
         decimals: res[2],
         lifecycle: res[5]
@@ -1100,6 +1152,11 @@ export default class extends Vue {
       checkStatus: e.target.checked ? this.proposalStatusIds : [],
       checkAllStatus: e.target.checked
     });
+  }
+  private onFilterNewTopics(): void {
+    this.checkTopics = this.topics;
+    this.topicsVisible = true;
+    this.onCheckChangeTopics();
   }
   private onFilterTopics(): void {
     this.checkTopics = this.topics;

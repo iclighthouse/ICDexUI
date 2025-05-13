@@ -203,6 +203,8 @@ const ICXWhitelist = [
 const SUB_ACCOUNT_BYTE_LENGTH = 32;
 const ICLighthouseNeuronId =
   '78ea67a9a0e03055e76cf71380f3bdb9d83ec19552e5cc58d6c596173a72156c';
+const ICLNeuronId =
+  '1107e1481282291f8ae6811735edefabeb86958b79844ca0b0adff34ffdb987e';
 const ICLighthouseCHATNeuronId =
   '68f6723cf5d95cd320baf016b1d85cf58cda88301b1fa867c527699de746555b';
 const getEthereumAccount = async (): Promise<string> => {
@@ -487,6 +489,7 @@ export {
   CK_BTC_CANISTER_ID,
   SNS_WASM_CANISTER_ID,
   QUESTS_CANISTER_ID,
+  ICLNeuronId,
   ICLighthouseNeuronId,
   ICLighthouseCHATNeuronId,
   IC_TOKENS_SCAN_CANISTER_ID,

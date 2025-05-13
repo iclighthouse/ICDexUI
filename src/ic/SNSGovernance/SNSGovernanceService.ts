@@ -1,6 +1,7 @@
 import Service, {
   Amount,
   ClaimOrRefreshResponse,
+  FolloweesForTopic,
   GetMetadataResponse,
   GetNeuronResponse,
   GetProposal,
@@ -298,6 +299,25 @@ export class SNSGovernanceService {
           Follow: {
             function_id: functionId,
             followees: followees
+          }
+        }
+      ]
+    };
+    const res = await service.manage_neuron(request);
+    return SerializableIC(res);
+  };
+  public setFollowing = async (
+    canisterId: string,
+    neuronId: Array<number>,
+    followees: Array<FolloweesForTopic>
+  ): Promise<SNSManageNeuronResponse> => {
+    const service = await this.check(canisterId, true, true);
+    const request: SNSManageNeuron = {
+      subaccount: neuronId,
+      command: [
+        {
+          SetFollowing: {
+            topic_following: followees
           }
         }
       ]

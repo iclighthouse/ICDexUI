@@ -30,9 +30,9 @@
             </span>
           </div>
           <div class="proposal-item-info">
-            <span>Type</span>
+            <span>Topic</span>
             <span class="margin-left-auto">{{
-              proposal.proposal[0].action | filterAction
+              proposal.topic | filterTopic
             }}</span>
           </div>
           <div class="proposal-item-info">
@@ -516,6 +516,12 @@ const commonModule = namespace('common');
   name: 'Proposal',
   components: {},
   filters: {
+    filterTopic(val): string {
+      if (val && val[0]) {
+        return Object.keys(val[0])[0];
+      }
+      return '';
+    },
     filterAction(val): string {
       if (val && val[0]) {
         return Object.keys(val[0])[0];
@@ -956,6 +962,7 @@ export default class extends Vue {
           limit: BigInt(1),
           exclude_type: [],
           include_status: [1, 2, 3, 4, 5],
+          include_topics: [],
           include_reward_status: []
         };
         const res = await snsGovernanceService.listProposals(

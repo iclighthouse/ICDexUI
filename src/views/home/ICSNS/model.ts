@@ -1,6 +1,6 @@
 import { TokenInfo, TokenStd } from '@/ic/common/icType';
 import {
-  ListNervousSystemFunctionsResponse,
+  ListNervousSystemFunctionsResponse, ListTopicsResponse,
   NervousSystemFunction,
   NervousSystemParameters,
   SNSNeuron, TopicInfo
@@ -53,6 +53,7 @@ export interface SNSNeuronsInfo {
   SNSNeurons: Array<SNSNeuron>;
   nervousSystemParameters: NervousSystemParameters;
   listNervousSystemFunctions: ListNervousSystemFunctionsResponse;
+  listTopics: ListTopicsResponse;
   lifecycle?: Array<bigint>;
 }
 export enum SNSNeuronStatus {
@@ -111,6 +112,7 @@ export interface proposalsNeurons {
   listNervousSystemFunctionsResponse: Array<NervousSystemFunction>;
   allTopics: Array<bigint>;
   listTypes: Array<{ id: number; name: string }>;
+  allTopicsNew: Array<string>;
   types: { [key: string]: NervousSystemFunction };
   nervousSystemParameters: NervousSystemParameters;
   lifecycle?: Array<bigint>;

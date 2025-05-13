@@ -580,14 +580,14 @@
                     >
                       <div class="disburse-maturity-in-progress-tooltip">
                         {{
-                          item.amount_e8s
-                            | bigintToFloat(
+                          item.amount_e8s |
+                            bigintToFloat(
                               SNSNeuronsList[currentNeuronInfoIndex]
                                 .SNSNeuronOfSNSTokenInfo.decimals,
                               SNSNeuronsList[currentNeuronInfoIndex]
                                 .SNSNeuronOfSNSTokenInfo.decimals
-                            )
-                            | formatNum
+                            ) |
+                            formatNum
                         }}
                         {{
                           SNSNeuronsList[currentNeuronInfoIndex]
@@ -676,14 +676,14 @@
                   >
                     <div class="disburse-maturity-in-progress-tooltip">
                       {{
-                        item.amount_e8s
-                          | bigintToFloat(
+                        item.amount_e8s |
+                          bigintToFloat(
                             SNSNeuronsList[currentNeuronInfoIndex]
                               .SNSNeuronOfSNSTokenInfo.decimals,
                             SNSNeuronsList[currentNeuronInfoIndex]
                               .SNSNeuronOfSNSTokenInfo.decimals
-                          )
-                          | formatNum
+                          ) |
+                          formatNum
                       }}
                       {{
                         SNSNeuronsList[currentNeuronInfoIndex]
@@ -734,13 +734,13 @@
             <span class="margin-left-auto">
               <span class="neuron-balance">
                 {{
-                  neuron.staked_maturity_e8s_equivalent[0]
-                    | bigintToFloat(
+                  neuron.staked_maturity_e8s_equivalent[0] |
+                    bigintToFloat(
                       2,
                       SNSNeuronsList[currentNeuronInfoIndex]
                         .SNSNeuronOfSNSTokenInfo.decimals
-                    )
-                    | formatNum
+                    ) |
+                    formatNum
                 }}
               </span>
               <span class="neuron-symbol">
@@ -875,20 +875,20 @@
             <p>
               Balance:
               {{
-                stakeNeuronOfTokenBalance
-                  | bigintToFloat(
+                stakeNeuronOfTokenBalance |
+                  bigintToFloat(
                     currentNeuron.SNSNeuronOfSNSTokenInfo.decimals,
                     currentNeuron.SNSNeuronOfSNSTokenInfo.decimals
-                  )
-                  | formatNum
+                  ) |
+                  formatNum
               }}
               {{ currentNeuron.SNSNeuronOfSNSTokenInfo.symbol }}
             </p>
             <p>
               Fee:
               {{
-                currentNeuron.SNSNeuronOfSNSTokenInfo.fee
-                  | bigintToFloat(
+                currentNeuron.SNSNeuronOfSNSTokenInfo.fee |
+                  bigintToFloat(
                     currentNeuron.SNSNeuronOfSNSTokenInfo.decimals,
                     currentNeuron.SNSNeuronOfSNSTokenInfo.decimals
                   )
@@ -955,8 +955,8 @@
             <p>
               Fee:
               {{
-                currentNeuron.SNSNeuronOfSNSTokenInfo.fee
-                  | bigintToFloat(
+                currentNeuron.SNSNeuronOfSNSTokenInfo.fee |
+                  bigintToFloat(
                     currentNeuron.SNSNeuronOfSNSTokenInfo.decimals,
                     currentNeuron.SNSNeuronOfSNSTokenInfo.decimals
                   )
@@ -985,7 +985,7 @@
     ></increase-dissolve-delay>
     <following
       ref="following"
-      @setListNervousSystemFunctions="setListNervousSystemFunctions"
+      @setListTopics="setListTopics"
       @followNeuronSuccess="followNeuronSuccess"
     ></following>
     <permissions
@@ -1072,8 +1072,8 @@ import { DeployedSns } from '@/ic/SNSWasm/model';
 import { SNSGovernanceService } from '@/ic/SNSGovernance/SNSGovernanceService';
 import {
   GovernanceError,
-  ListNervousSystemFunctionsResponse,
   ListNeurons,
+  ListTopicsResponse,
   NervousSystemParameters,
   SNSNeuron,
   SNSNeuronId
@@ -1361,8 +1361,7 @@ export default class extends Vue {
           this.currentNeuronForNeuronId = neuron;
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private init(): void {
@@ -1423,8 +1422,7 @@ export default class extends Vue {
             } else {
               this.$message.error('Split Neuron Error');
             }
-          } catch (e) {
-          }
+          } catch (e) {}
           loading.close();
         }
       }
@@ -1498,8 +1496,7 @@ export default class extends Vue {
       } else {
         this.$message.error('Stop Dissolving Error');
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private dissolve(SNSIndex: number, index: number): void {
@@ -1565,15 +1562,11 @@ export default class extends Vue {
     await this.getNeuron(SNSIndex, index);
     this.onPermissions(SNSIndex, index);
   }
-  private setListNervousSystemFunctions(
-    listNervousSystemFunctions: ListNervousSystemFunctionsResponse,
+  private setListTopics(
+    listTopics: ListTopicsResponse,
     SNSIndex: number
   ): void {
-    this.$set(
-      this.SNSNeuronsList[SNSIndex],
-      'listNervousSystemFunctions',
-      listNervousSystemFunctions
-    );
+    this.$set(this.SNSNeuronsList[SNSIndex], 'listTopics', listTopics);
   }
   private async getNeuron(SNSIndex: number, index: number): Promise<void> {
     const SNSNeuronInfo = this.SNSNeuronsList[SNSIndex];
@@ -1898,8 +1891,7 @@ export default class extends Vue {
         Principal.fromText(this.getPrincipalId),
         description
       );
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private onSubmitStakeNeuron(): void {
     (this.$refs.stakeNeuronForm as Vue & { validate: any }).validate(
@@ -2214,8 +2206,7 @@ export default class extends Vue {
       } else {
         this.$message.error('Disburse Maturity Error');
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private async onIncreaseStakeNeuron(
@@ -2279,8 +2270,7 @@ export default class extends Vue {
       } else {
         this.$message.error('Disburse Neuron Error');
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private async listDeployedSnses(): Promise<void> {
@@ -2438,8 +2428,7 @@ export default class extends Vue {
           return true;
         }
       });
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async initConnected(
     listDeployedSnses: Array<DeployedSns>
@@ -2467,6 +2456,7 @@ export default class extends Vue {
         SNSNeuronPageSize: 100,
         loading: true,
         SNSNeurons: [],
+        listTopics: null,
         listNervousSystemFunctions: null
       });
       snsTokens.push(item);
@@ -2611,6 +2601,7 @@ export default class extends Vue {
         this.SNSNeuronsList[index].SNSNeuronOfGovernanceId,
       SNSNeuronPageSize: this.SNSNeuronsList[index].SNSNeuronPageSize,
       SNSNeurons: res,
+      listTopics: this.SNSNeuronsList[index].listTopics,
       listNervousSystemFunctions:
         this.SNSNeuronsList[index].listNervousSystemFunctions,
       loading: false
@@ -2640,7 +2631,7 @@ export default class extends Vue {
         this.$set(this.SNSNeuronsList[index], 'lifecycle', res.lifecycle);
       }
     } catch (e) {
-			//
+      //
     }
   }
   private async getCurrentTokenInfo(
@@ -2661,7 +2652,7 @@ export default class extends Vue {
         );
       }
     } catch (e) {
-			//
+      //
     }
   }
   private async createNeuronSuccess(
@@ -2685,8 +2676,7 @@ export default class extends Vue {
           );
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async refreshNeurons(
     governanceCanisterId: string,

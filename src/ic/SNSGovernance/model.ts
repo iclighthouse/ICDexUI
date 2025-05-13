@@ -1,5 +1,5 @@
 import { Principal } from '@dfinity/principal';
-import { Icrc1Account } from '@/ic/common/icType';
+import { Icrc1Account, NeuronId } from '@/ic/common/icType';
 export interface GetMetadataResponse {
   url: Array<string>;
   logo: Array<string>;
@@ -25,6 +25,9 @@ export interface SNSNeuron {
   maturity_e8s_equivalent: bigint;
   cached_neuron_stake_e8s: bigint;
   created_timestamp_seconds: bigint;
+  topic_followees:
+    | []
+    | [{ topic_id_to_followees: Array<[number, FolloweesForTopic]> }];
   source_nns_neuron_id: Array<bigint>;
   auto_stake_maturity: Array<boolean>;
   aging_since_timestamp_seconds: bigint;
@@ -38,6 +41,14 @@ export interface SNSNeuron {
   age?: string;
   status?: string;
   votingPower?: string;
+}
+export interface FolloweesForTopic {
+  topic: [] | [Topic];
+  followees: Array<Followee>;
+}
+export interface Followee {
+  alias: [] | [string];
+  neuron_id: [] | [SNSNeuronId];
 }
 export interface DisburseMaturityInProgress {
   timestamp_of_disbursement_seconds: bigint;
@@ -79,6 +90,7 @@ export type Command =
   | {
       RegisterVote: RegisterVote;
     }
+  | { SetFollowing: SetFollowing }
   | {
       MakeProposal: Proposal;
     }
@@ -97,6 +109,9 @@ export type Command =
   | {
       Disburse: Disburse;
     };
+export interface SetFollowing {
+  topic_following: Array<FolloweesForTopic>;
+}
 export interface Split {
   memo: bigint;
   amount_e8s: bigint;
@@ -329,6 +344,9 @@ export type Command_1 =
       RegisterVote: {};
     }
   | {
+      SetFollowing: {};
+    }
+  | {
       MakeProposal: GetProposal;
     }
   | {
@@ -391,14 +409,21 @@ export interface ListProposals {
   before_proposal: Array<ProposalId>;
   limit: bigint;
   exclude_type: Array<bigint>;
+  include_topics: [] | [Array<TopicSelector>];
   include_status: Array<number>;
 }
+export interface TopicSelector {
+  topic: [] | [Topic];
+}
 export interface ListProposalsResponse {
+  include_ballots_by_caller: [] | [boolean];
   proposals: Array<ProposalData>;
+  include_topic_filtering: [] | [boolean];
 }
 export interface ProposalData {
   id: Array<ProposalId>;
   payload_text_rendering: Array<string>;
+  topic: [] | [Topic];
   action: bigint;
   failure_reason: Array<GovernanceError>;
   ballots: Array<[string, Ballot]>;

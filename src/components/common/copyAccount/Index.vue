@@ -66,6 +66,7 @@ export default class extends Vue {
     this.$message.success(`${this.copyText} Copied`);
   }
   private onError(): void {
+    //
   }
 }
 </script>

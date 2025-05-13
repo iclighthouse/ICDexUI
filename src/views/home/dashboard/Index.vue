@@ -1508,6 +1508,7 @@ export default class extends Vue {
       limit: BigInt(1),
       exclude_type: [],
       include_status: [],
+      include_topics: [],
       include_reward_status: []
     };
     this.SNSGovernanceService.listProposals(governance, totalRequest).then(
@@ -1535,6 +1536,7 @@ export default class extends Vue {
       limit: BigInt(10),
       exclude_type: [],
       include_status: [1],
+      include_topics: [],
       include_reward_status: []
     };
     this.SNSGovernanceService.listProposals(governance, openRequest)

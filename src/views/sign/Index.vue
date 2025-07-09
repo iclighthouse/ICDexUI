@@ -15,7 +15,8 @@
               loginType !== 'Infinity' &&
               loginType !== 'MetaMask' &&
               loginType !== 'NFID' &&
-              loginType !== 'SignerNFID'
+              loginType !== 'SignerNFID' &&
+              loginType !== 'OISY'
             "
             class="account-list-title"
           >
@@ -77,6 +78,14 @@
           </div>
           <div
             class="verify-internet"
+            v-if="loginType === 'OISY'"
+            @click="authNFIDClient(loginType)"
+          >
+            <img src="@/assets/img/OISY.svg" alt="" />Re-verify your OISY
+            identity
+          </div>
+          <div
+            class="verify-internet"
             v-if="loginType === 'Infinity'"
             @click="authInfinityClient"
           >
@@ -92,7 +101,8 @@
               loginType !== 'Infinity' &&
               loginType !== 'MetaMask' &&
               loginType !== 'NFID' &&
-              loginType !== 'SignerNFID'
+              loginType !== 'SignerNFID' &&
+              loginType !== 'OISY'
             "
             placeholder="input password"
             v-model="password"
@@ -105,7 +115,8 @@
               loginType !== 'Infinity' &&
               loginType !== 'MetaMask' &&
               loginType !== 'NFID' &&
-              loginType !== 'SignerNFID'
+              loginType !== 'SignerNFID' &&
+              loginType !== 'OISY'
             "
             type="button"
             class="primary large-primary large-primary form-button"
@@ -179,6 +190,7 @@ import { hexToBytes } from '@/ic/converter';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { getNFIDIdentity, NFIDLogin, NFIDLogout } from '@/ic/NFIDAuth';
+import { OISYLogin, OISYLogout } from '@/ic/OISYAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
 @Component({
@@ -296,8 +308,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           }
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     this.spinning = false;
   }
   private async authInfinityClient(): Promise<void> {
@@ -332,15 +343,21 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           }
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     this.spinning = false;
   }
   private async authNFIDClient(type: string): Promise<void> {
     this.spinning = true;
-    const signerAgent = await NFIDLogin(type === 'SignerNFID');
+    let signerAgent;
+    if (type === 'OISY') {
+      signerAgent = await OISYLogin();
+    } else {
+      signerAgent = await NFIDLogin(type === 'SignerNFID');
+    }
     let principal;
     if (type === 'SignerNFID') {
+      principal = await signerAgent.getPrincipal();
+    } else if (type === 'OISY') {
       principal = await signerAgent.getPrincipal();
     } else {
       principal = getNFIDIdentity().getPrincipal();
@@ -474,6 +491,9 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       ) {
         await NFIDLogout();
       }
+      if (priList[principal] === 'OISY') {
+        await OISYLogout();
+      }
       localStorage.removeItem('principal');
       this.setPrincipalId(null);
       this.setIdentity(null);
@@ -487,8 +507,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
           return;
         });
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
 }

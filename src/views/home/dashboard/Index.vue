@@ -908,7 +908,7 @@ import AccountInfo from '@/views/home/components/AccountInfo.vue';
 import { BlockHeight, ICDexEvent } from '@/ic/ICDexRouter/model';
 import { ckETHMinterService } from '@/ic/ckETHMinter/ckETHMinterService';
 import { icETHEvent } from '@/ic/ckETHMinter/model';
-import { BlackholeService } from '@/ic/Blackhole/blackholeService';
+import { BlackholeService } from '@/ic/blackhole/blackholeService';
 import {
   gib_storage_per_second_fee_34,
   gib_storage_per_second_fee,
@@ -1190,8 +1190,7 @@ export default class extends Vue {
           total = new BigNumber(total).plus(totalVol).toString(10);
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     this.totalVol = new BigNumber(total).decimalPlaces(0).toString(10);
     this.Vol24 = new BigNumber(Vol24).decimalPlaces(0).toString(10);
   }
@@ -1210,8 +1209,7 @@ export default class extends Vue {
         });
         this.totalTVL = new BigNumber(total).decimalPlaces(0).toString(10);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private async getPools(
     pools: Array<[Principal, Array<[Principal, AccountId]>]>,
@@ -1478,6 +1476,30 @@ export default class extends Vue {
       {
         type: 'ICLTeam',
         canister_id: 'zseoz-qqaaa-aaaap-abzxa-cai'
+      },
+      {
+        type: 'CMC',
+        canister_id: 'gwhbq-7aaaa-aaaar-qabya-cai'
+      },
+      {
+        type: 'SNSTracker',
+        canister_id: 'cdve5-wiaaa-aaaak-akoua-cai'
+      },
+      {
+        type: 'SNSTracker',
+        canister_id: 'cdve5-wiaaa-aaaak-akoua-cai'
+      },
+      {
+        type: 'Orcale',
+        canister_id: 'pncff-zqaaa-aaaai-qnp3a-cai'
+      },
+      {
+        type: 'ICHouse',
+        canister_id: '637g5-siaaa-aaaaj-aasja-cai'
+      },
+      {
+        type: 'ICTC',
+        canister_id: 'cmqwp-uiaaa-aaaaj-aihzq-cai'
       }
     ];
     moreApps.forEach((item) => {
@@ -1602,6 +1624,10 @@ export default class extends Vue {
           }
         ]
       };
+      const min = new BigNumber(5 * 10 ** 12);
+      if (min.gt(res[1].cycles.toString(10))) {
+        ++this.insufficient;
+      }
       this.SNSDapps.unshift(dapp);
       if (!this.SNSDappsForDappAll[val.root]) {
         this.SNSDappsForDappAll[val.root] = [];

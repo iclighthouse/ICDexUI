@@ -13186,6 +13186,7 @@ import { ICLighthouseService } from '@/ic/ICLighthouse/ICLighthouseService';
 import { NftService } from '@/ic/nft/Service';
 import { TokenExt, TokensExt } from '@/ic/nft/model';
 import draggable from 'vuedraggable';
+import { isOISY } from '@/ic/isSigner';
 const commonModule = namespace('common');
 const ProSubaccountId = 1;
 const dayjs = require('dayjs');
@@ -16623,17 +16624,17 @@ export default class extends Vue {
     }
   }
   private async TTRun(): Promise<void> {
-    for (let k in this.toStatus) {
-      const status = this.toStatus[k];
-      if (status && Object.keys(status)[0] === 'Doing') {
-        try {
-          await this.currentICDexService.ictc_TTRun(
-            this.currentPair[0].toString()
-          );
-        } catch (e) {}
-        break;
-      }
-    }
+    // for (let k in this.toStatus) {
+    //   const status = this.toStatus[k];
+    //   if (status && Object.keys(status)[0] === 'Doing') {
+    //     try {
+    //       await this.currentICDexService.ictc_TTRun(
+    //         this.currentPair[0].toString()
+    //       );
+    //     } catch (e) {}
+    //     break;
+    //   }
+    // }
   }
   private getPendingStatus(tradingOrder: TradingOrder): string {
     let status = '';
@@ -21277,6 +21278,9 @@ export default class extends Vue {
     }
   }
   private async addToken(res: Array<SwapTokenInfo>): Promise<void> {
+    if (isOISY()) {
+      return;
+    }
     const tokens = await addedTokens();
     const tokensId: Array<string> = [];
     tokens.forEach((item) => {

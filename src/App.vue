@@ -22,7 +22,10 @@
           </div>
           <p
             v-if="
-              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+              type !== 'AuthClient' &&
+              type !== 'NFID' &&
+              type !== 'SignerNFID' &&
+              type !== 'OISY'
             "
             class="account-list-title"
           >
@@ -36,7 +39,10 @@
           <div
             class="verify-internet verify-internet-main"
             v-if="
-              type === 'AuthClient' || type === 'NFID' || type === 'SignerNFID'
+              type === 'AuthClient' ||
+              type === 'NFID' ||
+              type === 'SignerNFID' ||
+              type === 'OISY'
             "
             @click="authClient"
           >
@@ -48,11 +54,18 @@
               v-show="type === 'NFID' || type === 'SignerNFID'"
               src="@/assets/img/NFID.svg"
               alt=""
+            /><img
+              v-show="type === 'OISY'"
+              src="@/assets/img/OISY.svg"
+              alt=""
             />Re-verify your identity
           </div>
           <a-input-password
             v-if="
-              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+              type !== 'AuthClient' &&
+              type !== 'NFID' &&
+              type !== 'SignerNFID' &&
+              type !== 'OISY'
             "
             placeholder="input password"
             v-model="password"
@@ -60,7 +73,10 @@
           <button
             type="button"
             v-if="
-              type !== 'AuthClient' && type !== 'NFID' && type !== 'SignerNFID'
+              type !== 'AuthClient' &&
+              type !== 'NFID' &&
+              type !== 'SignerNFID' &&
+              type !== 'OISY'
             "
             class="primary large-primary form-button w100"
             @click="onSubmit"
@@ -205,6 +221,7 @@ import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { getTokenInfo } from '@/ic/getTokenInfo';
 import { Principal } from '@dfinity/principal';
 import { getNFID, NFIDLogin, NFIDLogout } from '@/ic/NFIDAuth';
+import { getOISYSignerAgent, OISYLogin, OISYLogout } from '@/ic/OISYAuth';
 const commonModule = namespace('common');
 const ethers = require('ethers');
 @Component({
@@ -396,12 +413,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       ) {
         await NFIDLogout();
       }
+      if (priList[principal] === 'OISY') {
+        await OISYLogout();
+      }
       localStorage.removeItem('principal');
       this.setPrincipalId(null);
       this.setIdentity(null);
       this.setCheckAuth(false);
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private checkRiskWarning(): void {
@@ -413,6 +432,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
   }
   private async init(checkAuth: boolean): Promise<void> {
+    console.log(checkAuth);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     if ((window as any).icx) {
@@ -423,6 +443,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         this.type = 'NFID';
       } else if (priList[this.getPrincipalId] === 'SignerNFID') {
         this.type = 'SignerNFID';
+      } else if (priList[this.getPrincipalId] === 'OISY') {
+        this.type = 'OISY';
       } else if (
         priList[this.getPrincipalId] &&
         priList[this.getPrincipalId].includes('MetaMask')
@@ -562,6 +584,16 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } else if (this.type === 'SignerNFID') {
       const signerAgent = await NFIDLogin(true);
       if (signerAgent) {
+        loading.close();
+        return;
+      }
+    } else if (this.type === 'OISY') {
+      const signerAgent = await getOISYSignerAgent();
+      if (signerAgent) {
+        loading.close();
+        return;
+      } else {
+        await OISYLogin();
         loading.close();
         return;
       }

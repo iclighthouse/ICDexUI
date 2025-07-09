@@ -535,7 +535,11 @@ export default class extends Vue {
         )
     );
   }
-  private setParams(idType: Type): Type {
+  private setParams(idType: Type, visited = new Set()): Type {
+    if (visited.has(idType)) {
+      return idType;
+    }
+    visited.add(idType);
     if (
       idType instanceof IDL.RecClass ||
       idType instanceof IDL.VecClass ||
@@ -560,7 +564,7 @@ export default class extends Vue {
       } else if (idType instanceof IDL.OptClass) {
         idlType = new IDL.OptClass(idType['_type']);
       }
-      idlType['_type'] = this.setParams(idType['_type']);
+      idlType['_type'] = this.setParams(idType['_type'], visited);
       idType['_type'] = idlType['_type'];
       return idType;
     } else if (
@@ -581,18 +585,18 @@ export default class extends Vue {
           // } else {
           //   idlType = new IDL.RecordClass();
           // }
-          idlType = this.setParams(idType['_fields'][i][1]) as any;
+          idlType = this.setParams(idType['_fields'][i][1], visited) as any;
           idType['_fields'][i][1] = idlType;
         } else if (idType['_fields'][i][1] instanceof IDL.VariantClass) {
           // idlType = new IDL.VariantClass();
-          idlType = this.setParams(idType['_fields'][i][1]);
+          idlType = this.setParams(idType['_fields'][i][1], visited);
           idType['_fields'][i][1] = idlType;
         }
         // else if (idType['_fields'][i][1] instanceof IDL.TupleClass) {
         //   // idlType = new IDL.TupleClass();
         // }
         else {
-          idType['_fields'][i][1] = this.setParams(idType['_fields'][i][1]);
+          idType['_fields'][i][1] = this.setParams(idType['_fields'][i][1], visited);
         }
         temp.push(idType['_fields'][i]);
       }

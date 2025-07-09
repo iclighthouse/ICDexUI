@@ -1048,6 +1048,8 @@ export default class extends Mixins(BalanceMixin) {
         this.loginType = 'NFID';
       } else if (priList[principal] === 'SignerNFID') {
         this.loginType = 'SignerNFID';
+      } else if (priList[principal] === 'OISY') {
+        this.loginType = 'OISY';
       } else if (priList[principal].includes('MetaMask')) {
         this.loginType = 'MetaMask';
         this.ethAccount = priList[principal].split('MetaMask-')[1];
@@ -1634,8 +1636,7 @@ export default class extends Mixins(BalanceMixin) {
       } else {
         this.tokensExt = [];
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     this.nftSpinning = false;
   }
   private async connectWallet(): Promise<void> {
@@ -1991,8 +1992,7 @@ export default class extends Mixins(BalanceMixin) {
                       await _that.manageWallet(
                         Principal.fromText(_that.manageWalletForm.wallet)
                       );
-                    } catch (e) {
-                    }
+                    } catch (e) {}
                     loading.close();
                   });
               }
@@ -2025,8 +2025,7 @@ export default class extends Mixins(BalanceMixin) {
                       await _that.manageWallet(
                         Principal.fromText(_that.manageWalletForm.wallet)
                       );
-                    } catch (e) {
-                    }
+                    } catch (e) {}
                     loading.close();
                   });
               }
@@ -2124,8 +2123,7 @@ export default class extends Mixins(BalanceMixin) {
         this.visibleManageWallet = false;
       }
       // this.getWallets();
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   private createWalletWithAccount(): void {
     this.chooseCreateWallet = false;
@@ -2167,8 +2165,7 @@ export default class extends Mixins(BalanceMixin) {
           : (obj[next.walletId.toString()] = true && cur.push(next));
         return cur;
       }, []);
-    } catch (e) {
-    }
+    } catch (e) {}
     this.walletSpinning = false;
     this.connectPlug();
   }
@@ -2367,8 +2364,7 @@ export default class extends Mixins(BalanceMixin) {
               account
           );
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   }
   public manageEthConnect(account: string, signCode: string): void {

@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@dfinity/oisy-wallet-signer": "^0.0.3",
     "@nfid/embed": "^0.10.3",
     "@slide-computer/signer": "^3.7.0",
     "@slide-computer/signer-agent": "^3.7.0",
@@ -138,7 +139,12 @@
         }
       ],
       "no-debugger": "off",
-      "no-empty": ["error", { "allowEmptyCatch": true }]
+      "no-empty": [
+        "error",
+        {
+          "allowEmptyCatch": true
+        }
+      ]
     }
   },
   "browserslist": {

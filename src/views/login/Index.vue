@@ -45,6 +45,13 @@
                 <!--<dd></dd>-->
               </dl>
             </div>
+            <!--<div class="connect-list-item pc-show" @click="connect('OISY')">
+              <span><img src="@/assets/img/OISY.svg" alt="" /></span>
+              <dl>
+                <dt>Connect OISY Wallet</dt>
+                &lt;!&ndash;<dd></dd>&ndash;&gt;
+              </dl>
+            </div>-->
             <div class="connect-list-item pc-show" @click="connect('NFID')">
               <span><img src="@/assets/img/NFID.svg" alt="" /></span>
               <dl>
@@ -52,27 +59,6 @@
                 <!--<dd></dd>-->
               </dl>
             </div>
-            <!--<div class="connect-list-item pc-show" @click="connect('Signer')">
-              <span><img src="@/assets/img/contract.png" alt="" /></span>
-              <dl>
-                <dt>Connect Signers Wallet</dt>
-                &lt;!&ndash;<dd></dd>&ndash;&gt;
-              </dl>
-            </div>-->
-            <!--<div class="connect-list-item pc-show" @click="connect('Infinity')">
-              <span><img src="@/assets/img/infinity.png" alt="" /></span>
-              <dl>
-                <dt>Connect Infinity Wallet</dt>
-                &lt;!&ndash;<dd></dd>&ndash;&gt;
-              </dl>
-            </div>-->
-            <!--<div class="connect-list-item pc-show" @click="connect('MetaMask')">
-              <span><img src="@/assets/img/MetaMask.png" alt="" /></span>
-              <dl>
-                <dt>Connect MetaMask</dt>
-                &lt;!&ndash;<dd></dd>&ndash;&gt;
-              </dl>
-            </div>-->
             <div class="connect-list-item" @click="connect('HardwareWallet')">
               <span
                 ><svg
@@ -174,6 +160,13 @@
             <!--<dd></dd>-->
           </dl>
         </div>
+        <!--<div class="connect-list-item pc-show" @click="connect('OISY')">
+          <span><img src="@/assets/img/OISY.svg" alt="" /></span>
+          <dl>
+            <dt>Connect OISY Wallet</dt>
+            &lt;!&ndash;<dd></dd>&ndash;&gt;
+          </dl>
+        </div>-->
         <div class="connect-list-item pc-show" @click="connect('SignerNFID')">
           <span><img src="@/assets/img/NFID.svg" alt="" /></span>
           <dl>
@@ -262,6 +255,7 @@ import { ConnectMetaMaskMixin } from '@/mixins';
 import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { NFIDLogin } from '@/ic/NFIDAuth';
+import { OISYLogin } from '@/ic/OISYAuth';
 const commonModule = namespace('common');
 @Component({
   name: 'Index',
@@ -403,6 +397,24 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } else if (type === 'HardwareWallet') {
       this.modalType = type;
       this.comingVisible = true;
+    } else if (type === 'OISY') {
+      const loading = this.$loading({
+        lock: true,
+        background: 'rgba(0, 0, 0, 0.5)'
+      });
+      const signerAgent = await OISYLogin();
+      loading.close();
+      if (signerAgent) {
+        if (this.$route.query.redirect) {
+          this.$router.push(this.$route.query.redirect as any).catch(() => {
+            return;
+          });
+        } else {
+          this.$router.push('/ICDex').catch(() => {
+            return;
+          });
+        }
+      }
     } else if (type === 'NFID') {
       this.connectSpinning = true;
       await NFIDLogin();

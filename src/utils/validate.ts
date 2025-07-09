@@ -68,3 +68,31 @@ export const validateData = (
     callback();
   }
 };
+export const validateICRC = (
+  rule: ValidationRule,
+  value: string,
+  callback: (arg0?: string) => void
+): void => {
+  if (value) {
+    const account = value.trim();
+    if (account.includes('.')) {
+      const accounts = account.split('.');
+      if (
+        accounts[0] &&
+        accounts[1] &&
+        validatePrincipal(accounts[0]) &&
+        validateAccount(accounts[1])
+      ) {
+        return callback();
+      }
+      callback('invalid principal Or Account');
+    } else {
+      if (account && validatePrincipal(account)) {
+        return callback();
+      }
+      callback('invalid principal Or Account');
+    }
+  } else {
+    callback();
+  }
+};

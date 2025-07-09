@@ -9,6 +9,7 @@ enum LoginEnum {
   NFID,
   Signer,
   SignerPlug,
-  SignerNFID
+  SignerNFID,
+  OISY
 }
 export type LoginType = keyof typeof LoginEnum;

@@ -34,6 +34,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import AuthClientAPi from '@/ic/AuthClientApi';
 import { namespace } from 'vuex-class';
 import { NFIDLogout } from '@/ic/NFIDAuth';
+import { OISYLogout } from '@/ic/OISYAuth';
 const commonModule = namespace('common');
 @Component({
   name: 'Index',
@@ -82,6 +83,9 @@ export default class extends Vue {
       ) {
         await NFIDLogout();
       }
+      if (priList[principal] === 'OISY') {
+        await OISYLogout();
+      }
       localStorage.removeItem('principal');
       this.setPrincipalId(null);
       this.setCheckAuth(false);
@@ -90,8 +94,7 @@ export default class extends Vue {
         path: '/login',
         query: { redirect: this.$route.fullPath }
       });
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
 }

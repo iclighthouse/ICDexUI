@@ -7,6 +7,7 @@ import { createInfinityActor } from '@/ic/createInfinityActor';
 import store from '@/store';
 import Vue from 'vue';
 import { createNFIDActor } from '@/ic/createNFIDActor';
+import { createOISYActor } from '@/ic/createOISYActor';
 export const createService = async <T>(
   canisterId: string,
   IDL: IDL.InterfaceFactory,
@@ -63,6 +64,8 @@ export const createService = async <T>(
     service = await createInfinityActor(IDL, canisterId);
   } else if (priList[principal] === 'SignerNFID') {
     service = await createNFIDActor(IDL, canisterId);
+  } else if (priList[principal] === 'OISY') {
+    service = await createOISYActor(IDL, canisterId);
   } else {
     service = await buildService(
       store.getters['common/getIdentity'],

@@ -1,4 +1,4 @@
-import Service, { CanisterStatus } from '@/ic/Blackhole/model';
+import Service, { CanisterStatus } from '@/ic/blackhole/model';
 import { createService } from '@/ic/createService';
 import ICTokenIDL from './blackhole.did';
 import { BLACKHOLE_CANISTER_ID } from '@/ic/utils';

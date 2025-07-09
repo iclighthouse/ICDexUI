@@ -1526,6 +1526,7 @@ import {
   LiquidityType
 } from '@/views/home/cyclesFinance/model';
 import { NFIDLogout } from '@/ic/NFIDAuth';
+import { OISYLogout } from '@/ic/OISYAuth';
 const commonModule = namespace('common');
 const KeyEncoder = require('key-encoder').default;
 @Component({
@@ -1593,6 +1594,8 @@ export default class extends Vue {
       } else if (this.priList[this.getPrincipalId] === 'NFID') {
         return false;
       } else if (this.priList[this.getPrincipalId] === 'SignerNFID') {
+        return false;
+      } else if (this.priList[this.getPrincipalId] === 'OISY') {
         return false;
       } else if (this.priList[this.getPrincipalId].includes('MetaMask')) {
         return false;
@@ -1738,7 +1741,8 @@ export default class extends Vue {
       this.priList[this.getPrincipalId] !== 'Infinity' &&
       this.priList[this.getPrincipalId] !== 'AuthClient' &&
       this.priList[this.getPrincipalId] !== 'NFID' &&
-      this.priList[this.getPrincipalId] !== 'SignerNFID'
+      this.priList[this.getPrincipalId] !== 'SignerNFID' &&
+      this.priList[this.getPrincipalId] !== 'OISY'
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
@@ -1832,9 +1836,13 @@ export default class extends Vue {
           this.priList[principal] === 'SignerNFID')
       ) {
         await NFIDLogout();
+      } else if (
+        this.priList[principal] &&
+        this.priList[principal] === 'OISY'
+      ) {
+        await OISYLogout();
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     localStorage.setItem('principal', principal);
     this.setPrincipalId(principal);
     this.setIdentity(null);
@@ -1853,6 +1861,11 @@ export default class extends Vue {
       } else if (this.priList[principal] === 'SignerNFID') {
         await this.$router.replace({
           path: '/sign/SignerNFID',
+          query: { redirect: this.$route.fullPath }
+        });
+      } else if (this.priList[principal] === 'OISY') {
+        await this.$router.replace({
+          path: '/sign/OISY',
           query: { redirect: this.$route.fullPath }
         });
       } else if (this.priList[principal] === 'Plug') {
@@ -1995,12 +2008,14 @@ export default class extends Vue {
       ) {
         await NFIDLogout();
       }
+      if (this.priList[principal] === 'OISY') {
+        await OISYLogout();
+      }
       localStorage.removeItem('principal');
       this.setPrincipalId(null);
       this.setCheckAuth(false);
       this.setIdentity(null);
-    } catch (e) {
-    }
+    } catch (e) {}
     loading.close();
   }
   private setName(): void {

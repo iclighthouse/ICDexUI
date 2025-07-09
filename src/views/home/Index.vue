@@ -33,7 +33,7 @@
           <span class="footer-version">
             <span v-show="$route.fullPath.toLocaleLowerCase().includes('icdex')"
               >ICDexRouter v{{ version.router }}; ICDexPair v{{ version.pair }};
-              ICDexMaker v{{ version.maker }}; ICDexUI v2.2.4
+              ICDexMaker v{{ version.maker }}; ICDexUI v2.2.5
             </span>
           </span>
         </span>
@@ -327,7 +327,8 @@ export default class extends Vue {
       this.priList[this.getPrincipalId] !== 'SignerPlug' &&
       this.priList[this.getPrincipalId] !== 'AuthClient' &&
       this.priList[this.getPrincipalId] !== 'NFID' &&
-      this.priList[this.getPrincipalId] !== 'SignerNFID'
+      this.priList[this.getPrincipalId] !== 'SignerNFID' &&
+      this.priList[this.getPrincipalId] !== 'OISY'
     ) {
       this.encryptSeedPhrase = this.principalList[this.getPrincipalId];
       const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};

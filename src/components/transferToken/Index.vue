@@ -110,7 +110,7 @@ import {
 import {
   validateCanister,
   validateCanisterOrAccount,
-  validateData
+  validateData, validateICRC
 } from '@/utils/validate';
 import BigNumber from 'bignumber.js';
 import { DRC20TokenService } from '@/ic/DRC20Token/DRC20TokenService';
@@ -244,7 +244,7 @@ export default class extends Vue {
             message: 'Please enter Principal',
             trigger: 'change'
           },
-          { validator: validateCanister, trigger: 'change' }
+          { validator: validateICRC, trigger: 'change' }
         ],
         amount: [
           { required: true, message: 'Please enter Amount', trigger: 'change' },

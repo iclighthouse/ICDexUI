@@ -5,6 +5,7 @@ import { plugWhitelist } from '@/ic/utils';
 import router from '@/router';
 import { createSignerAgent, getNFIDSignerAgent } from '@/ic/NFIDAuth';
 import { Principal } from '@dfinity/principal';
+import { getOISYSignerAgent } from '@/ic/OISYAuth';
 export interface CommonState {
   common: {
     showCheckAuth: boolean;
@@ -49,13 +50,23 @@ export const checkAuth = (
           resolve(true);
         }
       });
-    } else if (priList[principal] === 'SingerNFID') {
+    } else if (priList[principal] === 'SignerNFID') {
       if (!principal) {
         resolve(true);
       } else {
-        // const signerAgent = getNFIDSignerAgent();
-        // 
         refreshingPlugOrInfinity(resolve);
+      }
+    } else if (priList[principal] === 'OISY') {
+      if (!principal) {
+        resolve(true);
+      } else {
+        const signerAgent = getOISYSignerAgent();
+        console.log(signerAgent);
+        if (signerAgent && signerAgent.getPrincipal()) {
+          resolve(true);
+        } else {
+          refreshingPlugOrInfinity(resolve);
+        }
       }
     } else if (
       priList[principal] === 'Plug' ||

@@ -211,7 +211,7 @@ export default class extends Vue {
                     el.classList.remove('active')
                   );
                   item.classList.add('active');
-                  console.dir(custom);
+                  console.log(custom);
                   if (custom) {
                     for (let i = 0; i < (custom as any).options.length; i++) {
                       if (
@@ -224,6 +224,56 @@ export default class extends Vue {
                     }
                     // document.querySelector('.popup-form select').set
                     // (custom as any).value = this.textContent;
+                  }
+                  selected.innerHTML = this.textContent;
+                  items.classList.add('select-hide');
+                });
+              });
+              document.addEventListener('click', function (e) {
+                if (e.target !== selected && e.target !== items) {
+                  items.classList.add('select-hide');
+                }
+              });
+            });
+          }
+        } else if (item.innerText === 'from_treasury') {
+          const custom = document.querySelector('.custom-select');
+          if (!custom) {
+            const dom = document.createElement('div');
+            const popup_form = document.querySelector('.popup-form');
+            if (popup_form) {
+              const firstChild: any =
+                popup_form.firstElementChild || popup_form.firstChild;
+              firstChild.style.display = 'none';
+              firstChild.classList.add('old-treasury');
+              popup_form.insertBefore(dom, popup_form.firstChild);
+            }
+            const newHtml =
+              '<div style="margin-bottom: 5px">from_treasury</div><div class="custom-select"><div class="select-selected"><svg class="select-selected-icon" viewBox="64 64 896 896" data-icon="down" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path></svg></div><div class="select-items select-hide"><div>ICP</div><div>SNS Token</div></div></div>';
+            dom.outerHTML = newHtml;
+            this.$nextTick(() => {
+              const custom = document.querySelector(
+                '.popup-form .old-treasury .argument'
+              );
+              const selected = document.querySelector('.select-selected');
+              const items = document.querySelector('.select-items');
+              selected.addEventListener('click', function () {
+                items.classList.toggle('select-hide');
+              });
+              Array.from(items.children).forEach(function (item) {
+                item.addEventListener('click', function () {
+                  Array.from(items.children).forEach((el) =>
+                    el.classList.remove('active')
+                  );
+                  item.classList.add('active');
+                  console.log(custom);
+                  if (custom) {
+                    if (this.textContent === 'ICP') {
+                      (custom as any).value = 1;
+                    } else if (this.textContent === 'SNS Token') {
+                      (custom as any).value = 2;
+                    }
+                    custom.dispatchEvent(new Event('change'));
                   }
                   selected.innerHTML = this.textContent;
                   items.classList.add('select-hide');
@@ -596,7 +646,10 @@ export default class extends Vue {
         //   // idlType = new IDL.TupleClass();
         // }
         else {
-          idType['_fields'][i][1] = this.setParams(idType['_fields'][i][1], visited);
+          idType['_fields'][i][1] = this.setParams(
+            idType['_fields'][i][1],
+            visited
+          );
         }
         temp.push(idType['_fields'][i]);
       }

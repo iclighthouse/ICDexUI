@@ -61,7 +61,6 @@ export const checkAuth = (
         resolve(true);
       } else {
         const signerAgent = getOISYSignerAgent();
-        console.log(signerAgent);
         if (signerAgent && signerAgent.getPrincipal()) {
           resolve(true);
         } else {

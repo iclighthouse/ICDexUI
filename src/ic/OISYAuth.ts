@@ -17,7 +17,6 @@ export const OISYLogin = async (): Promise<SignerAgent<Signer>> => {
         disconnectTimeout: 45000
       });
       const channel = await transport.establishChannel();
-      console.log(channel);
       await createSignerAgent(transport);
       const principal = await signerAgent.getPrincipal();
       setPrincipal(principal.toString());

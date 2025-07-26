@@ -432,7 +432,6 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
   }
   private async init(checkAuth: boolean): Promise<void> {
-    console.log(checkAuth);
     const principal = localStorage.getItem('principal');
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
     if ((window as any).icx) {

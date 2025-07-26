@@ -20701,14 +20701,18 @@ export default class extends Vue {
       }
       this.currentTradeMarketSort = 'Search';
       const pairs = [];
+      const pairSearch = this.pairSearch
+        .trim()
+        .replace(/[/.]/g, '')
+        .toLocaleLowerCase();
       allPairs.forEach((pair: DePairs) => {
+        const token0 = pair[1][0].token0[1].toLocaleLowerCase();
+        const token1 = pair[1][0].token1[1].toLocaleLowerCase();
         if (
-          pair[1][0].token0[1]
-            .toLocaleLowerCase()
-            .includes(this.pairSearch.toLocaleLowerCase()) ||
-          pair[1][0].token1[1]
-            .toLocaleLowerCase()
-            .includes(this.pairSearch.toLocaleLowerCase())
+          token0.includes(pairSearch) ||
+          token1.includes(pairSearch) ||
+          `${token0}${token1.replace(/^ck/, '')}`.includes(pairSearch) ||
+          `${token0}${token1}`.includes(pairSearch)
         ) {
           const currentPair = [].concat(pair);
           currentPair[3] = 'Search';

@@ -211,7 +211,6 @@ export default class extends Vue {
                     el.classList.remove('active')
                   );
                   item.classList.add('active');
-                  console.log(custom);
                   if (custom) {
                     for (let i = 0; i < (custom as any).options.length; i++) {
                       if (
@@ -266,7 +265,6 @@ export default class extends Vue {
                     el.classList.remove('active')
                   );
                   item.classList.add('active');
-                  console.log(custom);
                   if (custom) {
                     if (this.textContent === 'ICP') {
                       (custom as any).value = 1;

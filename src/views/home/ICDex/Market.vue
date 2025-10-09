@@ -55,13 +55,13 @@
                         <span>Vol</span>
                         <span class="sort-table">
                           <a-icon
-                            :class="{ active: sortType === 'volUp' }"
-                            type="caret-up"
-                          />
+														:class="{ active: sortType === 'volUp' }"
+														type="caret-up"
+													/>
                           <a-icon
-                            :class="{ active: sortType === 'volDown' }"
-                            type="caret-down"
-                          />
+														:class="{ active: sortType === 'volDown' }"
+														type="caret-down"
+													/>
                         </span>
                       </span>
                     </th>

@@ -1254,10 +1254,12 @@ export default class extends Vue {
     let chunk = [];
     const chunkSize = 5;
     res.forEach((item, index) => {
-      chunk.push(item);
-      if (chunk.length === chunkSize || index === res.length - 1) {
-        pairs.push(chunk);
-        chunk = [];
+      if (item) {
+        chunk.push(item);
+        if (chunk.length === chunkSize || index === res.length - 1) {
+          pairs.push(chunk);
+          chunk = [];
+        }
       }
     });
     const promiseValuePool = [];

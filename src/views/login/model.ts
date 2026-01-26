@@ -2,6 +2,7 @@ enum LoginEnum {
   Mnemonic,
   Existing,
   InternetIdentitiy,
+  InternetIdentitiy2,
   Plug,
   Infinity,
   MetaMask,

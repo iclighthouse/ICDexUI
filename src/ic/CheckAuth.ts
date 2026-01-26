@@ -6,11 +6,13 @@ import router from '@/router';
 import { createSignerAgent, getNFIDSignerAgent } from '@/ic/NFIDAuth';
 import { Principal } from '@dfinity/principal';
 import { getOISYSignerAgent } from '@/ic/OISYAuth';
+
 export interface CommonState {
   common: {
     showCheckAuth: boolean;
   };
 }
+
 const ONE_MINUTE_MILLIS = 60 * 1000;
 let methods = [];
 let isRefreshing = false;
@@ -37,7 +39,10 @@ export const checkAuth = (
       }
     }
     const priList = JSON.parse(localStorage.getItem('priList')) || {};
-    if (priList[principal] === 'AuthClient') {
+    if (
+      priList[principal] === 'AuthClient' ||
+      priList[principal] === 'AuthClient2'
+    ) {
       AuthClientAPi.create().then((authClientAPi) => {
         const t = authClientAPi.getTimeUntilSessionExpiryMs();
         if (t - 5 * ONE_MINUTE_MILLIS <= 0) {
@@ -143,6 +148,7 @@ export const checkAuth = (
     }
   });
 };
+
 function refreshingPlugOrInfinity(resolve) {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -164,6 +170,7 @@ function refreshingPlugOrInfinity(resolve) {
     });
   }
 }
+
 function refreshing(resolve) {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -187,6 +194,7 @@ function refreshing(resolve) {
     });
   }
 }
+
 const refreshingNFID = async (resolve) => {
   if (!isRefreshing) {
     isRefreshing = true;

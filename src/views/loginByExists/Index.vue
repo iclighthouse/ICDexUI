@@ -21,8 +21,8 @@
             >
               <div class="account-select-item">
                 <img class="source-img" :src="getSourceImg(item)" alt="" />
-                <span>{{ item }}</span
-                ><a-icon
+                <span>{{ item }}</span>
+                <a-icon
                   @click.stop="onDeleteAccount(item)"
                   class="delete-icon"
                   type="delete"
@@ -34,6 +34,14 @@
             class="verify-internet"
             v-show="loginType === 'authClient'"
             @click="authClient"
+          >
+            <img src="@/assets/img/dfinity.png" alt="" />Re-verify your Internet
+            identity
+          </div>
+          <div
+            class="verify-internet"
+            v-show="loginType === 'authClient2'"
+            @click="authClient(2)"
           >
             <img src="@/assets/img/dfinity.png" alt="" />Re-verify your Internet
             identity
@@ -103,6 +111,7 @@
             @keyup.enter="onSubmit"
             v-if="
               loginType !== 'authClient' &&
+              loginType !== 'authClient2' &&
               loginType !== 'Plug' &&
               loginType !== 'SignerPlug' &&
               loginType !== 'Infinity' &&
@@ -118,6 +127,7 @@
             type="button"
             v-if="
               loginType !== 'authClient' &&
+              loginType !== 'authClient2' &&
               loginType !== 'Plug' &&
               loginType !== 'SignerPlug' &&
               loginType !== 'Infinity' &&
@@ -141,7 +151,9 @@
               href="https://avjzx-pyaaa-aaaaj-aadmq-cai.raw.ic0.app/"
               target="_blank"
               rel="nofollow noreferrer noopener"
-              ><a-icon type="arrow-left" /> Old Version</a
+            >
+              <a-icon type="arrow-left" />
+              Old Version</a
             >
             <span class="margin-left-auto" @click="signInstead"
               >Create a new Wallet</span
@@ -167,8 +179,8 @@
         </p>
       </div>
       <div class="delete-confirm" @click="securityTips = false">
-        <button type="button" @click="visible = false">Cancel</button
-        ><button type="button" class="default" @click="deleteAccountSubmit">
+        <button type="button" @click="visible = false">Cancel</button>
+        <button type="button" class="default" @click="deleteAccountSubmit">
           Confirm
         </button>
       </div>
@@ -197,6 +209,7 @@ import ConnectInfinity from '@/ic/ConnectInfinity';
 import { createInfinityWhiteActor } from '@/ic/createInfinityActor';
 import { getNFIDIdentity, NFIDLogin } from '@/ic/NFIDAuth';
 import { OISYLogin } from '@/ic/OISYAuth';
+
 const commonModule = namespace('common');
 const ethers = require('ethers');
 @Component({
@@ -219,10 +232,13 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   private accountType = '';
   private hasConnectMetaMask = false;
   private hostname = '';
+
   get loginType(): string {
     if (this.priList && this.selectedAccount) {
       if (this.priList[this.selectedAccount] === 'AuthClient') {
         return 'authClient';
+      } else if (this.priList[this.selectedAccount] === 'AuthClient2') {
+        return 'authClient2';
       } else if (this.priList[this.selectedAccount] === 'Plug') {
         return 'Plug';
       } else if (this.priList[this.selectedAccount] === 'SignerPlug') {
@@ -244,12 +260,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
     return '';
   }
+
   created(): void {
     this.hostname = window.location.hostname;
     this.priList = JSON.parse(localStorage.getItem('priList')) || {};
     this.accountList = Object.keys(this.priList);
     this.selectedAccount = this.accountList[0];
   }
+
   private getSourceImg(principal: string): string {
     if (!principal || !this.priList[principal]) {
       return '';
@@ -261,7 +279,10 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
         return require('@/assets/img/contract.png');
       } else if (this.priList[principal] === 'Infinity') {
         return require('@/assets/img/infinity.png');
-      } else if (this.priList[principal] === 'AuthClient') {
+      } else if (
+        this.priList[principal] === 'AuthClient' ||
+        this.priList[principal] === 'AuthClient2'
+      ) {
         return require('@/assets/img/dfinity.png');
       } else if (this.priList[principal] === 'NFID') {
         return require('@/assets/img/NFID.svg');
@@ -276,6 +297,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       }
     }
   }
+
   private async onSubmitMetaMask(): Promise<void> {
     this.spinning = true;
     const phraseList = JSON.parse(localStorage.getItem('phraseList')) || {};
@@ -321,6 +343,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       });
     }
   }
+
   private async onConnectMetaMask(): Promise<void> {
     if (this.hasConnectMetaMask) {
       return;
@@ -330,6 +353,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       this.hasConnectMetaMask = true;
     }
   }
+
   private deleteAccountSubmit(): void {
     const index = this.accountList.findIndex(
       (item) => item === this.deleteAccount
@@ -340,17 +364,21 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     localStorage.setItem('priList', JSON.stringify(this.priList));
     this.visible = false;
   }
+
   private handleChange(selectedAccount): void {
     this.hasConnectMetaMask = false;
     this.selectedAccount = selectedAccount;
   }
+
   private onDeleteAccount(account: string): void {
     this.deleteAccount = account;
     this.visible = true;
   }
+
   private signInstead(): void {
     this.$router.replace('/login');
   }
+
   private async authNFIDClient(type: string): Promise<void> {
     this.spinning = true;
     let signerAgent;
@@ -386,10 +414,15 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
     this.spinning = false;
   }
-  private async authClient(): Promise<void> {
+
+  private async authClient(type?: number): Promise<void> {
     this.spinning = true;
     const authClientAPi = await AuthClientAPi.create();
-    await authClientAPi.login();
+    if (type) {
+      await authClientAPi.login('', type);
+    } else {
+      await authClientAPi.login();
+    }
     const identity = authClientAPi.tryGetIdentity();
     const principal = identity.getPrincipal();
     if (principal && principal.toString() !== this.selectedAccount) {
@@ -412,6 +445,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
     this.spinning = false;
   }
+
   private async authPlugClient(type: string): Promise<void> {
     this.spinning = true;
     try {
@@ -448,6 +482,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } catch (e) {}
     this.spinning = false;
   }
+
   private async authInfinityClient(): Promise<void> {
     this.spinning = true;
     try {
@@ -483,6 +518,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } catch (e) {}
     this.spinning = false;
   }
+
   private async onSubmit(e): Promise<void> {
     e.preventDefault();
     this.spinning = true;
@@ -532,6 +568,7 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   justify-content: center;
   flex-direction: column;
   height: 100vh;
+
   .account-list {
     width: 685px;
     border-radius: 20px;
@@ -539,58 +576,71 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     box-shadow: 0 0 15px 15px rgba(0, 0, 0, 0.6);
     padding: 40px 55px 90px;
     color: #727a87;
+
     .title {
       text-align: center;
     }
+
     .title-logo {
       width: 125px;
       margin-bottom: 40px;
     }
+
     .form-button {
       margin-top: 40px;
     }
   }
+
   .account-list-select {
     width: 100%;
     margin-bottom: 20px;
   }
 }
+
 .account-select-item {
   display: flex;
   align-items: center;
+
   .delete-icon {
     margin-left: auto;
   }
 }
+
 .ant-select-selection__rendered {
   .delete-icon {
     display: none;
   }
 }
+
 .delete-confirm {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 20px;
 }
+
 .reset {
   display: flex;
   align-items: center;
   margin-top: 40px;
   cursor: pointer;
+
   a {
     color: #575d67;
   }
+
   span {
     font-size: 16px;
     color: #1996c4;
   }
 }
+
 .account-list-title {
   margin-bottom: 20px;
   font-size: 16px;
   color: #adb3c4;
 }
+
 .verify-internet {
   display: flex;
   align-items: center;
@@ -599,25 +649,31 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   font-size: 18px;
   transition: all 0.25s;
   color: #b9bcc4;
+
   &:hover {
     color: #1996c4;
   }
+
   img {
     width: 20px;
     margin-right: 20px;
   }
+
   &.verify-internet-connect {
     color: #21c77d;
     cursor: default;
+
     &:hover {
       color: #21c77d;
     }
+
     .check-circle {
       margin-left: 5px;
       font-size: 14px;
     }
   }
 }
+
 .source-img {
   width: 18px;
   height: 18px;
@@ -626,12 +682,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
   object-fit: contain;
   filter: grayscale(100%);
 }
+
 @media screen and (max-width: 768px) {
   .main {
     form {
       width: 100vw;
       padding: 0 15px;
     }
+
     .account-list {
       width: 100%;
       max-width: 600px;

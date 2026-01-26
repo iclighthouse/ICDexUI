@@ -42,7 +42,6 @@
 </template>
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator';
-import { type } from 'os';
 @Component({
   name: 'Index',
   components: {}

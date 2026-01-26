@@ -18,11 +18,11 @@
         <form>
           <div class="title">
             <img src="@/assets/img/logo.png" alt="" />
-            <!--<p v-if="type !== 'authClient'">Welcome back</p>-->
           </div>
           <p
             v-if="
               type !== 'AuthClient' &&
+              type !== 'AuthClient2' &&
               type !== 'NFID' &&
               type !== 'SignerNFID' &&
               type !== 'OISY'
@@ -40,6 +40,7 @@
             class="verify-internet verify-internet-main"
             v-if="
               type === 'AuthClient' ||
+              type === 'AuthClient2' ||
               type === 'NFID' ||
               type === 'SignerNFID' ||
               type === 'OISY'
@@ -47,7 +48,7 @@
             @click="authClient"
           >
             <img
-              v-show="type === 'AuthClient'"
+              v-show="type === 'AuthClient' || type === 'AuthClient2'"
               src="@/assets/img/dfinity.png"
               alt=""
             /><img
@@ -63,6 +64,7 @@
           <a-input-password
             v-if="
               type !== 'AuthClient' &&
+              type !== 'AuthClient2' &&
               type !== 'NFID' &&
               type !== 'SignerNFID' &&
               type !== 'OISY'
@@ -74,6 +76,7 @@
             type="button"
             v-if="
               type !== 'AuthClient' &&
+              type !== 'AuthClient2' &&
               type !== 'NFID' &&
               type !== 'SignerNFID' &&
               type !== 'OISY'
@@ -103,9 +106,6 @@
             ><a-icon type="arrow-left" /> Old Version</a
           >
         </form>
-        <!--<div class="title" v-if="type !== 'authClient'">
-					<img src="@/assets/img/logo-web-b-min.png" alt="" />
-				</div>-->
       </a-modal>
     </div>
     <a-modal
@@ -438,6 +438,8 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     } else {
       if (priList[this.getPrincipalId] === 'AuthClient') {
         this.type = 'AuthClient';
+      } else if (priList[this.getPrincipalId] === 'AuthClient2') {
+        this.type = 'AuthClient2';
       } else if (priList[this.getPrincipalId] === 'NFID') {
         this.type = 'NFID';
       } else if (priList[this.getPrincipalId] === 'SignerNFID') {
@@ -576,7 +578,10 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     if (this.type === 'AuthClient') {
       const authClientAPi = await AuthClientAPi.create();
       await authClientAPi.login();
-    } else if (this.type === 'NFID') {
+    }else if (this.type === 'AuthClient2') {
+      const authClientAPi = await AuthClientAPi.create();
+      await authClientAPi.login('', 2);
+    }else if (this.type === 'NFID') {
       await NFIDLogin();
       loading.close();
       return;

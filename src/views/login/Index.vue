@@ -34,7 +34,17 @@
             >
               <span><img src="@/assets/img/dfinity.png" alt="" /></span>
               <dl>
-                <dt>Link your Internet Identity</dt>
+                <dt>Link your Internet Identity 1.0</dt>
+                <!--<dd></dd>-->
+              </dl>
+            </div>
+            <div
+                class="connect-list-item"
+                @click="connect('InternetIdentitiy2')"
+            >
+              <span><img src="@/assets/img/iiv2.svg" alt="" /></span>
+              <dl>
+                <dt>Link your Internet Identity 2.0</dt>
                 <!--<dd></dd>-->
               </dl>
             </div>
@@ -301,6 +311,20 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
       this.connectSpinning = true;
       const authClientAPi = await AuthClientAPi.create();
       await authClientAPi.login();
+      this.connectSpinning = false;
+      if (this.$route.query.redirect) {
+        this.$router.push(this.$route.query.redirect as any).catch(() => {
+          return;
+        });
+      } else {
+        this.$router.push('/ICDex').catch(() => {
+          return;
+        });
+      }
+    } else if (type === 'InternetIdentitiy2') {
+      this.connectSpinning = true;
+      const authClientAPi = await AuthClientAPi.create();
+      await authClientAPi.login('', 2);
       this.connectSpinning = false;
       if (this.$route.query.redirect) {
         this.$router.push(this.$route.query.redirect as any).catch(() => {

@@ -26,7 +26,10 @@ export default class AuthClientAPi {
   /**
    * Prompts the user to login by redirecting them to the Internet Identity.
    */
-  public login = (selectedAccount?: string): Promise<boolean> => {
+  public login = (
+    selectedAccount?: string,
+    type?: number
+  ): Promise<boolean> => {
     let derivationOrigin = 'https://7vkf4-jqaaa-aaaaj-azrua-cai.icp0.io';
     if (
       window.location.origin.includes('avjzx-pyaaa-aaaaj-aadmq-cai') ||
@@ -37,10 +40,15 @@ export default class AuthClientAPi {
     if (process.env.NODE_ENV === 'development') {
       derivationOrigin = window.location.origin;
     }
+    let identityProvider = 'https://identity.ic0.app/';
+    if (type === 2) {
+      identityProvider = 'https://id.ai/';
+    }
     return new Promise((resolve, reject) => {
       this.authClient.login({
         maxTimeToLive: SESSION_TIMEOUT,
         derivationOrigin: derivationOrigin,
+        identityProvider: identityProvider,
         onSuccess: () => {
           this.handleDelegationExpiry();
           const identity = this.authClient.getIdentity();
@@ -53,7 +61,11 @@ export default class AuthClientAPi {
           store.commit('common/SET_PRINCIPAL_ID', principal);
           const principalList =
             JSON.parse(localStorage.getItem('priList')) || {};
-          principalList[principal] = 'AuthClient';
+          if (type === 2) {
+            principalList[principal] = 'AuthClient2';
+          } else {
+            principalList[principal] = 'AuthClient';
+          }
           localStorage.setItem('priList', JSON.stringify(principalList));
           store.commit('common/SET_IDENTITY', identity);
           localStorage.setItem('identity', localStorage.getItem('principal'));

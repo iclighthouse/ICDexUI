@@ -1591,6 +1591,8 @@ export default class extends Vue {
         return false;
       } else if (this.priList[this.getPrincipalId] === 'AuthClient') {
         return false;
+      } else if (this.priList[this.getPrincipalId] === 'AuthClient2') {
+        return false;
       } else if (this.priList[this.getPrincipalId] === 'NFID') {
         return false;
       } else if (this.priList[this.getPrincipalId] === 'SignerNFID') {
@@ -1740,6 +1742,7 @@ export default class extends Vue {
       this.priList[this.getPrincipalId] !== 'SignerPlug' &&
       this.priList[this.getPrincipalId] !== 'Infinity' &&
       this.priList[this.getPrincipalId] !== 'AuthClient' &&
+      this.priList[this.getPrincipalId] !== 'AuthClient2' &&
       this.priList[this.getPrincipalId] !== 'NFID' &&
       this.priList[this.getPrincipalId] !== 'SignerNFID' &&
       this.priList[this.getPrincipalId] !== 'OISY'
@@ -1768,7 +1771,10 @@ export default class extends Vue {
         return require('@/assets/img/plug.png');
       } else if (this.priList[principal] === 'Infinity') {
         return require('@/assets/img/infinity.png');
-      } else if (this.priList[principal] === 'AuthClient') {
+      } else if (
+        this.priList[principal] === 'AuthClient' ||
+        this.priList[principal] === 'AuthClient2'
+      ) {
         return require('@/assets/img/dfinity.png');
       } else if (this.priList[principal].includes('MetaMask')) {
         return require('@/assets/img/MetaMask.png');
@@ -1824,7 +1830,11 @@ export default class extends Vue {
       background: 'rgba(0, 0, 0, 0.5)'
     });
     try {
-      if (this.priList[principal] && this.priList[principal] === 'AuthClient') {
+      if (
+        this.priList[principal] &&
+        (this.priList[principal] === 'AuthClient' ||
+          this.priList[principal] === 'AuthClient2')
+      ) {
         const authClientAPi = await AuthClientAPi.create();
         const identity = authClientAPi.tryGetIdentity();
         if (identity) {
@@ -1851,6 +1861,11 @@ export default class extends Vue {
       if (this.priList[principal] === 'AuthClient') {
         await this.$router.replace({
           path: '/sign/authClient',
+          query: { redirect: this.$route.fullPath }
+        });
+      } else if (this.priList[principal] === 'AuthClient2') {
+        await this.$router.replace({
+          path: '/sign/authClient2',
           query: { redirect: this.$route.fullPath }
         });
       } else if (this.priList[principal] === 'NFID') {

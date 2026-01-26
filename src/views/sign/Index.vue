@@ -5,11 +5,11 @@
         <form>
           <div class="title">
             <img src="@/assets/img/logo.png" alt="" />
-            <!--<p v-if="type !== 'authClient'">Welcome back</p>-->
           </div>
           <p
             v-if="
               loginType !== 'authClient' &&
+              loginType !== 'authClient2' &&
               loginType !== 'Plug' &&
               loginType !== 'SignerPlug' &&
               loginType !== 'Infinity' &&
@@ -27,6 +27,14 @@
             class="verify-internet"
             v-if="loginType === 'authClient'"
             @click="authClient"
+          >
+            <img src="@/assets/img/dfinity.png" alt="" />Re-verify your Internet
+            identity
+          </div>
+          <div
+            class="verify-internet"
+            v-if="loginType === 'authClient2'"
+            @click="authClient(2)"
           >
             <img src="@/assets/img/dfinity.png" alt="" />Re-verify your Internet
             identity
@@ -96,6 +104,7 @@
             class="sign-input-password"
             v-if="
               loginType !== 'authClient' &&
+              loginType !== 'authClient2' &&
               loginType !== 'Plug' &&
               loginType !== 'SignerPlug' &&
               loginType !== 'Infinity' &&
@@ -110,6 +119,7 @@
           <button
             v-if="
               loginType !== 'authClient' &&
+              loginType !== 'authClient2' &&
               loginType !== 'Plug' &&
               loginType !== 'SignerPlug' &&
               loginType !== 'Infinity' &&
@@ -381,10 +391,14 @@ export default class extends Mixins(ConnectMetaMaskMixin) {
     }
     this.spinning = false;
   }
-  private async authClient(): Promise<void> {
+  private async authClient(type?: number): Promise<void> {
     this.spinning = true;
     const authClientAPi = await AuthClientAPi.create();
-    await authClientAPi.login(this.selectedAccount);
+    if (type) {
+      await authClientAPi.login(this.selectedAccount, type);
+    } else {
+      await authClientAPi.login(this.selectedAccount);
+    }
     const identity = authClientAPi.tryGetIdentity();
     const principal = identity.getPrincipal();
     if (principal && principal.toString() !== this.selectedAccount) {

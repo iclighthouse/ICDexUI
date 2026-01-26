@@ -99,7 +99,7 @@ if (process.env.NODE_ENV === 'production') {
   // IC_DEX_ROUTER_CANISTER_ID = 'ltyfs-qiaaa-aaaak-aan3a-cai';
   IC_DEX_ROUTER_CANISTER_ID = 'i5jcx-ziaaa-aaaar-qaazq-cai';
   // IC_DEX_ROUTER_CANISTER_ID = 'pymhy-xyaaa-aaaak-act7a-cai';
-  // todo
+
   IC_ETH_MINTER_CANISTER_ID = 'pm5h6-jqaaa-aaaak-aejja-cai';
   CK_ETH_MINTER_CANISTER_ID = 'sv3dd-oaaaa-aaaar-qacoa-cai';
   // CK_ETH_MINTER_CANISTER_ID_TEST = 'jzenf-aiaaa-aaaar-qaa7q-cai';
